@@ -1,0 +1,14 @@
+<package>
+  <description brief="rosbridge_library">
+
+     rosbridge_library
+
+  </description>
+  <author>Jonathan Mace</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/rosbridge_library</url>
+
+</package>
+
+
