@@ -12,6 +12,9 @@ class Publish(Capability):
 
         # Register the operations that this capability provides
         protocol.register_operation("publish", self.publish)
+        
+        # Save the topics that are published on for the purposes of unregistering
+        self._published = {}
 
     def publish(self, message):
         # Pull out the ID
@@ -31,6 +34,7 @@ class Publish(Capability):
         # Register as a publishing client, propagating any exceptions
         client_id = self.protocol.client_id
         manager.register(client_id, topic)
+        self._published[topic] = True
 
         # Get the message if one was provided
         msg = message.get("msg", {})
@@ -38,4 +42,7 @@ class Publish(Capability):
         manager.publish(client_id, topic, msg)
 
     def finish(self):
-        manager.unregister_all(self.protocol.client_id)
+        client_id = self.protocol.client_id
+        for topic in self._published:
+            manager.unregister(client_id, topic)
+        self._published.clear()
