@@ -8,7 +8,6 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/rosbridge_test</url>
-  <depend package="std_msgs"/>
   <depend package="rostest" />
   <depend package="rosbridge_library" />
 
