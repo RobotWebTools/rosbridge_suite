@@ -49,7 +49,7 @@ class CallService(Capability):
             "values": message
         }
         if cid is not None:
-            outgoing_message["cid"] = cid
+            outgoing_message["id"] = cid
         # TODO: fragmentation, compression
         self.protocol.send(outgoing_message)
 
