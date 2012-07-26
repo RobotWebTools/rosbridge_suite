@@ -19,6 +19,11 @@ class MissingArgumentException(Exception):
         Exception.__init__(self,
         "Expected a %s argument for service %s, but none was found." %
         (argname, servicename))
+        
+        
+class InvalidServiceException(Exception):
+    def __init__(self, servicename):
+        Exception.__init__(self, "Service %s does not exist" % servicename)
 
 
 class ServiceCaller(Thread):
@@ -83,6 +88,8 @@ def call_service(service, args=None):
     # Given the service name, fetch the type and class of the service,
     # and a request instance
     service_type = get_service_type(service)
+    if service_type is None:
+        raise InvalidServiceException(service)
     service_class = get_service_class(service_type)
     inst = get_service_request_instance(service_type)
 
