@@ -30,17 +30,21 @@ class CallService(Capability):
         # Typecheck the args
         self.basic_type_check(message, self.call_service_msg_fields)
 
-        # Create the callbacks
+        # Extract the args
         service = message["service"]
         fragment_size = message.get("fragment_size", None)
         compression = message.get("compression", "none")
         args = message.get("args", [])
+        
+        # Check for deprecated service ID, eg. /rosbridge/topics#33
+        cid = extract_id(service, cid)
 
+        # Create the callbacks
         s_cb = partial(self._success, cid, service, fragment_size, compression)
         e_cb = partial(self._failure, cid)
 
         # Kick off the service caller thread
-        ServiceCaller(service, args, s_cb, e_cb).start()
+        ServiceCaller(trim_servicename(service), args, s_cb, e_cb).start()
 
     def _success(self, cid, service, fragment_size, compression, message):
         outgoing_message = {
@@ -55,3 +59,15 @@ class CallService(Capability):
 
     def _failure(self, cid, exc):
         self.protocol.log("error", "call_service: " + exc.message, cid)
+
+
+def trim_servicename(service):
+    if '#' in service:
+        return service[:service.find('#')]
+
+
+def extract_id(service, cid):
+    if cid is not None:
+        return cid
+    elif '#' in service:
+        return service[service.find('#') + 1:]
