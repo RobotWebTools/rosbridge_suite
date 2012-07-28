@@ -23,7 +23,7 @@ class CallService(Capability):
         try:
             self._call_service(cid, message)
         except Exception as exc:
-            self.protocol.log("error", "call_service: " + exc.message, cid)
+            self._failure(cid, exc)
             raise
 
     def _call_service(self, cid, message):
@@ -44,6 +44,7 @@ class CallService(Capability):
         e_cb = partial(self._failure, cid)
 
         # Kick off the service caller thread
+        print "Calling service %s with args:" % (trim_servicename(service)), args
         ServiceCaller(trim_servicename(service), args, s_cb, e_cb).start()
 
     def _success(self, cid, service, fragment_size, compression, message):
@@ -58,12 +59,14 @@ class CallService(Capability):
         self.protocol.send(outgoing_message)
 
     def _failure(self, cid, exc):
-        self.protocol.log("error", "call_service: " + exc.message, cid)
+        self.protocol.log("error", "call_service %s: %s" %
+            (exc.__class__.__name__, exc.message), cid)
 
 
 def trim_servicename(service):
     if '#' in service:
         return service[:service.find('#')]
+    return service
 
 
 def extract_id(service, cid):

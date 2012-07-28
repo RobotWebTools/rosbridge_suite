@@ -160,7 +160,8 @@ class Subscribe(Capability):
         try:
             self._subscribe(sid, message)
         except Exception as exc:
-            self.protocol.log("error", "subscribe: %s" % exc.message, sid)
+            self.protocol.log("error", "subscribe %s: %s" %
+            (exc.__class__.__name__, exc.message), sid)
             raise
 
     def _subscribe(self, sid, msg):
@@ -195,7 +196,8 @@ class Subscribe(Capability):
         try:
             self._unsubscribe(sid, message)
         except Exception as exc:
-            self.protocol.log("error", "publish: " + exc.message, sid)
+            self.protocol.log("error", "unsubscribe %s: %s" %
+            (exc.__class__.__name__, exc.message), sid)
             raise
 
     def _unsubscribe(self, sid, msg):

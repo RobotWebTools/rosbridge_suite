@@ -61,7 +61,8 @@ class Advertise(Capability):
         try:
             self._advertise(aid, message)
         except Exception as exc:
-            self.protocol.log("error", "advertise: " + exc.message, aid)
+            self.protocol.log("error", "advertise %s: %s" %
+            (exc.__class__.__name__, exc.message), aid)
 
     def unadvertise(self, message):
         # Pull out the ID
@@ -71,7 +72,8 @@ class Advertise(Capability):
         try:
             self._unadvertise(aid, message)
         except Exception as exc:
-            self.protocol.log("error", "unadvertise: " + exc.message, aid)
+            self.protocol.log("error", "unadvertise %s: %s" %
+            (exc.__class__.__name__, exc.message), aid)
 
     def _advertise(self, aid, msg):
         self.basic_type_check(msg, self.advertise_msg_fields)

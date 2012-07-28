@@ -24,7 +24,8 @@ class Publish(Capability):
         try:
             self._publish(message)
         except Exception as exc:
-            self.protocol.log("error", "publish: " + exc.message, pid)
+            self.protocol.log("error", "publish %s: %s" %
+            (exc.__class__.__name__, exc.message), pid)
             raise
 
     def _publish(self, message):
