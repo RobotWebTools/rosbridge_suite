@@ -65,7 +65,7 @@ if __name__ == "__main__":
     signal(SIGINT, SIG_DFL)
 
     port = get_param('/rosbridge/port', 9090)
-    application = Application([(r"/", RosbridgeWebSocket)])
+    application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)])
     application.listen(port)
     loginfo("Rosbridge server started on port %d", port)
 
