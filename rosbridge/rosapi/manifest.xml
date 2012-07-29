@@ -1,0 +1,15 @@
+<package>
+  <description brief="rosapi">
+
+     rosapi
+
+  </description>
+  <author>Jon</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/rosapi</url>
+  <depend package="rospy"/>
+
+</package>
+
+
