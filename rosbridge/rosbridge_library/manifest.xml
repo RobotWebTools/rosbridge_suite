@@ -8,6 +8,7 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/rosbridge_library</url>
+  <depend package="rospy"/>
 
 </package>
 
