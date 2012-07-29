@@ -9,6 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/rosapi</url>
   <depend package="rospy"/>
+  <depend package="rosbridge_library"/>
 
 </package>
 

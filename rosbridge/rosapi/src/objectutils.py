@@ -1,72 +1,69 @@
 #!/usr/bin/env python
-import roslib
-import rospy
-import string
-import copy
+from string import find
 
-import registry
+from rosbridge_library.internal import ros_loader
 
 # Keep track of atomic types and special types
 atomics = ['bool', 'byte','int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64', 'float32', 'float64', 'string']
 specials = ['time', 'duration']
     
 
-def getTypeDef(type):
+def get_typedef(type):
     """ A typedef is a dict containing the following fields:
          - string type
          - string[] fieldnames
          - string[] fieldtypes
          - int[] fieldarraylen
          - string[] examples 
-    getTypeDef will return a typedef dict for the specified message type """
+    get_typedef will return a typedef dict for the specified message type """
     if type in atomics:
         # Atomics don't get a typedef
         return None 
     
     if type in specials:
         # Specials get their type def mocked up
-        return _getSpecialTypeDef(type)
+        return _get_special_typedef(type)
     
     # Fetch an instance and return its typedef
-    instance = registry.getMessageInstance(type)    
-    return _getTypeDef(instance)
+    instance = ros_loader.get_message_instance(type)    
+    return _get_typedef(instance)
 
-def getServiceRequestTypeDef(servicetype):
+def get_service_request_typedef(servicetype):
     """ Returns a typedef dict for the service request class for the specified service type """
     # Get an instance of the service request class and return its typedef
-    instance = registry.getServiceRequestInstance(servicetype)
-    return _getTypeDef(instance)
+    instance = ros_loader.get_service_request_instance(servicetype)
+    return _get_typedef(instance)
 
-def getServiceResponseTypeDef(servicetype):
+def get_service_response_typedef(servicetype):
     """ Returns a typedef dict for the service response class for the specified service type """
     # Get an instance of the service response class and return its typedef 
-    instance = registry.getServiceResponseInstance(servicetype)
-    return _getTypeDef(instance)
+    instance = ros_loader.get_service_response_instance(servicetype)
+    return _get_typedef(instance)
 
-def getTypeDefRecursive(type):
+def get_typedef_recursive(type):
     """ Returns a list of typedef dicts for this type and all contained type fields """
     # Just go straight into the recursive method
-    return _getTypeDefsRecursive(type, [])
+    return _get_typedefs_recursive(type, [])
 
-def getServiceRequestTypeDefRecursive(servicetype):
+def get_service_request_typedef_recursive(servicetype):
     """ Returns a list of typedef dicts for this type and all contained type fields """
     # Get an instance of the service request class and get its typedef
-    instance = registry.getServiceRequestInstance(servicetype)
-    typedef = _getTypeDef(instance)
+    instance = ros_loader.get_service_request_instance(servicetype)
+    typedef = _get_typedef(instance)
     
     # Return the list of sub-typedefs
-    return _getSubTypeDefsRecursive(typedef, [])
+    return _get_subtypedefs_recursive(typedef, [])
 
-def getServiceResponseTypeDefRecursive(servicetype):
+def get_service_response_typedef_recursive(servicetype):
     """ Returns a list of typedef dicts for this type and all contained type fields """
     # Get an instance of the service response class and get its typedef
-    instance = registry.getServiceResponseInstance(servicetype)
-    typedef = _getTypeDef(instance)
+    instance = ros_loader.get_service_response_instance(servicetype)
+    typedef = _get_typedef(instance)
     
     # Return the list of sub-typedefs
-    return _getSubTypeDefsRecursive(typedef, [])
+    return _get_subtypedefs_recursive(typedef, [])
 
-def _getTypeDef(instance):
+def _get_typedef(instance):
     """ Gets a typedef dict for the specified instance """
     if instance is None or not hasattr(instance, "__slots__") or not hasattr(instance, "_slot_types"):
         return None
@@ -88,14 +85,14 @@ def _getTypeDef(instance):
                 arraylen = 0
                 field_type = field_type[:-2]
             else:
-                split = string.find(field_type, '[')
+                split = find(field_type, '[')
                 arraylen = int(field_type[split+1:-1])
                 field_type = field_type[:split]
         fieldarraylen.append(arraylen)
         
         # Get the fully qualified type
         field_instance = getattr(instance, name)
-        fieldtypes.append(_typeName(field_type, field_instance))
+        fieldtypes.append(_type_name(field_type, field_instance))
         
         # Set the example as appropriate
         example = field_instance
@@ -106,7 +103,7 @@ def _getTypeDef(instance):
         examples.append(str(example))
     
     typedef = {
-       "type": _typeNameFromInstance(instance),
+       "type": _type_name_from_instance(instance),
        "fieldnames": fieldnames,
        "fieldtypes": fieldtypes,
        "fieldarraylen": fieldarraylen,
@@ -115,7 +112,7 @@ def _getTypeDef(instance):
     
     return typedef
     
-def _getSpecialTypeDef(type):
+def _get_special_typedef(type):
     example = None
     if type=="time" or type=="duration":
         example = {
@@ -127,7 +124,7 @@ def _getSpecialTypeDef(type):
         }
     return example
 
-def _getTypeDefsRecursive(type, typesseen):
+def _get_typedefs_recursive(type, typesseen):
     """ returns the type def for this type as well as the type defs for any fields within the type """
     if type in typesseen:
         # Don't put a type if it's already been seen
@@ -137,22 +134,22 @@ def _getTypeDefsRecursive(type, typesseen):
     typesseen.append(type)
     
     # Get the typedef for this type and make sure it's not None
-    typedef = getTypeDef(type)
+    typedef = get_typedef(type)
     
-    return _getSubTypeDefsRecursive(typedef, typesseen)
+    return _get_subtypedefs_recursive(typedef, typesseen)
     
-def _getSubTypeDefsRecursive(typedef, typesseen):
+def _get_subtypedefs_recursive(typedef, typesseen):
     if typedef is None:
         return []
     
     # Create the list of subtypes and get the typedefs for fields
     typedefs = [ typedef ]
     for fieldtype in typedef["fieldtypes"]:
-        typedefs = typedefs + _getTypeDefsRecursive(fieldtype, typesseen)
+        typedefs = typedefs + _get_typedefs_recursive(fieldtype, typesseen)
         
     return typedefs
 
-def _typeName(type, instance):
+def _type_name(type, instance):
     """ given a short type, and an object instance of that type, 
     determines and returns the fully qualified type """    
     # The fully qualified type of atomic and special types is just their original name
@@ -165,10 +162,10 @@ def _typeName(type, instance):
         return type
     
     # Otherwise, the type will come from the module and class name of the instance                
-    return _typeNameFromInstance(instance)
+    return _type_name_from_instance(instance)
     
-def _typeNameFromInstance(instance):
+def _type_name_from_instance(instance):
     mod = instance.__module__
-    type = mod[0:string.find(mod, '.')]+"/"+instance.__class__.__name__
+    type = mod[0:find(mod, '.')]+"/"+instance.__class__.__name__
     return type   
     
