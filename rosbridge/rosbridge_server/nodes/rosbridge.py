@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-from rospy import init_node, get_param, loginfo, logerr
 from roslib import load_manifest
 load_manifest('rosbridge_server')
+from rospy import init_node, get_param, loginfo, logerr
 
 from signal import signal, SIGINT, SIG_DFL
 from functools import partial
