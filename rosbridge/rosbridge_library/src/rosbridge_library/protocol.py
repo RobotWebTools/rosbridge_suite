@@ -114,7 +114,8 @@ class Protocol:
         except:
             if cid is not None:
                 # Only bother sending the log message if there's an id
-                self.log("error", "Unable to serialize message to client", cid)
+                self.log("error", "Unable to serialize %s message to client"
+                         % msg["op"], cid)
             return None
 
     def deserialize(self, msg, cid=None):
