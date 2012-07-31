@@ -29,14 +29,14 @@ class TestCallService(unittest.TestCase):
         proto = Protocol("test_missing_arguments")
         s = CallService(proto)
         msg = loads(dumps({"op": "call_service"}))
-        self.assertRaises(MissingArgumentException, s._call_service, None, msg)
+        self.assertRaises(MissingArgumentException, s.call_service, None, msg)
 
     def test_invalid_arguments(self):
         proto = Protocol("test_invalid_arguments")
         s = CallService(proto)
 
         msg = loads(dumps({"op": "call_service", "service": 3}))
-        self.assertRaises(InvalidArgumentException, s._call_service, None, msg)
+        self.assertRaises(InvalidArgumentException, s.call_service, None, msg)
 
     def test_call_service_works(self):
         # First, call the service the 'proper' way
@@ -55,7 +55,7 @@ class TestCallService(unittest.TestCase):
 
         proto.send = cb
 
-        s._call_service(None, msg)
+        s.call_service(None, msg)
 
         time.sleep(0.5)
 

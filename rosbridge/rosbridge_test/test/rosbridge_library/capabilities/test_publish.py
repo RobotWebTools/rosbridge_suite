@@ -28,17 +28,17 @@ class TestAdvertise(unittest.TestCase):
         proto = Protocol("hello")
         pub = Publish(proto)
         msg = {"op": "publish"}
-        self.assertRaises(MissingArgumentException, pub._publish, msg)
+        self.assertRaises(MissingArgumentException, pub.publish, msg)
 
         msg = {"op": "publish", "msg": {}}
-        self.assertRaises(MissingArgumentException, pub._publish, msg)
+        self.assertRaises(MissingArgumentException, pub.publish, msg)
 
     def test_invalid_arguments(self):
         proto = Protocol("hello")
         pub = Publish(proto)
 
         msg = {"op": "publish", "topic": 3}
-        self.assertRaises(InvalidArgumentException, pub._publish, msg)
+        self.assertRaises(InvalidArgumentException, pub.publish, msg)
 
     def test_publish_works(self):
         proto = Protocol("hello")
