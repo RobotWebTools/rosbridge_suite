@@ -32,19 +32,18 @@ list_braces = re.compile(r'\[[^\]]*\]')
 
 
 class InvalidMessageException(Exception):
-    pass
+    def __init__(self, inst):
+        Exception.__init__(self, "Unable to extract message values from %s instance" % type(inst).__name__)
 
 
 class NonexistentFieldException(Exception):
-    def __init__(self, fields):
-        self.fields = fields
+    def __init__(self, basetype, fields):
+        Exception.__init__(self, "Message type %s does not have a field %s" % (basetype, '.'.join(fields)))
 
 
 class FieldTypeMismatchException(Exception):
-    def __init__(self, fields, expected_type, found_type):
-        self.fields = fields
-        self.expected_type = expected_type
-        self.found_type = found_type
+    def __init__(self, roottype, fields, expected_type, found_type):
+        Exception.__init__(self, "%s message requires a %s for field %s, but got a %s" % (roottype, expected_type, '.'.join(fields), found_type))
 
 
 def extract_values(inst):
@@ -57,7 +56,7 @@ def extract_values(inst):
 def populate_instance(msg, inst):
     """ Returns an instance of the provided class, with its fields populated
     according to the values in msg """
-    return _to_inst(msg, inst._type, inst)
+    return _to_inst(msg, inst._type, inst._type, inst)
 
 
 def _from_inst(inst, rostype):
@@ -102,7 +101,7 @@ def _from_object_inst(inst, rostype):
     return msg
 
 
-def _to_inst(msg, rostype, inst=None, stack=[]):
+def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
     # Check if it's uint8[], and if it's a string, try to b64decode
     if rostype in ros_binary_types:
         return _to_binary_inst(msg)
@@ -113,17 +112,17 @@ def _to_inst(msg, rostype, inst=None, stack=[]):
 
     # Check to see whether this is a primitive type
     if rostype in ros_primitive_types:
-        return _to_primitive_inst(msg, rostype, stack)
+        return _to_primitive_inst(msg, rostype, roottype, stack)
 
     # Check whether we're dealing with a list type
     if inst is not None and type(inst) in list_types:
-        return _to_list_inst(msg, rostype, inst, stack)
+        return _to_list_inst(msg, rostype, roottype, inst, stack)
 
     # Otherwise, the type has to be a full ros msg type, so msg must be a dict
     if inst is None:
         inst = ros_loader.get_message_instance(rostype)
 
-    return _to_object_inst(msg, rostype, inst, stack)
+    return _to_object_inst(msg, rostype, roottype, inst, stack)
 
 
 def _to_binary_inst(msg):
@@ -157,20 +156,20 @@ def _to_time_inst(msg, rostype, inst=None):
     return inst
 
 
-def _to_primitive_inst(msg, rostype, stack):
+def _to_primitive_inst(msg, rostype, roottype, stack):
     # Typecheck the msg
     msgtype = type(msg)
     if msgtype in primitive_types and rostype in type_map[msgtype.__name__]:
         return msg
     elif msgtype in string_types and rostype in type_map[msgtype.__name__]:
         return msg.encode("ascii", "ignore")
-    raise FieldTypeMismatchException(stack, rostype, msgtype)
+    raise FieldTypeMismatchException(roottype, stack, rostype, msgtype)
 
 
-def _to_list_inst(msg, rostype, inst, stack):
+def _to_list_inst(msg, rostype, roottype, inst, stack):
     # Typecheck the msg
     if type(msg) not in list_types:
-        raise FieldTypeMismatchException(stack, rostype, type(msg))
+        raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))
 
     # Can duck out early if the list is empty
     if len(msg) == 0:
@@ -180,13 +179,13 @@ def _to_list_inst(msg, rostype, inst, stack):
     rostype = list_braces.sub("", rostype)
 
     # Call to _to_inst for every element of the list
-    return [_to_inst(x, rostype, None, stack) for x in msg]
+    return [_to_inst(x, rostype, roottype, None, stack) for x in msg]
 
 
-def _to_object_inst(msg, rostype, inst, stack):
+def _to_object_inst(msg, rostype, roottype, inst, stack):
     # Typecheck the msg
     if type(msg) is not dict:
-        raise FieldTypeMismatchException(stack, rostype, type(msg))
+        raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))
 
     # Substitute the correct time if we're an std_msgs/Header
     if rostype in ros_header_types:
@@ -200,13 +199,13 @@ def _to_object_inst(msg, rostype, inst, stack):
 
         # Raise an exception if the msg contains a bad field
         if not field_name in inst_fields:
-            raise NonexistentFieldException(field_stack)
+            raise NonexistentFieldException(roottype, field_stack)
 
         field_rostype = inst_fields[field_name]
         field_inst = getattr(inst, field_name)
 
         field_value = _to_inst(msg[field_name], field_rostype,
-                               field_inst, field_stack)
+                    roottype, field_inst, field_stack)
 
         setattr(inst, field_name, field_value)
 
