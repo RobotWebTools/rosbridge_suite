@@ -8,12 +8,21 @@ as JSON in order to facilitate dynamically typed SRV messages """
 
 
 def set_param(name, value):
-    print "setting %s %s " % (name, value)
-    rospy.set_param(name, loads(value))
+    d = None
+    try:
+        d = loads(value)
+    except ValueError:
+        raise Exception("Due to the type flexibility of the ROS parameter server, the value argument to set_param must be a JSON-formatted string.")
+    rospy.set_param(name, d)
     
     
 def get_param(name, default):
-    return dumps(rospy.get_param(name, loads(default)))
+    d = None
+    try:
+        d = loads(default)
+    except ValueError:
+        raise Exception("Due to the type flexibility of the ROS parameter server, the default argument to get_param must be a JSON-formatted string.")
+    return dumps(rospy.get_param(name, d))
 
 
 def has_param(name):
