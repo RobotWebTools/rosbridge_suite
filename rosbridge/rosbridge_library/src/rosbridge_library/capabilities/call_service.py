@@ -18,15 +18,7 @@ class CallService(Capability):
     def call_service(self, message):
         # Pull out the ID
         cid = message.get("id", None)
-
-        # Process the message, catching any exceptions and logging them
-        try:
-            self._call_service(cid, message)
-        except Exception as exc:
-            self._failure(cid, exc)
-            raise
-
-    def _call_service(self, cid, message):
+        
         # Typecheck the args
         self.basic_type_check(message, self.call_service_msg_fields)
 
@@ -60,7 +52,7 @@ class CallService(Capability):
 
     def _failure(self, cid, exc):
         self.protocol.log("error", "call_service %s: %s" %
-            (exc.__class__.__name__, exc.message), cid)
+            (type(exc).__name__, str(exc)), cid)
 
 
 def trim_servicename(service):

@@ -56,29 +56,10 @@ class Advertise(Capability):
     def advertise(self, message):
         # Pull out the ID
         aid = message.get("id", None)
-
-        # Process the message, catching any exceptions and logging them
-        try:
-            self._advertise(aid, message)
-        except Exception as exc:
-            self.protocol.log("error", "advertise %s: %s" %
-            (exc.__class__.__name__, exc.message), aid)
-
-    def unadvertise(self, message):
-        # Pull out the ID
-        aid = message.get("id", None)
-
-        # Process the message, catching any exceptions and logging them
-        try:
-            self._unadvertise(aid, message)
-        except Exception as exc:
-            self.protocol.log("error", "unadvertise %s: %s" %
-            (exc.__class__.__name__, exc.message), aid)
-
-    def _advertise(self, aid, msg):
-        self.basic_type_check(msg, self.advertise_msg_fields)
-        topic = msg["topic"]
-        msg_type = msg["type"]
+        
+        self.basic_type_check(message, self.advertise_msg_fields)
+        topic = message["topic"]
+        msg_type = message["type"]
 
         # Create the Registration if one doesn't yet exist
         if not topic in self._registrations:
@@ -88,9 +69,12 @@ class Advertise(Capability):
         # Register, propagating any exceptions
         self._registrations[topic].register_advertisement(msg_type, aid)
 
-    def _unadvertise(self, aid, msg):
-        self.basic_type_check(msg, self.unadvertise_msg_fields)
-        topic = msg["topic"]
+    def unadvertise(self, message):
+        # Pull out the ID
+        aid = message.get("id", None)
+
+        self.basic_type_check(message, self.unadvertise_msg_fields)
+        topic = message["topic"]
 
         # Now unadvertise the topic
         if topic not in self._registrations:

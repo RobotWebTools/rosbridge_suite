@@ -17,18 +17,7 @@ class Publish(Capability):
         self._published = {}
 
     def publish(self, message):
-        # Pull out the ID
-        pid = message.get("id", None)
-
-        # Process the message, catching any exceptions and logging them
-        try:
-            self._publish(message)
-        except Exception as exc:
-            self.protocol.log("error", "publish %s: %s" %
-            (exc.__class__.__name__, exc.message), pid)
-            raise
-
-    def _publish(self, message):
+        # Do basic type checking
         self.basic_type_check(message, self.publish_msg_fields)
         topic = message["topic"]
 
@@ -40,8 +29,9 @@ class Publish(Capability):
         # Get the message if one was provided
         msg = message.get("msg", {})
 
+        # Publish the message
         manager.publish(client_id, topic, msg)
-
+        
     def finish(self):
         client_id = self.protocol.client_id
         for topic in self._published:
