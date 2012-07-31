@@ -60,7 +60,7 @@ class Protocol:
         try:
             self.operations[op](msg)
         except Exception as exc:
-            self.log("error", "%s: %s" % (op, exc.message), mid)
+            self.log("error", "%s: %s" % (op, str(exc)), mid)
 
     def outgoing(self, message):
         """ Pass an outgoing message to the client.  This method should be

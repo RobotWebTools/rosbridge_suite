@@ -35,7 +35,7 @@ class InvalidModuleException(Exception):
     def __init__(self, modname, subname, original_exception):
         Exception.__init__(self,
            "Unable to import %s.%s from package %s. Caused by: %s"
-           % (modname, subname, modname, original_exception.message)
+           % (modname, subname, modname, str(original_exception))
         )
 
 
@@ -43,7 +43,7 @@ class InvalidClassException(Exception):
     def __init__(self, modname, subname, classname, original_exception):
         Exception.__init__(self,
            "Unable to import %s class %s from package %s. Caused by %s"
-           % (subname, classname, modname, original_exception.message)
+           % (subname, classname, modname, str(original_exception))
         )
 
 
