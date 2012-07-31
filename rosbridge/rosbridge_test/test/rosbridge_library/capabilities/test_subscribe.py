@@ -70,29 +70,29 @@ class TestSubscribe(unittest.TestCase):
         proto = Protocol("test_missing_arguments")
         sub = subscribe.Subscribe(proto)
         msg = {"op": "subscribe"}
-        self.assertRaises(MissingArgumentException, sub.subscribe, None, msg)
+        self.assertRaises(MissingArgumentException, sub.subscribe, msg)
 
     def test_invalid_arguments(self):
         proto = Protocol("test_invalid_arguments")
         sub = subscribe.Subscribe(proto)
 
         msg = {"op": "subscribe", "topic": 3}
-        self.assertRaises(InvalidArgumentException, sub.subscribe, None, msg)
+        self.assertRaises(InvalidArgumentException, sub.subscribe, msg)
 
         msg = {"op": "subscribe", "topic": "/jon", "type": 3}
-        self.assertRaises(InvalidArgumentException, sub.subscribe, None, msg)
+        self.assertRaises(InvalidArgumentException, sub.subscribe, msg)
 
         msg = {"op": "subscribe", "topic": "/jon", "throttle_rate": "fast"}
-        self.assertRaises(InvalidArgumentException, sub.subscribe, None, msg)
+        self.assertRaises(InvalidArgumentException, sub.subscribe, msg)
 
         msg = {"op": "subscribe", "topic": "/jon", "fragment_size": "five cubits"}
-        self.assertRaises(InvalidArgumentException, sub.subscribe, None, msg)
+        self.assertRaises(InvalidArgumentException, sub.subscribe, msg)
 
         msg = {"op": "subscribe", "topic": "/jon", "queue_length": "long"}
-        self.assertRaises(InvalidArgumentException, sub.subscribe, None, msg)
+        self.assertRaises(InvalidArgumentException, sub.subscribe, msg)
 
         msg = {"op": "subscribe", "topic": "/jon", "compression": 9000}
-        self.assertRaises(InvalidArgumentException, sub.subscribe, None, msg)
+        self.assertRaises(InvalidArgumentException, sub.subscribe, msg)
 
     def test_subscribe_works(self):
         proto = Protocol("test_subscribe_works")

@@ -31,23 +31,23 @@ class TestAdvertise(unittest.TestCase):
         proto = Protocol("hello")
         adv = Advertise(proto)
         msg = {"op": "advertise"}
-        self.assertRaises(MissingArgumentException, adv.advertise, None, loads(dumps(msg)))
+        self.assertRaises(MissingArgumentException, adv.advertise, loads(dumps(msg)))
 
         msg = {"op": "advertise", "topic": "/jon"}
-        self.assertRaises(MissingArgumentException, adv.advertise, None, loads(dumps(msg)))
+        self.assertRaises(MissingArgumentException, adv.advertise, loads(dumps(msg)))
 
         msg = {"op": "advertise", "type": "std_msgs/String"}
-        self.assertRaises(MissingArgumentException, adv.advertise, None, loads(dumps(msg)))
+        self.assertRaises(MissingArgumentException, adv.advertise, loads(dumps(msg)))
 
     def test_invalid_arguments(self):
         proto = Protocol("hello")
         adv = Advertise(proto)
 
         msg = {"op": "advertise", "topic": 3, "type": "std_msgs/String"}
-        self.assertRaises(InvalidArgumentException, adv.advertise, None, loads(dumps(msg)))
+        self.assertRaises(InvalidArgumentException, adv.advertise, loads(dumps(msg)))
 
         msg = {"op": "advertise", "topic": "/jon", "type": 3}
-        self.assertRaises(InvalidArgumentException, adv.advertise, None, loads(dumps(msg)))
+        self.assertRaises(InvalidArgumentException, adv.advertise, loads(dumps(msg)))
 
     def test_invalid_msg_typestrings(self):
         invalid = ["", "/", "//", "///", "////", "/////", "bad", "stillbad",
@@ -62,7 +62,7 @@ class TestAdvertise(unittest.TestCase):
             msg = {"op": "advertise", "topic": "/test_invalid_msg_typestrings",
                    "type": invalid_type}
             self.assertRaises(ros_loader.InvalidTypeStringException,
-                              adv.advertise, None, loads(dumps(msg)))
+                              adv.advertise, loads(dumps(msg)))
 
     def test_invalid_msg_package(self):
         nonexistent = ["wangle_msgs/Jam", "whistleblower_msgs/Document",
@@ -76,7 +76,7 @@ class TestAdvertise(unittest.TestCase):
             msg = {"op": "advertise", "topic": "/test_invalid_msg_package",
                    "type": invalid_type}
             self.assertRaises(ros_loader.InvalidPackageException,
-                              adv.advertise, None, loads(dumps(msg)))
+                              adv.advertise, loads(dumps(msg)))
 
     def test_invalid_msg_module(self):
         no_msgs = ["roslib/Time", "roslib/Duration", "roslib/Header",
@@ -89,7 +89,7 @@ class TestAdvertise(unittest.TestCase):
             msg = {"op": "advertise", "topic": "/test_invalid_msg_module",
                    "type": invalid_type}
             self.assertRaises(ros_loader.InvalidModuleException,
-                              adv.advertise, None, loads(dumps(msg)))
+                              adv.advertise, loads(dumps(msg)))
 
     def test_invalid_msg_classes(self):
         nonexistent = ["roscpp/Time", "roscpp/Duration", "roscpp/Header",
@@ -103,7 +103,7 @@ class TestAdvertise(unittest.TestCase):
             msg = {"op": "advertise", "topic": "/test_invalid_msg_classes",
                    "type": invalid_type}
             self.assertRaises(ros_loader.InvalidClassException,
-                              adv.advertise, None, loads(dumps(msg)))
+                              adv.advertise, loads(dumps(msg)))
 
     def test_valid_msg_classes(self):
         assortedmsgs = ["geometry_msgs/Pose", "actionlib_msgs/GoalStatus",
