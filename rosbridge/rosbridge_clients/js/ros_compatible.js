@@ -215,6 +215,9 @@ Connection.prototype.publish = function(topic, typeStr, payload) {
         this.advertised[topic] = true;
         this.bridge.advertise(topic, typeStr);
     }
+    if (typeof payload == "string") {
+        payload = JSON.parse(payload);
+    }
     this.bridge.publish(topic, payload);
 }
 
