@@ -43,7 +43,10 @@ class NonexistentFieldException(Exception):
 
 class FieldTypeMismatchException(Exception):
     def __init__(self, roottype, fields, expected_type, found_type):
-        Exception.__init__(self, "%s message requires a %s for field %s, but got a %s" % (roottype, expected_type, '.'.join(fields), found_type))
+        if roottype == expected_type:
+            Exception.__init__(self, "Expected a JSON object for type %s but received a %s" % (roottype, found_type))
+        else:
+            Exception.__init__(self, "%s message requires a %s for field %s, but got a %s" % (roottype, expected_type, '.'.join(fields), found_type))
 
 
 def extract_values(inst):
