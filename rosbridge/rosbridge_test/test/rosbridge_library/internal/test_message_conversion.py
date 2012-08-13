@@ -72,25 +72,25 @@ class TestMessageConversion(unittest.TestCase):
         # Test raw primitives
         for msg in range(-100, 100):
             for rostype in ["int8", "int16", "int32", "int64"]:
-                self.assertEqual(c._to_primitive_inst(msg, rostype, []), msg)
-                self.assertEqual(c._to_inst(msg, rostype), msg)
+                self.assertEqual(c._to_primitive_inst(msg, rostype, rostype, []), msg)
+                self.assertEqual(c._to_inst(msg, rostype, rostype), msg)
         # Test raw primitives
         for msg in range(0, 200):
             for rostype in ["uint8", "uint16", "uint32", "uint64"]:
-                self.assertEqual(c._to_primitive_inst(msg, rostype, []), msg)
-                self.assertEqual(c._to_inst(msg, rostype), msg)
+                self.assertEqual(c._to_primitive_inst(msg, rostype, rostype, []), msg)
+                self.assertEqual(c._to_inst(msg, rostype, rostype), msg)
 
     def test_bool_primitives(self):
-        self.assertTrue(c._to_primitive_inst(True, "bool", []))
-        self.assertTrue(c._to_inst(True, "bool"))
-        self.assertFalse(c._to_primitive_inst(False, "bool", []))
-        self.assertFalse(c._to_inst(False, "bool"))
+        self.assertTrue(c._to_primitive_inst(True, "bool", "bool", []))
+        self.assertTrue(c._to_inst(True, "bool", "bool"))
+        self.assertFalse(c._to_primitive_inst(False, "bool", "bool", []))
+        self.assertFalse(c._to_inst(False, "bool", "bool"))
 
     def test_float_primitives(self):
         for msg in [0.12341234 + i for i in range(-100, 100)]:
             for rostype in ["float32", "float64"]:
-                self.assertEqual(c._to_primitive_inst(msg, rostype, []), msg)
-                self.assertEqual(c._to_inst(msg, rostype), msg)
+                self.assertEqual(c._to_primitive_inst(msg, rostype, rostype, []), msg)
+                self.assertEqual(c._to_inst(msg, rostype, rostype), msg)
 
     def test_signed_int_base_msgs(self):
         int8s = range(-128, 128)

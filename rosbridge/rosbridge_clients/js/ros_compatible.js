@@ -71,7 +71,7 @@ Bridge.prototype.subscribe = function(callback, topic, /*optional*/ type, /*opti
     // Construct the message
     msg = {topic: topic};
     if (type != null) msg.type = type;
-    if (throttle_rate != null) msg.throttle_rate = throttle_rate;
+    if (throttle_rate != null && throttle_rate != -1) msg.throttle_rate = throttle_rate;
     if (queue_length != null) msg.queue_length = queue_length;
     if (fragment_size != null) msg.fragment_size = fragment_size;
     if (compression != null) msg.compression = compression;
@@ -192,8 +192,8 @@ Connection.prototype.callService = function(service, payload, callback) {
         payload = JSON.parse(payload);
     }
     switch (service) {
-        case "/rosbridge/subscribe": self._subscribe(service, payload, callback); break;
-        case "/rosbridge/unsubscribe": self._unsubscribe(service, payload, callback); break;
+        case "/rosbridge/subscribe": this._subscribe(service, payload, callback); break;
+        case "/rosbridge/unsubscribe": this._unsubscribe(service, payload, callback); break;
         default: this.bridge.callService(callback, service, payload);
     }
 }
@@ -214,6 +214,9 @@ Connection.prototype.publish = function(topic, typeStr, payload) {
     if (!this.advertised[topic]) {
         this.advertised[topic] = true;
         this.bridge.advertise(topic, typeStr);
+    }
+    if (typeof payload == "string") {
+        payload = JSON.parse(payload);
     }
     this.bridge.publish(topic, payload);
 }

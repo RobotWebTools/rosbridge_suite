@@ -5,7 +5,7 @@ from rospy import spin
 from rospy import Service
 from rospy import ROSInterruptException
 
-import proxy, objectutils
+import proxy, objectutils, params
 from rosapi.srv import *
 from rosapi.msg import *
 
@@ -25,6 +25,11 @@ def register_services():
     Service('rosapi/message_details', MessageDetails, get_message_details)
     Service('rosapi/service_request_details', ServiceRequestDetails, get_service_request_details)
     Service('rosapi/service_response_details', ServiceResponseDetails, get_service_response_details)
+    Service('rosapi/set_param', SetParam, set_param)
+    Service('rosapi/get_param', GetParam, get_param)
+    Service('rosapi/has_param', HasParam, has_param)
+    Service('rosapi/search_param', SearchParam, search_param)
+    Service('rosapi/delete_param', DeleteParam, delete_param)
     
 def get_topics(request):
     """ Called by the rosapi/Topics service. Returns a list of all the topics being published. """
@@ -95,6 +100,23 @@ def get_service_response_details(request):
     """ Called by the rosapi/ServiceResponseDetails service. Given the name of a service type, returns the TypeDef
     for the response message of that service type. """
     return ServiceResponseDetailsResponse([dict_to_typedef(d) for d in objectutils.get_service_response_typedef_recursive(request.type)])
+
+def set_param(request):
+    params.set_param(request.name, request.value)
+    return SetParamResponse()
+
+def get_param(request):
+    return GetParamResponse(params.get_param(request.name, request.default))
+
+def has_param(request):
+    return HasParamResponse(params.has_param(request.name))
+
+def search_param(request):
+    return SearchParamResponse(params.search_param(request.name))
+
+def delete_param(request):
+    params.delete_param(request.name)
+    return DeleteParamResponse()
 
 def dict_to_typedef(typedefdict):
     typedef = TypeDef()

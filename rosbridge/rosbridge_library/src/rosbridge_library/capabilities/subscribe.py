@@ -152,19 +152,10 @@ class Subscribe(Capability):
 
         self._subscriptions = {}
 
-    def subscribe(self, message):
+    def subscribe(self, msg):
         # Pull out the ID
-        sid = message.get("id", None)
-
-        # Process the message, catching any exceptions and logging them
-        try:
-            self._subscribe(sid, message)
-        except Exception as exc:
-            self.protocol.log("error", "subscribe %s: %s" %
-            (exc.__class__.__name__, exc.message), sid)
-            raise
-
-    def _subscribe(self, sid, msg):
+        sid = msg.get("id", None)
+        
         # Check the args
         self.basic_type_check(msg, self.subscribe_msg_fields)
 
@@ -188,19 +179,10 @@ class Subscribe(Capability):
 
         self.protocol.log("info", "Subscribed to %s" % topic)
 
-    def unsubscribe(self, message):
+    def unsubscribe(self, msg):
         # Pull out the ID
-        sid = message.get("id", None)
-
-        # Process the message, catching any exceptions and logging them
-        try:
-            self._unsubscribe(sid, message)
-        except Exception as exc:
-            self.protocol.log("error", "unsubscribe %s: %s" %
-            (exc.__class__.__name__, exc.message), sid)
-            raise
-
-    def _unsubscribe(self, sid, msg):
+        sid = msg.get("id", None)
+        
         self.basic_type_check(msg, self.unsubscribe_msg_fields)
 
         topic = msg["topic"]

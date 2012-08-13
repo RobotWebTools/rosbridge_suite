@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-from rospy import init_node, get_param, loginfo, logerr
 from roslib import load_manifest
 load_manifest('rosbridge_server')
+from rospy import init_node, get_param, loginfo, logerr
 
 from signal import signal, SIGINT, SIG_DFL
 from functools import partial
@@ -28,7 +28,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             client_id_seed = client_id_seed + 1
             clients_connected = clients_connected + 1
         except Exception as exc:
-            logerr("Unable to accept incoming connection.  Reason: %s", exc.message)
+            logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
 #            raise
         loginfo("Client connected.  %d clients total.", clients_connected)
 

@@ -49,7 +49,10 @@ class Protocol:
             mid = msg["id"]
 
         if "op" not in msg:
-            self.log("error", "Received a message without an op.  All messages require 'op' field with value one of: %s.  Original message was: %s" % (self.operations.keys(), message_string), mid)
+            if "receiver" in msg:
+                self.log("error", "Received a rosbridge v1.0 message.  Please refer to rosbridge.org for the correct format of rosbridge v2.0 messages.  Original message was: %s" % message_string)
+            else:
+                self.log("error", "Received a message without an op.  All messages require 'op' field with value one of: %s.  Original message was: %s" % (self.operations.keys(), message_string), mid)
             return
 
         op = msg["op"]
@@ -60,7 +63,7 @@ class Protocol:
         try:
             self.operations[op](msg)
         except Exception as exc:
-            self.log("error", "%s: %s" % (op, exc.message), mid)
+            self.log("error", "%s: %s" % (op, str(exc)), mid)
 
     def outgoing(self, message):
         """ Pass an outgoing message to the client.  This method should be
