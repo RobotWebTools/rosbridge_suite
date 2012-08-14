@@ -39,11 +39,11 @@
 #include <map>
 #include <ros/ros.h>
 #include <boost/thread/mutex.hpp>
-#include <wviz_tf_manager/PublishAllTransforms.h>
+#include <tf_smart_throttle/PublishAllTransforms.h>
 #include <tf/transform_listener.h>
 #include <XmlRpcValue.h>
 
-namespace wviz_tf_manager {
+namespace tf_smart_throttle {
 
 class FramePair
 {
@@ -89,7 +89,7 @@ public:
   /**
    * @brief
    */
-  bool publishAllTransforms(wviz_tf_manager::PublishAllTransforms::Request& req, wviz_tf_manager::PublishAllTransforms::Response& resp);
+  bool publishAllTransforms(tf_smart_throttle::PublishAllTransforms::Request& req, tf_smart_throttle::PublishAllTransforms::Response& resp);
 
   /**
    * @brief  Starts the server and spins

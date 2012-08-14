@@ -28,9 +28,9 @@
  */
 
 /** \author Tully Foote */
-#include "wviz_tf_manager/wviz_tf_manager.h"
+#include "tf_smart_throttle/tf_smart_throttle.h"
 
-namespace wviz_tf_manager {
+namespace tf_smart_throttle {
 
 TransformManager::TransformManager(ros::NodeHandle& node)
 : node_(node), publish_all_(false)
@@ -70,7 +70,7 @@ void TransformManager::tfCallback(const tf::tfMessageConstPtr& msg_ptr)
   }
 }
 
-bool TransformManager::publishAllTransforms(wviz_tf_manager::PublishAllTransforms::Request& req, wviz_tf_manager::PublishAllTransforms::Response& resp)
+bool TransformManager::publishAllTransforms(tf_smart_throttle::PublishAllTransforms::Request& req, tf_smart_throttle::PublishAllTransforms::Response& resp)
 {
   publish_all_ = true;
   return true;
@@ -138,7 +138,7 @@ void TransformManager::spin()
 
       if(publish_all_) {
         publishAll();
-        publish_all_ = false;
+        //publish_all_ = false;
       }
       else {
         publishChanged();
@@ -163,11 +163,11 @@ void TransformManager::spin()
  * operation for feedback.  */
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "wviz_tf_manager");
+  ros::init(argc, argv, "tf_smart_throttle");
 
   ros::NodeHandle nh;
   boost::thread spinner( boost::bind( &ros::spin ));
-  wviz_tf_manager::TransformManager manager(nh);
+  tf_smart_throttle::TransformManager manager(nh);
   manager.spin();
   spinner.join();
   return 0;
