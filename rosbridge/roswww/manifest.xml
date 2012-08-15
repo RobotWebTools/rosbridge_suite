@@ -1,0 +1,16 @@
+<package>
+  <description brief="roswww">
+
+     roswww
+
+  </description>
+  <author>Jonathan Mace</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/roswww</url>
+  
+  <depend package="rospy"/>
+
+</package>
+
+
