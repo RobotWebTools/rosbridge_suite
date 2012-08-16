@@ -153,8 +153,7 @@ class TestROSLoader(unittest.TestCase):
         "std_srvs/Empty", "nav_msgs/GetMap", "nav_msgs/GetPlan",
         "sensor_msgs/SetCameraInfo", "topic_tools/MuxAdd",
         "topic_tools/MuxSelect", "tf2_msgs/FrameGraph",
-        "rospy_tutorials/BadTwoInts", "rospy_tutorials/AddTwoInts",
-        "kinematics_msgs/GetKinematicSolverInfo"]
+        "rospy_tutorials/BadTwoInts", "rospy_tutorials/AddTwoInts"]
         for x in common:
             self.assertNotEqual(ros_loader.get_service_class(x), None)
             self.assertNotEqual(ros_loader.get_service_instance(x), None)
@@ -167,8 +166,7 @@ class TestROSLoader(unittest.TestCase):
         "std_srvs/Empty", "nav_msgs/GetMap", "nav_msgs/GetPlan",
         "sensor_msgs/SetCameraInfo", "topic_tools/MuxAdd",
         "topic_tools/MuxSelect", "tf2_msgs/FrameGraph",
-        "rospy_tutorials/BadTwoInts", "rospy_tutorials/AddTwoInts",
-        "kinematics_msgs/GetKinematicSolverInfo"]
+        "rospy_tutorials/BadTwoInts", "rospy_tutorials/AddTwoInts"]
         for x in common:
             self.assertNotEqual(ros_loader.get_service_class(x), None)
             self.assertNotEqual(ros_loader.get_service_instance(x), None)

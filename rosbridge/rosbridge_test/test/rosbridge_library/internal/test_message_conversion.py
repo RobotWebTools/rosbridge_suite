@@ -93,7 +93,7 @@ class TestMessageConversion(unittest.TestCase):
                 self.assertEqual(c._to_inst(msg, rostype, rostype), msg)
 
     def test_signed_int_base_msgs(self):
-        int8s = range(-128, 128)
+        int8s = range(-127, 128)
         for int8 in int8s:
             self.do_primitive_test(int8, "std_msgs/Byte")
             self.do_primitive_test(int8, "std_msgs/Int8")
@@ -101,7 +101,7 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(int8, "std_msgs/Int32")
             self.do_primitive_test(int8, "std_msgs/Int64")
 
-        int16s = [-32768, 32767]
+        int16s = [-32767, 32767]
         for int16 in int16s:
             self.do_primitive_test(int16, "std_msgs/Int16")
             self.do_primitive_test(int16, "std_msgs/Int32")
@@ -109,7 +109,7 @@ class TestMessageConversion(unittest.TestCase):
             self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/Byte")
             self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/Int8")
 
-        int32s = [-2147483648, 2147483647]
+        int32s = [-2147483647, 2147483647]
         for int32 in int32s:
             self.do_primitive_test(int32, "std_msgs/Int32")
             self.do_primitive_test(int32, "std_msgs/Int64")
@@ -117,7 +117,7 @@ class TestMessageConversion(unittest.TestCase):
             self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Int8")
             self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Int16")
 
-        int64s = [-9223372036854775808, 9223372036854775807]
+        int64s = [-9223372036854775807, 9223372036854775807]
         for int64 in int64s:
             self.do_primitive_test(int64, "std_msgs/Int64")
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Byte")
