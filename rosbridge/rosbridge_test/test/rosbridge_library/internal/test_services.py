@@ -112,7 +112,6 @@ class TestServices(unittest.TestCase):
             for args in [[], {}, None]:
                 # Should throw no exceptions
                 services.args_to_service_request_instance("", cls._request_class(), args)
-            self.assertRaises(services.ArgumentsException, services.args_to_service_request_instance, "", cls._request_class(), [3])
 
         # Test msgs with data message
         for srv_type in ["RequestOnly", "RequestAndResponse"]:
@@ -120,10 +119,6 @@ class TestServices(unittest.TestCase):
             for args in [[3], {"data": 3}]:
                 # Should throw no exceptions
                 services.args_to_service_request_instance("", cls._request_class(), args)
-            self.assertRaises(services.ArgumentsException, services.args_to_service_request_instance, "", cls._request_class(), [])
-            self.assertRaises(services.ArgumentsException, services.args_to_service_request_instance, "", cls._request_class(), [1, 2])
-            self.assertRaises(services.MissingArgumentException, services.args_to_service_request_instance, "", cls._request_class(), {})
-            self.assertRaises(services.MissingArgumentException, services.args_to_service_request_instance, "", cls._request_class(), {"boshank": 3})
             self.assertRaises(FieldTypeMismatchException, services.args_to_service_request_instance, "", cls._request_class(), ["hello"])
 
         # Test message with multiple fields
@@ -131,9 +126,6 @@ class TestServices(unittest.TestCase):
         for args in [[3, 3.5, "hello", False], {"int": 3, "float": 3.5, "string": "hello", "bool": False}]:
             # Should throw no exceptions
             services.args_to_service_request_instance("", cls._request_class(), args)
-        self.assertRaises(services.ArgumentsException, services.args_to_service_request_instance, "", cls._request_class(), [])
-        self.assertRaises(services.ArgumentsException, services.args_to_service_request_instance, "", cls._request_class(), [1, 2, 3, 4, 5])
-        self.assertRaises(services.MissingArgumentException, services.args_to_service_request_instance, "", cls._request_class(), {})
 
     def test_service_call(self):
         """ Test a simple getloggers service call """

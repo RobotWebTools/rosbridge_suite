@@ -7,20 +7,6 @@ from rosbridge_library.internal.message_conversion import populate_instance
 from rosbridge_library.internal.message_conversion import extract_values
 
 
-class ArgumentsException(Exception):
-    def __init__(self, servicename, expected, received):
-        Exception.__init__(self,
-        "Excepted %d arguments for service %s, but received %d." %
-        (expected, servicename, received))
-
-
-class MissingArgumentException(Exception):
-    def __init__(self, servicename, argname):
-        Exception.__init__(self,
-        "Expected a %s argument for service %s, but none was found." %
-        (argname, servicename))
-        
-        
 class InvalidServiceException(Exception):
     def __init__(self, servicename):
         Exception.__init__(self, "Service %s does not exist" % servicename)
@@ -68,16 +54,8 @@ def args_to_service_request_instance(service, inst, args):
     Propagates any exceptions that may be raised. """
     msg = {}
     if isinstance(args, list):
-        # Make sure we received the right number of arguments
-        if len(args) != len(inst.__slots__):
-            raise ArgumentsException(service, len(inst.__slots__), len(args))
-
         msg = dict(zip(inst.__slots__, args))
     elif isinstance(args, dict):
-        # Make sure the required arguments are present
-        for fieldname in inst.__slots__:
-            if fieldname not in args:
-                raise MissingArgumentException(service, fieldname)
         msg = args
 
     # Populate the provided instance, propagating any exceptions
