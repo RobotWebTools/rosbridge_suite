@@ -37,3 +37,6 @@ def delete_param(name):
         
 def search_param(name):
     return rospy.search_param(name)
+
+def get_param_names():
+    return rospy.get_param_names()
