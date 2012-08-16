@@ -4,6 +4,7 @@ from rospy import init_node
 from rospy import spin
 from rospy import Service
 from rospy import ROSInterruptException
+from rospy import loginfo
 
 import proxy, objectutils, params
 from rosapi.srv import *
@@ -131,6 +132,7 @@ if __name__ == '__main__':
      try:
          init_node('rosapi')
          register_services()
+         loginfo("Rosapi started")
          spin()
      except ROSInterruptException: 
          pass
