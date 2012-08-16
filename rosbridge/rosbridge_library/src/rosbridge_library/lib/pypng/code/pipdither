@@ -1,0 +1,181 @@
+#!/usr/bin/env python
+# $URL$
+# $Rev$
+
+# pipdither
+# Error Diffusing image dithering.
+# Now with serpentine scanning.
+
+# See http://www.efg2.com/Lab/Library/ImageProcessing/DHALF.TXT
+
+# http://www.python.org/doc/2.4.4/lib/module-bisect.html
+from bisect import bisect_left
+
+import png
+
+def dither(out, inp,
+  bitdepth=1, linear=False, defaultgamma=1.0, targetgamma=None,
+  cutoff=0.75):
+    """Dither the input PNG `inp` into an image with a smaller bit depth
+    and write the result image onto `out`.  `bitdepth` specifies the bit
+    depth of the new image.
+    
+    Normally the source image gamma is honoured (the image is
+    converted into a linear light space before being dithered), but
+    if the `linear` argument is true then the image is treated as
+    being linear already: no gamma conversion is done (this is
+    quicker, and if you don't care much about accuracy, it won't
+    matter much).
+    
+    Images with no gamma indication (no ``gAMA`` chunk) are normally
+    treated as linear (gamma = 1.0), but often it can be better
+    to assume a different gamma value: For example continuous tone
+    photographs intended for presentation on the web often carry
+    an implicit assumption of being encoded with a gamma of about
+    0.45 (because that's what you get if you just "blat the pixels"
+    onto a PC framebuffer), so ``defaultgamma=0.45`` might be a
+    good idea.  `defaultgamma` does not override a gamma value
+    specified in the file itself: It is only used when the file
+    does not specify a gamma.
+
+    If you (pointlessly) specify both `linear` and `defaultgamma`,
+    `linear` wins.
+
+    The gamma of the output image is, by default, the same as the input
+    image.  The `targetgamma` argument can be used to specify a
+    different gamma for the output image.  This effectively recodes the
+    image to a different gamma, dithering as we go.  The gamma specified
+    is the exponent used to encode the output file (and appears in the
+    output PNG's ``gAMA`` chunk); it is usually less than 1.
+
+    """
+
+    # Encoding is what happened when the PNG was made (and also what
+    # happens when we output the PNG).  Decoding is what we do to the
+    # source PNG in order to process it.
+
+    # The dithering algorithm is not completely general; it
+    # can only do bit depth reduction, not arbitrary palette changes.
+    import operator
+    maxval = 2**bitdepth - 1
+    r = png.Reader(file=inp)
+    # If image gamma is 1 or gamma is not present and we are assuming a
+    # value of 1, then it is faster to pass a maxval parameter to
+    # asFloat (the multiplications get combined).  With gamma, we have
+    # to have the pixel values from 0.0 to 1.0 (as long as we are doing
+    # gamma correction here).
+    # Slightly annoyingly, we don't know the image gamma until we've
+    # called asFloat().
+    _,_,pixels,info = r.asDirect()
+    planes = info['planes']
+    assert planes == 1
+    width = info['size'][0]
+    sourcemaxval = 2**info['bitdepth'] - 1
+    if linear:
+        gamma = 1
+    else:
+        gamma = info.get('gamma') or defaultgamma
+    # Convert gamma from encoding gamma to the required power for
+    # decoding.
+    decode = 1.0/gamma
+    # Build a lookup table for decoding; convert from pixel values to linear
+    # space:
+    sourcef = 1.0/sourcemaxval
+    incode = map(sourcef.__mul__, range(sourcemaxval+1))
+    if decode != 1.0:
+        incode = map(decode.__rpow__, incode)
+    # Could be different, later on.  targetdecode is the assumed gamma
+    # that is going to be used to decoding the target PNG.  It is the
+    # reciprocal of the exponent that we use to encode the target PNG.
+    # This is the value that we need to build our table that we use for
+    # converting from linear to target colour space.
+    if targetgamma is None:
+        targetdecode = decode
+    else:
+        targetdecode = 1.0/targetgamma
+    # The table we use for encoding (creating the target PNG), still
+    # maps from pixel value to linear space, but we use it inverted, by
+    # searching through it with bisect.
+    targetf = 1.0/maxval
+    outcode = map(targetf.__mul__, range(maxval+1))
+    if targetdecode != 1.0:
+        outcode = map(targetdecode.__rpow__, outcode)
+    # The table used for choosing output codes.  These values represent
+    # the cutoff points between two adjacent output codes.
+    choosecode = zip(outcode[1:], outcode)
+    p = cutoff
+    choosecode = map(lambda x: x[0]*p+x[1]*(1.0-p), choosecode)
+    def iterdither():
+        # Errors diffused downwards (into next row)
+        ed = [0.0]*width
+        flipped = False
+        for row in pixels:
+            row = map(incode.__getitem__, row)
+            row = map(operator.add, ed, row)
+            if flipped:
+                row = row[::-1]
+            targetrow = [0] * width
+            for i,v in enumerate(row):
+                # Clamp.  Necessary because previously added errors may take
+                # v out of range.
+                v = max(0.0, min(v, 1.0))
+                # `it` will be the index of the chosen target colour;
+                it = bisect_left(choosecode, v)
+                t = outcode[it]
+                targetrow[i] = it
+                # err is the error that needs distributing.
+                err = v - t
+                # Sierra "Filter Lite" distributes          * 2
+                # as per this diagram.                    1 1
+                ef = err/2.0
+                # :todo: consider making rows one wider at each end and
+                # removing "if"s
+                if i+1 < width:
+                    row[i+1] += ef
+                ef /= 2.0
+                ed[i] = ef
+                if i:
+                    ed[i-1] += ef
+            if flipped:
+                ed = ed[::-1]
+                targetrow = targetrow[::-1]
+            yield targetrow
+            flipped = not flipped
+    info['bitdepth'] = bitdepth
+    info['gamma'] = 1.0/targetdecode
+    w = png.Writer(**info)
+    w.write(out, iterdither())
+
+
+def main(argv=None):
+    # http://www.python.org/doc/2.4.4/lib/module-getopt.html
+    from getopt import getopt
+    import sys
+    if argv is None:
+        argv = sys.argv
+    opt,argv = getopt(argv[1:], 'b:c:g:lo:')
+    k = {}
+    for o,v in opt:
+        if o == '-b':
+            k['bitdepth'] = int(v)
+        if o == '-c':
+            k['cutoff'] = float(v)
+        if o == '-g':
+            k['defaultgamma'] = float(v)
+        if o == '-l':
+            k['linear'] = True
+        if o == '-o':
+            k['targetgamma'] = float(v)
+        if o == '-?':
+            print >>sys.stderr, "pipdither [-b bits] [-c cutoff] [-g assumed-gamma] [-l] [in.png]"
+
+    if len(argv) > 0:
+        f = open(argv[0], 'rb')
+    else:
+        f = sys.stdin
+
+    return dither(sys.stdout, f, **k)
+
+
+if __name__ == '__main__':
+    main()

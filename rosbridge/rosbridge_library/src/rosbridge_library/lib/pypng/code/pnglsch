@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+# $URL$
+# $Rev$
+# pnglsch
+# PNG List Chunks
+
+import png
+
+def list(out, inp):
+    r = png.Reader(file=inp)
+    for t,v in r.chunks():
+        add = ''
+        if len(v) <= 28:
+            add = ' ' + v.encode('hex')
+        print >>out, "%s %10d%s" % (t, len(v), add)
+
+def main(argv=None):
+    import sys
+
+    if argv is None:
+        argv = sys.argv
+    arg = argv[1:]
+
+    if len(arg) > 0:
+        f = open(arg[0], 'rb')
+    else:
+        f = sys.stdin
+    return list(sys.stdout, f)
+
+if __name__ == '__main__':
+    main()

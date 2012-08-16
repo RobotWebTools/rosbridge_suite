@@ -1,0 +1,159 @@
+.. $URL$
+.. $Rev$
+
+How fast is PyPNG?
+==================
+
+This PyPNG Technical Report intends to give a rough idea of how fast
+PyPNG is and how aspects of its API and the PNG files affect its speed.
+
+General Notes
+-------------
+
+Although PyPNG is written in pure Python, and is therefore pretty slow,
+some of the heavy lifting is done by the ``zlib`` module.  The zlib module
+performs the compression/decompression of the PNG file and is written
+in C, and is fairly fast.  Because of this, some operations using PyPNG
+can be acceptably fast, but it is easy to do things which can make it
+much much slower.
+
+So far as is practical, PyPNG tries to avoid doing anything that would
+needlessly slow down the processing of a PNG file.  For example: it does
+not decode the entire image into memory if it does not need to; it
+handles entire rows at a time, not individual pixels; it does not leak
+precious bodily fluids.
+
+Decoding (reading) PNG files
+----------------------------
+
+In general you should use a streaming method for reading the data:
+:meth:`png.Reader.read`, :meth:`png.Reader.asDirect`,
+:meth:`png.Reader.asRGB`, and so on.  :meth:`png.Reader.read_flat` does
+not stream, it reads the entire image into a single array (and in a test
+with a 4 megapixel image, this took 80% longer.  The first run
+of this test, cold, was much longer; perhaps there is a allocation
+related start-up effect that makes it even worse).
+
+Unfortunately many of the remaining things that can cause major slowdown
+are features of the inputs PNG (and so may be out of your control):
+
+PNGs that use filtering
+  Factor of 4 to 9!
+Interlaced PNGs
+  Factor of 2.8.
+Repacking (for PNG with bitdepths less than 8)
+  Factor of 1.7.
+
+
+Filtering
+^^^^^^^^^
+
+One of the internal features of the PNG file format is filtering (see
+`the PNG spec for more details <http://www.w3.org/TR/PNG/#9Filters>`_).
+Prior to compression each row can be optionally filtered to try and
+improve its compressibility.  When decoding, each row has to be
+unfiltered after being decompressed.  In PyPNG the unfiltering is
+done in Python and is extremely slow.
+
+In a test, a 4 megapixel RGB test image with no filtering (filter type 0
+for each scanline) decoded in about 3.5 seconds.  The same image recoded
+to use a Paeth filter for each scanline
+(using Netpbm's ``pnmtopng -paeth``) decodes in about 32 seconds:
+9 times slower!
+
+Paeth is probably something of a worst case when it comes to
+filtering, the other filter types are not as slow to unfilter.  Typically
+a file will use a mixture of filter types.  For example, the same
+image was resaved using Apple's Preview tool on OS X (Preview
+probably uses a derived version of ``libpng`` and probably uses one of
+its filter heuristics for choosing filters).  This test image decodes
+in about 14 seconds.  About 4 times slower.
+
+If you have any choice in the matter, and you want PyPNG to go quickly,
+do not filter your PNG images when saving them.  PyPNG does not filter
+its images when saving them, and offers no options to enable filtering.
+Enabling filtering can make the output file smaller, but even if PyPNG
+were to offer filtering at some later date, it would not be the default
+because it would slow down workflows using PyPNG too much.
+
+Interlacing
+^^^^^^^^^^^
+
+PNG supports an *interlace* feature; the pixels of an interlaced PNG do
+not appear in the file in the same order that they appear in the image
+(this feature supports progressive display whilst downloading over a
+slow connexion).  PyPNG has to do more
+work to reassemble the pixels in the correct order.  In one test, the 4
+megapixel RGB test image took about 9.9 seconds to decode when
+interlaced, about 3.5 when not interlaced.  About 2.8 times slower.
+
+Repacking
+^^^^^^^^^
+
+Repacking happens when pixel data has to be unpacked to fit into a
+Python array.  It will happen for 1-,2-, and 4-bit PNG files because in
+that case the PNG file stores multiple pixels per byte and in Python
+each pixel is unpacked into its own value (the value is usually stored
+in a byte in a byte array).
+
+A test with a 4 megapixel 2-bit greyscale image decoded in about 5.6
+seconds; the same image saved as an 8-bit image decoded in about 3.3
+seconds.  Unpacking the 2-bit data took about 72% longer.
+
+Channel Extraction
+^^^^^^^^^^^^^^^^^^
+
+It's worth mentioning a Python trick to do channel extraction: slicing.
+Say we are trying to extract the alpha channel from an RGBA PNG file.
+If ``row`` is a single row in boxed row flat pixel format, then
+``row[3::4]`` is the alpha channel for this row.
+
+Here's an example: ::
+
+  for row in png.Reader('testRGBA.png').asDirect()[2]:
+      row[3::4].tofile(rawfile)
+
+This write out the alpha channel of the file ``testRGBA.png`` to the file
+``rawfile`` (the alpha channel is written out as a raw sequence of
+bytes).  This code is a little bit naughty, it assumes that each row is
+a Python ``array.array`` instance.  Whilst this is not documented, it's
+too useful to not rely on, so I'll probably document that rows are
+``array.array`` instances.
+
+With a 4 megapixel test image the above code runs in about 4.5 seconds
+on my machine.  Using the slice notation for extracting the channel is
+essentially free: changing the code to write out all the channels (by
+replacing ``row[3::4].tofile`` with ``row.tofile``) makes it run in
+about 4.6 seconds.  Even though we do more copying and allocation when
+we do the channel extraction, the smaller volume of data we handle makes
+up for it.
+
+We can use NetPBM's pngtopam tool to do the same job, but this time
+everything happens in compiled C code.  A test using NetPBM
+extracts the alpha channel to a file in about 0.44 seconds.  So
+PyPNG is about 10 times slower.
+
+Channel Synthesis
+^^^^^^^^^^^^^^^^^
+
+If you use the :meth:`asRGBA` method to ask for 4 channels and the
+source PNG file has only 3 (RGB) then the alpha channel needs to be
+synthesized in Python code.  This takes a small amount of time.
+For a 4 megapixel RGB test image, :meth:`asRGB` took about 3.5
+seconds, whereas :meth:`asRGBA` took about 4.3 seconds, about 22%
+longer.
+
+Similar the :meth:`asRGB` method when used on a greyscale PNG will
+duplicate the grey channel 3 times to produce colour data.  A 4
+megapixel grey test image decoded in about 2.2 seconds using
+:meth`asDirect` (grey data), and about 2.6 seconds using :meth:`asRGB`: 
+20% longer.
+
+Another time when the alpha channel is synthesized is when a ``tRNS``
+chunk is used for "1-bit" alpha (in type 2 and 4 PNGs).  For a 4
+megapixel RGB test image with a ``tRNS`` chunk, :meth:`asDirect` took
+about 12 seconds (computing the alpha channel); :meth:`read` took
+about 3.6 seconds (raw RGB values, effectively ignoring the ``tRNS``
+chunk).  About 3.4 times slower.  If anyone is sufficiently motivated,
+computing the alpha channel from the ``tRNS`` chunk could probably be
+made faster.

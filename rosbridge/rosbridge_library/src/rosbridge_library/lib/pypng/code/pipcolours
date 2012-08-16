@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+# $URL$
+# $Rev$
+
+# pipcolours - extract all colours present in source image.
+
+def colours(out, inp):
+    import itertools
+    import png
+
+    r = png.Reader(file=inp)
+    _,_,pixels,info = r.asDirect()
+    planes = info['planes']
+    col = set()
+    for row in pixels:
+        # Ewgh, side effects on col
+        map(col.add, png.group(row, planes))
+    col,planes = channel_reduce(col, planes)
+    col = list(col)
+    col.sort()
+    col = list(itertools.chain(*col))
+    width = len(col)//planes
+    greyscale = planes in (1,2)
+    alpha = planes in (2,4)
+    bitdepth = info['bitdepth']
+    w = png.Writer(width, 1,
+        bitdepth=bitdepth, greyscale=greyscale, alpha=alpha)
+    w.write(out, [col])
+
+def channel_reduce(col, planes):
+    """Attempt to reduce the number of channels in the set of
+    colours."""
+    if planes >= 3:
+        def isgrey(c):
+            return c[0] == c[1] == c[2]
+        if min(map(isgrey, col)) == True:
+            # Every colour is grey.
+            col = set(map(lambda x: x[0::3], col))
+            planes -= 2
+    return col,planes
+
+def main(argv=None):
+    import sys
+
+    if argv is None:
+        argv = sys.argv
+
+    argv = argv[1:]
+    if len(argv) > 0:
+        f = open(argv[0], 'rb')
+    else:
+        f = sys.stdin
+    return colours(sys.stdout, f)
+
+if __name__ == '__main__':
+    main()

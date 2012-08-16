@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+# $URL$
+# $Rev$
+
+# pipasgrey
+
+# Convert image to grey (L, or LA), but only if that involves no colour
+# change.
+
+def asgrey(out, inp, quiet=False):
+    """Convert image to greyscale, but only when no colour change.  This
+    works by using the input G channel (green) as the output L channel
+    (luminance) and checking that every pixel is grey as we go.  A non-grey
+    pixel will raise an error, but if `quiet` is true then the grey pixel
+    check is suppressed.
+    """
+
+    from array import array
+
+    import png
+
+    r = png.Reader(file=inp)
+    _,_,pixels,info = r.asDirect()
+    if info['greyscale']:
+        w = png.Writer(**info)
+        return w.write(out, pixels)
+    planes = info['planes']
+    targetplanes = planes - 2
+    alpha = info['alpha']
+    width = info['size'][0]
+    typecode = 'BH'[info['bitdepth'] > 8]
+    # Values per target row
+    vpr = width * (targetplanes)
+    def iterasgrey():
+        for i,row in enumerate(pixels):
+            row = array(typecode, row)
+            targetrow = array(typecode, [0]*vpr)
+            # Copy G (and possibly A) channel.
+            green = row[0::planes]
+            if alpha:
+                targetrow[0::2] = green
+                targetrow[1::2] = row[3::4]
+            else:
+                targetrow = green
+            # Check R and B channel match.
+            if not quiet and (
+              green != row[0::planes] or green != row[2::planes]):
+                raise ValueError('Row %i contains non-grey pixel.' % i)
+            yield targetrow
+    info['greyscale'] = True
+    del info['planes']
+    w = png.Writer(**info)
+    w.write(out, iterasgrey())
+
+def main(argv=None):
+    from getopt import getopt
+    import sys
+    if argv is None:
+        argv = sys.argv
+    argv = argv[1:]
+    opt,argv = getopt(argv, 'q')
+    quiet = False
+    for o,v in opt:
+        if o == '-q':
+            quiet = True
+    if len(argv) > 0:
+        f = open(argv[0], 'rb')
+    else:
+        f = sys.stdin
+    return asgrey(sys.stdout, f, quiet)
+
+if __name__ == '__main__':
+    main()

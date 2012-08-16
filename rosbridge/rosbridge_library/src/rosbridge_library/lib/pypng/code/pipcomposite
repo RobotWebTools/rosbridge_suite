@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+# $URL$
+# $Rev$
+# pipcomposite
+# Image alpha compositing.
+
+"""
+pipcomposite [--background #rrggbb] file.png
+
+Composite an image onto a background and output the result.  The
+background colour is specified with an HTML-style triple (3, 6, or 12
+hex digits), and defaults to black (#000).
+
+The output PNG has no alpha channel.
+
+It is valid for the input to have no alpha channel, but it doesn't
+make much sense: the output will equal the input.
+"""
+
+import sys
+
+def composite(out, inp, background):
+    import png
+
+    p = png.Reader(file=inp)
+    w,h,pixel,info = p.asRGBA()
+
+    outinfo = dict(info)
+    outinfo['alpha'] = False
+    outinfo['planes'] -= 1
+    outinfo['interlace'] = 0
+
+    # Convert to tuple and normalise to same range as source.
+    background = rgbhex(background)
+    maxval = float(2**info['bitdepth'] - 1)
+    background = map(lambda x: int(0.5 + x*maxval/65535.0),
+                     background)
+    # Repeat background so that it's a whole row of sample values.
+    background *= w
+
+    def iterrow():
+        for row in pixel:
+            # Remove alpha from row, then create a list with one alpha
+            # entry _per channel value_.
+            # Squirrel the alpha channel away (and normalise it).
+            t = map(lambda x: x/maxval, row[3::4])
+            row = list(row)
+            del row[3::4]
+            alpha = row[:]
+            for i in range(3):
+                alpha[i::3] = t
+            assert len(alpha) == len(row) == len(background)
+            yield map(lambda a,v,b: int(0.5 + a*v + (1.0-a)*b),
+                      alpha, row, background)
+
+    w = png.Writer(**outinfo)
+    w.write(out, iterrow())
+
+def rgbhex(s):
+    """Take an HTML style string of the form "#rrggbb" and return a
+    colour (R,G,B) triple.  Following the initial '#' there can be 3, 6,
+    or 12 digits (for 4-, 8- or 16- bits per channel).  In all cases the
+    values are expanded to a full 16-bit range, so the returned values
+    are all in range(65536).
+    """
+
+    assert s[0] == '#'
+    s = s[1:]
+    assert len(s) in (3,6,12)
+
+    # Create a target list of length 12, and expand the string s to make
+    # it length 12.
+    l = ['z']*12
+    if len(s) == 3:
+        for i in range(4):
+            l[i::4] = s
+    if len(s) == 6:
+        for i in range(2):
+            l[i::4] = s[i::2]
+            l[i+2::4] = s[i::2]
+    if len(s) == 12:
+        l[:] = s
+    s = ''.join(l)
+    return map(lambda x: int(x, 16), (s[:4], s[4:8], s[8:]))
+
+class Usage(Exception):
+    pass
+
+def main(argv=None):
+    import getopt
+    import sys
+
+    if argv is None:
+        argv = sys.argv
+
+    argv = argv[1:]
+
+    try:
+        try:
+            opt,arg = getopt.getopt(argv, '',
+                                    ['background='])
+        except getopt.error, msg:
+            raise Usage(msg)
+        background = '#000'
+        for o,v in opt:
+            if o in ['--background']:
+                background = v
+    except Usage, err:
+        print >>sys.stderr, __doc__
+        print >>sys.stderr, str(err)
+        return 2
+
+    if len(arg) > 0:
+        f = open(arg[0], 'rb')
+    else:
+        f = sys.stdin
+    return composite(sys.stdout, f, background)
+
+
+if __name__ == '__main__':
+    main()

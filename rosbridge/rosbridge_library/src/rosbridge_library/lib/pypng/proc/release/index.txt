@@ -1,0 +1,73 @@
+.. $URL$
+.. $Rev$
+
+Release Procedure
+=================
+
+Extremely draft.
+
+At top-level...
+
+Edit ``setup.py`` for new version number.  Then ``svn commit`` this.
+
+Get release notes into ``README.txt`` somehow.
+
+Get the latest svn change number::
+
+  svn st -u | tail -1
+
+(this is called *CHANGE* below)
+
+Change to a directory where you can checkout a fresh copy of the sources
+into a subdirectory.  You can delete it later if you want.
+
+Checkout the particular revision of the source::
+
+  svn co -r CHANGE http://pypng.googlecode.com/svn/trunk/ pypng-X.Y.Z
+
+cd into that subdirectory:
+
+  cd pypng-X.Y.Z
+  
+Build the documentation (you will need sphinx installed)::
+
+  python build.py
+
+Make source distribution using Python distutils::
+
+  python setup.py sdist -f
+
+The ``-f`` option is essential, it prevents ``sdist`` from copying the wrong
+set of files.  Without ``-f`` ``sdist`` will examine the ``MANIFEST`` file
+which may be out of date.
+
+It's possible at this point that you might want to smoke-test the actual
+release binary.  Let's assume that the release binary is good to go.
+
+Move the dist binary that ``sdist`` just created, back into your main
+development directory::
+
+  mv dist/pypng-X.Y.Z.tar.gz ../pypng/dist
+
+Create a zip for the documentation:
+
+  cd html
+  zip -r ../pypng-X.Y.Z-doc.zip .
+
+Login to PyPI and go to "pypng" on the "Your packages" display.  Upload
+documentation zip file. (Often doesn't work, because of buggy server.)
+
+Upload to PyPI:
+
+  python setup.py sdist upload
+
+(If it complains about "you must be identified" then use
+"python setup.py register" first)
+
+cd back into your main development directory::
+
+  cd ../pypng
+
+Make a record in ``release/index.txt``
+
+Upload ``dist/pypng-X.Y.Z.tar.gz`` to google code.

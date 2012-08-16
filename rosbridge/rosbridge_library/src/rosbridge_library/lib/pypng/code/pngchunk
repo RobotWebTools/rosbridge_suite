@@ -1,0 +1,172 @@
+#!/usr/bin/env python
+# $URL$
+# $Rev$
+# pngchunk
+# Chunk editing/extraction tool.
+
+import struct
+import warnings
+
+# Local module.
+import png
+
+"""
+pngchunk [--gamma g] [--iccprofile file] [--sigbit b] [-c cHNK!] [-c cHNK:foo] [-c cHNK<file]
+
+The ``-c`` option is used to add or remove chunks.  A chunk is specified
+by its 4 byte chunk type.  If this is followed by a ``!`` then that
+chunk is removed from the PNG file.  If the chunk type is followed by a
+``:`` then the chunk is replaced with the contents of the rest of the
+argument (this is probably only useful if the content is mostly ASCII,
+otherwise it's a pain to quote the contents, otherwise see...).  A ``<``
+can be used to take the contents of the chunk from the named file.
+"""
+
+
+def chunk(out, inp, l):
+    """Process the input PNG file to the output, chunk by chunk.  Chunks
+    can be inserted, removed, replaced, or sometimes edited.  Generally, 
+    chunks are not inspected, so pixel data (in the ``IDAT`` chunks)
+    cannot be modified.  `l` should be a list of (*chunktype*,
+    *content*) pairs.  *chunktype* is usually the type of the PNG chunk,
+    specified as a 4-byte Python string, and *content* is the chunk's
+    content, also as a string; if *content* is ``None`` then *all*
+    chunks of that type will be removed.
+
+    This function *knows* about certain chunk types and will
+    automatically convert from Python friendly representations to
+    string-of-bytes.
+
+    chunktype
+    'gamma'     'gAMA'  float
+    'sigbit'    'sBIT'  int, or tuple of length 1,2 or 3
+
+    Note that the length of the strings used to identify *friendly*
+    chunk types is greater than 4, hence they cannot be confused with
+    canonical chunk types.
+
+    Chunk types, if specified using the 4-byte syntax, need not be
+    official PNG chunks at all.  Non-standard chunks can be created.
+    """
+
+    def canonical(p):
+        """Take a pair (*chunktype*, *content*), and return canonical
+        representation (*chunktype*, *content*) where `chunktype` is the
+        4-byte PNG chunk type and `content` is a string.
+        """
+
+        t,v = p
+        if len(t) == 4:
+            return t,v
+        if t == 'gamma':
+            t = 'gAMA'
+            v = int(round(1e5*v))
+            v = struct.pack('>I', v)
+        elif t == 'sigbit':
+            t = 'sBIT'
+            try:
+                v[0]
+            except TypeError:
+                v = (v,)
+            v = struct.pack('%dB' % len(v), *v)
+        elif t == 'iccprofile':
+            t = 'iCCP'
+            # http://www.w3.org/TR/PNG/#11iCCP
+            v = 'a color profile\x00\x00' + v.encode('zip')
+        else:
+            warnings.warn('Unknown chunk type %r' % t)
+        return t[:4],v
+
+    l = map(canonical, l)
+    # Some chunks automagically replace ones that are present in the
+    # source PNG.  There can only be one of each of these chunk types.
+    # Create a 'replace' dictionary to record these chunks.
+    add = []
+    delete = set()
+    replacing = set(['gAMA', 'sBIT', 'PLTE', 'tRNS', 'sPLT', 'IHDR'])
+    replace = dict()
+    for t,v in l:
+        if v is None:
+            delete.add(t)
+        elif t in replacing:
+            replace[t] = v
+        else:
+            add.append((t,v))
+    del l
+    r = png.Reader(file=inp)
+    chunks = r.chunks()
+    def iterchunks():
+        for t,v in chunks:
+            if t in delete:
+                continue
+            if t in replace:
+                yield t,replace[t]
+                del replace[t]
+                continue
+            if t == 'IDAT' and replace:
+                # Insert into the output any chunks that are on the
+                # replace list.  We haven't output them yet, because we
+                # didn't see an original chunk of the same type to
+                # replace.  Thus the "replace" is actually an "insert".
+                for u,w in replace.items():
+                    yield u,w
+                    del replace[u]
+            if t == 'IDAT' and add:
+                for item in add:
+                    yield item
+                del add[:]
+            yield t,v
+    return png.write_chunks(out, iterchunks())
+
+class Usage(Exception):
+    pass
+
+def main(argv=None):
+    import getopt
+    import re
+    import sys
+
+    if argv is None:
+        argv = sys.argv
+
+    argv = argv[1:]
+
+    try:
+        try:
+            opt,arg = getopt.getopt(argv, 'c:',
+                                    ['gamma=', 'iccprofile=', 'sigbit='])
+        except getopt.error, msg:
+            raise Usage(msg)
+        k = []
+        for o,v in opt:
+            if o in ['--gamma']:
+                k.append(('gamma', float(v)))
+            if o in ['--sigbit']:
+                k.append(('sigbit', int(v)))
+            if o in ['--iccprofile']:
+                k.append(('iccprofile', open(v, 'rb').read()))
+            if o in ['-c']:
+                type = v[:4]
+                if not re.match('[a-zA-Z]{4}', type):
+                    raise Usage('Chunk type must consist of 4 letters.')
+                if v[4] == '!':
+                    k.append((type, None))
+                if v[4] == ':':
+                    k.append((type, v[5:]))
+                if v[4] == '<':
+                    k.append((type, open(v[5:], 'rb').read()))
+    except Usage, err:
+        print >>sys.stderr, (
+          "usage: pngchunk [--gamma d.dd] [--sigbit b] [-c cHNK! | -c cHNK:text-string]")
+        print >>sys.stderr, err.message
+        return 2
+
+    if len(arg) > 0:
+        f = open(arg[0], 'rb')
+    else:
+        f = sys.stdin
+    return chunk(sys.stdout, f, k)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+# $URL$
+# $Rev$
+
+# pipwindow
+# Tool to crop/expand an image to a rectangular window.  Come the
+# revolution this tool will allow the image and the window to be placed
+# arbitrarily (in particular the window can be bigger than the picture
+# and/or overlap it only partially) and the image can be OpenGL style
+# border/repeat effects (repeat, mirrored repeat, clamp, fixed
+# background colour, background colour from source file).  For now it
+# only acts as crop.  The window must be no greater than the image in
+# both x and y.
+
+def window(tl, br, inp, out):
+    """Place a window onto the image and cut-out the resulting
+    rectangle.  The window is an axis aligned rectangle opposite corners
+    at *tl* and *br* (each being an (x,y) pair). *inp* specifies the
+    input file which should be a PNG image.
+    """
+
+    import png
+
+    r = png.Reader(file=inp)
+    x,y,pixels,meta = r.asDirect()
+    if not (0 <= tl[0] < br[0] <= x):
+        raise NotImplementedError()
+    if not (0 <= tl[1] < br[1] <= y):
+        raise NotImplementedError()
+    # Compute left and right bounds for each row
+    l = tl[0] * meta['planes']
+    r = br[0] * meta['planes']
+    def itercrop():
+        """An iterator to perform the crop."""
+
+        for i,row in enumerate(pixels):
+            if i < tl[1]:
+                continue
+            if i >= br[1]:
+                # Same as "raise StopIteration"
+                return
+            yield row[l:r]
+    meta['size'] = (br[0]-tl[0], br[1]-tl[1])
+    w = png.Writer(**meta)
+    w.write(out, itercrop())
+
+def main(argv=None):
+    import sys
+
+    if argv is None:
+        argv = sys.argv
+    argv = argv[1:]
+
+    tl = (0,0)
+    br = tuple(map(int, argv[:2]))
+    if len(argv) >= 4:
+        tl = br
+        br = tuple(map(int, argv[2:4]))
+    if len(argv) in (2, 4):
+        f = sys.stdin
+    else:
+        f = open(argv[-1], 'rb')
+
+    return window(tl, br, f, sys.stdout)
+
+if __name__ == '__main__':
+    main()

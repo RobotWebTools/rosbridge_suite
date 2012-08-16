@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+# $URL$
+# $Rev$
+
+# pipscalez
+# Enlarge an image by an integer factor horizontally and vertically.
+
+def rescale(inp, out, xf, yf):
+    from array import array
+    import png
+
+    r = png.Reader(file=inp)
+    _,_,pixels,meta = r.asDirect()
+    typecode = 'BH'[meta['bitdepth'] > 8]
+    planes = meta['planes']
+    # We are going to use meta in the call to Writer, so expand the
+    # size.
+    x,y = meta['size']
+    x *= xf
+    y *= yf
+    meta['size'] = (x,y)
+    del x
+    del y
+    # Values per row, target row.
+    vpr = meta['size'][0] * planes
+    def iterscale():
+        for row in pixels:
+            bigrow = array(typecode, [0]*vpr)
+            row = array(typecode, row)
+            for c in range(planes):
+                channel = row[c::planes]
+                for i in range(xf):
+                    bigrow[i*planes+c::xf*planes] = channel
+            for _ in range(yf):
+                yield bigrow
+    w = png.Writer(**meta)
+    w.write(out, iterscale())
+
+
+def main(argv=None):
+    import sys
+
+    if argv is None:
+        argv = sys.argv
+    xf = int(argv[1])
+    if len(argv) > 2:
+        yf = int(argv[2])
+    else:
+        yf = xf
+    return rescale(sys.stdin, sys.stdout, xf, yf)
+
+if __name__ == '__main__':
+    main()

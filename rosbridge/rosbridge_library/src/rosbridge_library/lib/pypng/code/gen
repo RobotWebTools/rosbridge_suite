@@ -1,0 +1,240 @@
+#!/usr/bin/env python
+# gen
+
+"""gen [options] [pngsuitename]
+
+Generate a PNG test image on stdout.
+"""
+
+from array import array
+import itertools
+import math
+import sys
+
+import png
+
+def generate(options, args):
+    """
+    Create a PNG test image and write the file to stdout.
+    """
+
+    import re
+
+    # Below is a big stack of test image generators.
+    # They're all really tiny, so PEP 8 rules are suspended.
+
+    def test_gradient_horizontal_lr(x, y): return x
+    def test_gradient_horizontal_rl(x, y): return 1-x
+    def test_gradient_vertical_tb(x, y): return y
+    def test_gradient_vertical_bt(x, y): return 1-y
+    def test_radial_tl(x, y): return max(1-math.sqrt(x*x+y*y), 0.0)
+    def test_radial_center(x, y): return test_radial_tl(x-0.5, y-0.5)
+    def test_radial_tr(x, y): return test_radial_tl(1-x, y)
+    def test_radial_bl(x, y): return test_radial_tl(x, 1-y)
+    def test_radial_br(x, y): return test_radial_tl(1-x, 1-y)
+    def test_stripe(x, n): return float(int(x*n) & 1)
+    def test_stripe_h_2(x, y): return test_stripe(x, 2)
+    def test_stripe_h_4(x, y): return test_stripe(x, 4)
+    def test_stripe_h_10(x, y): return test_stripe(x, 10)
+    def test_stripe_v_2(x, y): return test_stripe(y, 2)
+    def test_stripe_v_4(x, y): return test_stripe(y, 4)
+    def test_stripe_v_10(x, y): return test_stripe(y, 10)
+    def test_stripe_lr_10(x, y): return test_stripe(x+y, 10)
+    def test_stripe_rl_10(x, y): return test_stripe(1+x-y, 10)
+    def test_checker(x, y, n): return float((int(x*n) & 1) ^ (int(y*n) & 1))
+    def test_checker_8(x, y): return test_checker(x, y, 8)
+    def test_checker_15(x, y): return test_checker(x, y, 15)
+    def test_zero(x, y): return 0
+    def test_one(x, y): return 1
+
+    test_patterns = {
+        'GLR': test_gradient_horizontal_lr,
+        'GRL': test_gradient_horizontal_rl,
+        'GTB': test_gradient_vertical_tb,
+        'GBT': test_gradient_vertical_bt,
+        'RTL': test_radial_tl,
+        'RTR': test_radial_tr,
+        'RBL': test_radial_bl,
+        'RBR': test_radial_br,
+        'RCTR': test_radial_center,
+        'HS2': test_stripe_h_2,
+        'HS4': test_stripe_h_4,
+        'HS10': test_stripe_h_10,
+        'VS2': test_stripe_v_2,
+        'VS4': test_stripe_v_4,
+        'VS10': test_stripe_v_10,
+        'LRS': test_stripe_lr_10,
+        'RLS': test_stripe_rl_10,
+        'CK8': test_checker_8,
+        'CK15': test_checker_15,
+        'ZERO': test_zero,
+        'ONE': test_one,
+        }
+
+    def test_pattern(width, height, bitdepth, pattern):
+        """Create a single plane (monochrome) test pattern.  Returns a
+        flat row flat pixel array.
+        """
+
+        maxval = 2**bitdepth-1
+        if maxval > 255:
+            a = array('H')
+        else:
+            a = array('B')
+        fw = float(width)
+        fh = float(height)
+        pfun = test_patterns[pattern]
+        for y in range(height):
+            fy = float(y)/fh
+            for x in range(width):
+                a.append(int(round(pfun(float(x)/fw, fy) * maxval)))
+        return a
+
+    def test_rgba(size=(256,256), bitdepth=8,
+                  red=None, green=None, blue=None, alpha=None):
+        """
+        Create a test image.  Each channel is generated from the
+        specified pattern; any channel apart from red can be set to
+        None, which will cause it not to be in the image.  It
+        is possible to create all PNG channel types (L, RGB, LA, RGBA),
+        as well as non PNG channel types (RGA, and so on).
+        *size* is a pair: (*width*,*height).
+        """
+
+        i = test_pattern(size[0], size[1], bitdepth, red)
+        psize = 1
+        for channel in (green, blue, alpha):
+            if channel:
+                c = test_pattern(size[0], size[1], bitdepth, channel)
+                i = png.interleave_planes(i, c, psize, 1)
+                psize += 1
+        return i
+
+    def pngsuite_image(name):
+        """
+        Create a test image by reading an internal copy of the files
+        from the PngSuite.  Returned in flat row flat pixel format.
+        """
+
+        if name not in png._pngsuite:
+            raise NotImplementedError("cannot find PngSuite file %s (use -L for a list)" % name)
+        r = png.Reader(bytes=png._pngsuite[name])
+        w,h,pixels,meta = r.asDirect()
+        # LAn for n < 8 is a special case for which we need to rescale
+        # the data.
+        if meta['greyscale'] and meta['alpha'] and meta['bitdepth'] < 8:
+            factor = 255 // (2**meta['bitdepth']-1)
+            def rescale(data):
+                for row in data:
+                    yield map(factor.__mul__, row)
+            pixels = rescale(pixels)
+            meta['bitdepth'] = 8
+        arraycode = 'BH'[meta['bitdepth']>8]
+        return w, h, array(arraycode, itertools.chain(*pixels)), meta
+
+    # The body of test_suite()
+
+    size = (256,256)
+    # Expect option of the form '64,40'.
+    if options.size:
+        size = re.findall(r'\d+', options.size)
+        if len(size) not in [1,2]:
+            raise ValueError(
+              'size should be one or two numbers, separated by punctuation')
+        if len(size) == 1:
+            size *= 2
+        assert len(size) == 2
+        size = map(int, size)
+    options.bitdepth = options.depth
+    options.greyscale=bool(options.black)
+
+    kwargs = {}
+    if options.red:
+        kwargs["red"] = options.red
+    if options.green:
+        kwargs["green"] = options.green
+    if options.blue:
+        kwargs["blue"] = options.blue
+    if options.alpha:
+        kwargs["alpha"] = options.alpha
+    if options.greyscale:
+        if options.red or options.green or options.blue:
+            raise ValueError("cannot specify colours (R, G, B) when greyscale image (black channel, K) is specified")
+        kwargs["red"] = options.black
+        kwargs["green"] = None
+        kwargs["blue"] = None
+    options.alpha = bool(options.alpha)
+    if not args:
+        pixels = test_rgba(size, options.bitdepth, **kwargs)
+    else:
+        w,h,pixels,meta = pngsuite_image(args[0])
+        size = (w,h)
+        for k in ['bitdepth', 'alpha', 'greyscale']:
+            setattr(options, k, meta[k])
+
+    writer = png.Writer(size[0], size[1],
+                    bitdepth=options.bitdepth,
+                    transparent=options.transparent,
+                    background=options.background,
+                    gamma=options.gamma,
+                    greyscale=options.greyscale,
+                    alpha=options.alpha,
+                    compression=options.compression,
+                    interlace=options.interlace)
+    writer.write_array(sys.stdout, pixels)
+
+def main(argv=None):
+    import sys
+    if argv is None:
+        argv = sys.argv
+    from optparse import OptionParser
+    import re
+    parser = OptionParser()
+
+    parser.add_option('-L', '--list',
+                      default=False, action='store_true',
+                      help="print list of named test images")
+    parser.add_option("-R", "--red",
+                      action="store", type="string", metavar="pattern",
+                      help="test pattern for the red image layer")
+    parser.add_option("-G", "--green",
+                      action="store", type="string", metavar="pattern",
+                      help="test pattern for the green image layer")
+    parser.add_option("-B", "--blue",
+                      action="store", type="string", metavar="pattern",
+                      help="test pattern for the blue image layer")
+    parser.add_option("-A", "--alpha",
+                      action="store", type="string", metavar="pattern",
+                      help="test pattern for the alpha image layer")
+    parser.add_option("-K", "--black",
+                      action="store", type="string", metavar="pattern",
+                      help="test pattern for greyscale image")
+    parser.add_option("-d", "--depth",
+                      default=8, action="store", type="int",
+                      metavar='NBITS',
+                      help="create test PNGs that are NBITS bits per channel")
+    parser.add_option("-S", "--size",
+                      action="store", type="string", metavar="w[,h]",
+                      help="width and height of the test image")
+    png._add_common_options(parser)
+
+    (options, args) = parser.parse_args(args=argv[1:])
+
+    if options.list:
+        names = list(png._pngsuite)
+        names.sort()
+        for name in names:
+            print name
+        return
+
+    # Convert options
+    if options.transparent is not None:
+        options.transparent = color_triple(options.transparent)
+    if options.background is not None:
+        options.background = color_triple(options.background)
+
+    generate(options, args)
+
+
+if __name__ == '__main__':
+    main()

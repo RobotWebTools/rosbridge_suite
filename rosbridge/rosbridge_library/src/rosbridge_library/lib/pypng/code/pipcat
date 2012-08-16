@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+# $URL$
+# $Rev$
+
+# http://www.python.org/doc/2.4.4/lib/module-itertools.html
+import itertools
+import sys
+
+import png
+
+def cat(out, l):
+    """Concatenate the list of images.  All input images must be same
+    height and have the same number of channels.  They are concatenated
+    left-to-right.  `out` is the (open file) destination for the
+    output image.  `l` should be a list of open files (the input
+    image files).
+    """
+
+    l = map(lambda f: png.Reader(file=f), l)
+    # Ewgh, side effects.
+    map(lambda r: r.preamble(), l)
+    # The reference height; from the first image.
+    height = l[0].height
+    # The total target width
+    width = 0
+    for i,r in enumerate(l):
+        if r.height != height:
+            raise Error('Image %d, height %d, does not match %d.' %
+              (i, r.height, height))
+        width += r.width
+    pixel,info = zip(*map(lambda r: r.asDirect()[2:4], l))
+    tinfo = dict(info[0])
+    del tinfo['size']
+    w = png.Writer(width, height, **tinfo)
+    def itercat():
+        for row in itertools.izip(*pixel):
+            yield itertools.chain(*row)
+    w.write(out, itercat())
+
+def main(argv):
+    return cat(sys.stdout, map(lambda n: open(n, 'rb'), argv[1:]))
+
+if __name__ == '__main__':
+    main(sys.argv)

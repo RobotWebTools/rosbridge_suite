@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+# $URL$
+# $Rev$
+# PDS Image to PNG
+
+import re
+import struct
+
+import png
+
+class FormatError(Exception):
+    pass
+
+def pdskey(s, k):
+    """Lookup key `k` in string `s`.  Returns value (as a string), or
+    raises exception if not found.
+    """
+
+    assert re.match(r' *\^?[:\w]+$', k)
+    safere = '^' + re.escape(k) +r' *= *(\w+)'
+    m = re.search(safere, s, re.MULTILINE)
+    if not m:
+        raise FormatError("Can't find %s." % k)
+    return m.group(1)
+
+def img(inp):
+    """Open the PDS IMG file `inp` and return (*pixels*, *info*).
+    *pixels* is an iterator over the rows, *info* is the information
+    dictionary.
+    """
+
+    err = __import__('sys').stderr
+
+    consumed = 1024
+
+    s = inp.read(consumed)
+    record_type = pdskey(s, 'RECORD_TYPE')
+    if record_type != 'FIXED_LENGTH':
+        raise FormatError(
+          "Can only deal with FIXED_LENGTH record type (found %s)" %
+            record_type)
+    record_bytes = int(pdskey(s,'RECORD_BYTES'))
+    file_records = int(pdskey(s, 'FILE_RECORDS'))
+    label_records = int(pdskey(s, 'LABEL_RECORDS'))
+    remaining = label_records * record_bytes - consumed
+    s += inp.read(remaining)
+    consumed += remaining
+
+    image_pointer = int(pdskey(s, '^IMAGE'))
+    # "^IMAGE" locates a record.  Records are numbered starting from 1.
+    image_index = image_pointer - 1
+    image_offset = image_index * record_bytes
+    gap = image_offset - consumed
+    assert gap >= 0
+    if gap:
+        inp.read(gap)
+    # This assumes there is only one OBJECT in the file, and it is the
+    # IMAGE.
+    height = int(pdskey(s, '  LINES'))
+    width = int(pdskey(s, '  LINE_SAMPLES'))
+    sample_type = pdskey(s, '  SAMPLE_TYPE')
+    sample_bits = int(pdskey(s, '  SAMPLE_BITS'))
+    # For Messenger MDIS, SAMPLE_BITS is reported as 16, but only values
+    # from 0 ot 4095 are used.
+    bitdepth = 12
+    if sample_type == 'MSB_UNSIGNED_INTEGER':
+        fmt = '>H'
+    else:
+        raise 'Unknown sample type: %s.' % sample_type
+    sample_bytes = (1,2)[bitdepth > 8]
+    row_bytes = sample_bytes * width
+    fmt = fmt[:1] + str(width) + fmt[1:]
+    def rowiter():
+        for y in range(height):
+            yield struct.unpack(fmt, inp.read(row_bytes))
+    info = dict(greyscale=True, alpha=False, bitdepth=bitdepth,
+      size=(width,height), gamma=1.0)
+    return rowiter(), info
+
+
+def main(argv=None):
+    import sys
+
+    if argv is None:
+        argv = sys.argv
+    argv = argv[1:]
+    arg = argv
+    if len(arg) >= 1:
+        f = open(arg[0], 'rb')
+    else:
+        f = sys.stdin
+    pixels,info = img(f)
+    w = png.Writer(**info)
+    w.write(sys.stdout, pixels)
+
+if __name__ == '__main__':
+    main()
+
+

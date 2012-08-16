@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+# $URL$
+# $Rev$
+# piprgb
+#
+# Convert input image to RGB or RGBA format.  Output will be colour type
+# 2 or 6, and will not have a tRNS chunk.
+
+import png
+
+def rgb(out, inp):
+    """Convert to RGB/RGBA."""
+
+    r = png.Reader(file=inp)
+    r.preamble()
+    if r.alpha or r.trns:
+        get = r.asRGBA
+    else:
+        get = r.asRGB
+    pixels,info = get()[2:4]
+    w = png.Writer(**info)
+    w.write(out, pixels)
+
+def main(argv=None):
+    import sys
+
+    if argv is None:
+        argv = sys.argv
+    if len(argv) > 1:
+        f = open(argv[1], 'rb')
+    else:
+        f = sys.stdin
+    return rgb(sys.stdout, f)
+
+if __name__ == '__main__':
+    main()
