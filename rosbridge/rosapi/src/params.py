@@ -18,10 +18,11 @@ def set_param(name, value):
     
 def get_param(name, default):
     d = None
-    try:
-        d = loads(default)
-    except ValueError:
-        raise Exception("Due to the type flexibility of the ROS parameter server, the default argument to get_param must be a JSON-formatted string.")
+    if default is not "":
+        try:
+            d = loads(default)
+        except ValueError:
+            d = default
     return dumps(rospy.get_param(name, d))
 
 
