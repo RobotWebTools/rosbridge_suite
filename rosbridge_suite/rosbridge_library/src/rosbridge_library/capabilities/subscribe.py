@@ -1,4 +1,5 @@
 from threading import Lock
+import time
 from functools import partial
 from rospy import loginfo
 from rosbridge_library.capability import Capability
@@ -212,10 +213,19 @@ class Subscribe(Capability):
 
         """
         # TODO: fragmentation, proper ids
+        start = time.time()
         outgoing_msg = {"op": "publish", "topic": topic, "msg": message}
+        print "Constructing publish message took %f" % (time.time() - start)
         if compression=="png":
-            outgoing_msg = {"op": "png", "data": encode(dumps(outgoing_msg))}
+            start = time.time()
+            outgoing_msg_dumped = dumps(outgoing_msg)
+            print "Dumping publish message to JSON took %f" % (time.time() - start)
+            start = time.time()
+            outgoing_msg = {"op": "png", "data": encode(outgoing_msg_dumped)}
+            print "Encoding dumped message as PNG took %f" % (time.time() - start)
+        start = time.time()
         self.protocol.send(outgoing_msg)
+        print "Sending took %f" % (time.time() - start)
 
     def finish(self):
         for subscription in self._subscriptions.values():
