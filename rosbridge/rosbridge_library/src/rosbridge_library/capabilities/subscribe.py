@@ -212,10 +212,9 @@ class Subscribe(Capability):
 
         """
         # TODO: fragmentation, proper ids
-        print "compression is ", compression
         outgoing_msg = {"op": "publish", "topic": topic, "msg": message}
         if compression=="png":
-            outgoing_msg = {"op": "fragment", "data": encode(dumps(outgoing_msg)), "num": 0, "total": 1, "id": 0}
+            outgoing_msg = {"op": "png", "data": encode(dumps(outgoing_msg))}
         self.protocol.send(outgoing_msg)
 
     def finish(self):
