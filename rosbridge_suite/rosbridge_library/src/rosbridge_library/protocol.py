@@ -1,9 +1,12 @@
 from rospy import logdebug, loginfo, logwarn, logerr
-try:
-    from simplejson import dumps, loads
-except ImportError:
-    from json import dumps, loads    
 import time
+try:
+    from ujson import dumps, loads
+except ImportError:
+    try:
+        from simplejson import dumps, loads
+    except ImportError:
+        from json import dumps, loads
 
 class InvalidArgumentException(Exception):
     pass

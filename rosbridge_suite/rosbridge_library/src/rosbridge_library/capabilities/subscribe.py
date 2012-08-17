@@ -7,9 +7,12 @@ from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
 from rosbridge_library.internal.pngcompression import encode
 try:
-    from simplejson import dumps
+    from ujson import dumps
 except ImportError:
-    from json import dumps
+    try:
+        from simplejson import dumps
+    except ImportError:
+        from json import dumps
 
 
 class Subscription():

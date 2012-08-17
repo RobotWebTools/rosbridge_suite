@@ -28,3 +28,5 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
+
+add_custom_target(all COMMAND python setup.py install --user COMMENT "installing ujson" WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/lib/ultrajson")
