@@ -36,7 +36,6 @@ class CallService(Capability):
         e_cb = partial(self._failure, cid)
 
         # Kick off the service caller thread
-        print "Calling service %s with args:" % (trim_servicename(service)), args
         ServiceCaller(trim_servicename(service), args, s_cb, e_cb).start()
 
     def _success(self, cid, service, fragment_size, compression, message):
