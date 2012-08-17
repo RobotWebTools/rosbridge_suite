@@ -6,7 +6,7 @@ from rosbridge_library.capability import Capability
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
 from rosbridge_library.internal.pngcompression import encode
-from json import dumps
+from simplejson import dumps
 
 
 class Subscription():

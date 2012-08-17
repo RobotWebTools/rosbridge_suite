@@ -1,5 +1,5 @@
 from rospy import logdebug, loginfo, logwarn, logerr
-from json import dumps, loads
+from simplejson import dumps, loads
 import time
 
 class InvalidArgumentException(Exception):

@@ -1,4 +1,4 @@
-from rosbridge_library.lib.pypng.code import png
+from pypng.code import png
 from base64 import standard_b64encode, standard_b64decode
 from StringIO import StringIO
 
