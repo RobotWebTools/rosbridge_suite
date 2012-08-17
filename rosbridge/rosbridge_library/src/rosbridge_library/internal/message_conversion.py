@@ -143,6 +143,9 @@ def _to_binary_inst(msg):
 
 def _to_time_inst(msg, rostype, inst=None):
     # Create an instance if we haven't been provided with one
+    if rostype == "time" and msg == "now":
+        return rospy.get_rostime()
+        
     if inst is None:
         if rostype == "time":
             inst = rospy.rostime.Time()

@@ -173,6 +173,23 @@ class TestMessageConversion(unittest.TestCase):
 
         msg = {"times": [{"secs": 3, "nsecs": 5}, {"secs": 2, "nsecs": 7}]}
         self.do_test(msg, "rosbridge_test/TimeArrayTest")
+        
+    def test_time_msg_now(self):
+        msg = {"data": "now"}
+        msgtype = "std_msgs/Time"
+        
+        inst = ros_loader.get_message_instance(msgtype)
+        c.populate_instance(msg, inst)
+        currenttime = rospy.get_rostime()
+        self.validate_instance(inst)
+        extracted = c.extract_values(inst)
+        print extracted
+        self.assertIn("data", extracted)
+        self.assertIn("secs", extracted["data"])
+        self.assertIn("nsecs", extracted["data"])
+        self.assertNotEqual(extracted["data"]["secs"], 0)
+        self.assertLessEqual(extracted["data"]["secs"], currenttime.secs)
+        self.assertGreaterEqual(currenttime.secs, extracted["data"]["secs"])
 
     def test_duration_msg(self):
         msg = {"data": {"secs": 3, "nsecs": 5}}
