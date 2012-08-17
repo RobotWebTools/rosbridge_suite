@@ -1,0 +1,18 @@
+<package>
+  <description brief="rosbridge_launch">
+
+     rosbridge_launch
+
+  </description>
+  <author>jon</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/rosbridge_launch</url>
+  <depend package="rosapi"/>
+  <depend package="roswww" />
+  <depend package="rosbridge_server" />
+  <depend package="tf_smart_throttle" />
+
+</package>
+
+

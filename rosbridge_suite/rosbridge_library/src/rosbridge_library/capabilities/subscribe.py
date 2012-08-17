@@ -6,7 +6,10 @@ from rosbridge_library.capability import Capability
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
 from rosbridge_library.internal.pngcompression import encode
-from simplejson import dumps
+try:
+    from simplejson import dumps
+except ImportError:
+    from json import dumps
 
 
 class Subscription():
@@ -140,10 +143,10 @@ class Subscription():
 
 class Subscribe(Capability):
 
-    subscribe_msg_fields = [(True, "topic", unicode), (False, "type", unicode),
+    subscribe_msg_fields = [(True, "topic", (str, unicode)), (False, "type", (str, unicode)),
         (False, "throttle_rate", int), (False, "fragment_size", int),
-        (False, "queue_length", int), (False, "compression", unicode)]
-    unsubscribe_msg_fields = [(True, "topic", unicode)]
+        (False, "queue_length", int), (False, "compression", (str, unicode))]
+    unsubscribe_msg_fields = [(True, "topic", (str, unicode))]
 
     def __init__(self, protocol):
         # Call superclass constructor

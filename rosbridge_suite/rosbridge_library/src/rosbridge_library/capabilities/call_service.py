@@ -5,8 +5,8 @@ from rosbridge_library.internal.services import ServiceCaller
 
 class CallService(Capability):
 
-    call_service_msg_fields = [(True, "service", unicode),
-           (False, "fragment_size", int), (False, "compression", unicode)]
+    call_service_msg_fields = [(True, "service", (str, unicode)),
+           (False, "fragment_size", int), (False, "compression", (str, unicode))]
 
     def __init__(self, protocol):
         # Call superclas constructor

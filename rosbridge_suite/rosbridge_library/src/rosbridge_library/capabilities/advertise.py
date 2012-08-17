@@ -39,8 +39,8 @@ class Registration():
 
 class Advertise(Capability):
 
-    advertise_msg_fields = [(True, "topic", unicode), (True, "type", unicode)]
-    unadvertise_msg_fields = [(True, "topic", unicode)]
+    advertise_msg_fields = [(True, "topic", (str, unicode)), (True, "type", (str, unicode))]
+    unadvertise_msg_fields = [(True, "topic", (str, unicode))]
 
     def __init__(self, protocol):
         # Call superclas constructor

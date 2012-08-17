@@ -49,7 +49,7 @@ class Capability:
         types_info -- a list of tuples (mandatory, fieldname, fieldtype) where
                 mandatory - boolean, is the field mandatory
                 fieldname - the name of the field in the message
-                fieldtype - the expected python type of the field
+                fieldtypes - the expected python type of the field or list of types
 
         Throws:
         MissingArgumentException -- if a field is mandatory but not present in
@@ -58,9 +58,16 @@ class Capability:
         specified by fieldtype
 
         """
-        for mandatory, fieldname, fieldtype in types_info:
+        for mandatory, fieldname, fieldtypes in types_info:
             if mandatory and fieldname not in msg:
                 raise MissingArgumentException("Expected a %s field but none was found." % fieldname)
-            elif fieldname in msg and not isinstance(msg[fieldname], fieldtype):
-                raise InvalidArgumentException("Expected field %s to be of type %s. Invalid value: %s" % (fieldname, fieldtype.__name__, msg[fieldname]))
+            elif fieldname in msg:
+                if not isinstance(fieldtypes, tuple):
+                    fieldtypes = (fieldtypes, )
+                valid = False
+                for typ in fieldtypes:
+                    if isinstance(msg[fieldname], typ):
+                        valid = True
+                if not valid:
+                    raise InvalidArgumentException("Expected field %s to be one of %s. Invalid value: %s" % (fieldname, fieldtypes, msg[fieldname]))
 
