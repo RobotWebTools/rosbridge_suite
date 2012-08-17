@@ -89,7 +89,7 @@ def bind_to_port(application, portno):
         if err.errno==13:
             rospy.logwarn("Insufficient priveliges to run webserver on port %d. Error: %s", portno, err.strerror)
             rospy.loginfo("-- Try re-running as super-user: sudo su; source ~/.bashrc)")
-        if err.errno==98:
+        elif err.errno==98:
             rospy.logwarn("There is already a webserver running on port %d. Error: %s", portno, err.strerror)
             rospy.loginfo("-- Try stopping your web server. For example, to stop apache: sudo /etc/init.d/apache2 stop")
         else:
