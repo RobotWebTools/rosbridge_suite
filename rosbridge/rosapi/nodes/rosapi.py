@@ -5,6 +5,7 @@ from rospy import spin
 from rospy import Service
 from rospy import ROSInterruptException
 from rospy import loginfo
+from rospy import get_rostime
 
 import proxy, objectutils, params
 from rosapi.srv import *
@@ -32,6 +33,7 @@ def register_services():
     Service('rosapi/search_param', SearchParam, search_param)
     Service('rosapi/delete_param', DeleteParam, delete_param)
     Service('rosapi/get_param_names', GetParamNames, get_param_names)
+    Service('rosapi/get_time', GetTime, get_time)
     
 def get_topics(request):
     """ Called by the rosapi/Topics service. Returns a list of all the topics being published. """
@@ -122,6 +124,9 @@ def delete_param(request):
 
 def get_param_names(request):
     return GetParamNamesResponse(params.get_param_names())
+
+def get_time(request):
+    return GetTimeResponse(get_rostime())
 
 def dict_to_typedef(typedefdict):
     typedef = TypeDef()
