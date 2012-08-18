@@ -1,4 +1,3 @@
-from pypng.code import png
 from PIL import Image
 from base64 import standard_b64encode, standard_b64decode
 from StringIO import StringIO
@@ -15,7 +14,6 @@ def encode(string):
 def decode(string):
     """ b64 decode the string, then PNG-decompress """
     decoded = standard_b64decode(string)
-    reader = png.Reader(bytes=decoded)
-    width, height, rawpixels, metadata = reader.read()
-    pixels = list(rawpixels)[0]
-    return str(bytearray(pixels))
+    buff = StringIO(decoded)
+    i = Image.open(buff)
+    return i.tostring()
