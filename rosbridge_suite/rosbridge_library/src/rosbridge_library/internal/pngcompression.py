@@ -1,14 +1,14 @@
 from pypng.code import png
+from PIL import Image
 from base64 import standard_b64encode, standard_b64decode
 from StringIO import StringIO
 
 
 def encode(string):
     """ PNG-compress the string, return the b64 encoded bytes """
-    bytes = list(bytearray(string))
-    png_image = png.from_array([bytes], 'L')
+    i = Image.fromstring('L', (len(string), 1), string)
     buff = StringIO()
-    png_image.save(buff)
+    i.save(buff, "png")
     encoded = standard_b64encode(buff.getvalue())
     return encoded
 
