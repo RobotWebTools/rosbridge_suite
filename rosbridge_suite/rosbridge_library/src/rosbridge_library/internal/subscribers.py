@@ -1,5 +1,4 @@
 from threading import Lock
-import time
 from rospy import Subscriber, logerr
 from rostopic import get_topic_type
 from rosbridge_library.internal import ros_loader, message_conversion
@@ -120,8 +119,6 @@ class MultiSubscriber():
         msg - the ROS message coming from the subscriber
 
         """
-        print "Raw message received."
-        start = time.time()
         # Try to convert the msg to JSON
         json = None
         try:
@@ -129,8 +126,6 @@ class MultiSubscriber():
         except:
             return
         
-        print "Converting to JSON took %f" % (time.time() - start)
-
         # Get the callbacks to call
         with self.lock:
             callbacks = self.subscriptions.values()

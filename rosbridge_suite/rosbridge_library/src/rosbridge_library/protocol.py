@@ -1,5 +1,4 @@
 from rospy import logdebug, loginfo, logwarn, logerr
-import time
 try:
     from ujson import dumps, loads
 except ImportError:

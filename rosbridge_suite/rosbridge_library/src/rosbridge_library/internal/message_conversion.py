@@ -90,6 +90,10 @@ def _from_list_inst(inst, rostype):
 
     # Remove the list indicators from the rostype
     rostype = list_braces.sub("", rostype)
+    
+    # Shortcut for primitives
+    if rostype in ros_primitive_types:
+        return list(inst)
 
     # Call to _to_inst for every element of the list
     return [_from_inst(x, rostype) for x in inst]
