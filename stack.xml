@@ -9,5 +9,8 @@
   <author>Maintained by Jonathan Mace</author>
   <license>BSD</license>
   <url>http://www.rosbridge.org</url>
-  <depend stack="ros"/>
+  <depend stack="ros"/> <!-- roslib -->
+  <depend stack="ros_comm"/> <!-- rospy, roscpp, rostopic, rosservice, rostest, -->
+  <depend stack="std_msgs"/> <!-- std_msgs -->
+  <depend stack="geometry"/> <!-- tf -->
 </stack>

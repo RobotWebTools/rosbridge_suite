@@ -12,6 +12,7 @@
   <depend package="rostopic"/>
   <depend package="rosservice"/>
 
+  <rosdep name="python-imaging"/>
 </package>
 
 
