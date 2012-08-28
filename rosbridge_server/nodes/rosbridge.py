@@ -13,6 +13,8 @@ from tornado.websocket import WebSocketHandler
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 
 
+import sys
+
 # Global ID seed for clients
 client_id_seed = 0
 clients_connected = 0
@@ -65,6 +67,15 @@ if __name__ == "__main__":
     signal(SIGINT, SIG_DFL)
 
     port = get_param('/rosbridge/port', 9090)
+    if "--port" in sys.argv:
+        idx = sys.argv.index("--port")+1
+        if idx < len(sys.argv):
+            port = int(sys.argv[idx])
+        else:
+            print "--port argument provided without a value."
+            sys.exit(-1)
+    
+    
     application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)])
     application.listen(port)
     loginfo("Rosbridge server started on port %d", port)
