@@ -26,4 +26,5 @@ rosbuild_gensrv()
 rosbuild_add_boost_directories()
 
 rosbuild_add_executable(${PROJECT_NAME} src/tf_smart_throttle.cpp)
+rosbuild_link_boost(${PROJECT_NAME} thread)
 
