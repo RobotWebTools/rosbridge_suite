@@ -4,7 +4,7 @@ A brief overview of the packages is as follows:
 
 rosbridge_library contains the API that receives JSON-formatted strings as input and controls ROS publishers/subscribers/service calls according to the content of the JSON strings.
 
-rosbridge_server contains a simple websockets server implementation that exposes the rosbridge_libarary.
+rosbridge_server contains a simple websockets server implementation that exposes the rosbridge_library.
 
 rosbridge_clients contains reference implementation client libraries for a variety of languages
 |-  js contanis javascript reference implementation clients.  Three clients are provided:
