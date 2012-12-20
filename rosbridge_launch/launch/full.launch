@@ -1,7 +1,0 @@
-<launch>
-  <node name="rosbridge" pkg="rosbridge_server" type="rosbridge.py" />
-  <node name="rosapi" pkg="rosapi" type="rosapi.py" />
-  <node name="roswww" pkg="roswww" type="webserver.py" />
-  <node name="tf_smart_throttle" pkg="tf_smart_throttle" type="tf_smart_throttle" />
-</launch>
-

@@ -1,4 +1,0 @@
-<launch>
-  <include file="$(find rosbridge_launch)/launch/simple.launch" />
-  <node name="tf_smart_throttle" pkg="tf_smart_throttle" type="tf_smart_throttle" />
-</launch>

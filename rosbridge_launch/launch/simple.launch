@@ -1,4 +1,0 @@
-<launch>
-  <node name="rosbridge" pkg="rosbridge_server" type="rosbridge.py" />
-  <node name="rosapi" pkg="rosapi" type="rosapi.py" />
-</launch>

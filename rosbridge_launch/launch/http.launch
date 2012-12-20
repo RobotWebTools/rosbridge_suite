@@ -1,4 +1,0 @@
-<launch>
-  <include file="$(find rosbridge_launch)/launch/simple.launch" />
-  <node name="roswww" pkg="roswww" type="webserver.py" />
-</launch>
