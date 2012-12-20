@@ -1,26 +1,21 @@
-#!/usr/bin/env python
 from roslib import load_manifest
-load_manifest('rosbridge_server')
+load_manifest("rosbridge_server")
 from rospy import init_node, get_param, loginfo, logerr
 
-from signal import signal, SIGINT, SIG_DFL
 from functools import partial
 
-from tornado.ioloop import IOLoop
-from tornado.web import Application
 from tornado.websocket import WebSocketHandler
 
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-
-
-import sys
 
 # Global ID seed for clients
 client_id_seed = 0
 clients_connected = 0
 
-
 class RosbridgeWebSocket(WebSocketHandler):
+
+    def __init__(self):
+        init_node("rosbridge_server")
 
     def open(self):
         global client_id_seed, clients_connected
@@ -61,23 +56,3 @@ class RosbridgeWebSocket(WebSocketHandler):
         """
         return True
 
-
-if __name__ == "__main__":
-    init_node("rosbridge_server")
-    signal(SIGINT, SIG_DFL)
-
-    port = get_param('/rosbridge/port', 9090)
-    if "--port" in sys.argv:
-        idx = sys.argv.index("--port")+1
-        if idx < len(sys.argv):
-            port = int(sys.argv[idx])
-        else:
-            print "--port argument provided without a value."
-            sys.exit(-1)
-    
-    
-    application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)])
-    application.listen(port)
-    loginfo("Rosbridge server started on port %d", port)
-
-    IOLoop.instance().start()
