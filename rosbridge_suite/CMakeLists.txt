@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(rosbridge_server)
+project(rosbridge_suite)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS rosbridge_library rospy)
+find_package(catkin REQUIRED COMPONENTS rosbridge_library rosbridge_server)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -46,8 +46,8 @@ find_package(catkin REQUIRED COMPONENTS rosbridge_library rospy)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES rosbridge_server
-#  CATKIN_DEPENDS rosbridge_library rospy
+#  LIBRARIES rosbridge_suite
+#  CATKIN_DEPENDS rosbridge_library rosbridge_server
 #  DEPENDS system_lib
 )
 
@@ -59,18 +59,18 @@ catkin_package(
 # include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 ## Declare a cpp library
-# add_library(rosbridge_server
-#   src/${PROJECT_NAME}/rosbridge_server.cpp
+# add_library(rosbridge_suite
+#   src/${PROJECT_NAME}/rosbridge_suite.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(rosbridge_server_node src/rosbridge_server_node.cpp)
+# add_executable(rosbridge_suite_node src/rosbridge_suite_node.cpp)
 
 ## Add dependencies to the executable
-# add_dependencies(rosbridge_server_node ${PROJECT_NAME})
+# add_dependencies(rosbridge_suite_node ${PROJECT_NAME})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(rosbridge_server_node
+# target_link_libraries(rosbridge_suite_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -86,7 +86,7 @@ catkin_package(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS rosbridge_server rosbridge_server_node
+# install(TARGETS rosbridge_suite rosbridge_suite_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -111,7 +111,7 @@ catkin_package(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_rosbridge_server.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_rosbridge_suite.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
