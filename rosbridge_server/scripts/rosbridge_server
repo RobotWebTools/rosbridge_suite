@@ -3,26 +3,64 @@
 from roslib import load_manifest
 load_manifest("rosbridge_server")
 import rospy
-from rosbridge_server.rosbridge_websocket import RosbridgeWebSocket
+
 from signal import signal, SIGINT, SIG_DFL
+from functools import partial
+
 from tornado.ioloop import IOLoop
 from tornado.web import Application
+from tornado.websocket import WebSocketHandler
+
+from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
+
 import sys
 
-signal(SIGINT, SIG_DFL)
+# Global ID seed for clients
+client_id_seed = 0
+clients_connected = 0
 
-port = rospy.get_param('/rosbridge/port', 9090)
-if "--port" in sys.argv:
-    idx = sys.argv.index("--port") + 1
-    if idx < len(sys.argv):
-        port = int(sys.argv[idx])
-    else:
-        print "--port argument provided without a value."
-        sys.exit(-1)
 
-application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)])
-application.listen(port)
-rospy.loginfo("Rosbridge server started on port %d", port)
+class RosbridgeWebSocket(WebSocketHandler):
 
-IOLoop.instance().start()
+    def open(self):
+        global client_id_seed, clients_connected
+        try:
+            self.protocol = RosbridgeProtocol(client_id_seed)
+            self.protocol.outgoing = self.send_message
+            client_id_seed = client_id_seed + 1
+            clients_connected = clients_connected + 1
+        except Exception as exc:
+            rospy.logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
+        rospy.loginfo("Client connected.  %d clients total.", clients_connected)
+
+    def on_message(self, message):
+        self.protocol.incoming(message)
+
+    def on_close(self):
+        global clients_connected
+        clients_connected = clients_connected - 1
+        self.protocol.finish()
+        rospy.loginfo("Client disconnected.  %d clients total.", clients_connected)
+
+    def send_message(self, message):
+        IOLoop.instance().add_callback(partial(self.write_message, message))
+
+if __name__ == "__main__":
+    rospy.init_node("rosbridge_server")
+    signal(SIGINT, SIG_DFL)
+
+    port = rospy.get_param('/rosbridge/port', 9090)
+    if "--port" in sys.argv:
+        idx = sys.argv.index("--port")+1
+        if idx < len(sys.argv):
+            port = int(sys.argv[idx])
+        else:
+            print "--port argument provided without a value."
+            sys.exit(-1)
+
+    application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)])
+    application.listen(port)
+    rospy.loginfo("Rosbridge server started on port %d", port)
+
+    IOLoop.instance().start()
 
