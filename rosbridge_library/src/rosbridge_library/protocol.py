@@ -1,19 +1,11 @@
 from rospy import logdebug, loginfo, logwarn, logerr
-try:
-    from ujson import dumps, loads
-except ImportError:
-    try:
-        from simplejson import dumps, loads
-    except ImportError:
-        from json import dumps, loads
+from json import dumps, loads
 
 class InvalidArgumentException(Exception):
     pass
 
-
 class MissingArgumentException(Exception):
     pass
-
 
 class Protocol:
     """ The interface for a single client to interact with ROS.

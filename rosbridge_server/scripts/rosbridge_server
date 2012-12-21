@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+from roslib import load_manifest
+load_manifest("rosbridge_server")
+import rospy
 from rosbridge_server.rosbridge_websocket import RosbridgeWebSocket
 from signal import signal, SIGINT, SIG_DFL
 from tornado.ioloop import IOLoop
@@ -8,7 +11,7 @@ import sys
 
 signal(SIGINT, SIG_DFL)
 
-port = get_param('/rosbridge/port', 9090)
+port = rospy.get_param('/rosbridge/port', 9090)
 if "--port" in sys.argv:
     idx = sys.argv.index("--port") + 1
     if idx < len(sys.argv):
@@ -19,7 +22,7 @@ if "--port" in sys.argv:
 
 application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)])
 application.listen(port)
-loginfo("Rosbridge server started on port %d", port)
+rospy.loginfo("Rosbridge server started on port %d", port)
 
 IOLoop.instance().start()
 

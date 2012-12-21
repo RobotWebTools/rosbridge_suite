@@ -1,6 +1,6 @@
 from roslib import load_manifest
 load_manifest("rosbridge_server")
-from rospy import init_node, get_param, loginfo, logerr
+import rospy
 
 from functools import partial
 
@@ -15,7 +15,7 @@ clients_connected = 0
 class RosbridgeWebSocket(WebSocketHandler):
 
     def __init__(self):
-        init_node("rosbridge_server")
+        rospy.init_node("rosbridge_server")
 
     def open(self):
         global client_id_seed, clients_connected
@@ -25,9 +25,9 @@ class RosbridgeWebSocket(WebSocketHandler):
             client_id_seed = client_id_seed + 1
             clients_connected = clients_connected + 1
         except Exception as exc:
-            logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
+            rospy.logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
 #            raise
-        loginfo("Client connected.  %d clients total.", clients_connected)
+        rospy.loginfo("Client connected.  %d clients total.", clients_connected)
 
     def on_message(self, message):
         self.protocol.incoming(message)
@@ -36,7 +36,7 @@ class RosbridgeWebSocket(WebSocketHandler):
         global clients_connected
         clients_connected = clients_connected - 1
         self.protocol.finish()
-        loginfo("Client disconnected.  %d clients total.", clients_connected)
+        rospy.loginfo("Client disconnected.  %d clients total.", clients_connected)
 
     def send_message(self, message):
         IOLoop.instance().add_callback(partial(self.write_message, message))

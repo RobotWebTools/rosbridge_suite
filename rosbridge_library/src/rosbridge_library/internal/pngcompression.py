@@ -1,4 +1,4 @@
-from PIL import Image
+import Image
 from base64 import standard_b64encode, standard_b64decode
 from StringIO import StringIO
 from math import floor, ceil, sqrt
