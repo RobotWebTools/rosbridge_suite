@@ -1,11 +1,8 @@
 #!/usr/bin/env python
-from roslib import load_manifest; load_manifest('rosapi');
-from rospy import init_node
-from rospy import spin
-from rospy import Service
-from rospy import ROSInterruptException
-from rospy import loginfo
-from rospy import get_rostime
+
+from roslib import load_manifest
+load_manifest("rosapi")
+import rospy
 
 import proxy, objectutils, params
 from rosapi.srv import *
@@ -13,28 +10,28 @@ from rosapi.msg import *
 
 # Initialises the ROS node
 def register_services():
-    Service('rosapi/topics', Topics, get_topics)
-    Service('rosapi/topics_for_type', TopicsForType, get_topics_for_type)
-    Service('rosapi/services', Services, get_services)
-    Service('rosapi/nodes', Nodes, get_nodes)
-    Service('rosapi/topic_type', TopicType, get_topic_type)
-    Service('rosapi/service_type', ServiceType, get_service_type)
-    Service('rosapi/publishers', Publishers, get_publishers)
-    Service('rosapi/subscribers', Subscribers, get_subscribers)
-    Service('rosapi/service_providers', ServiceProviders, get_service_providers)
-    Service('rosapi/service_node', ServiceNode, get_service_node)
-    Service('rosapi/service_host', ServiceHost, get_service_host)
-    Service('rosapi/message_details', MessageDetails, get_message_details)
-    Service('rosapi/service_request_details', ServiceRequestDetails, get_service_request_details)
-    Service('rosapi/service_response_details', ServiceResponseDetails, get_service_response_details)
-    Service('rosapi/set_param', SetParam, set_param)
-    Service('rosapi/get_param', GetParam, get_param)
-    Service('rosapi/has_param', HasParam, has_param)
-    Service('rosapi/search_param', SearchParam, search_param)
-    Service('rosapi/delete_param', DeleteParam, delete_param)
-    Service('rosapi/get_param_names', GetParamNames, get_param_names)
-    Service('rosapi/get_time', GetTime, get_time)
-    
+    rospy.Service('rosapi/topics', Topics, get_topics)
+    rospy.Service('rosapi/topics_for_type', TopicsForType, get_topics_for_type)
+    rospy.Service('rosapi/services', Services, get_services)
+    rospy.Service('rosapi/nodes', Nodes, get_nodes)
+    rospy.Service('rosapi/topic_type', TopicType, get_topic_type)
+    rospy.Service('rosapi/service_type', ServiceType, get_service_type)
+    rospy.Service('rosapi/publishers', Publishers, get_publishers)
+    rospy.Service('rosapi/subscribers', Subscribers, get_subscribers)
+    rospy.Service('rosapi/service_providers', ServiceProviders, get_service_providers)
+    rospy.Service('rosapi/service_node', ServiceNode, get_service_node)
+    rospy.Service('rosapi/service_host', ServiceHost, get_service_host)
+    rospy.Service('rosapi/message_details', MessageDetails, get_message_details)
+    rospy.Service('rosapi/service_request_details', ServiceRequestDetails, get_service_request_details)
+    rospy.Service('rosapi/service_response_details', ServiceResponseDetails, get_service_response_details)
+    rospy.Service('rosapi/set_param', SetParam, set_param)
+    rospy.Service('rosapi/get_param', GetParam, get_param)
+    rospy.Service('rosapi/has_param', HasParam, has_param)
+    rospy.Service('rosapi/search_param', SearchParam, search_param)
+    rospy.Service('rosapi/delete_param', DeleteParam, delete_param)
+    rospy.Service('rosapi/get_param_names', GetParamNames, get_param_names)
+    rospy.Service('rosapi/get_time', GetTime, get_time)
+
 def get_topics(request):
     """ Called by the rosapi/Topics service. Returns a list of all the topics being published. """
     return TopicsResponse(proxy.get_topics())
@@ -126,7 +123,7 @@ def get_param_names(request):
     return GetParamNamesResponse(params.get_param_names())
 
 def get_time(request):
-    return GetTimeResponse(get_rostime())
+    return GetTimeResponse(rospy.get_rostime())
 
 def dict_to_typedef(typedefdict):
     typedef = TypeDef()
@@ -139,9 +136,9 @@ def dict_to_typedef(typedefdict):
 
 if __name__ == '__main__':
      try:
-         init_node('rosapi')
+         rospy.init_node('rosapi')
          register_services()
-         loginfo("Rosapi started")
-         spin()
-     except ROSInterruptException: 
+         rospy.loginfo("Rosapi started")
+         rospy.spin()
+     except rospy.ROSInterruptException: 
          pass
