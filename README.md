@@ -2,7 +2,7 @@ Rosbridge provides a JSON interface to ROS, allowing any client to send JSON to
 publish or subscribe to ROS topics, call ROS services, and more. Rosbridge
 supports a variety of transport layers, including WebSockets.
 
-Rosbridge packages include:
+### Packages
 
  * rosbridge_suite is a [ROS
    meta-package](http://www.ros.org/wiki/catkin/conceptual_overview#Metapackages_and_the_Elimination_of_Stacks),
@@ -18,13 +18,15 @@ Rosbridge packages include:
  * rosapi provides service calls for getting meta-information related to ROS
    like topic lists as well as interacting with the Parameter Server.
 
+### Clients
+
 A rosbridge client is a program that communicates with rosbridge using its JSON
 API. Rosbridge clients include:
 
  * [ros.js](http://www.ros.org/wiki/rosjs) - A JavaScript API, which
    communicates with rosbridge over WebSockets.
 
-Further resources:
+### Resources
 
  * [Documentation](http://www.ros.org/wiki/rosbridge_suite)
  * [Coding Style Guide](http://www.ros.org/wiki/PyStyleGuide)
