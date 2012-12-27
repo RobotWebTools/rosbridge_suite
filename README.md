@@ -4,12 +4,19 @@ supports a variety of transport layers, including WebSockets.
 
 Rosbridge packages include:
 
+ * rosbridge_suite is a [ROS
+   meta-package](http://www.ros.org/wiki/catkin/conceptual_overview#Metapackages_and_the_Elimination_of_Stacks),
+   simply including all the rosbridge packages.
+
  * rosbridge_library contains the Python API that receives JSON-formatted
    strings as input and controls ROS publishers/subscribers/service calls
    according to the content of the JSON strings.
 
  * rosbridge_server contains a WebSocket server implementation that exposes the
    rosbridge_library.
+
+ * rosapi provides service calls for getting meta-information related to ROS
+   like topic lists as well as interacting with the Parameter Server.
 
 A rosbridge client is a program that communicates with rosbridge using its JSON
 API. Rosbridge clients include:
