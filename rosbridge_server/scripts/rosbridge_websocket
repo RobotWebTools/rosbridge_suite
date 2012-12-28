@@ -77,7 +77,7 @@ class RosbridgeWebSocket(WebSocketHandler):
         IOLoop.instance().add_callback(partial(self.write_message, message))
 
 if __name__ == "__main__":
-    rospy.init_node("rosbridge_server")
+    rospy.init_node("rosbridge_websocket")
     signal(SIGINT, SIG_DFL)
 
     port = rospy.get_param('/rosbridge/port', 9090)
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)])
     application.listen(port)
-    rospy.loginfo("Rosbridge server started on port %d", port)
+    rospy.loginfo("Rosbridge WebSocket server started on port %d", port)
 
     IOLoop.instance().start()
 
