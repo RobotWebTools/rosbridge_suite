@@ -1,0 +1,5 @@
+<launch>
+  <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket" />
+  <node name="rosapi" pkg="rosapi" type="rosapi" />
+</launch>
+
