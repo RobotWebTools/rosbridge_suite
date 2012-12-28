@@ -31,11 +31,11 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from roslib import load_manifest
-load_manifest("rosapi")
 import rospy
 
-import proxy, objectutils, params
+import rosapi.proxy
+import rosapi.objectutils
+import rosapi.params
 from rosapi.srv import *
 from rosapi.msg import *
 
