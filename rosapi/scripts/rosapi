@@ -31,11 +31,11 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from roslib import load_manifest
-load_manifest("rosapi")
 import rospy
 
-import proxy, objectutils, params
+import rosapi.proxy
+import rosapi.objectutils
+import rosapi.params
 from rosapi.srv import *
 from rosapi.msg import *
 
@@ -134,24 +134,24 @@ def get_service_response_details(request):
     return ServiceResponseDetailsResponse([dict_to_typedef(d) for d in objectutils.get_service_response_typedef_recursive(request.type)])
 
 def set_param(request):
-    params.set_param(request.name, request.value)
+    rosapi.params.set_param(request.name, request.value)
     return SetParamResponse()
 
 def get_param(request):
-    return GetParamResponse(params.get_param(request.name, request.default))
+    return GetParamResponse(rosapi.params.get_param(request.name, request.default))
 
 def has_param(request):
-    return HasParamResponse(params.has_param(request.name))
+    return HasParamResponse(rosapi.params.has_param(request.name))
 
 def search_param(request):
-    return SearchParamResponse(params.search_param(request.name))
+    return SearchParamResponse(rosapi.params.search_param(request.name))
 
 def delete_param(request):
-    params.delete_param(request.name)
+    rosapi.params.delete_param(request.name)
     return DeleteParamResponse()
 
 def get_param_names(request):
-    return GetParamNamesResponse(params.get_param_names())
+    return GetParamNamesResponse(rosapi.params.get_param_names())
 
 def get_time(request):
     return GetTimeResponse(rospy.get_rostime())
