@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib; roslib.load_manifest(PKG); roslib.load_manifest("std_msgs")
+import sys
 import rospy
-from rospy import get_published_topics
+import rostest
+import unittest
 
 from time import sleep, time
 
@@ -12,7 +12,6 @@ from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import *
 from std_msgs.msg import String, Int32
 
-import unittest
 
 class TestMultiUnregistering(unittest.TestCase):
 
@@ -54,10 +53,10 @@ class TestMultiUnregistering(unittest.TestCase):
         sleep(1)
 
         self.assertEqual(received["msg"].data, msg["data"])
-        
+
         p.unregister()
         sleep(5)
-        
+
         received["msg"] = None
         self.assertIsNone(received["msg"])
         p = MultiPublisher(topic, msg_type)
@@ -66,9 +65,10 @@ class TestMultiUnregistering(unittest.TestCase):
         sleep(1)
 
         self.assertEqual(received["msg"].data, msg["data"])
-        
-        
 
+
+PKG = 'test_rosbridge_library'
+NAME = 'test_multi_unregistering'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_multi_unregistering', TestMultiUnregistering)
+    rostest.unitrun(PKG, NAME, TestMultiUnregistering, sys.argv, coverage_packages=['rosbridge_library'])
+

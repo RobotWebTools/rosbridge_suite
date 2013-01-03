@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib; roslib.load_manifest(PKG); roslib.load_manifest("std_msgs")
+import sys
 import rospy
+import rostest
+import unittest
 
 from time import sleep, time
 
@@ -9,8 +10,6 @@ from rosbridge_library.internal.publishers import *
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import *
 from std_msgs.msg import String, Int32
-
-import unittest
 
 
 class TestPublisherConsistencyListener(unittest.TestCase):
@@ -169,6 +168,9 @@ class TestPublisherConsistencyListener(unittest.TestCase):
         self.assertEqual(len(received["msgs"]), len(msgs))
         self.assertEqual(received["msgs"], msgs)
 
+
+PKG = 'test_rosbridge_library'
+NAME = 'test_publisher_consistency_listener'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_publisher_consistency_listener', TestPublisherConsistencyListener)
+    rostest.unitrun(PKG, NAME, TestPublisherConsistencyListener, sys.argv, coverage_packages=['rosbridge_library'])
+

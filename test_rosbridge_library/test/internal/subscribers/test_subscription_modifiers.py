@@ -1,10 +1,7 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib
-roslib.load_manifest(PKG)
-roslib.load_manifest("std_msgs")
+import sys
 import rospy
-
+import rostest
 import unittest
 import time
 
@@ -323,7 +320,8 @@ class TestMessageHandlers(unittest.TestCase):
 #        handler = test_throttle(handler, 50)
 
 
-
+PKG = 'test_rosbridge_library'
+NAME = 'test_message_handlers'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_message_handlers', TestMessageHandlers)
+    rostest.unitrun(PKG, NAME, TestMessageHandlers, sys.argv, coverage_packages=['rosbridge_library'])
+

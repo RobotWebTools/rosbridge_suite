@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib; roslib.load_manifest(PKG)
+import sys
 import rospy
+import rostest
+import unittest
 from json import loads, dumps
 
 from StringIO import StringIO
@@ -9,8 +10,6 @@ from StringIO import StringIO
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader
 from base64 import standard_b64encode, standard_b64decode
-
-import unittest
 
 
 class TestMessageConversion(unittest.TestCase):
@@ -173,11 +172,11 @@ class TestMessageConversion(unittest.TestCase):
 
         msg = {"times": [{"secs": 3, "nsecs": 5}, {"secs": 2, "nsecs": 7}]}
         self.do_test(msg, "rosbridge_test/TimeArrayTest")
-        
+
     def test_time_msg_now(self):
         msg = {"data": "now"}
         msgtype = "std_msgs/Time"
-        
+
         inst = ros_loader.get_message_instance(msgtype)
         c.populate_instance(msg, inst)
         currenttime = rospy.get_rostime()
@@ -249,6 +248,8 @@ class TestMessageConversion(unittest.TestCase):
             self.assertEqual(ret, str_int8s)
 
 
+PKG = 'test_rosbridge_library'
+NAME = 'test_message_conversion'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_publish', TestMessageConversion)
+    rostest.unitrun(PKG, NAME, TestMessageConversion, sys.argv, coverage_packages=['rosbridge_library'])
+
