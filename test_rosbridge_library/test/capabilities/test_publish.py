@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib
-roslib.load_manifest(PKG)
-roslib.load_manifest("std_msgs")
+import sys
 import rospy
+import rostest
+import unittest
 from time import sleep
 
 from rosbridge_library.protocol import Protocol
@@ -15,8 +14,6 @@ from rosbridge_library.internal import ros_loader
 from std_msgs.msg import String
 
 from json import dumps, loads
-
-import unittest
 
 
 class TestAdvertise(unittest.TestCase):
@@ -60,6 +57,8 @@ class TestAdvertise(unittest.TestCase):
         self.assertEqual(received["msg"].data, msg["data"])
 
 
+PKG = 'test_rosbridge_library'
+NAME = 'test_publish'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_publish', TestAdvertise)
+    rostest.unitrun(PKG, NAME, TestAdvertise, sys.argv, coverage_packages=['rosbridge_library'])
+

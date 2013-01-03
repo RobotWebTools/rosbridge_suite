@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib; roslib.load_manifest(PKG); roslib.load_manifest("std_msgs")
+import sys
 import rospy
+import rostest
+import unittest
 
 from time import sleep
 
@@ -9,8 +10,6 @@ from rosbridge_library.internal.publishers import *
 from rosbridge_library.internal.topics import *
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 from std_msgs.msg import String, Int32
-
-import unittest
 
 
 class TestPublisherManager(unittest.TestCase):
@@ -189,6 +188,8 @@ class TestPublisherManager(unittest.TestCase):
         self.assertRaises(FieldTypeMismatchException, manager.publish, client, topic, msg)
 
 
+PKG = 'test_rosbridge_library'
+NAME = 'test_publisher_manager'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_publisher_manager', TestPublisherManager)
+    rostest.unitrun(PKG, NAME, TestPublisherManager, sys.argv, coverage_packages=['rosbridge_library'])
+

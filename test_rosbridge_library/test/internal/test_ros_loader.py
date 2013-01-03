@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib; roslib.load_manifest(PKG)
+import sys
 import rospy
+import rostest
+import unittest
 
 from rosbridge_library.internal import ros_loader
-
-import unittest
 
 
 class TestROSLoader(unittest.TestCase):
@@ -214,7 +213,8 @@ class TestROSLoader(unittest.TestCase):
             self.assertRaises(ros_loader.InvalidClassException,
                               ros_loader.get_service_response_instance, x)
 
-
+PKG = 'test_rosbridge_library'
+NAME = 'test_ros_loader'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_ros_loader', TestROSLoader)
+    rostest.unitrun(PKG, NAME, TestROSLoader, sys.argv, coverage_packages=['rosbridge_library'])
+

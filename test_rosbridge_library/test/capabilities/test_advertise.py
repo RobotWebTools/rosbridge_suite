@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib
-roslib.load_manifest(PKG)
-roslib.load_manifest("std_msgs")
+import sys
 import rospy
-from rospy import get_published_topics
+import rostest
+import unittest
+
+from std_msgs.msg import *
 
 from rosbridge_library.protocol import Protocol
 from rosbridge_library.protocol import InvalidArgumentException, MissingArgumentException
@@ -12,11 +12,7 @@ from rosbridge_library.capabilities.advertise import Registration, Advertise
 from rosbridge_library.internal.publishers import manager
 from rosbridge_library.internal import ros_loader
 
-from std_msgs.msg import String
-
 from json import loads, dumps
-
-import unittest
 
 
 class TestAdvertise(unittest.TestCase):
@@ -25,7 +21,7 @@ class TestAdvertise(unittest.TestCase):
         rospy.init_node("test_advertise")
 
     def is_topic_published(self, topicname):
-        return topicname in dict(get_published_topics()).keys()
+        return topicname in dict(rospy.get_published_topics()).keys()
 
     def test_missing_arguments(self):
         proto = Protocol("hello")
@@ -135,6 +131,8 @@ class TestAdvertise(unittest.TestCase):
         self.assertFalse(self.is_topic_published(topic))
 
 
+PKG = 'test_rosbridge_library'
+NAME = 'test_advertise'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_publish', TestAdvertise)
+    rostest.unitrun(PKG, NAME, TestAdvertise, sys.argv, coverage_packages=['rosbridge_library'])
+
