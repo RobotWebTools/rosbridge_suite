@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>rosbridge_library_test</name>
+  <version>0.3.0</version>
+  <description>Test cases for rosbridge_library</description>
+
+  <maintainer email="baalexander@gmail.com">Brandon Alexander</maintainer>
+  <author email="jonathan.c.mace@gmail.com">Jonathan Mace</author>
+  <license>BSD</license>
+  <url type="website">https://github.com/RobotWebTools/rosbridge_suite</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rostest</build_depend>
+  <test_depend>rospy</test_depend>
+  <test_depend>rosbridge_library</test_depend>
+
+  <export>
+  </export>
+</package>
