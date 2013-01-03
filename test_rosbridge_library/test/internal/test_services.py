@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib; roslib.load_manifest(PKG)
+import sys
 import rospy
-
+import rostest
+import unittest
 import time
 import random
 
@@ -12,8 +12,6 @@ from rosbridge_library.internal.message_conversion import FieldTypeMismatchExcep
 
 roslib.load_manifest("roscpp")
 from roscpp.srv import GetLoggers
-
-import unittest
 
 
 def populate_random_args(d):
@@ -199,6 +197,8 @@ class TestServices(unittest.TestCase):
             t.validate(self.msgs_equal)
 
 
+PKG = 'test_rosbridge_library'
+NAME = 'test_services'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_services', TestServices)
+    rostest.unitrun(PKG, NAME, TestServices, sys.argv, coverage_packages=['rosbridge_library'])
+

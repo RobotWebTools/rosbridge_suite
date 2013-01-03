@@ -1,10 +1,7 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib
-roslib.load_manifest(PKG)
-roslib.load_manifest("std_msgs")
+import sys
 import rospy
-
+import rostest
 import unittest
 import time
 
@@ -118,6 +115,9 @@ class TestSubscribe(unittest.TestCase):
         time.sleep(0.25)
         self.assertEqual(received["msg"]["msg"]["data"], msg.data)
 
+
+PKG = 'test_rosbridge_library'
+NAME = 'test_subscribe'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_subscribe', TestSubscribe)
+    rostest.unitrun(PKG, NAME, TestSubscribe, sys.argv, coverage_packages=['rosbridge_library'])
+

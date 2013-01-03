@@ -1,15 +1,10 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib
-roslib.load_manifest(PKG)
-roslib.load_manifest("std_msgs")
+import sys
 import rospy
-
+import rostest
 import unittest
 import time
 
-
-roslib.load_manifest("roscpp")
 from roscpp.srv import GetLoggers
 
 from json import loads, dumps
@@ -63,6 +58,9 @@ class TestCallService(unittest.TestCase):
             self.assertEqual(x.name, y["name"])
             self.assertEqual(x.level, y["level"])
 
+
+PKG = 'test_rosbridge_library'
+NAME = 'test_call_service'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_call_service', TestCallService)
+    rostest.unitrun(PKG, NAME, TestCallService, sys.argv, coverage_packages=['rosbridge_library'])
+

@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib; roslib.load_manifest(PKG)
+import sys
 import rospy
+import rostest
+import unittest
 
 from rosbridge_library.internal import pngcompression
-
-import unittest
 
 
 class TestCompression(unittest.TestCase):
@@ -18,7 +17,7 @@ class TestCompression(unittest.TestCase):
         string = str(bytearray(bytes))
         encoded = pngcompression.encode(string)
         self.assertNotEqual(string, encoded)
-        
+
     def test_compress_decompress(self):
         bytes = range(128) * 10000
         string = str(bytearray(bytes))
@@ -26,8 +25,9 @@ class TestCompression(unittest.TestCase):
         self.assertNotEqual(string, encoded)
         decoded = pngcompression.decode(encoded)
         self.assertEqual(string, decoded)
-        
 
+PKG = 'test_rosbridge_library'
+NAME = 'test_compression'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_compression', TestCompression)
+    rostest.unitrun(PKG, NAME, TestCompression, sys.argv, coverage_packages=['rosbridge_library'])
+

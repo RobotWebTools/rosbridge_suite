@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib; roslib.load_manifest(PKG); roslib.load_manifest("std_msgs")
+import sys
 import rospy
-from rospy import get_published_topics
+import rostest
+import unittest
 from rosgraph import Master
 
 from time import sleep, time
@@ -13,7 +13,6 @@ from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import *
 from std_msgs.msg import String, Int32
 
-import unittest
 
 class TestMultiSubscriber(unittest.TestCase):
 
@@ -21,7 +20,7 @@ class TestMultiSubscriber(unittest.TestCase):
         rospy.init_node("test_multi_subscriber")
 
     def is_topic_published(self, topicname):
-        return topicname in dict(get_published_topics()).keys()
+        return topicname in dict(rospy.get_published_topics()).keys()
 
     def is_topic_subscribed(self, topicname):
         return topicname in dict(Master("test_multi_subscriber").getSystemState()[1])
@@ -181,6 +180,9 @@ class TestMultiSubscriber(unittest.TestCase):
         self.assertEqual(msg.data, received["msg1"]["data"])
         self.assertEqual(msg.data, received["msg2"]["data"])
 
+
+PKG = 'test_rosbridge_library'
+NAME = 'test_multi_subscriber'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_multi_subscriber', TestMultiSubscriber)
+    rostest.unitrun(PKG, NAME, TestMultiSubscriber, sys.argv, coverage_packages=['rosbridge_library'])
+

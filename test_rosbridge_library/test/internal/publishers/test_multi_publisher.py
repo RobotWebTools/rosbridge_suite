@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-PKG = 'rosbridge_library'
-import roslib; roslib.load_manifest(PKG); roslib.load_manifest("std_msgs")
+import sys
 import rospy
-from rospy import get_published_topics
+import rostest
+import unittest
 
 from time import sleep, time
 
@@ -12,7 +12,6 @@ from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import *
 from std_msgs.msg import String, Int32
 
-import unittest
 
 class TestMultiPublisher(unittest.TestCase):
 
@@ -20,7 +19,7 @@ class TestMultiPublisher(unittest.TestCase):
         rospy.init_node("test_multi_publisher")
 
     def is_topic_published(self, topicname):
-        return topicname in dict(get_published_topics()).keys()
+        return topicname in dict(rospy.get_published_topics()).keys()
 
     def test_register_multipublisher(self):
         """ Register a publisher on a clean topic with a good msg type """
@@ -117,6 +116,9 @@ class TestMultiPublisher(unittest.TestCase):
         p = MultiPublisher(topic, msg_type)
         self.assertRaises(FieldTypeMismatchException, p.publish, msg)
 
+
+PKG = 'test_rosbridge_library'
+NAME = 'test_multi_publisher'
 if __name__ == '__main__':
-    import rostest
-    rostest.rosrun(PKG, 'test_multi_publisher', TestMultiPublisher)
+    rostest.unitrun(PKG, NAME, TestMultiPublisher, sys.argv, coverage_packages=['rosbridge_library'])
+
