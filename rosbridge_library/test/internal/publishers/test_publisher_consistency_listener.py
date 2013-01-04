@@ -169,8 +169,8 @@ class TestPublisherConsistencyListener(unittest.TestCase):
         self.assertEqual(received["msgs"], msgs)
 
 
-PKG = 'test_rosbridge_library'
+PKG = 'rosbridge_library'
 NAME = 'test_publisher_consistency_listener'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestPublisherConsistencyListener, sys.argv, coverage_packages=['rosbridge_library'])
+    rostest.unitrun(PKG, NAME, TestPublisherConsistencyListener)
 

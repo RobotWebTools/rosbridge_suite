@@ -181,8 +181,8 @@ class TestMultiSubscriber(unittest.TestCase):
         self.assertEqual(msg.data, received["msg2"]["data"])
 
 
-PKG = 'test_rosbridge_library'
+PKG = 'rosbridge_library'
 NAME = 'test_multi_subscriber'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestMultiSubscriber, sys.argv, coverage_packages=['rosbridge_library'])
+    rostest.unitrun(PKG, NAME, TestMultiSubscriber)
 

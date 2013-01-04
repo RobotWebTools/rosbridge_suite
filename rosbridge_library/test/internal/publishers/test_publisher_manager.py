@@ -188,8 +188,8 @@ class TestPublisherManager(unittest.TestCase):
         self.assertRaises(FieldTypeMismatchException, manager.publish, client, topic, msg)
 
 
-PKG = 'test_rosbridge_library'
+PKG = 'rosbridge_library'
 NAME = 'test_publisher_manager'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestPublisherManager, sys.argv, coverage_packages=['rosbridge_library'])
+    rostest.unitrun(PKG, NAME, TestPublisherManager)
 

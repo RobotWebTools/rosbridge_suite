@@ -131,8 +131,8 @@ class TestAdvertise(unittest.TestCase):
         self.assertFalse(self.is_topic_published(topic))
 
 
-PKG = 'test_rosbridge_library'
+PKG = 'rosbridge_library'
 NAME = 'test_advertise'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestAdvertise, sys.argv, coverage_packages=['rosbridge_library'])
+    rostest.unitrun(PKG, NAME, TestAdvertise)
 

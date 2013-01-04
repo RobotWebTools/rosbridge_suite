@@ -26,8 +26,8 @@ class TestCompression(unittest.TestCase):
         decoded = pngcompression.decode(encoded)
         self.assertEqual(string, decoded)
 
-PKG = 'test_rosbridge_library'
+PKG = 'rosbridge_library'
 NAME = 'test_compression'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestCompression, sys.argv, coverage_packages=['rosbridge_library'])
+    rostest.unitrun(PKG, NAME, TestCompression)
 
