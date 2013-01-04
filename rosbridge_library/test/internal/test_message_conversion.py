@@ -171,7 +171,7 @@ class TestMessageConversion(unittest.TestCase):
         self.do_test(msg, "std_msgs/Time")
 
         msg = {"times": [{"secs": 3, "nsecs": 5}, {"secs": 2, "nsecs": 7}]}
-        self.do_test(msg, "rosbridge_test/TimeArrayTest")
+        self.do_test(msg, "rosbridge_library/TestTimeArray")
 
     def test_time_msg_now(self):
         msg = {"data": "now"}
@@ -195,20 +195,20 @@ class TestMessageConversion(unittest.TestCase):
         self.do_test(msg, "std_msgs/Duration")
 
         msg = {"durations": [{"secs": 3, "nsecs": 5}, {"secs": 2, "nsecs": 7}]}
-        self.do_test(msg, "rosbridge_test/DurationArrayTest")
+        self.do_test(msg, "rosbridge_library/TestDurationArray")
 
     def test_header_msg(self):
         msg = {"seq": 5, "stamp": {"secs": 12347, "nsecs": 322304}, "frame_id": "2394dnfnlcx;v[p234j]"}
         self.do_test(msg, "std_msgs/Header")
 
         msg = {"header": msg}
-        self.do_test(msg, "rosbridge_test/HeaderTest")
-        self.do_test(msg, "rosbridge_test/HeaderTestTwo")
+        self.do_test(msg, "rosbridge_library/TestHeader")
+        self.do_test(msg, "rosbridge_library/TestHeaderTwo")
 
         msg = {"header": [msg["header"], msg["header"], msg["header"]]}
         msg["header"][1]["seq"] = 6
         msg["header"][2]["seq"] = 7
-        self.do_test(msg, "rosbridge_test/HeaderArrayTest")
+        self.do_test(msg, "rosbridge_library/TestHeaderArray")
 
     def test_assorted_msgs(self):
         assortedmsgs = ["geometry_msgs/Pose", "actionlib_msgs/GoalStatus",
@@ -234,8 +234,8 @@ class TestMessageConversion(unittest.TestCase):
             self.validate_instance(inst)
             return inst.data
 
-        for msgtype in ["CharTest", "UInt8Test"]:
-            rostype = "rosbridge_test/" + msgtype
+        for msgtype in ["TestChar", "TestUInt8"]:
+            rostype = "rosbridge_library/" + msgtype
 
             int8s = range(0, 256)
             ret = test_int8_msg(rostype, int8s)
@@ -248,8 +248,8 @@ class TestMessageConversion(unittest.TestCase):
             self.assertEqual(ret, str_int8s)
 
 
-PKG = 'test_rosbridge_library'
+PKG = 'rosbridge_library'
 NAME = 'test_message_conversion'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestMessageConversion, sys.argv, coverage_packages=['rosbridge_library'])
+    rostest.unitrun(PKG, NAME, TestMessageConversion)
 

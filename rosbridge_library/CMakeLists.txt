@@ -1,8 +1,44 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosbridge_library)
 
-find_package(catkin REQUIRED COMPONENTS rospy rosservice rostopic)
+find_package(catkin REQUIRED COMPONENTS message_generation rospy rosservice rostopic roscpp rosgraph rostest)
+
+# Generate messages for testing (NOINSTALL)
+add_message_files(
+  FILES
+  TestChar.msg
+  TestDurationArray.msg
+  TestHeaderArray.msg
+  TestHeader.msg
+  TestHeaderTwo.msg
+  TestTimeArray.msg
+  TestUInt8.msg
+  NOINSTALL
+)
+
+# Generate services for testing (NOINSTALL)
+add_service_files(
+  FILES
+  TestArrayRequest.srv
+  TestEmpty.srv
+  TestMultipleRequestFields.srv
+  TestMultipleResponseFields.srv
+  TestRequestAndResponse.srv
+  TestRequestOnly.srv
+  TestResponseOnly.srv
+  NOINSTALL
+)
+
+catkin_python_setup()
+
+# Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 catkin_package()
-catkin_python_setup()
+
+# Test launch files
+add_rostest(test/test_all.test)
 

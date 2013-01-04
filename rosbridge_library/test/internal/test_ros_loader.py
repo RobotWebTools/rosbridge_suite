@@ -213,8 +213,8 @@ class TestROSLoader(unittest.TestCase):
             self.assertRaises(ros_loader.InvalidClassException,
                               ros_loader.get_service_response_instance, x)
 
-PKG = 'test_rosbridge_library'
+PKG = 'rosbridge_library'
 NAME = 'test_ros_loader'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestROSLoader, sys.argv, coverage_packages=['rosbridge_library'])
+    rostest.unitrun(PKG, NAME, TestROSLoader)
 

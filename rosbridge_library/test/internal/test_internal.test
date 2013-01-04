@@ -1,0 +1,12 @@
+<launch>
+  <test test-name="test_ros_loader" pkg="rosbridge_library" type="test_ros_loader.py" />
+  <test test-name="test_message_conversion" pkg="rosbridge_library" type="test_message_conversion.py" />
+  <test test-name="test_services" pkg="rosbridge_library" type="test_services.py" />
+  <test test-name="test_publisher_consistency_listener" pkg="rosbridge_library" type="test_publisher_consistency_listener.py" />
+  <test test-name="test_multi_publisher" pkg="rosbridge_library" type="test_multi_publisher.py" />
+  <test test-name="test_publisher_manager" pkg="rosbridge_library" type="test_publisher_manager.py" />
+  <test test-name="test_multi_unregistering" pkg="rosbridge_library" type="test_multi_unregistering.py" />
+  <test test-name="test_multi_subscriber" pkg="rosbridge_library" type="test_multi_subscriber.py" />
+  <test test-name="test_subscriber_manager" pkg="rosbridge_library" type="test_subscriber_manager.py" />
+  <test test-name="test_subscription_modifiers" pkg="rosbridge_library" type="test_subscription_modifiers.py" />
+</launch>
