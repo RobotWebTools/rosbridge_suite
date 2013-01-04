@@ -320,8 +320,8 @@ class TestMessageHandlers(unittest.TestCase):
 #        handler = test_throttle(handler, 50)
 
 
-PKG = 'test_rosbridge_library'
+PKG = 'rosbridge_library'
 NAME = 'test_message_handlers'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestMessageHandlers, sys.argv, coverage_packages=['rosbridge_library'])
+    rostest.unitrun(PKG, NAME, TestMessageHandlers)
 

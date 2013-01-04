@@ -59,8 +59,8 @@ class TestCallService(unittest.TestCase):
             self.assertEqual(x.level, y["level"])
 
 
-PKG = 'test_rosbridge_library'
+PKG = 'rosbridge_library'
 NAME = 'test_call_service'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestCallService, sys.argv, coverage_packages=['rosbridge_library'])
+    rostest.unitrun(PKG, NAME, TestCallService)
 

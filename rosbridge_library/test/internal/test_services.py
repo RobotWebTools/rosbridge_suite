@@ -10,7 +10,6 @@ from rosbridge_library.internal import services, ros_loader
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 
-roslib.load_manifest("roscpp")
 from roscpp.srv import GetLoggers
 
 
@@ -105,15 +104,15 @@ class TestServices(unittest.TestCase):
 
     def test_populate_request_args(self):
         # Test empty messages
-        for srv_type in ["Empty", "ResponseOnly"]:
-            cls = ros_loader.get_service_class("rosbridge_test/" + srv_type)
+        for srv_type in ["TestEmpty", "TestResponseOnly"]:
+            cls = ros_loader.get_service_class("rosbridge_library/" + srv_type)
             for args in [[], {}, None]:
                 # Should throw no exceptions
                 services.args_to_service_request_instance("", cls._request_class(), args)
 
         # Test msgs with data message
-        for srv_type in ["RequestOnly", "RequestAndResponse"]:
-            cls = ros_loader.get_service_class("rosbridge_test/" + srv_type)
+        for srv_type in ["TestRequestOnly", "TestRequestAndResponse"]:
+            cls = ros_loader.get_service_class("rosbridge_library/" + srv_type)
             for args in [[3], {"data": 3}]:
                 # Should throw no exceptions
                 services.args_to_service_request_instance("", cls._request_class(), args)
@@ -161,16 +160,16 @@ class TestServices(unittest.TestCase):
             self.assertEqual(x.level, y["level"])
 
     def test_service_tester(self):
-        t = ServiceTester("/test_service_tester", "rosbridge_test/RequestAndResponse")
+        t = ServiceTester("/test_service_tester", "rosbridge_library/TestRequestAndResponse")
         t.start()
         time.sleep(1.0)
         t.validate(self.msgs_equal)
 
     def test_service_tester_alltypes(self):
         ts = []
-        for srv in ["ResponseOnly", "Empty", "RequestAndResponse", "RequestOnly",
-            "MultipleResponseFields", "MultipleRequestFields", "ArrayRequest"]:
-            t = ServiceTester("/test_service_tester_alltypes_" + srv, "rosbridge_test/" + srv)
+        for srv in ["TestResponseOnly", "TestEmpty", "TestRequestAndResponse", "TestRequestOnly",
+            "TestMultipleResponseFields", "TestMultipleRequestFields", "TestArrayRequest"]:
+            t = ServiceTester("/test_service_tester_alltypes_" + srv, "rosbridge_library/" + srv)
             t.start()
             ts.append(t)
 
@@ -197,8 +196,8 @@ class TestServices(unittest.TestCase):
             t.validate(self.msgs_equal)
 
 
-PKG = 'test_rosbridge_library'
+PKG = 'rosbridge_library'
 NAME = 'test_services'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestServices, sys.argv, coverage_packages=['rosbridge_library'])
+    rostest.unitrun(PKG, NAME, TestServices)
 

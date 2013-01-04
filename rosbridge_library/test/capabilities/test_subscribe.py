@@ -116,8 +116,8 @@ class TestSubscribe(unittest.TestCase):
         self.assertEqual(received["msg"]["msg"]["data"], msg.data)
 
 
-PKG = 'test_rosbridge_library'
+PKG = 'rosbridge_library'
 NAME = 'test_subscribe'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestSubscribe, sys.argv, coverage_packages=['rosbridge_library'])
+    rostest.unitrun(PKG, NAME, TestSubscribe)
 

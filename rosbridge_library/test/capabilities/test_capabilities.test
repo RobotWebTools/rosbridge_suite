@@ -1,0 +1,6 @@
+<launch>
+  <test test-name="test_advertise" pkg="rosbridge_library" type="test_advertise.py" />
+  <test test-name="test_publish" pkg="rosbridge_library" type="test_publish.py" />
+  <test test-name="test_subscribe" pkg="rosbridge_library" type="test_subscribe.py" />
+  <test test-name="test_call_service" pkg="rosbridge_library" type="test_call_service.py" />
+</launch>
