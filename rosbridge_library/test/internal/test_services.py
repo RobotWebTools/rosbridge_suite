@@ -119,7 +119,7 @@ class TestServices(unittest.TestCase):
             self.assertRaises(FieldTypeMismatchException, services.args_to_service_request_instance, "", cls._request_class(), ["hello"])
 
         # Test message with multiple fields
-        cls = ros_loader.get_service_class("rosbridge_test/MultipleRequestFields")
+        cls = ros_loader.get_service_class("rosbridge_library/TestMultipleRequestFields")
         for args in [[3, 3.5, "hello", False], {"int": 3, "float": 3.5, "string": "hello", "bool": False}]:
             # Should throw no exceptions
             services.args_to_service_request_instance("", cls._request_class(), args)
