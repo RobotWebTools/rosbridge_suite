@@ -181,7 +181,7 @@ def _to_time_inst(msg, rostype, inst=None):
     # Create an instance if we haven't been provided with one
     if rostype == "time" and msg == "now":
         return rospy.get_rostime()
-        
+
     if inst is None:
         if rostype == "time":
             inst = rospy.rostime.Time()
@@ -192,8 +192,11 @@ def _to_time_inst(msg, rostype, inst=None):
 
     # Copy across the fields
     for field in ["secs", "nsecs"]:
-        if field in msg:
-            setattr(inst, field, msg[field])
+        try:
+            if field in msg:
+                setattr(inst, field, msg[field])
+        except TypeError:
+            continue
 
     return inst
 
