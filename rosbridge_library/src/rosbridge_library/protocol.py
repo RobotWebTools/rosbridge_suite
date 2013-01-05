@@ -30,8 +30,9 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from rospy import logdebug, loginfo, logwarn, logerr
-from json import dumps, loads
+import rospy
+import json
+
 
 class InvalidArgumentException(Exception):
     pass
@@ -142,7 +143,7 @@ class Protocol:
         Returns a JSON string representing the dictionary
         """
         try:
-            return dumps(msg)
+            return json.dumps(msg)
         except:
             if cid is not None:
                 # Only bother sending the log message if there's an id
@@ -163,7 +164,7 @@ class Protocol:
 
         """
         try:
-            return loads(msg)
+            return json.loads(msg)
         except:
             self.log("error",
              "Unable to deserialize message from client: %s" % msg, cid)
@@ -217,10 +218,11 @@ class Protocol:
             stdout_formatted_msg = "[Client %s] %s" % (self.client_id, message)
 
         if level == "error" or level == "err":
-            logerr(stdout_formatted_msg)
+            rospy.logerr(stdout_formatted_msg)
         elif level == "warning" or level == "warn":
-            logwarn(stdout_formatted_msg)
+            rospy.logwarn(stdout_formatted_msg)
         elif level == "info" or level == "information":
-            loginfo(stdout_formatted_msg)
+            rospy.loginfo(stdout_formatted_msg)
         else:
-            logdebug(stdout_formatted_msg)
+            rospy.logdebug(stdout_formatted_msg)
+
