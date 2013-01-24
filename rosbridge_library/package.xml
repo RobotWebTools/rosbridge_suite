@@ -25,7 +25,6 @@
   <run_depend>rosservice</run_depend>
   <run_depend>rostopic</run_depend>
   <run_depend>python-imaging</run_depend>
-  <test_depend>rospy</test_depend>
   <test_depend>roscpp</test_depend>
 
 </package>
