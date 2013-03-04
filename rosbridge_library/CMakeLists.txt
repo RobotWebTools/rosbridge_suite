@@ -40,5 +40,5 @@ generate_messages(
 catkin_package()
 
 # Test launch files
-add_rostest(test/test_all.test)
+# add_rostest(test/test_all.test)
 
