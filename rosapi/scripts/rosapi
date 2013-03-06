@@ -33,9 +33,7 @@
 
 import rospy
 
-import rosapi.proxy
-import rosapi.objectutils
-import rosapi.params
+from rosapi import proxy, objectutils, params
 from rosapi.srv import *
 from rosapi.msg import *
 
