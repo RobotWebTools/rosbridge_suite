@@ -66,6 +66,8 @@ if __name__ == "__main__":
     init_node("rosbridge_server")
     signal(SIGINT, SIG_DFL)
 
+    certfile = rospy.get_param('~certfile', None)
+    keyfile = rospy.get_param('~keyfile', None)
     port = get_param('/rosbridge/port', 9090)
     if "--port" in sys.argv:
         idx = sys.argv.index("--port")+1
@@ -77,7 +79,10 @@ if __name__ == "__main__":
     
     
     application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)])
-    application.listen(port)
+    if certfile is not None and keyfile is not None:
+        application.listen(port, ssl_options={ "certfile": certfile, "keyfile": keyfile})
+    else:
+        application.listen(port)
     loginfo("Rosbridge server started on port %d", port)
 
     IOLoop.instance().start()
