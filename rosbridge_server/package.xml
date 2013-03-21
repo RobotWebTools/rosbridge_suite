@@ -21,4 +21,5 @@
   <run_depend>rosapi</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>python-imaging</run_depend>
+  <run_depend>rosauth</run_depend>
 </package>
