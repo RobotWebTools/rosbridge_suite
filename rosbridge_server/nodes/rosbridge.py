@@ -66,8 +66,8 @@ if __name__ == "__main__":
     init_node("rosbridge_server")
     signal(SIGINT, SIG_DFL)
 
-    certfile = rospy.get_param('~certfile', None)
-    keyfile = rospy.get_param('~keyfile', None)
+    certfile = get_param('~certfile', None)
+    keyfile = get_param('~keyfile', None)
     port = get_param('/rosbridge/port', 9090)
     if "--port" in sys.argv:
         idx = sys.argv.index("--port")+1
