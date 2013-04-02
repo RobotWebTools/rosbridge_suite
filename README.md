@@ -36,6 +36,6 @@ API. Rosbridge clients include:
 ### Change Logs
 
  * 0.4.3
- * * launch file location fixed
- * * SSL option added
- * * Authentication added
+  * launch file location fixed
+  * SSL option added
+  * Authentication added
