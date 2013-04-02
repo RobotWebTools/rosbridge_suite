@@ -33,3 +33,9 @@ API. Rosbridge clients include:
  * [Contributors](https://github.com/RobotWebTools/rosbridge_suite/graphs/contributors)
  * [License (BSD)](http://opensource.org/licenses/BSD-2-Clause)
 
+### Change Logs
+
+ * 0.4.3
+  * launch file location fixed
+  * SSL option added
+  * Authentication added
