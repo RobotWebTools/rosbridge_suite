@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>rosbridge_server</name>
-  <version>0.4.0</version>
+  <version>0.4.2</version>
   <description>A WebSocket interface to rosbridge.</description>
 
   <maintainer email="baalexander@gmail.com">Brandon Alexander</maintainer>
@@ -21,4 +21,5 @@
   <run_depend>rosapi</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>python-imaging</run_depend>
+  <run_depend>rosauth</run_depend>
 </package>

@@ -14,6 +14,6 @@ install(PROGRAMS
 
 install(FILES
   launch/rosbridge_websocket.launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
 

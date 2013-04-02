@@ -1,5 +1,24 @@
 <launch>
-  <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket" />
+  <arg name="port" default="9090" />
+  <arg name="ssl" default="false" />
+  <arg name="certfile" />
+  <arg name="keyfile" />
+  <arg name="authenticate" default="false" />
+  
+  <param name="/rosbridge/port" value="$(arg port)"/>
+
+  <group if="$(arg ssl)">
+    <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket" output="screen">
+      <param name="certfile" value="$(arg certfile)" />
+      <param name="keyfile" value="$(arg keyfile)" />
+      <param name="authenticate" value="$(arg authenticate)" />
+    </node>
+  </group>
+  <group unless="$(arg ssl)">
+    <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket" output="screen">
+      <param name="authenticate" value="$(arg authenticate)" />
+    </node>
+  </group>
+  
   <node name="rosapi" pkg="rosapi" type="rosapi" />
 </launch>
-
