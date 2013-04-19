@@ -6,7 +6,6 @@ from catkin_pkg.python_setup import generate_distutils_setup
 d = generate_distutils_setup(
     packages=['tornado', 'tornado.platform'],
     package_dir={'': 'src'},
-    scripts=['scripts/rosbridge_websocket'],
 )
 
 setup(**d)
