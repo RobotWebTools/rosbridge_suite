@@ -23,7 +23,7 @@ supports a variety of transport layers, including WebSockets.
 A rosbridge client is a program that communicates with rosbridge using its JSON
 API. Rosbridge clients include:
 
- * [ros.js](http://www.ros.org/wiki/rosjs) - A JavaScript API, which
+ * [roslibjs](https://github.com/robotwebtools/roslibjs) - A JavaScript API, which
    communicates with rosbridge over WebSockets.
 
 ### Resources
