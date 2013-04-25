@@ -29,13 +29,8 @@ API. Rosbridge clients include:
 ### Resources
 
  * [Documentation](http://www.ros.org/wiki/rosbridge_suite)
+ * [Rosbridge Protocol Specification](ROSBRIDGE_PROTOCOL.md)
  * [Coding Style Guide](http://www.ros.org/wiki/PyStyleGuide)
  * [Contributors](https://github.com/RobotWebTools/rosbridge_suite/graphs/contributors)
  * [License (BSD)](http://opensource.org/licenses/BSD-2-Clause)
 
-### Change Logs
-
- * 0.4.3
-  * launch file location fixed
-  * SSL option added
-  * Authentication added
