@@ -104,7 +104,7 @@ subject to change after review.
 
 The rosbridge protocol provides the ability to fragment messages and to compress messages.
 
-#### 3.1.1 Fragmentation (_fragment_) [experimental]
+#### 3.1.1 Fragmentation ( _fragment_ ) [experimental]
 
 Messages may be fragmented if they are particularly large, or if the client
 requests fragmentation. A fragmented message has the following format:
@@ -132,7 +132,7 @@ data field of the fragment populated by the substring.
 To reconstruct an original message, the data fields of the fragments are
 concatenated, resulting in the JSON string of the original message.
 
-#### 3.1.2 PNG compression (_png_) [experimental]
+#### 3.1.2 PNG compression ( _png_ ) [experimental]
 
 Some messages (such as point clouds) can be extremely large, and for efficiency
 reasons we may wish to transfer them as PNG-encoded bytes. The PNG opcode
@@ -177,7 +177,7 @@ A rough guide for what causes the levels of status message:
     partially-complete published message)
  * **info** – warning, plus messages indicating success of various operations
 
-#### 3.2.1 Set Status Level (_status_level_) [experimental]
+#### 3.2.1 Set Status Level ( _status_level_ ) [experimental]
 
 ```json
 { "op": "set_level",
@@ -191,7 +191,7 @@ A rough guide for what causes the levels of status message:
 Sets the status level to the level specified. If a bad string is specified, the
 message is dropped.
 
-#### 3.2.2 Status message (_status_) [experimental]
+#### 3.2.2 Status message ( _status_ ) [experimental]
 
 ```json
 { "op": "status",
@@ -211,7 +211,7 @@ message is dropped.
 These rosbridge messages interact with ROS, and correspond roughly to the
 messages that already exist in the current version of rosbridge.
 
-#### 3.3.1 Advertise (_advertise_)
+#### 3.3.1 Advertise ( _advertise_ )
 
 If you wish to advertise that you are or will be publishing a topic, then use
 the advertise command.
@@ -236,7 +236,7 @@ the advertise command.
    * If the topic doesnt already exist but the type cannot be resolved, then an
      error status message is sent and this message is dropped.
 
-#### 3.3.2 Unadvertise (_unadvertise_)
+#### 3.3.2 Unadvertise ( _unadvertise_ )
 
 This stops advertising that you are publishing a topic.
 
@@ -254,7 +254,7 @@ This stops advertising that you are publishing a topic.
    * If the topic exists but rosbridge is not advertising it, a warning status
      message is sent and this message is dropped
 
-#### 3.3.3 Publish (_publish_)
+#### 3.3.3 Publish ( _publish_ )
 
 The publish message is used to send data on a topic.
 
