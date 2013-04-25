@@ -2,3 +2,6 @@
 .project
 .pydevproject
 .svn
+.DS_Store
+.idea
+*.iml
