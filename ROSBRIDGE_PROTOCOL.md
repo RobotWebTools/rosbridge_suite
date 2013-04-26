@@ -77,6 +77,9 @@ Rosbridge status messages:
   * **set_status_level** - a request to set the reporting level for rosbridge status messages
   * **status** - a status message
 
+Authentication:
+  * **auth** - a set of authentication credentials to authenticate a client connection
+
 ROS operations:
 
   * **advertise** – advertise that you are publishing a topic
@@ -206,12 +209,58 @@ message is dropped.
  * **id** – if the status message was the result of some operation that had an
     id, then that id is included
 
-### 3.3 ROS messages
+### 3.3 Authentication message
+
+Optional authentication information can be passed via the rosbridge protocol
+to authenticate a client connection. This information should come from some
+trusted third-party authenticator. 
+
+Authentication is based on the MAC (message authentication code) scheme. The
+key to using MAC is that it does not tie users to a single "user database."
+It simply requires some trusted third-party to provide the hash-keys.
+
+#### 3.3.1 Authenticate ( _auth_ )
+
+To send authentication credentials, use the auth command.
+
+```json
+{ "op": "auth", 
+  "mac": <string>, 
+  "client": <string>, 
+  "dest": <string>, 
+  "rand": <string>, 
+  "t": <int>, 
+  "level": <string>, 
+  "end": <int>
+}
+```
+
+ * **mac** – MAC (hashed) string given by the client
+ * **client** – IP of the client
+ * **dest** – IP of the destination
+ * **rand** – random string given by the client
+ * **t** – time of the authorization request
+ * **level** – user level as a string given by the client
+ * **end** – end time of the client's session
+
+   * Any server that enabled authentication should wait for
+     this request to come in first before accepting any other 
+     `op` code from the client.
+   * Once the request comes in, it would verify the information 
+     (in a ROS system, using `rosauth`; however, the verification
+     method is not tied to ROS). 
+   * If the authentication is good, the connection would be kept
+     and rosbridge would function as normal. If the authentication
+     is bad, the connection would be severed. 
+   * In the case that authentication is not enabled on the server, 
+     this `op` code can be ignored.
+
+### 3.4 ROS messages
 
 These rosbridge messages interact with ROS, and correspond roughly to the
 messages that already exist in the current version of rosbridge.
 
-#### 3.3.1 Advertise ( _advertise_ )
+#### 3.4.1 Advertise ( _advertise_ )
 
 If you wish to advertise that you are or will be publishing a topic, then use
 the advertise command.
@@ -236,7 +285,7 @@ the advertise command.
    * If the topic doesnt already exist but the type cannot be resolved, then an
      error status message is sent and this message is dropped.
 
-#### 3.3.2 Unadvertise ( _unadvertise_ )
+#### 3.4.2 Unadvertise ( _unadvertise_ )
 
 This stops advertising that you are publishing a topic.
 
@@ -254,7 +303,7 @@ This stops advertising that you are publishing a topic.
    * If the topic exists but rosbridge is not advertising it, a warning status
      message is sent and this message is dropped
 
-#### 3.3.3 Publish ( _publish_ )
+#### 3.4.3 Publish ( _publish_ )
 
 The publish message is used to send data on a topic.
 
@@ -284,7 +333,7 @@ automatically populate the header with a frame id of "" and the timestamp as
 the current time. Alternatively, just the timestamp field can be omitted, and
 then the current time will be automatically inserted.
 
-#### 3.3.4 Subscribe
+#### 3.4.4 Subscribe
 
 ```json
 { "op": "subscribe",
@@ -329,7 +378,7 @@ highest queue_length. It is recommended that the client provides IDs for its
 subscriptions, to enable rosbridge to effectively choose the appropriate
 fragmentation size and publishing rate.
 
-#### 3.3.5 Unsubscribe
+#### 3.4.5 Unsubscribe
 
 ```json
 { "op": "unsubscribe",
@@ -344,7 +393,7 @@ fragmentation size and publishing rate.
 If an id is provided, then only the corresponding subscription is unsubscribed.
 If no ID is provided, then all subscriptions are unsubscribed.
 
-#### 3.3.6 Call Service
+#### 3.4.6 Call Service
 
 ```json
 { "op": "call_service",
@@ -368,7 +417,7 @@ Calls a ROS service
  * **compression** – an optional string to specify the compression scheme to be
     used on messages. Valid values are "none" and "png"
 
-#### 3.3.7 Service Response
+#### 3.4.7 Service Response
 
 ```json
 { "op": "service_response",
