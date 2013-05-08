@@ -16,7 +16,7 @@ before_script:
 
 script:
   - source /opt/ros/groovy/setup.bash
-  - echo $ROS_PACKAGE_PATH
+  - ls /opt/ros/groovy/lib/python2.7/dist-packages/catkin
   - echo $PYTHONPATH
   - catkin_make install
   - source install/setup.bash
