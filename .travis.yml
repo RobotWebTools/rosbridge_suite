@@ -16,6 +16,8 @@ before_script:
 
 script:
   - source /opt/ros/groovy/setup.bash
+  - echo $ROS_PACKAGE_PATH
+  - echo $PYTHONPATH
   - catkin_make install
   - source install/setup.bash
   - rostest rosbridge_library test_all.test
