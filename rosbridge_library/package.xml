@@ -24,6 +24,8 @@
   <build_depend>message_generation</build_depend>
   <run_depend>rospy</run_depend>
   <run_depend>rosservice</run_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
   <run_depend>rostopic</run_depend>
   <run_depend>python-imaging</run_depend>
   <run_depend>message_runtime</run_depend>
