@@ -27,5 +27,6 @@ script:
   - source devel/setup.bash
   - cat /etc/hostname 
   - cat /etc/hosts
+  - export ROS_MASTER_URI=http://localhost:11311
+  - export ROS_HOSTNAME=localhost
   - rostest rosbridge_library test_all.test
-
