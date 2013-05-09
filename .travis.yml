@@ -2,11 +2,12 @@ language: python
 python:
   - "2.7"
 
-before_script:
+install:
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
   - sudo apt-get update -qq
-  - sudo apt-get install ros-groovy-catkin python-catkin-pkg python-rosdep -qq
+  - sudo apt-get install python-catkin-pkg python-rosdep -qq
+  - sudo apt-get install ros-groovy-catkin -qq
   - sudo rosdep init
   - rosdep update 
   - mkdir -p /tmp/ws/src
@@ -16,8 +17,6 @@ before_script:
 
 script:
   - source /opt/ros/groovy/setup.bash
-  - ls /opt/ros/groovy/lib/python2.7/dist-packages/catkin
-  - echo $PYTHONPATH
   - catkin_make install
   - source install/setup.bash
   - rostest rosbridge_library test_all.test
