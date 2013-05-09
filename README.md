@@ -1,3 +1,5 @@
+[![Build Status](https://api.travis-ci.org/RobotWebTools/rosbridge_suite.png)](https://travis-ci.org/RobotWebTools/rosbridge_suite)
+
 Rosbridge provides a JSON interface to ROS, allowing any client to send JSON to
 publish or subscribe to ROS topics, call ROS services, and more. Rosbridge
 supports a variety of transport layers, including WebSockets.
