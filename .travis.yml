@@ -22,8 +22,10 @@ install:
 script:
   - source /opt/ros/groovy/setup.bash
   - catkin_make
+  - catkin_make install
   - sudo apt-get install ros-groovy-rostest
   - source devel/setup.bash
+  - cat /etc/hostname 
+  - cat /etc/hosts
   - rostest rosbridge_library test_all.test
-  - catkin_make install
 
