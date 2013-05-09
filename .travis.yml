@@ -1,6 +1,11 @@
-language: python
+language:
+  - cpp
+  - python
 python:
   - "2.7"
+compiler:
+  - gcc
+  - clang
 
 install:
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
