@@ -24,7 +24,7 @@ script:
   - catkin_make
   - catkin_make install
   - sudo apt-get install ros-groovy-rostest
-  - source devel/setup.bash
-  - export ROS_MASTER_URI=http://localhost:11311
-  - export ROS_HOSTNAME=localhost
-  - rostest rosbridge_library test_all.test
+  - source install/setup.bash
+# - export ROS_MASTER_URI=http://localhost:11311
+# - export ROS_HOSTNAME=localhost
+#- rostest rosbridge_library test_all.test
