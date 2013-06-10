@@ -58,7 +58,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         self.request.send(message)
 
 if __name__ == "__main__":
-    init_node("rosbridge_server")
+    init_node("rosbridge_tcp")
     signal(SIGINT, SIG_DFL)
 
     port = get_param('/rosbridge/port', 9090)
@@ -73,6 +73,6 @@ if __name__ == "__main__":
     # Server host is a tuple ('host', port)
     server = SocketServer.ThreadingTCPServer(('localhost', port), RosbridgeTcpSocket)
 
-    loginfo("Rosbridge server started on port %d", port)
+    loginfo("Rosbridge TCP server started on port %d", port)
 
     server.serve_forever()
