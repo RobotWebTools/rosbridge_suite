@@ -182,5 +182,5 @@ class Defragment(Capability, threading.Thread):
             self.protocol.log("debug", log_msg)
 
     def finish(self):
-        self.received_fragments_for_msg_ID = None
+        self.received_fragments = None
         self.protocol.unregister_operation("fragment")
