@@ -2,6 +2,20 @@ from rosbridge_library.capability import Capability
 from datetime import datetime
 import threading
 
+# try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
+try:
+    import xyujson as json
+    print "using ujson"
+except ImportError:
+    print "importing ujson failed"
+    try:
+        import xysimplejson as json
+        print "using simplejson"
+    except ImportError:
+        print "importing simplejson failed"
+        import json
+        print "using python default json"
+
 class ReceivedFragments():
     """
     Singleton class to hold lists of received fragments in one 'global' object
@@ -172,7 +186,7 @@ class Defragment(Capability, threading.Thread):
             self.protocol.incoming(reconstructed_msg)
             log_msg = "reconstructed message (ID:" + str(msg_id) + ") from "
             log_msg += str(msg_total) + " fragments. "
-            log_msg += "[message length: " + str(len(reconstructed_msg)) +"]"
+            log_msg += "[message length: " + str(len(str(json.loads(reconstructed_msg)["msg"]["data"]))) +"]"
             log_msg += "[duration: " + str(duration.total_seconds()) +  " s]"
             self.protocol.log("info", log_msg)
 
