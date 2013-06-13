@@ -31,7 +31,19 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import rospy
-import json
+# try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
+try:
+    import ujson as json
+    print "using ujson"
+except ImportError:
+    print "importing ujson failed"
+    try:
+        import simplejson as json
+        print "using simplejson"
+    except ImportError:
+        print "importing simplejson failed"
+        import json
+        print "using python default json"
 
 
 class InvalidArgumentException(Exception):
