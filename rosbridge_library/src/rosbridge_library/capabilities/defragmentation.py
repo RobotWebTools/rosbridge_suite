@@ -4,12 +4,12 @@ import threading
 
 # try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
 try:
-    import xyujson as json
-    print "using ujson"
+    import ujson as json
+    print "defragmentation.py is using ujson"
 except ImportError:
     print "importing ujson failed"
     try:
-        import xysimplejson as json
+        import simplejson as json
         print "using simplejson"
     except ImportError:
         print "importing simplejson failed"

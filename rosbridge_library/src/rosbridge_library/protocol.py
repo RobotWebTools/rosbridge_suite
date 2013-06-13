@@ -34,7 +34,7 @@ import rospy
 # try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
 try:
     import ujson as json
-    print "using ujson"
+    print "protocol.py is using ujson"
 except ImportError:
     print "importing ujson failed"
     try:
