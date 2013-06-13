@@ -7,12 +7,16 @@ from signal import signal, SIGINT, SIG_DFL
 import SocketServer
 import sys
 
+#TODO: take care of socket timeouts and make sure to close sockets after killing programm to release network ports
+#      .. to understand:  if a client is only listening on a topic it does not send any data at all to rosbridge. this lets the socket timeout.. currently gives logwarn messages to rosbridge output
+
 # Global ID seed for clients
 client_id_seed = 0
 clients_connected = 0
 
 # Maximum length per message for incoming data
 max_msg_length = 2048
+socket_timeout = 60
 
 class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     """
@@ -33,13 +37,20 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Listen for TCP messages
         """
+        self.request.settimeout(socket_timeout)
         while 1:
-            data = self.request.recv(max_msg_length)
-            # Exit on empty string
-            if data.strip() == '':
-                break
-            else:
-                self.protocol.incoming(data)
+            try:
+		          data = self.request.recv(max_msg_length)
+		          # Exit on empty string
+		          if data.strip() == '':
+		              break
+		          elif len(data.strip()) > 0:
+		              self.protocol.incoming(data.strip(''))
+		          else:
+		              pass
+            except Exception, e:
+              self.protocol.log("warn", "socket connection timed out! (ignore warning if client is only listening..)")
+							#logwarn("socket connection timed out!") 
 
     def finish(self):
         """
