@@ -261,7 +261,14 @@ class AdvertiseService(Capability):
         service_module = message["service_module"]
         client_id = self.protocol.client_id
         client_callback = self.protocol.outgoing
+        # TODO: define what happens when existing service gets advertised
         if service_name not in self.service_list.keys():
+            print "registerin new service, did not exist before.."
+            self.service_list[service_name] = ROS_Service_Template(client_callback , service_module, service_type, service_name, client_id)
+        else:
+            print "replacing existing service"
+            self.service_list[service_name].stop_ROS_service()
+            del self.service_list[service_name]
             self.service_list[service_name] = ROS_Service_Template(client_callback , service_module, service_type, service_name, client_id)
 
         print "self.service_list:", self.service_list
