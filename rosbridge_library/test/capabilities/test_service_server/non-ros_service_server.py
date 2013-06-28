@@ -26,10 +26,12 @@ import sys
 
 delay_between_socket_sends = 5           # seconds !rosbridge messes up incoming messages if this delay is too short
 max_msg_length = 1024
+rosbridge_ip = "localhost"
+rosbridge_port = 9090
 
 host1_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)                  # connect to the socket (tcp2ws)
 host1_sock.settimeout(10)
-host1_sock.connect(("localhost", 9090))
+host1_sock.connect((rosbridge_ip, rosbridge_port))
 
 advertise_message_object = {"op":"advertise_service",                                   # advertise topic
 #                            "service_node_name":"nonrosserviceserver",                  #   create python-object
@@ -42,6 +44,8 @@ advertise_message = json.dumps(advertise_message_object)                        
 host1_sock.send(str(advertise_message))                                         # send advertise message
 time.sleep(1)
 
+
+
 try:
 #    self.request.settimeout(socket_timeout)
     while True: # loop forever (or until ctrl-c is pressed)
@@ -50,6 +54,7 @@ try:
           data = host1_sock.recv(max_msg_length)
           # Exit on empty string
           if data.strip() == '':
+              # TODO: handle case that rosbridge cancels connection
               break
           elif len(data.strip()) > 0:
 #            print "data:", data
@@ -82,15 +87,20 @@ try:
                                 "data": { "sum": sum }
                               }
 
+
+
             # create answer
             #message = arg_dict["a"] + arg
+
+            # to test request_timeout
+            #time.sleep(10)
 
             response_message = json.dumps(response_object)
             print "response_message:",response_message
 
             host2_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)                  # connect to the socket (tcp2ws)
             host2_sock.settimeout(10)
-            host2_sock.connect(("localhost", 9090))
+            host2_sock.connect((rosbridge_ip, rosbridge_port))
 
             # send answer
             host2_sock.send(response_message)                                   # send fragment message
@@ -99,11 +109,12 @@ try:
 
             # to check serverside processing time
             duration = (datetime.now() - begin).total_seconds()
-            print "duration: ", duration
+            #print "duration: ", duration
           else:
               pass
         except Exception, e:
-          print "socket connection timed out! (ignore warning if client is only listening..)"
+          #print "socket connection timed out! (ignore warning if client is only listening..)"
+          pass
 
 
 
@@ -116,4 +127,15 @@ try:
         # wait for a while before creating next huge message
         #time.sleep(delay_between_big_messages)
 except KeyboardInterrupt:
+    try:
+        unadvertise_message_object = {"op":"stop_service",                                   # advertise topic
+        #                            "service_node_name":"nonrosserviceserver",                  #   create python-object
+                                    "service_name": "add_two_ints"
+                                    }
+        unadvertise_message = json.dumps(unadvertise_message_object)                        #   create JSON-object (which is the advertise message)
+
+        host1_sock.send(str(unadvertise_message))
+    except Exception, e:
+        print e
+
     print "non-ros_service_server aborted"
