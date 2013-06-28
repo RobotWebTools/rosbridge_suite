@@ -37,6 +37,9 @@ from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.capabilities.subscribe import Subscribe
 # import for defragmentation
 from rosbridge_library.capabilities.defragmentation import Defragment
+# import for service_server
+from rosbridge_library.capabilities.advertise_service import AdvertiseService
+from rosbridge_library.capabilities.service_response import ServiceResponse
 
 # uncomment to enable Fragmentation
 #from rosbridge_library.capabilities.fragmentation import Fragmentation
@@ -44,7 +47,7 @@ from rosbridge_library.capabilities.defragmentation import Defragment
 
 class RosbridgeProtocol(Protocol):
     """ Adds the handlers for the rosbridge opcodes """
-    rosbridge_capabilities = [CallService, Advertise, Publish, Subscribe, Defragment]
+    rosbridge_capabilities = [CallService, Advertise, Publish, Subscribe, Defragment, AdvertiseService, ServiceResponse]
 
     print "registered capabilities:"
     for cap in rosbridge_capabilities:
