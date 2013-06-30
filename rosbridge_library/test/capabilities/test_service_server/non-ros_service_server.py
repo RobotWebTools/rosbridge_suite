@@ -35,7 +35,7 @@ host1_sock.connect((rosbridge_ip, rosbridge_port))
 
 advertise_message_object = {"op":"advertise_service",                                   # advertise topic
 #                            "service_node_name":"nonrosserviceserver",                  #   create python-object
-                            "service_module": "beginner_tutorials.srv",
+                            "service_module": "rosbridge_library.srv",
                             "service_type": "AddTwoInts",
                             "service_name": "add_two_ints"
                             }

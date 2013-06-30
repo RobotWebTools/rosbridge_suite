@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS message_generation rospy rosservice rost
 # Generate messages for testing (NOINSTALL)
 add_message_files(
   FILES
+  Num.msg
   TestChar.msg
   TestDurationArray.msg
   TestHeaderArray.msg
@@ -19,6 +20,7 @@ add_message_files(
 # Generate services for testing (NOINSTALL)
 add_service_files(
   FILES
+  AddTwoInts.srv
   TestArrayRequest.srv
   TestEmpty.srv
   TestMultipleRequestFields.srv
