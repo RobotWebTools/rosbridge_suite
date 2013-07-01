@@ -22,6 +22,7 @@ except ImportError:
 
 class ServiceResponse(Capability):
 
+    # TODO: unterscheiden von call_service_response
     opcode_service_response = "service_response"        # rosbridge-client -> rosbridge # register in protocol.py!
     response_list = ReceivedResponses().list
 
@@ -34,7 +35,7 @@ class ServiceResponse(Capability):
 
     def service_response(self, message):
         print "service_response called"
-        print message
+        print "  ", message
         self.response_list[message["request_id"]] = message["data"]
         # this be the callback for rosbridge-client ; called from within ros-service
 

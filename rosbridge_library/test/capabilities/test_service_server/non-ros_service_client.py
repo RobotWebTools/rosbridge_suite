@@ -51,6 +51,7 @@ while incoming == None:
         print "service_name:", json.loads(incoming)["service"]
         print "values:", json.loads(incoming)["values"]
         print "+++++++++++++++++++++"
+        break
     except Exception, e:
         print "---------------------"
         print incoming

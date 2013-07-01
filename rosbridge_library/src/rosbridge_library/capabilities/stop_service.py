@@ -44,8 +44,8 @@ class StopService(Capability):
         print "unadvertise_service called"
         opcode = message["op"]
         service_name = message["service_name"]
-        print " service name:", service_name
-        print " self.service_list:", self.service_list
+        print "  service name:", service_name
+        print "  self.service_list:", self.service_list
         
         client_id = self.protocol.client_id
 
@@ -53,11 +53,11 @@ class StopService(Capability):
         if service_name in self.service_list.keys():
             print " service found"
             if client_id == self.service_list[service_name].client_id:
-                print "  requesting client_id matches providing client_id"
+                print "  unadvertise requesting client_id matches providing client_id"
                 self.service_list[service_name].stop_ROS_service()
                 print " ROS service stopped"
                 del self.service_list[service_name]
-                print "rosbridge service removed"
+                print " rosbridge service removed"
         else:
             print " service not found!"
 

@@ -49,8 +49,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
 		          else:
 		              pass
             except Exception, e:
-              self.protocol.log("warn", "socket connection timed out! (ignore warning if client is only listening..)")
-							#logwarn("socket connection timed out!") 
+              self.protocol.log("debug", "socket connection timed out! (ignore warning if client is only listening..)")
 
     def finish(self):
         """

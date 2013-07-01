@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-import roslib; roslib.load_manifest('beginner_tutorials')
+import roslib; #roslib.load_manifest('beginner_tutorials')
 
 import sys
 
 import rospy
-from beginner_tutorials.srv import *
+from rosbridge_library.srv import *
 
 def add_two_ints_client(x, y):
     rospy.wait_for_service('add_two_ints')
