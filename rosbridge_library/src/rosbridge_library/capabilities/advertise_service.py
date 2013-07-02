@@ -92,7 +92,7 @@ class ReceivedResponses():
 # SOLUTION_1:
 #    -> use the loop with checking response_list like described in code below
 class ROS_Service_Template( threading.Thread):
-    service_request_timeout = 2 #seconds
+    service_request_timeout = 60 #seconds
     check_response_delay = 0.5 #seconds
 
     service_name = None
