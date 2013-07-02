@@ -1,55 +1,67 @@
 #!/usr/bin/python
 import socket
-import time
 
-# this script uses the already existing "call_service"-functionality of rosbridge_suite
-# this is only suitable for testing "non-ros service client to non-ros service server calls"
-#  if the targeted service server is started via rosbridge (see script: non-ros_service_server.py")
-
-# try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
 try:
     import ujson as json
-    print "using ujson"
 except ImportError:
-    print "importing ujson failed"
     try:
         import simplejson as json
-        print "using simplejson"
     except ImportError:
-        print "importing simplejson failed"
         import json
-        print "using python default json"
 
-client_socket_timeout = 60
 
-#connect to the socket
-host1_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host1_sock.settimeout(client_socket_timeout)
-host1_sock.connect(('localhost', 9090))
+####################### variables begin ########################################
+# these parameters should be changed to match the actual environment           #
+################################################################################
 
-service_request_object = { "op" : "call_service",
-						   "service": "/add_two_ints",
-						   "args": { "a" : 3,
-								 	 "b" : 5
-								   }
-						 }
-						 
-service_request = json.dumps(service_request_object)
-print "sending JSON-message to rosbridge:", service_request
+client_socket_timeout = 60                      # seconds
+max_msg_length = 1024000                        # bytes
 
-host1_sock.send(service_request)
+rosbridge_ip = "localhost"                      # hostname or ip
+rosbridge_port = 9090                           # port as integer
+
+service_module = "rosbridge_library.srv"        # make sure srv and msg files are available within specified module on rosbridge-server!
+service_type = "AddTwoInts"                     # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+service_name = "add_two_ints"                   # service name
+
+####################### variables end ##########################################
+
+
+################################################################################
+
+def request_service():
+    service_request_object = { "op" : "call_service",
+                               "service": "/add_two_ints",
+                               "args": { "a" : 3,
+                                         "b" : 5
+                                        }
+                              }
+    service_request = json.dumps(service_request_object)
+    print "sending JSON-message to rosbridge:", service_request
+    sock.send(service_request)
+
+################################################################################
+
+
+####################### script begin ###########################################
+# should not need to be changed (but could be improved ;) )                    #
+################################################################################
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)                        #connect to rosbridge
+sock.settimeout(client_socket_timeout)
+sock.connect((rosbridge_ip, rosbridge_port))
+
+request_service()                                                               # send service_request
 
 incoming = None
-# should not need a loop, but since its for test/demonstration only .. leave it as it is for now
-while incoming == None:
-	# probably obsolete
-    incoming = None
+while incoming == None:     # should not need a loop (maximum wait can be set by client_socket_timeout), but since its for test/demonstration only .. leave it as it is for now
     try:
-        incoming = host1_sock.recv(1024000)
+        incoming = sock.recv(max_msg_length)                                    # receive service_response from rosbridge
         print "+++++++++++++++++++++"
-        print "op:", json.loads(incoming)["op"]
-        print "service_name:", json.loads(incoming)["service"]
-        print "values:", json.loads(incoming)["values"]
+        service_response = json.loads(incoming)                                 # service_response contains JSON service response as sent by rosbridge
+        print "op:", service_response["op"]
+        print "service_name:", service_response["service"]
+        print "values:", service_response["values"]
         print "+++++++++++++++++++++"
         break
     except Exception, e:
@@ -61,4 +73,5 @@ while incoming == None:
         print e
         print "---------------------"
 
-    time.sleep(5)
+sock.close()                                                                    # close socket
+

@@ -92,7 +92,7 @@ class ReceivedResponses():
 # SOLUTION_1:
 #    -> use the loop with checking response_list like described in code below
 class ROS_Service_Template( threading.Thread):
-    service_request_timeout = 60 #seconds
+    service_request_timeout = 2 #seconds
     check_response_delay = 0.5 #seconds
 
     service_name = None
@@ -162,7 +162,7 @@ class ROS_Service_Template( threading.Thread):
 
         print " request_message:", request_message
 
-        # TODO: check cases!
+        # TODO: check cases! this cond should not be necessary
         if request_id not in self.request_list.keys():
             self.request_list[request_id] = request_message
 
