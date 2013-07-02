@@ -1,9 +1,6 @@
-import importlib
 from rosbridge_library.capability import Capability
 from advertise_service import ServiceList
-import rospy
-import time
-import threading
+
 
 # try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
 try:
@@ -20,23 +17,14 @@ except ImportError:
         print "using python default json"
 
 
-
 class StopService(Capability):
     opcode_unadvertise_service = "stop_service"      # rosbridge-client -> rosbridge # register in protocol.py!
 
-
-    # have a dict that maps registered services to client id's
-    #       service id
-    #       client id
-    #       service instance ( use a service template that just takes requests and passes them to clients by using methods below)
-    #           ..this service instance has to track requests and responses by using a request id that is sent to rosbridge-client and used to identify which response has to be sent to which ros-client
-    #           ..this service instance has to use a timeout during which it will wait for an incoming json service_response with correct id from
     service_list = ServiceList().list
 
     def __init__(self, protocol):
         self.protocol = protocol 
         Capability.__init__(self, protocol)
-
         protocol.register_operation(self.opcode_unadvertise_service, self.unadvertise_service)
 
     # TODO: unadvertise
@@ -60,9 +48,6 @@ class StopService(Capability):
                 print " rosbridge service removed"
         else:
             print " service not found!"
-
-
-        # have a superclass (or function - see below) that has 'callback' to client for service requests
 
 
 

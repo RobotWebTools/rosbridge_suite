@@ -8,7 +8,6 @@ import SocketServer
 import sys
 
 #TODO: take care of socket timeouts and make sure to close sockets after killing programm to release network ports
-#      .. to understand:  if a client is only listening on a topic it does not send any data at all to rosbridge. this lets the socket timeout.. currently gives logwarn messages to rosbridge output
 
 # Global ID seed for clients
 client_id_seed = 0
@@ -49,7 +48,8 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
 		          else:
 		              pass
             except Exception, e:
-              self.protocol.log("debug", "socket connection timed out! (ignore warning if client is only listening..)")
+                pass
+                self.protocol.log("debug", "socket connection timed out! (ignore warning if client is only listening..)")
 
     def finish(self):
         """
