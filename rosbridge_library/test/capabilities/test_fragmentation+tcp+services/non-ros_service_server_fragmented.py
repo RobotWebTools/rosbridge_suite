@@ -25,9 +25,9 @@ service_module = "rosbridge_library.srv"        # make sure srv and msg files ar
 service_type = "SendBytes"                     # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
 service_name = "send_bytes"                   # service name
 
-send_fragment_size = 1
+send_fragment_size = 1024
 send_fragment_delay = 0.05
-receive_fragment_size = 1
+receive_fragment_size = 8
 
 ####################### variables end ##########################################
 

@@ -30,8 +30,8 @@ service_name = "send_bytes"                   # service name
 def request_service():
     service_request_object = { "op" : "call_service",
                                "service": "/"+service_name,
-                               "fragment_size": 1,
-                               "args": { "count" : 400
+                               "fragment_size": 1024,
+                               "args": { "count" : 400000
                                         }
                               }
     service_request = json.dumps(service_request_object)
