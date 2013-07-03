@@ -186,7 +186,8 @@ class Defragment(Capability, threading.Thread):
             self.protocol.incoming(reconstructed_msg)
             log_msg = "reconstructed message (ID:" + str(msg_id) + ") from "
             log_msg += str(msg_total) + " fragments. "
-            log_msg += "[message length: " + str(len(str(json.loads(reconstructed_msg)["msg"]["data"]))) +"]"
+            # cannot access msg.data if message is a service_response or else!
+            #log_msg += "[message length: " + str(len(str(json.loads(reconstructed_msg)["msg"]["data"]))) +"]"
             log_msg += "[duration: " + str(duration.total_seconds()) +  " s]"
             self.protocol.log("info", log_msg)
 

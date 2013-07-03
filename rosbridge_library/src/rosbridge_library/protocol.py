@@ -165,11 +165,11 @@ class Protocol:
                   #"fragment_size": msg.get("fragment_size", None),
                   #"queue_length": msg.get("queue_length", 0),
                   #"compression": msg.get("compression", "none")
-                fragment_list = Fragmentation(self).fragment(serialized, self.fragment_size, mid )
+                fragment_list = Fragmentation(self).fragment(message, self.fragment_size, mid )
 
             if fragment_list != None:
                 for fragment in fragment_list:
-                    self.outgoing(self.serialize(fragment, cid))
+                    self.outgoing(json.dumps(fragment))
                     time.sleep(delay_between_fragments)
             else:
                 self.outgoing(serialized)

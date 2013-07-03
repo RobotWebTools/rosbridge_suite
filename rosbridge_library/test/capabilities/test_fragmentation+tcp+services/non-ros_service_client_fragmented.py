@@ -30,8 +30,8 @@ service_name = "send_bytes"                   # service name
 def request_service():
     service_request_object = { "op" : "call_service",
                                "service": "/"+service_name,
-                               "fragment_size": 10,
-                               "args": { "count" : 100
+                               "fragment_size": 4,
+                               "args": { "count" : 400
                                         }
                               }
     service_request = json.dumps(service_request_object)
@@ -54,6 +54,7 @@ request_service()                                                               
 incoming = None
 buffer = ""
 done = False
+result = None
 while not done:     # should not need a loop (maximum wait can be set by client_socket_timeout), but since its for test/demonstration only .. leave it as it is for now
     try:
         incoming = sock.recv(max_msg_length)                                    # receive service_response from rosbridge
@@ -92,6 +93,35 @@ while not done:     # should not need a loop (maximum wait can be set by client_
         print e
         print "---------------------"
 
+print "result:", result
+
+# TODO: sort before reconstructing!!!
+reconstructed = ''
+for fragment in result:
+    print "  ", fragment["data"]
+    reconstructed = reconstructed + fragment["data"]
+print
+print "reconstructed message :",reconstructed
+
+## TODO: check why json arrives as string!
+#reconstructed = reconstructed.strip('"')
+#print "reconstructed message2:",reconstructed
+
+returned_data = json.loads(reconstructed)
+print "returned json:", returned_data
+
+print
+print "received:"
+print "------------------------------------------------------"
+for key, value in returned_data.iteritems():
+    print
+    print key, ":"
+    print
+    print value
+
+#answer = returned_data["values"]
+
+#print "service_answer:", json.dumps(answer)
 
 
 sock.close()                                                                    # close socket

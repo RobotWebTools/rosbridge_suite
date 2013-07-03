@@ -1,5 +1,7 @@
 #!/usr/bin/python
 import socket
+import time
+from random import randint
 try:                       # try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
     import ujson as json
 except ImportError:
@@ -23,6 +25,10 @@ service_module = "rosbridge_library.srv"        # make sure srv and msg files ar
 service_type = "SendBytes"                     # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
 service_name = "send_bytes"                   # service name
 
+send_fragment_size = 20
+send_fragment_delay = 0.05
+receive_fragment_size = None
+
 ####################### variables end ##########################################
 
 
@@ -40,7 +46,7 @@ def calculate_service_response(request):
     print "count:", count
     message = ""
     for i in range(0,count-1):
-        message += "X"
+        message += str(chr(randint(32,126)))
 
     print "message:", message
 
@@ -75,7 +81,7 @@ def advertise_service():                                                        
                                 "service_module": service_module,
                                 "service_type": service_type,
                                 "service_name": service_name,
-                                "fragment_size": None
+                                "fragment_size": receive_fragment_size
                                 }
     advertise_message = json.dumps(advertise_message_object)                    
     tcp_socket.send(str(advertise_message))
@@ -89,8 +95,44 @@ def unadvertise_service():                                                      
 
 def wait_for_service_request():                                                 # receive data from rosbridge
     data = None
+
     try:
-        data = tcp_socket.recv(max_msg_length)
+        done = False
+        buffer = ""
+        while not done:
+            incoming = tcp_socket.recv(max_msg_length)
+            if buffer == "":
+                buffer = incoming
+            else:
+                buffer = buffer + "," + incoming
+            print "incoming:",incoming
+            try:
+                data_object = json.loads(buffer)
+                if data_object["op"] == "service_request":
+                    data = buffer
+                    done = True
+                    return data
+            except Exception, e:
+                print e
+                pass
+
+
+            try:
+                result = json.loads("["+buffer+"]")
+                fragment_count = len(result)
+                announced = int(result[0]["total"])
+                if fragment_count == announced:
+                    reconstructed = ""
+                    print "unsorted list of fragments:", result
+                    # TODO: sort fragments before reconstructing!!
+                    for fragment in result:
+                        reconstructed = reconstructed + fragment["data"]
+
+                    done = True
+                    return reconstructed
+            except Exception, e:
+                print e
+                pass
     except Exception, e:
         #print "network-error(?):", e
         pass
@@ -98,6 +140,45 @@ def wait_for_service_request():                                                 
 
 def send_service_response(response):                                            # send response to rosbridge
     tcp_socket.send(response)
+
+
+#  create fragment messages for a huge message #################################
+def list_of_fragments(full_message, fragment_size):
+
+    print "message length:", len(full_message)
+
+    message_id = randint(0,64000)                                               # generate random message id
+
+    fragments = []                                                              # generate list of data fragments
+    cursor = 0
+    while cursor < len(full_message):
+        fragment_begin = cursor
+        if len(full_message) < cursor + fragment_size:
+            fragment_end = len(full_message)
+            cursor = len(full_message)
+        else:
+            fragment_end = cursor + fragment_size
+            cursor += fragment_size
+        fragment = full_message[fragment_begin:fragment_end]
+        fragments.append(fragment)
+
+    print "fragment_list:", fragments
+
+    fragmented_messages_list = []                                               # generate list of fragmented messages
+    for count, fragment in enumerate(fragments):                                # iterate through list and have index counter
+        fragmented_message_object = {"op":"fragment",                           #   create python-object for each fragment message
+                                     "id": str(message_id),
+                                     "data": str(fragment),
+                                     "num": count,
+                                     "total": len(fragments)
+                                     }
+
+        fragmented_message = json.dumps(fragmented_message_object)              # create JSON-object from python-object for each fragment message
+        fragmented_messages_list.append(fragmented_message)                     # append JSON-object to list of fragmented messages
+
+    print "fragment_messages_list:", fragmented_messages_list
+    return fragmented_messages_list                                             # return list of 'ready-to-send' fragmented messages
+## fragmentation example end ###################################################
 
 ####################### helper functions end ###################################
 
@@ -120,7 +201,13 @@ try:                                                                            
               break                                                             # TODO: handle case that rosbridge cancels connection
           elif data != None and len(data) > 0:                                  # received service_request (at least some data..)
             response = calculate_service_response(data)     # do service_calculation
-            send_service_response(response)                 # send service_response to rosbridge
+
+            fragment_list = list_of_fragments(response, send_fragment_size)
+
+            for fragment in fragment_list:
+                print "sending:",fragment
+                send_service_response(fragment)                 # send service_response to rosbridge
+                time.sleep(send_fragment_delay)
         except Exception, e:                                                    # allows to try to receive next request/data
           pass
 except KeyboardInterrupt:
