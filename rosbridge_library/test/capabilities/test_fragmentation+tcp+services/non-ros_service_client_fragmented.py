@@ -30,7 +30,7 @@ service_name = "send_bytes"                   # service name
 def request_service():
     service_request_object = { "op" : "call_service",
                                "service": "/"+service_name,
-                               "fragment_size": 4,
+                               "fragment_size": 1,
                                "args": { "count" : 400
                                         }
                               }
