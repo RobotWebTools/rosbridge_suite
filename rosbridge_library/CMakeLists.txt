@@ -21,6 +21,7 @@ add_message_files(
 add_service_files(
   FILES
   AddTwoInts.srv
+  SendBytes.srv
   TestArrayRequest.srv
   TestEmpty.srv
   TestMultipleRequestFields.srv

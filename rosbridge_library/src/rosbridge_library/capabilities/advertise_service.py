@@ -95,6 +95,7 @@ class ROS_Service_Template( threading.Thread):
     response_list = ReceivedResponses().list    # holds service_responses until they are sent back to ROS-client
                                                 # .. links to singleton
 
+    finish_flag = False
 
     def __init__(self, client_callback, service_module, service_type, service_name, client_id):
         threading.Thread.__init__(self)
@@ -143,16 +144,16 @@ class ROS_Service_Template( threading.Thread):
 
         # TODO: check cases! this cond should not be necessary
         if request_id not in self.request_list.keys():
-            self.request_list[request_id] = request_message
+            self.request_list[request_id] = request_message_object
 
-        self.client_callback (str(request_message))
+        self.client_callback (request_message_object)
         print " sent request to client that serves the service"
 
         # TODO: add timeout to this loop! remove request_id from request_list after timeout!
         begin = datetime.now()
         duration = datetime.now() - begin
         answer = None
-        while request_id not in self.response_list and duration.total_seconds() < self.service_request_timeout:
+        while not self.finish_flag and request_id not in self.response_list.keys() and duration.total_seconds() < self.service_request_timeout:
             print " waiting for response to request_id:", request_id
             time.sleep(self.check_response_delay)
             duration = datetime.now() - begin
@@ -214,7 +215,7 @@ class AdvertiseService(Capability):
         service_name = message["service_name"]
         service_module = message["service_module"]
         client_id = self.protocol.client_id
-        client_callback = self.protocol.outgoing
+        client_callback = self.protocol.send
         # TODO: define what happens when existing service gets advertised
         if service_name not in self.service_list.keys():
             print " registering new service, did not exist before.."
@@ -226,4 +227,7 @@ class AdvertiseService(Capability):
             self.service_list[service_name] = ROS_Service_Template(client_callback , service_module, service_type, service_name, client_id)
 
         print "  self.service_list:", self.service_list
-        
+
+    def finish(self):
+        self.finish_flag = True
+        self.protocol.unregister_operation("advertise_service")

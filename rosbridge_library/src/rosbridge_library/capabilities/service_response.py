@@ -41,6 +41,9 @@ class ServiceResponse(Capability):
 
         # pass response to ros-side by sending through superclass that provides service to ros-side
 
+    def finish(self):
+        self.protocol.unregister_operation("service_response")
+
 
 
 

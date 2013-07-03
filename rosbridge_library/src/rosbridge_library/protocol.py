@@ -31,6 +31,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import rospy
+
+class InvalidArgumentException(Exception):
+    pass
+
+class MissingArgumentException(Exception):
+    pass
+
+from rosbridge_library.internal.pngcompression import encode
+from rosbridge_library.capabilities.fragmentation import Fragmentation
+import time
+
 # try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
 try:
     import ujson as json
@@ -45,12 +56,8 @@ except ImportError:
         import json
         print "using python default json"
 
-
-class InvalidArgumentException(Exception):
-    pass
-
-class MissingArgumentException(Exception):
-    pass
+# TODO: integrate this parameter in a better and configurable way.. at init or similar.
+delay_between_fragments = 0.05
 
 class Protocol:
     """ The interface for a single client to interact with ROS.
@@ -63,6 +70,9 @@ class Protocol:
     - Call finish to clean up resources when the client is finished
 
     """
+
+    fragment_size = None
+    png = None
 
     def __init__(self, client_id):
         """ Keyword arguments:
@@ -102,6 +112,17 @@ class Protocol:
             self.log("error", "Unknown operation: %s.  Allowed operations: %s" % (op, self.operations.keys()), mid)
             return
 
+        # this way a client can change/overwrite it's active values anytime by just including parameter field in any message sent to rosbridge
+        #  maybe need to be improved to bind parameter values to specific operation.. -> pass as parameter to self.operations[op] needs default values.. bla
+        if "fragment_size" in msg.keys():
+            self.fragment_size = msg["fragment_size"]
+            print "  fragment_size set to:", self.fragment_size
+        
+        if "png" in msg.keys():
+            self.png = msg["msg"]
+
+
+
         try:
             self.operations[op](msg)
         except Exception as exc:
@@ -131,7 +152,27 @@ class Protocol:
         """
         serialized = self.serialize(message, cid)
         if serialized is not None:
-            self.outgoing(serialized)
+            if self.png == "png":
+                # encode message
+                pass
+
+            fragment_list = None
+
+            print "  fragment_size is set to:", self.fragment_size
+
+            if self.fragment_size != None and len(serialized) > self.fragment_size:
+                mid = message.get("id", None)
+                  #"fragment_size": msg.get("fragment_size", None),
+                  #"queue_length": msg.get("queue_length", 0),
+                  #"compression": msg.get("compression", "none")
+                fragment_list = Fragmentation(self).fragment(serialized, self.fragment_size, mid )
+
+            if fragment_list != None:
+                for fragment in fragment_list:
+                    self.outgoing(self.serialize(fragment, cid))
+                    time.sleep(delay_between_fragments)
+            else:
+                self.outgoing(serialized)
 
     def finish(self):
         """ Indicate that the client is finished and clean up resources.
