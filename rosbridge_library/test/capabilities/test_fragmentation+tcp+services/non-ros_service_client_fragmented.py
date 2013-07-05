@@ -17,7 +17,7 @@ except ImportError:
 client_socket_timeout = 60                      # seconds
 max_msg_length = 1024000                        # bytes
 
-rosbridge_ip = "localhost"                      # hostname or ip
+rosbridge_ip = "192.168.2.14"                      # hostname or ip
 rosbridge_port = 9090                           # port as integer
 
 service_name = "send_bytes"                   # service name
@@ -31,7 +31,7 @@ def request_service():
     service_request_object = { "op" : "call_service",
                                "service": "/"+service_name,
                                "fragment_size": 1024,
-                               "args": { "count" : 400000
+                               "args": { "count" : 100000
                                         }
                               }
     service_request = json.dumps(service_request_object)
@@ -67,6 +67,8 @@ while not done:     # should not need a loop (maximum wait can be set by client_
         #service_response = json.loads(incoming)                                 # service_response contains JSON service response as sent by rosbridge
         #print "response:", service_response
         #print "+++++++++++++++++++++"
+# TODO: if opcode is fragment --> defragment, else access service request directly
+
         
         try:
             result = json.loads("["+buffer+"]")

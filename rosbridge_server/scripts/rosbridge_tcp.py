@@ -4,6 +4,17 @@ from rospy import init_node, get_param, loginfo, logerr
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 
 from signal import signal, SIGINT, SIG_DFL
+import socket, subprocess, re
+def get_ipv4_address():
+    """
+    Returns IP address(es) of current machine.
+    """
+    p = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
+    ifc_resp = p.communicate()
+    patt = re.compile(r'inet\s*\w*\S*:\s*(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+    resp = patt.findall(ifc_resp[0])[0]
+    #print resp
+    return resp
 import SocketServer
 import sys
 
@@ -81,7 +92,9 @@ if __name__ == "__main__":
             sys.exit(-1)
 
     # Server host is a tuple ('host', port)
-    server = SocketServer.ThreadingTCPServer(('localhost', port), RosbridgeTcpSocket)
+    my_ip = get_ipv4_address()
+    print "server-ip:", my_ip
+    server = SocketServer.ThreadingTCPServer((my_ip, port), RosbridgeTcpSocket)
 
     loginfo("Rosbridge TCP server started on port %d", port)
 

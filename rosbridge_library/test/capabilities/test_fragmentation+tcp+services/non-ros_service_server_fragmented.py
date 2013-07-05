@@ -18,7 +18,7 @@ except ImportError:
 tcp_socket_timeout = 10                         # seconds
 max_msg_length = 1024                           # bytes
 
-rosbridge_ip = "localhost"                      # hostname or ip
+rosbridge_ip = "192.168.2.14"                      # hostname or ip
 rosbridge_port = 9090                           # port as integer
 
 service_module = "rosbridge_library.srv"        # make sure srv and msg files are available within specified module on rosbridge-server!
