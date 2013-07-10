@@ -11,12 +11,13 @@ except ImportError:
     except ImportError:
         import json
 
+# TODO: handle multiple service requests at the same time
 
 ####################### variables begin ########################################
 # these parameters should be changed to match the actual environment           #
 ################################################################################
 
-tcp_socket_timeout = 10                         # seconds
+tcp_socket_timeout = 0.1                         # seconds
 max_msg_length = 1024                           # bytes
 
 rosbridge_ip = "192.168.2.14"                      # hostname or ip
@@ -26,9 +27,9 @@ service_module = "rosbridge_library.srv"        # make sure srv and msg files ar
 service_type = "SendBytes"                     # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
 service_name = "send_bytes"                   # service name
 
-send_fragment_size = 1024
+send_fragment_size = 511
 send_fragment_delay = 0.2
-receive_fragment_size = 8
+receive_fragment_size = 513
 
 ####################### variables end ##########################################
 
@@ -48,7 +49,9 @@ def calculate_service_response(request):
     message = ""
     for i in range(0,count-1):
         message += str(chr(randint(32,126)))
-
+#        message += "}{"
+        message = message.replace("}","")
+        message = message.replace("{","")
     print "message:", message
 
 
@@ -122,7 +125,7 @@ def wait_for_service_request():                                                 
                 buffer = incoming
             else:
                 buffer = buffer + incoming
-            print "incoming:",incoming
+            #print "incoming:",incoming
             # try to access service_request directly (not fragmented)
             try:
                 data_object = json.loads(buffer)
@@ -142,7 +145,7 @@ def wait_for_service_request():                                                 
                 #result = nestedExpr('{','}').parseString(buffer).asList()
                 #result_string = findBrackets("{"+buffer+"}")
                 result_string = buffer.split("}{")
-                print "split by }{;",result_string
+                #print "split by }{;",result_string
                 result = []
                 for fragment in result_string:
                     if fragment[0] != "{":
@@ -151,12 +154,13 @@ def wait_for_service_request():                                                 
                         fragment = fragment + "}"
                     result.append(json.loads(fragment))
                 #result = json.loads(str(result_string))
-                print "result:", result
+                #print "result:", result
                 fragment_count = len(result)
                 announced = int(result[0]["total"])
+
                 if fragment_count == announced:
                     reconstructed = ""
-                    print "unsorted list of fragments:", result
+                    #print "unsorted list of fragments:", result
                     # TODO: sort fragments before reconstructing!!
 
                     sorted_result = [None] * fragment_count
@@ -164,8 +168,8 @@ def wait_for_service_request():                                                 
                     for fragment in result:
                         unsorted_result.append(fragment)
                         sorted_result[int(fragment["num"])] = fragment
-                    print "unsorted_list:", unsorted_result
-                    print "sorted_list:", sorted_result
+                    #print "unsorted_list:", unsorted_result
+                    #print "sorted_list:", sorted_result
 
                     for fragment in sorted_result:
                         reconstructed = reconstructed + fragment["data"]

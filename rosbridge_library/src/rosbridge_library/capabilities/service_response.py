@@ -34,8 +34,8 @@ class ServiceResponse(Capability):
 
 
     def service_response(self, message):
-        print "service_response called"
-        print "  ", message
+        #print "service_response called"
+        #print "  ", message
         self.response_list[message["request_id"]] = message["data"]
         # this be the callback for rosbridge-client ; called from within ros-service
 

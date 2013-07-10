@@ -33,8 +33,8 @@ service_name = "send_bytes"                   # service name
 def request_service():
     service_request_object = { "op" : "call_service",
                                "service": "/"+service_name,
-                               "fragment_size": 10,
-                               "args": { "count" : 1000
+                               "fragment_size": 512,
+                               "args": { "count" : 10000
                                         }
                               }
     service_request = json.dumps(service_request_object)
@@ -80,15 +80,16 @@ while not done:     # should not need a loop (maximum wait can be set by client_
                 done = True
 
         except Exception, e:
-            print e
+            #print e
             pass
 
 
 # TODO: if opcode is fragment --> defragment, else access service request directly
         try:
             #result = json.loads("["+buffer+"]")
+            # TODO: allow "}{" in strings!
             result_string = buffer.split("}{")
-            print "split by }{;",result_string
+            #print "split;",result_string
             result = []
             for fragment in result_string:
                 if fragment[0] != "{":
@@ -97,7 +98,7 @@ while not done:     # should not need a loop (maximum wait can be set by client_
                     fragment = fragment + "}"
                 result.append(json.loads(fragment))
             #result = json.loads(str(result_string))
-            print "result:", result
+            #print "result:", result
             fragment_count = len(result)
             announced = int(result[0]["total"])
             if fragment_count == announced:
@@ -107,8 +108,8 @@ while not done:     # should not need a loop (maximum wait can be set by client_
                 for fragment in result:
                     unsorted_result.append(fragment)
                     sorted_result[int(fragment["num"])] = fragment
-                print "unsorted_list:", unsorted_result
-                print "sorted_list:", sorted_result
+                #print "unsorted_list:", unsorted_result
+                #print "sorted_list:", sorted_result
 
                 reconstructed = ''
                 for fragment in sorted_result:
@@ -116,11 +117,12 @@ while not done:     # should not need a loop (maximum wait can be set by client_
 
                 done = True
         except Exception, e:
-            print "===="
-            print "["+buffer+"]"
-            print "###"
+            #print "===="
+            #print "["+buffer+"]"
+            #print "###"
             print e
-            print "###"
+            #print "###"
+
         # don't break after first receive if using fragment_size!
         #break
     except Exception, e:
@@ -156,9 +158,7 @@ print
 print "received:"
 print "------------------------------------------------------"
 for key, value in returned_data.iteritems():
-    print
     print key, ":"
-    print
     print value
 
 #answer = returned_data["values"]

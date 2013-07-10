@@ -57,7 +57,7 @@ except ImportError:
         print "using python default json"
 
 # TODO: integrate this parameter in a better and configurable way.. at init or similar.
-delay_between_fragments = 0.0
+delay_between_fragments = 0.2
 
 class Protocol:
     """ The interface for a single client to interact with ROS.
@@ -73,6 +73,7 @@ class Protocol:
 
     fragment_size = None
     png = None
+
 
     def __init__(self, client_id):
         """ Keyword arguments:
@@ -219,6 +220,7 @@ class Protocol:
         try:
             return json.loads(msg)
         except:
+
             self.log("error",
              "Unable to deserialize message from client: %s" % msg, cid)
             return None

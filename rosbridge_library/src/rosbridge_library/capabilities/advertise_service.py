@@ -75,8 +75,8 @@ class ReceivedResponses():
 
 
 class ROS_Service_Template( threading.Thread):
-    service_request_timeout = 60 #seconds
-    check_response_delay = 0.5 #seconds
+    service_request_timeout = 3600 #seconds
+    check_response_delay = 0.1 #seconds
 
     service_name = None
     service_node_name = None
@@ -154,13 +154,13 @@ class ROS_Service_Template( threading.Thread):
         duration = datetime.now() - begin
         answer = None
         while not self.finish_flag and request_id not in self.response_list.keys() and duration.total_seconds() < self.service_request_timeout:
-            print " waiting for response to request_id:", request_id
+            #print " waiting for response to request_id:", request_id
             time.sleep(self.check_response_delay)
             duration = datetime.now() - begin
 
         if request_id in self.response_list:
-            print "  response_list:", self.response_list
-            print "  request_list:", self.request_list
+            #print "  response_list:", self.response_list
+            #print "  request_list:", self.request_list
             answer = self.response_list[request_id]
             del self.response_list[request_id]
         else:
