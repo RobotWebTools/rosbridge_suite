@@ -17,7 +17,7 @@ except ImportError:
 # these parameters should be changed to match the actual environment           #
 ################################################################################
 
-tcp_socket_timeout = 0.1                         # seconds
+tcp_socket_timeout = 10                         # seconds
 max_msg_length = 1024                           # bytes
 
 rosbridge_ip = "192.168.2.14"                      # hostname or ip
@@ -33,6 +33,7 @@ receive_fragment_size = 513
 
 ####################### variables end ##########################################
 
+buffer =""
 
 ####################### service_calculation begin ##############################
 # change this function to match whatever service should be provided            #
@@ -110,12 +111,15 @@ def findBrackets( aString ):
             print "find brackets returns:", match[:index]
             return "["+match[:index]+"]"
 
+
+
 def wait_for_service_request():                                                 # receive data from rosbridge
     data = None
 
     try:
         done = False
-        buffer = ""
+        global buffer
+        #buffer = ""
         while not done:
             incoming = tcp_socket.recv(max_msg_length)
             if incoming == '':
@@ -125,7 +129,8 @@ def wait_for_service_request():                                                 
                 buffer = incoming
             else:
                 buffer = buffer + incoming
-            #print "incoming:",incoming
+            print "incoming:",incoming
+            print "buffer:", buffer
             # try to access service_request directly (not fragmented)
             try:
                 data_object = json.loads(buffer)
@@ -155,38 +160,66 @@ def wait_for_service_request():                                                 
                     result.append(json.loads(fragment))
                 #result = json.loads(str(result_string))
                 #print "result:", result
-                fragment_count = len(result)
-                announced = int(result[0]["total"])
+                try:
+                    fragment_count = len(result)
+                    announced = int(result[0]["total"])
 
-                if fragment_count == announced:
-                    reconstructed = ""
-                    #print "unsorted list of fragments:", result
-                    # TODO: sort fragments before reconstructing!!
+                    if fragment_count == announced:
+                        reconstructed = ""
+                        #print "unsorted list of fragments:", result
+                        # TODO: sort fragments before reconstructing!!
 
-                    sorted_result = [None] * fragment_count
-                    unsorted_result = []
-                    for fragment in result:
-                        unsorted_result.append(fragment)
-                        sorted_result[int(fragment["num"])] = fragment
-                    #print "unsorted_list:", unsorted_result
-                    #print "sorted_list:", sorted_result
+                        sorted_result = [None] * fragment_count
+                        unsorted_result = []
+                        for fragment in result:
+                            unsorted_result.append(fragment)
+                            sorted_result[int(fragment["num"])] = fragment
+                        #print "unsorted_list:", unsorted_result
+                        #print "sorted_list:", sorted_result
 
-                    for fragment in sorted_result:
-                        reconstructed = reconstructed + fragment["data"]
+                        for fragment in sorted_result:
+                            reconstructed = reconstructed + fragment["data"]
 
-                    done = True
-                    return reconstructed
+                        buffer = ""
+                        done = True
+                        return reconstructed
+                except Exception, e:
+                    print "not possible to defragment:", buffer
+                    # try to devide into multiple json objects
+                    result_string = buffer.split("}{")
+                    #print "split by }{;",result_string
+                    result = []
+                    for fragment in result_string:
+                        if fragment[0] != "{":
+                            fragment = "{"+fragment
+                        if fragment[len(fragment)-1] != "}":
+                            fragment = fragment + "}"
+                        result.append(json.loads(fragment))
+                    print "  ", buffer
+                    buffer = ""
+                    # keep "rest" requests in buffer
+                    print "remaining requests:", len(result)-1
+                    for i in range(1,len(result)):
+                        buffer = buffer + json.dumps(result[i])
+                    # return 1st request
+                    print "  ", buffer
+                    print result[0]
+                    return json.dumps(result[0])
+                    
+
             except Exception, e:
                 print "defrag_error:"
                 print e
                 pass
     except Exception, e:
-        #print "network-error(?):", e
+        print "network-error(?):", e
         pass
     return data
 
 def send_service_response(response):                                            # send response to rosbridge
     tcp_socket.send(response)
+
+
 
 
 #  create fragment messages for a huge message #################################
@@ -232,12 +265,14 @@ def list_of_fragments(full_message, fragment_size):
 
 
 ####################### script begin ###########################################
-# should not be changed (but could be improved ;) )                            #
+# should not need to be changed (but could be improved )                            #
 ################################################################################
 
 tcp_socket = connect_tcp_socket()                                               # open tcp_socket
 advertise_service()                                         # advertise service in ROS (via rosbridge)
 print "service provider started and waiting for requests"
+
+
 
 try:                                                                            # allows to catch KeyboardInterrupt
     while True:                                                                 # loop forever (or until ctrl-c is pressed)

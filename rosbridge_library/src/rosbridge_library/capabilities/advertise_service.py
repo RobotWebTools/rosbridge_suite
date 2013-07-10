@@ -121,8 +121,8 @@ class ROS_Service_Template( threading.Thread):
         print "  client_callback:" ,self.client_callback
 
         # generate request_id
-        request_id = "client:"+str(self.client_id)+"_time:" +datetime.now().strftime("%H:%M:%f") # + "_"+ str(self.request_counter)
-        self.request_counter += 1   # TODO modulo blabla..
+        request_id = "count:"+str(self.request_counter)+"client:"+str(self.client_id)+"_time:" +datetime.now().strftime("%H:%M:%f") # + "_"+ str(self.request_counter)
+        self.request_counter = (self.request_counter + 1) % 500000  # TODO modulo blabla..
 
         # TODO: check for more complex parameter and types and bla --> need better parser!
         # --> see message_conversion

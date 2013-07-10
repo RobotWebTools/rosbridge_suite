@@ -34,7 +34,7 @@ def request_service():
     service_request_object = { "op" : "call_service",
                                "service": "/"+service_name,
                                "fragment_size": 512,
-                               "args": { "count" : 10000
+                               "args": { "count" : 50
                                         }
                               }
     service_request = json.dumps(service_request_object)
@@ -66,7 +66,7 @@ while not done:     # should not need a loop (maximum wait can be set by client_
             buffer = incoming
         else:
             buffer = buffer + incoming
-        print "incoming:",incoming
+        #print "incoming:",incoming
         #print "+++++++++++++++++++++"
         #service_response = json.loads(incoming)                                 # service_response contains JSON service response as sent by rosbridge
         #print "response:", service_response
