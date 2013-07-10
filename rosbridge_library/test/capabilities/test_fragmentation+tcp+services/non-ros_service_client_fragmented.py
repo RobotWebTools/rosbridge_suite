@@ -30,8 +30,8 @@ service_name = "send_bytes"                   # service name
 def request_service():
     service_request_object = { "op" : "call_service",
                                "service": "/"+service_name,
-                               "fragment_size": 1024,
-                               "args": { "count" : 100000
+                               "fragment_size": 10,
+                               "args": { "count" : 1000
                                         }
                               }
     service_request = json.dumps(service_request_object)
@@ -55,6 +55,7 @@ incoming = None
 buffer = ""
 done = False
 result = None
+reconstructed = None
 while not done:     # should not need a loop (maximum wait can be set by client_socket_timeout), but since its for test/demonstration only .. leave it as it is for now
     try:
         incoming = sock.recv(max_msg_length)                                    # receive service_response from rosbridge
@@ -67,14 +68,38 @@ while not done:     # should not need a loop (maximum wait can be set by client_
         #service_response = json.loads(incoming)                                 # service_response contains JSON service response as sent by rosbridge
         #print "response:", service_response
         #print "+++++++++++++++++++++"
-# TODO: if opcode is fragment --> defragment, else access service request directly
 
-        
+        # try to access service_request directly (not fragmented)
+        try:
+            data_object = json.loads(buffer)
+            if data_object["op"] == "service_response":
+                reconstructed = buffer
+                done = True
+
+        except Exception, e:
+            print e
+            pass
+
+
+# TODO: if opcode is fragment --> defragment, else access service request directly
         try:
             result = json.loads("["+buffer+"]")
             fragment_count = len(result)
             announced = int(result[0]["total"])
             if fragment_count == announced:
+                # sort fragments
+                sorted_result = [None] * fragment_count
+                unsorted_result = []
+                for fragment in result:
+                    unsorted_result.append(fragment)
+                    sorted_result[int(fragment["num"])] = fragment
+                print "unsorted_list:", unsorted_result
+                print "sorted_list:", sorted_result
+
+                reconstructed = ''
+                for fragment in sorted_result:
+                    reconstructed = reconstructed + fragment["data"]
+
                 done = True
         except Exception, e:
             print "===="
@@ -97,13 +122,14 @@ while not done:     # should not need a loop (maximum wait can be set by client_
 
 print "result:", result
 
-# TODO: sort before reconstructing!!!
-reconstructed = ''
-for fragment in result:
-    print "  ", fragment["data"]
-    reconstructed = reconstructed + fragment["data"]
-print
-print "reconstructed message :",reconstructed
+#if reconstructed == None:
+#    # TODO: sort before reconstructing!!!
+#    reconstructed = ''
+#    for fragment in result:
+#        print "  ", fragment["data"]
+#        reconstructed = reconstructed + fragment["data"]
+#    print
+#    print "reconstructed message :",reconstructed
 
 ## TODO: check why json arrives as string!
 #reconstructed = reconstructed.strip('"')

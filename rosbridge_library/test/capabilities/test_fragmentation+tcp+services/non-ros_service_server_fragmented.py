@@ -101,11 +101,15 @@ def wait_for_service_request():                                                 
         buffer = ""
         while not done:
             incoming = tcp_socket.recv(max_msg_length)
+            if incoming == '':
+                print "connection closed by peer"
+                exit()
             if buffer == "":
                 buffer = incoming
             else:
                 buffer = buffer + "," + incoming
             print "incoming:",incoming
+            # try to access service_request directly (not fragmented)
             try:
                 data_object = json.loads(buffer)
                 if data_object["op"] == "service_request":
@@ -113,10 +117,10 @@ def wait_for_service_request():                                                 
                     done = True
                     return data
             except Exception, e:
-                
+                print e
                 pass
 
-
+            # opcode was not "service_request" -> try to defragment
             try:
                 result = json.loads("["+buffer+"]")
                 fragment_count = len(result)
@@ -125,13 +129,22 @@ def wait_for_service_request():                                                 
                     reconstructed = ""
                     print "unsorted list of fragments:", result
                     # TODO: sort fragments before reconstructing!!
+
+                    sorted_result = [None] * fragment_count
+                    unsorted_result = []
                     for fragment in result:
+                        unsorted_result.append(fragment)
+                        sorted_result[int(fragment["num"])] = fragment
+                    print "unsorted_list:", unsorted_result
+                    print "sorted_list:", sorted_result
+
+                    for fragment in sorted_result:
                         reconstructed = reconstructed + fragment["data"]
 
                     done = True
                     return reconstructed
             except Exception, e:
-                
+                print e
                 pass
     except Exception, e:
         #print "network-error(?):", e
