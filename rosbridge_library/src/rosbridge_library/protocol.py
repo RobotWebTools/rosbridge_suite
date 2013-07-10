@@ -57,7 +57,7 @@ except ImportError:
         print "using python default json"
 
 # TODO: integrate this parameter in a better and configurable way.. at init or similar.
-delay_between_fragments = 0.1
+delay_between_fragments = 0.01
 
 class Protocol:
     """ The interface for a single client to interact with ROS.

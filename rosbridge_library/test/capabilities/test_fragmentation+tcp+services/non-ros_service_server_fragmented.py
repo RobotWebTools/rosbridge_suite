@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import socket
 import time
+
 from random import randint
 try:                       # try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
     import ujson as json
@@ -26,7 +27,7 @@ service_type = "SendBytes"                     # make sure this matches an exist
 service_name = "send_bytes"                   # service name
 
 send_fragment_size = 1024
-send_fragment_delay = 0.05
+send_fragment_delay = 0.2
 receive_fragment_size = 8
 
 ####################### variables end ##########################################
@@ -93,6 +94,19 @@ def unadvertise_service():                                                      
     unadvertise_message = json.dumps(unadvertise_message_object)                   
     tcp_socket.send(str(unadvertise_message))
 
+def findBrackets( aString ):
+   print "find brackets:"
+   print aString
+   if '{' in aString:
+      match = aString.split('{',1)[1]
+      open = 1
+      for index in xrange(len(match)):
+         if match[index] in '{}':
+            open = (open + 1) if match[index] == '{' else (open - 1)
+         if not open:
+            print "find brackets returns:", match[:index]
+            return "["+match[:index]+"]"
+
 def wait_for_service_request():                                                 # receive data from rosbridge
     data = None
 
@@ -107,7 +121,7 @@ def wait_for_service_request():                                                 
             if buffer == "":
                 buffer = incoming
             else:
-                buffer = buffer + "," + incoming
+                buffer = buffer + incoming
             print "incoming:",incoming
             # try to access service_request directly (not fragmented)
             try:
@@ -117,12 +131,27 @@ def wait_for_service_request():                                                 
                     done = True
                     return data
             except Exception, e:
+                print "direct_access error:"
                 print e
                 pass
 
             # opcode was not "service_request" -> try to defragment
             try:
-                result = json.loads("["+buffer+"]")
+                #result = json.loads("["+buffer+"]")
+
+                #result = nestedExpr('{','}').parseString(buffer).asList()
+                #result_string = findBrackets("{"+buffer+"}")
+                result_string = buffer.split("}{")
+                print "split by }{;",result_string
+                result = []
+                for fragment in result_string:
+                    if fragment[0] != "{":
+                        fragment = "{"+fragment
+                    if fragment[len(fragment)-1] != "}":
+                        fragment = fragment + "}"
+                    result.append(json.loads(fragment))
+                #result = json.loads(str(result_string))
+                print "result:", result
                 fragment_count = len(result)
                 announced = int(result[0]["total"])
                 if fragment_count == announced:
@@ -144,6 +173,7 @@ def wait_for_service_request():                                                 
                     done = True
                     return reconstructed
             except Exception, e:
+                print "defrag_error:"
                 print e
                 pass
     except Exception, e:

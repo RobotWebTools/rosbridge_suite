@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import socket
 
+
 try:
     import ujson as json
 except ImportError:
@@ -26,6 +27,8 @@ service_name = "send_bytes"                   # service name
 
 
 ################################################################################
+
+
 
 def request_service():
     service_request_object = { "op" : "call_service",
@@ -62,7 +65,7 @@ while not done:     # should not need a loop (maximum wait can be set by client_
         if buffer == "":
             buffer = incoming
         else:
-            buffer = buffer + "," + incoming
+            buffer = buffer + incoming
         print "incoming:",incoming
         #print "+++++++++++++++++++++"
         #service_response = json.loads(incoming)                                 # service_response contains JSON service response as sent by rosbridge
@@ -83,7 +86,18 @@ while not done:     # should not need a loop (maximum wait can be set by client_
 
 # TODO: if opcode is fragment --> defragment, else access service request directly
         try:
-            result = json.loads("["+buffer+"]")
+            #result = json.loads("["+buffer+"]")
+            result_string = buffer.split("}{")
+            print "split by }{;",result_string
+            result = []
+            for fragment in result_string:
+                if fragment[0] != "{":
+                    fragment = "{"+fragment
+                if fragment[len(fragment)-1] != "}":
+                    fragment = fragment + "}"
+                result.append(json.loads(fragment))
+            #result = json.loads(str(result_string))
+            print "result:", result
             fragment_count = len(result)
             announced = int(result[0]["total"])
             if fragment_count == announced:
