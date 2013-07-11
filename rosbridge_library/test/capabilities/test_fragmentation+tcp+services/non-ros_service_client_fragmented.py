@@ -80,7 +80,7 @@ while not done:     # should not need a loop (maximum wait can be set by client_
                 done = True
 
         except Exception, e:
-            #print e
+            print e
             pass
 
 

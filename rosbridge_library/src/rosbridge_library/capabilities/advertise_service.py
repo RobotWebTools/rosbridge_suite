@@ -96,6 +96,7 @@ class ROS_Service_Template( threading.Thread):
                                                 # .. links to singleton
 
     finish_flag = False
+    busy = False
 
     def __init__(self, client_callback, service_module, service_type, service_name, client_id):
         threading.Thread.__init__(self)
@@ -121,7 +122,7 @@ class ROS_Service_Template( threading.Thread):
         print "  client_callback:" ,self.client_callback
 
         # generate request_id
-        request_id = "count:"+str(self.request_counter)+"client:"+str(self.client_id)+"_time:" +datetime.now().strftime("%H:%M:%f") # + "_"+ str(self.request_counter)
+        request_id = "count:"+str(self.request_counter)+"_client:"+str(self.client_id)+"_time:" +datetime.now().strftime("%H:%M:%f") + "_"+ str(self.request_counter)
         self.request_counter = (self.request_counter + 1) % 500000  # TODO modulo blabla..
 
         # TODO: check for more complex parameter and types and bla --> need better parser!
@@ -146,30 +147,41 @@ class ROS_Service_Template( threading.Thread):
         if request_id not in self.request_list.keys():
             self.request_list[request_id] = request_message_object
 
-        self.client_callback (request_message_object)
-        print " sent request to client that serves the service"
+        while self.busy:
+            print "waiting for busy service provider"
+            time.sleep(0.5)
 
-        # TODO: add timeout to this loop! remove request_id from request_list after timeout!
-        begin = datetime.now()
-        duration = datetime.now() - begin
         answer = None
-        while not self.finish_flag and request_id not in self.response_list.keys() and duration.total_seconds() < self.service_request_timeout:
-            #print " waiting for response to request_id:", request_id
-            time.sleep(self.check_response_delay)
+        try:
+            # TODO: better handling of multiple request; only use one main handler for each service
+            self.busy = True
+            self.client_callback (request_message_object)
+            print " sent request to client that serves the service"
+
+            # TODO: add timeout to this loop! remove request_id from request_list after timeout!
+            begin = datetime.now()
             duration = datetime.now() - begin
 
-        if request_id in self.response_list:
-            #print "  response_list:", self.response_list
-            #print "  request_list:", self.request_list
-            answer = self.response_list[request_id]
-            del self.response_list[request_id]
-        else:
-            # request failed due to timeout
-            print "request timed out!"
-            answer = None
+            while not self.finish_flag and request_id not in self.response_list.keys() and duration.total_seconds() < self.service_request_timeout:
+                print " waiting for response to request_id:", request_id
+                time.sleep(self.check_response_delay)
+                duration = datetime.now() - begin
 
-        del self.request_list[request_id]
-        print "----------------------------------------------------------------"
+            if request_id in self.response_list:
+                #print "  response_list:", self.response_list
+                #print "  request_list:", self.request_list
+                answer = self.response_list[request_id]
+                del self.response_list[request_id]
+            else:
+                # request failed due to timeout
+                print "request timed out!"
+                answer = None
+
+            self.busy = False
+            del self.request_list[request_id]
+            print "----------------------------------------------------------------"
+        except Exception, e:
+            print e
         return answer
 
 

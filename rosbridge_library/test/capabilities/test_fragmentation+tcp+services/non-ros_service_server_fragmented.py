@@ -116,6 +116,8 @@ def findBrackets( aString ):
 def wait_for_service_request():                                                 # receive data from rosbridge
     data = None
 
+    # TODO: only check for fragmentlists.. server side blocking of busy service provider!
+
     try:
         done = False
         global buffer
@@ -184,6 +186,7 @@ def wait_for_service_request():                                                 
                         done = True
                         return reconstructed
                 except Exception, e:
+                    print e
                     print "not possible to defragment:", buffer
                     # try to devide into multiple json objects
                     result_string = buffer.split("}{")
@@ -199,10 +202,12 @@ def wait_for_service_request():                                                 
                     buffer = ""
                     # keep "rest" requests in buffer
                     print "remaining requests:", len(result)-1
-                    for i in range(1,len(result)):
+                    for i in range(1,len(result)-1):
                         buffer = buffer + json.dumps(result[i])
                     # return 1st request
-                    print "  ", buffer
+                    print " --buffer-- ", buffer
+                    if buffer == "":
+                        done = True
                     print result[0]
                     return json.dumps(result[0])
                     
@@ -242,20 +247,25 @@ def list_of_fragments(full_message, fragment_size):
         fragment = full_message[fragment_begin:fragment_end]
         fragments.append(fragment)
 
-    print "fragment_list:", fragments
+    #print "fragment_list:", fragments
 
     fragmented_messages_list = []                                               # generate list of fragmented messages
-    for count, fragment in enumerate(fragments):                                # iterate through list and have index counter
-        fragmented_message_object = {"op":"fragment",                           #   create python-object for each fragment message
-                                     "id": str(message_id),
-                                     "data": str(fragment),
-                                     "num": count,
-                                     "total": len(fragments)
-                                     }
 
-        fragmented_message = json.dumps(fragmented_message_object)              # create JSON-object from python-object for each fragment message
-        fragmented_messages_list.append(fragmented_message)                     # append JSON-object to list of fragmented messages
+    if len(fragments) > 1:
 
+        for count, fragment in enumerate(fragments):                                # iterate through list and have index counter
+            fragmented_message_object = {"op":"fragment",                           #   create python-object for each fragment message
+                                         "id": str(message_id),
+                                         "data": str(fragment),
+                                         "num": count,
+                                         "total": len(fragments)
+                                         }
+
+            fragmented_message = json.dumps(fragmented_message_object)              # create JSON-object from python-object for each fragment message
+            fragmented_messages_list.append(fragmented_message)                     # append JSON-object to list of fragmented messages
+    else:
+        fragmented_messages_list.append(str(fragment))
+        
     print "fragment_messages_list:", fragmented_messages_list
     return fragmented_messages_list                                             # return list of 'ready-to-send' fragmented messages
 ## fragmentation example end ###################################################
@@ -290,7 +300,8 @@ try:                                                                            
                 print "sending:",fragment
                 send_service_response(fragment)                 # send service_response to rosbridge
                 time.sleep(send_fragment_delay)
-        except Exception, e:                                                    # allows to try to receive next request/data
+        except Exception, e: # allows to try to receive next request/data
+          print e
           pass
 except KeyboardInterrupt:
     try:
