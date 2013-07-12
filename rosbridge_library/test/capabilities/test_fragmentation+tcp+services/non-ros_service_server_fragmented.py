@@ -11,6 +11,21 @@ except ImportError:
     except ImportError:
         import json
 
+import socket, subprocess, re
+
+def get_ipv4_address():
+    """
+    Returns IP address(es) of current machine.
+    """
+    p = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
+    ifc_resp = p.communicate()
+    patt = re.compile(r'inet\s*\w*\S*:\s*(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+    resp = patt.findall(ifc_resp[0])[0]
+    #print resp
+    return resp
+
+
+
 # TODO: handle multiple service requests at the same time
 
 ####################### variables begin ########################################
@@ -18,22 +33,22 @@ except ImportError:
 ################################################################################
 
 tcp_socket_timeout = 10                         # seconds
-max_msg_length = 1024                           # bytes
+max_msg_length = 20000                           # bytes
 
-rosbridge_ip = "192.168.2.14"                      # hostname or ip
+rosbridge_ip = get_ipv4_address() #"192.168.2.14"                      # hostname or ip
 rosbridge_port = 9090                           # port as integer
 
 service_module = "rosbridge_library.srv"        # make sure srv and msg files are available within specified module on rosbridge-server!
 service_type = "SendBytes"                     # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
 service_name = "send_bytes"                   # service name
 
-send_fragment_size = 511
-send_fragment_delay = 0.2
-receive_fragment_size = 513
+send_fragment_size = 10000
+send_fragment_delay = 0.1
+receive_fragment_size = 10000
 
 ####################### variables end ##########################################
 
-buffer =""
+
 
 ####################### service_calculation begin ##############################
 # change this function to match whatever service should be provided            #
@@ -48,12 +63,15 @@ def calculate_service_response(request):
 
     print "count:", count
     message = ""
-    for i in range(0,count-1):
+    for i in range(0,count):
         message += str(chr(randint(32,126)))
 #        message += "}{"
-        message = message.replace("}","")
-        message = message.replace("{","")
-    print "message:", message
+        message = message.replace("}","-")
+        message = message.replace("{","-")
+        if i% 100000 == 0:
+            print count - i, "bytes left to generate"
+
+    #print "message:", message
 
 
     #time.sleep(5)                                                      # to test service_response_timeouts
@@ -64,7 +82,7 @@ def calculate_service_response(request):
                         "data": service_response_data
                       }
     response_message = json.dumps(response_object)
-    print "response_message:",response_message
+    #print "response_message:",response_message
     print
     return response_message
 
@@ -99,8 +117,8 @@ def unadvertise_service():                                                      
     tcp_socket.send(str(unadvertise_message))
 
 def findBrackets( aString ):
-   print "find brackets:"
-   print aString
+   #print "find brackets:"
+   #print aString
    if '{' in aString:
       match = aString.split('{',1)[1]
       open = 1
@@ -108,7 +126,7 @@ def findBrackets( aString ):
          if match[index] in '{}':
             open = (open + 1) if match[index] == '{' else (open - 1)
          if not open:
-            print "find brackets returns:", match[:index]
+            #print "find brackets returns:", match[:index]
             return "["+match[:index]+"]"
 
 
@@ -121,7 +139,7 @@ def wait_for_service_request():                                                 
     try:
         done = False
         global buffer
-        #buffer = ""
+        buffer = ""
         while not done:
             incoming = tcp_socket.recv(max_msg_length)
             if incoming == '':
@@ -131,8 +149,8 @@ def wait_for_service_request():                                                 
                 buffer = incoming
             else:
                 buffer = buffer + incoming
-            print "incoming:",incoming
-            print "buffer:", buffer
+            #print "incoming:",incoming
+            #print "buffer:", buffer
             # try to access service_request directly (not fragmented)
             try:
                 data_object = json.loads(buffer)
@@ -189,35 +207,12 @@ def wait_for_service_request():                                                 
                     print e
                     print "not possible to defragment:", buffer
                     # try to devide into multiple json objects
-                    result_string = buffer.split("}{")
-                    #print "split by }{;",result_string
-                    result = []
-                    for fragment in result_string:
-                        if fragment[0] != "{":
-                            fragment = "{"+fragment
-                        if fragment[len(fragment)-1] != "}":
-                            fragment = fragment + "}"
-                        result.append(json.loads(fragment))
-                    print "  ", buffer
-                    buffer = ""
-                    # keep "rest" requests in buffer
-                    print "remaining requests:", len(result)-1
-                    for i in range(1,len(result)-1):
-                        buffer = buffer + json.dumps(result[i])
-                    # return 1st request
-                    print " --buffer-- ", buffer
-                    if buffer == "":
-                        done = True
-                    print result[0]
-                    return json.dumps(result[0])
-                    
-
             except Exception, e:
                 print "defrag_error:"
                 print e
                 pass
     except Exception, e:
-        print "network-error(?):", e
+        #print "network-error(?):", e
         pass
     return data
 
@@ -266,7 +261,7 @@ def list_of_fragments(full_message, fragment_size):
     else:
         fragmented_messages_list.append(str(fragment))
         
-    print "fragment_messages_list:", fragmented_messages_list
+    #print "fragment_messages_list:", fragmented_messages_list
     return fragmented_messages_list                                             # return list of 'ready-to-send' fragmented messages
 ## fragmentation example end ###################################################
 
@@ -294,10 +289,13 @@ try:                                                                            
           elif data != None and len(data) > 0:                                  # received service_request (at least some data..)
             response = calculate_service_response(data)     # do service_calculation
 
+            print "response calculated, now splitting into fragments.."
             fragment_list = list_of_fragments(response, send_fragment_size)
 
+
+            print "sending", len(fragment_list), "messages as response"
             for fragment in fragment_list:
-                print "sending:",fragment
+                #print "sending:" ,fragment
                 send_service_response(fragment)                 # send service_response to rosbridge
                 time.sleep(send_fragment_delay)
         except Exception, e: # allows to try to receive next request/data

@@ -10,15 +10,28 @@ except ImportError:
     except ImportError:
         import json
 
+import socket, subprocess, re
+
+def get_ipv4_address():
+    """
+    Returns IP address(es) of current machine.
+    """
+    p = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
+    ifc_resp = p.communicate()
+    patt = re.compile(r'inet\s*\w*\S*:\s*(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+    resp = patt.findall(ifc_resp[0])[0]
+    #print resp
+    return resp
+
 
 ####################### variables begin ########################################
 # these parameters should be changed to match the actual environment           #
 ################################################################################
 
-client_socket_timeout = 60                      # seconds
-max_msg_length = 1024000                        # bytes
+client_socket_timeout = 6000                      # seconds
+max_msg_length = 20000                        # bytes
 
-rosbridge_ip = "192.168.2.14"                      # hostname or ip
+rosbridge_ip = get_ipv4_address() #"192.168.2.14"                      # hostname or ip
 rosbridge_port = 9090                           # port as integer
 
 service_name = "send_bytes"                   # service name
@@ -33,8 +46,8 @@ service_name = "send_bytes"                   # service name
 def request_service():
     service_request_object = { "op" : "call_service",
                                "service": "/"+service_name,
-                               "fragment_size": 512,
-                               "args": { "count" : 50
+                               "fragment_size": 10000,
+                               "args": { "count" : 50000
                                         }
                               }
     service_request = json.dumps(service_request_object)
@@ -80,7 +93,7 @@ while not done:     # should not need a loop (maximum wait can be set by client_
                 done = True
 
         except Exception, e:
-            print e
+            #print e
             pass
 
 
@@ -120,8 +133,9 @@ while not done:     # should not need a loop (maximum wait can be set by client_
             #print "===="
             #print "["+buffer+"]"
             #print "###"
-            print e
+            #print e
             #print "###"
+            pass
 
         # don't break after first receive if using fragment_size!
         #break
@@ -136,7 +150,7 @@ while not done:     # should not need a loop (maximum wait can be set by client_
         print e
         print "---------------------"
 
-print "result:", result
+#print "result:", result
 
 #if reconstructed == None:
 #    # TODO: sort before reconstructing!!!
@@ -152,19 +166,20 @@ print "result:", result
 #print "reconstructed message2:",reconstructed
 
 returned_data = json.loads(reconstructed)
-print "returned json:", returned_data
+#print "returned json:", returned_data
 
 print
-print "received:"
+#print "received:"
 print "------------------------------------------------------"
-for key, value in returned_data.iteritems():
-    print key, ":"
-    print value
+print "service response contained: ", len(returned_data["values"]["data"]),"bytes"
+#for key, value in returned_data.iteritems():
+#    print key, "(length):", len(value)
 
 #answer = returned_data["values"]
 
 #print "service_answer:", json.dumps(answer)
 
+print "service response received successfully"
 
 sock.close()                                                                    # close socket
 

@@ -5,6 +5,7 @@ from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 
 from signal import signal, SIGINT, SIG_DFL
 import socket, subprocess, re
+
 def get_ipv4_address():
     """
     Returns IP address(es) of current machine.
@@ -25,7 +26,7 @@ client_id_seed = 0
 clients_connected = 0
 
 # Maximum length per message for incoming data
-max_msg_length = 2048
+max_msg_length = 20000
 socket_timeout = 60
 
 class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):

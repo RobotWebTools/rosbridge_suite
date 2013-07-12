@@ -50,6 +50,7 @@ class StopService(Capability):
             print " service not found!"
 
     def finish(self):
+
         self.protocol.unregister_operation("unadvertise_server")
 
 

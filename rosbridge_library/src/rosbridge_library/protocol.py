@@ -57,7 +57,7 @@ except ImportError:
         print "using python default json"
 
 # TODO: integrate this parameter in a better and configurable way.. at init or similar.
-delay_between_fragments = 0.2
+delay_between_fragments = 0.1
 
 class Protocol:
     """ The interface for a single client to interact with ROS.
@@ -166,6 +166,7 @@ class Protocol:
                   #"fragment_size": msg.get("fragment_size", None),
                   #"queue_length": msg.get("queue_length", 0),
                   #"compression": msg.get("compression", "none")
+                # TODO: think about splitting into fragments that have specified size including header-fields!
                 fragment_list = Fragmentation(self).fragment(message, self.fragment_size, mid )
 
             if fragment_list != None:

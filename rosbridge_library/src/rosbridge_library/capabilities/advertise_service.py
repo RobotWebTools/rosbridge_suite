@@ -119,10 +119,11 @@ class ROS_Service_Template( threading.Thread):
         print "  service_name:", self.service_name
         print "  service_type:", self.service_type
         print "  service providing client_id:", self.client_id
+        
         print "  client_callback:" ,self.client_callback
 
         # generate request_id
-        request_id = "count:"+str(self.request_counter)+"_client:"+str(self.client_id)+"_time:" +datetime.now().strftime("%H:%M:%f") + "_"+ str(self.request_counter)
+        request_id = "count:"+str(self.request_counter)+"_time:" +datetime.now().strftime("%H:%M:%f")
         self.request_counter = (self.request_counter + 1) % 500000  # TODO modulo blabla..
 
         # TODO: check for more complex parameter and types and bla --> need better parser!
@@ -149,6 +150,9 @@ class ROS_Service_Template( threading.Thread):
 
         while self.busy:
             print "waiting for busy service provider"
+            # if stop_Service was called.. kill unsent requests to that service
+            if self.finish_flag:
+                return None
             time.sleep(0.5)
 
         answer = None
@@ -162,6 +166,7 @@ class ROS_Service_Template( threading.Thread):
             begin = datetime.now()
             duration = datetime.now() - begin
 
+            # if stop_service was called.. stop waiting for response
             while not self.finish_flag and request_id not in self.response_list.keys() and duration.total_seconds() < self.service_request_timeout:
                 print " waiting for response to request_id:", request_id
                 time.sleep(self.check_response_delay)
@@ -187,6 +192,7 @@ class ROS_Service_Template( threading.Thread):
 
     def stop_ROS_service(self):
         print " stopping ROS service"
+        self.finish_flag = True
         self.ros_serviceproxy.shutdown("reason: stop service requested")
         
 
