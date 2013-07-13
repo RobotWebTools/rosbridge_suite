@@ -86,6 +86,7 @@ class CallService(Capability):
             (type(exc).__name__, str(exc)), cid)
 
 
+
 def trim_servicename(service):
     if '#' in service:
         return service[:service.find('#')]

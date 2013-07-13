@@ -99,12 +99,13 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
             if message != None:
                 # Send data to TCP socket
                 #print "waiting; queue-len:",len(self.queue), self.protocol.client_id
+                #print "sending:",message
                 self.request.send(message)
                 time.sleep(send_delay)
                 
             self.busy = False
             if len(self.queue) > 0:
-                print "accessing queue"
+                print "accessing queue", len(self.queue)
                 self.send_message()
 
 
@@ -115,9 +116,11 @@ import time
 if __name__ == "__main__":
     loaded = False
     retry_count = 0
+    my_ip = get_ipv4_address()
+    print "server-ip:", my_ip
     while not loaded:
         retry_count += 1
-        print "try#", retry_count
+        print retry_count
         try:
             init_node("rosbridge_tcp")
             signal(SIGINT, SIG_DFL)
@@ -132,8 +135,6 @@ if __name__ == "__main__":
                     sys.exit(-1)
 
             # Server host is a tuple ('host', port)
-            my_ip = get_ipv4_address()
-            print "server-ip:", my_ip
             server = SocketServer.ThreadingTCPServer((my_ip, port), RosbridgeTcpSocket)
 
             loginfo("Rosbridge TCP server started on port %d", port)
@@ -141,7 +142,7 @@ if __name__ == "__main__":
             server.serve_forever()
             loaded = True
         except Exception, e:
-            print "remove me", e
-            print "waiting 1 second before retrying.."
+            #print "remove me", e
+            #print "waiting 1 second before retrying.."
             time.sleep(1)
     print "server loaded"

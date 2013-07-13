@@ -31,7 +31,7 @@ def get_ipv4_address():
 client_socket_timeout = 6                      # seconds
 max_msg_length = 2000000                        # bytes
 
-rosbridge_ip = get_ipv4_address() #"192.168.2.14"                      # hostname or ip
+rosbridge_ip = "192.168.2.14" #get_ipv4_address()                       # hostname or ip
 rosbridge_port = 9090                           # port as integer
 
 service_name = "send_bytes2"                   # service name
@@ -46,7 +46,7 @@ service_name = "send_bytes2"                   # service name
 def request_service():
     service_request_object = { "op" : "call_service",
                                "service": "/"+service_name,
-                               "fragment_size": 10000,
+                               "fragment_size": 1000,
                                "args": { "count" : 5000
                                         }
                               }
@@ -77,7 +77,10 @@ try:
             incoming = sock.recv(max_msg_length)                                    # receive service_response from rosbridge
             if buffer == "":
                 buffer = incoming
-
+                if incoming == "":
+                    print "closing socket"
+                    sock.close()
+                    break
             else:
                 buffer = buffer + incoming
             #print "incoming:",incoming
@@ -167,6 +170,8 @@ try:
     #print "reconstructed message2:",reconstructed
 
     returned_data = json.loads(reconstructed)
+    if returned_data["values"] == None:
+        print "response was None -> service was not available"
     #print "returned json:", returned_data
 
     #print
@@ -182,7 +187,9 @@ try:
 
     #print "service response received successfully: ",len(returned_data["values"]["data"]),"bytes"
     #print ".",
-    sock.close()                                                                    # close socket
+    
 
 except Exception, e:
     print "ERROR - could not receive service_response"
+
+sock.close()                                                                    # close socket

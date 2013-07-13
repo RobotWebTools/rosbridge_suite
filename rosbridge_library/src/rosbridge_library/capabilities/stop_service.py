@@ -44,7 +44,7 @@ class StopService(Capability):
                 print "  unadvertise requesting client_id matches providing client_id"
                 self.service_list[service_name].stop_ROS_service()
                 print " ROS service stopped"
-                del self.service_list[service_name]
+                #del self.service_list[service_name]
                 print " rosbridge service removed"
         else:
             print " service not found!"

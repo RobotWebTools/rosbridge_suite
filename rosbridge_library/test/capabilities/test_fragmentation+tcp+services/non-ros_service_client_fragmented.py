@@ -46,7 +46,7 @@ service_name = "send_bytes"                   # service name
 def request_service():
     service_request_object = { "op" : "call_service",
                                "service": "/"+service_name,
-                               "fragment_size": 10000,
+                               "fragment_size": 1000,
                                "args": { "count" : 5000
                                         }
                               }
@@ -77,7 +77,9 @@ try:
             incoming = sock.recv(max_msg_length)                                    # receive service_response from rosbridge
             if buffer == "":
                 buffer = incoming
+                if incoming == "":
 
+                    break
             else:
                 buffer = buffer + incoming
             #print "incoming:",incoming
@@ -91,6 +93,7 @@ try:
                 data_object = json.loads(buffer)
                 if data_object["op"] == "service_response":
                     reconstructed = buffer
+
                     done = True
 
             except Exception, e:
@@ -167,6 +170,8 @@ try:
     #print "reconstructed message2:",reconstructed
 
     returned_data = json.loads(reconstructed)
+    if returned_data["values"] == None:
+        print "response was None -> service was not available"
     #print "returned json:", returned_data
 
     #print
@@ -182,7 +187,9 @@ try:
 
     #print "service response received successfully: ",len(returned_data["values"]["data"]),"bytes"
     #print ".",
-    sock.close()                                                                    # close socket
+
 
 except Exception, e:
     print "ERROR - could not receive service_response"
+
+sock.close()                                                                    # close socket

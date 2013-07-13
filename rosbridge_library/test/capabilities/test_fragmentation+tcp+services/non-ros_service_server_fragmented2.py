@@ -129,7 +129,7 @@ def findBrackets( aString ):
             #print "find brackets returns:", match[:index]
             return "["+match[:index]+"]"
 
-
+import sys
 
 def wait_for_service_request():                                                 # receive data from rosbridge
     data = None
@@ -144,7 +144,7 @@ def wait_for_service_request():                                                 
             incoming = tcp_socket.recv(max_msg_length)
             if incoming == '':
                 print "connection closed by peer"
-                exit()
+                sys.exit(1)
             if buffer == "":
                 buffer = incoming
             else:
@@ -161,6 +161,9 @@ def wait_for_service_request():                                                 
             except Exception, e:
                 print "direct_access error:"
                 print e
+                if data_object["values"] == None:
+                    print "server replaced services"
+                    sys.exit(1)
                 pass
 
             # opcode was not "service_request" -> try to defragment

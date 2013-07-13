@@ -78,7 +78,7 @@ class ReceivedResponses():
 
 
 class ROS_Service_Template( threading.Thread):
-    service_request_timeout = 600 #seconds
+    service_request_timeout = 15 #seconds
     check_response_delay = 0.1 #seconds
 
     service_name = None
@@ -105,7 +105,7 @@ class ROS_Service_Template( threading.Thread):
         threading.Thread.__init__(self)
 
         
-        print " ROS_Service_Template used to create a rosbridge-ServiceInstance"
+        #print " ROS_Service_Template used to create a rosbridge-ServiceInstance"
         self.service_name = service_name
         self.service_module = service_module
         self.service_type = service_type
@@ -189,13 +189,10 @@ class ROS_Service_Template( threading.Thread):
                 answer = self.response_list[request_id]
                 del self.response_list[request_id]
 
-
             else:
                 # request failed due to timeout
                 print "request timed out!"
                 answer = None
-
-            
             del self.request_list[request_id]
             #print "----------------------------------------------------------------"
             
@@ -212,28 +209,40 @@ class ROS_Service_Template( threading.Thread):
 
     def stop_ROS_service(self):
         print " stopping ROS service"
-
-        self.finish_flag = True
-        # wait for request_loops to run into finish_flags
-        time.sleep(3)
-        self.ros_serviceproxy.shutdown("reason: stop service requested")
         self.spawned = False
+        self.finish_flag = True
+        self.ros_serviceproxy.shutdown("reason: stop service requested")
+
+        # wait for request_loops to run into finish_flags
+        for request_id in self.request_list.keys():
+            self.response_list[request_id] = None
+        time.sleep(3)
+
+        # inform client that service is not active anymore
+        # ..try to close tcp-socket
+        service_list = ServiceList().list
+        del service_list[self.service_name]
+        self.client_callback ({"values":None})
+        
+        
+
 
     spawned = False
     def spawn_ROS_service(self, service_module, service_type, service_name, client_id):
-        print " spawn_ROS_service called"
+        #print " spawn_ROS_service called"
         try:
             exec("from " + service_module + " import " + service_type)
-            print "  import of",service_type, "from", service_module, "succeeded!"
+            #print "  import of",service_type, "from", service_module, "succeeded!"
         except Exception, e:
             print "  import of",service_type, "from", service_module, "FAILED!"
+            print e
 
         some_module = importlib.import_module(service_module)
         self.ros_serviceproxy = rospy.Service( service_name, getattr(some_module, service_type), self.handle_service_request)
-        print " ROS service spawned."
-        print "  client_id:", self.client_id
-        print "  service-name:", self.service_name
-        print "  service-type:", self.service_type
+        #print " ROS service spawned."
+#        print "  client_id:", self.client_id
+#        print "  service-name:", self.service_name
+#        print "  service-type:", self.service_type
         self.spawned = True
 
 
@@ -250,10 +259,10 @@ class AdvertiseService(Capability):
 
 
     def advertise_service(self, message):
-        print "advertise_service called:"
-        print "  client_id:", self.protocol.client_id
+        #print "advertise_service called:"
+        #print "  client_id:", self.protocol.client_id
         # register client internal with service to allow routing of service requests
-        print "  ", message
+        #print "  ", message
         opcode = message["op"]
         service_type = message["service_type"]
         service_name = message["service_name"]
@@ -262,15 +271,15 @@ class AdvertiseService(Capability):
         client_callback = self.protocol.send
         # TODO: define what happens when existing service gets advertised
         if service_name not in self.service_list.keys():
-            print " registering new service, did not exist before.."
+            #print " registering new service, did not exist before.."
             self.service_list[service_name] = ROS_Service_Template(client_callback , service_module, service_type, service_name, client_id)
         else:
             print " replacing existing service"
             self.service_list[service_name].stop_ROS_service()
-            del self.service_list[service_name]
+            #del self.service_list[service_name]
             self.service_list[service_name] = ROS_Service_Template(client_callback , service_module, service_type, service_name, client_id)
 
-        print "  self.service_list:", self.service_list
+        #print "  self.service_list:", self.service_list
 
     def finish(self):
         self.finish_flag = True
