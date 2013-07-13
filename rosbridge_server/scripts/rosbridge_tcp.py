@@ -25,9 +25,11 @@ import sys
 client_id_seed = 0
 clients_connected = 0
 
-# Maximum length per message for incoming data
-max_msg_length = 20000
-socket_timeout = 60
+# Maximum length per socket_read for incoming data
+max_msg_length = 20000000
+socket_timeout = 10
+
+send_delay = 0.1
 
 class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     """
@@ -51,14 +53,15 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         self.request.settimeout(socket_timeout)
         while 1:
             try:
-		          data = self.request.recv(max_msg_length)
-		          # Exit on empty string
-		          if data.strip() == '':
-		              break
-		          elif len(data.strip()) > 0:
-		              self.protocol.incoming(data.strip(''))
-		          else:
-		              pass
+              data = self.request.recv(max_msg_length)
+              # Exit on empty string
+              if data.strip() == '':
+                  break
+              elif len(data.strip()) > 0:
+                  #time.sleep(5)
+                  self.protocol.incoming(data.strip(''))
+              else:
+                  pass
             except Exception, e:
                 pass
                 self.protocol.log("debug", "socket connection timed out! (ignore warning if client is only listening..)")
@@ -72,31 +75,73 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         self.protocol.finish()
         loginfo("Client disconnected.  %d clients total.", clients_connected)        
 
-    def send_message(self, message):
+    busy = False
+    queue = []
+    # TODO: cleaner
+    def send_message(self, message=None):
         """
         Callback from rosbridge
         """
-        # Send data to TCP socket
-        self.request.send(message)
+
+        if self.busy:
+            if message!=None:
+                print "adding to queue"
+                self.queue.append(message)
+        else:
+
+            self.busy = True
+            
+
+            if message == None and len(self.queue) > 0:
+                message = self.queue[0]
+                self.queue = self.queue[1:]
+                #print self.queue
+            if message != None:
+                # Send data to TCP socket
+                #print "waiting; queue-len:",len(self.queue), self.protocol.client_id
+                self.request.send(message)
+                time.sleep(send_delay)
+                
+            self.busy = False
+            if len(self.queue) > 0:
+                print "accessing queue"
+                self.send_message()
+
+
+#        self.busy = False
+
+import time
 
 if __name__ == "__main__":
-    init_node("rosbridge_tcp")
-    signal(SIGINT, SIG_DFL)
+    loaded = False
+    retry_count = 0
+    while not loaded:
+        retry_count += 1
+        print "try#", retry_count
+        try:
+            init_node("rosbridge_tcp")
+            signal(SIGINT, SIG_DFL)
 
-    port = get_param('/rosbridge/port', 9090)
-    if "--port" in sys.argv:
-        idx = sys.argv.index("--port") + 1
-        if idx < len(sys.argv):
-            port = int(sys.argv[idx])
-        else:
-            print "--port argument provided without a value."
-            sys.exit(-1)
+            port = get_param('/rosbridge/port', 9090)
+            if "--port" in sys.argv:
+                idx = sys.argv.index("--port") + 1
+                if idx < len(sys.argv):
+                    port = int(sys.argv[idx])
+                else:
+                    print "--port argument provided without a value."
+                    sys.exit(-1)
 
-    # Server host is a tuple ('host', port)
-    my_ip = get_ipv4_address()
-    print "server-ip:", my_ip
-    server = SocketServer.ThreadingTCPServer((my_ip, port), RosbridgeTcpSocket)
+            # Server host is a tuple ('host', port)
+            my_ip = get_ipv4_address()
+            print "server-ip:", my_ip
+            server = SocketServer.ThreadingTCPServer((my_ip, port), RosbridgeTcpSocket)
 
-    loginfo("Rosbridge TCP server started on port %d", port)
+            loginfo("Rosbridge TCP server started on port %d", port)
 
-    server.serve_forever()
+            server.serve_forever()
+            loaded = True
+        except Exception, e:
+            print "remove me", e
+            print "waiting 1 second before retrying.."
+            time.sleep(1)
+    print "server loaded"

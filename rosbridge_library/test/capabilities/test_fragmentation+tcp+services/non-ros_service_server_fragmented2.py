@@ -40,7 +40,7 @@ rosbridge_port = 9090                           # port as integer
 
 service_module = "rosbridge_library.srv"        # make sure srv and msg files are available within specified module on rosbridge-server!
 service_type = "SendBytes"                     # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
-service_name = "send_bytes"                   # service name
+service_name = "send_bytes2"                   # service name
 
 send_fragment_size = 10000
 send_fragment_delay = 0.1
@@ -100,20 +100,20 @@ def connect_tcp_socket():
     return tcp_sock
 
 def advertise_service():                                                        # advertise service
-    advertise_message_object = {"op":"advertise_service",
+    advertise_message_object = {"op":"advertise_service",                       
                                 "service_module": service_module,
                                 "service_type": service_type,
                                 "service_name": service_name,
                                 "fragment_size": receive_fragment_size
                                 }
-    advertise_message = json.dumps(advertise_message_object)
+    advertise_message = json.dumps(advertise_message_object)                    
     tcp_socket.send(str(advertise_message))
 
 def unadvertise_service():                                                      # unadvertise service
-    unadvertise_message_object = {"op":"stop_service",
+    unadvertise_message_object = {"op":"stop_service",                           
                                   "service_name": service_name
                                  }
-    unadvertise_message = json.dumps(unadvertise_message_object)
+    unadvertise_message = json.dumps(unadvertise_message_object)                   
     tcp_socket.send(str(unadvertise_message))
 
 def findBrackets( aString ):
@@ -260,7 +260,7 @@ def list_of_fragments(full_message, fragment_size):
             fragmented_messages_list.append(fragmented_message)                     # append JSON-object to list of fragmented messages
     else:
         fragmented_messages_list.append(str(fragment))
-
+        
     #print "fragment_messages_list:", fragmented_messages_list
     return fragmented_messages_list                                             # return list of 'ready-to-send' fragmented messages
 ## fragmentation example end ###################################################

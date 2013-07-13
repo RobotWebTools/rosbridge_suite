@@ -88,6 +88,8 @@ class Defragment(Capability, threading.Thread):
     def defragment(self, message):
         now = datetime.now()
 
+        
+
         if self.received_fragments != None:
             for id in self.received_fragments.keys() :
                 time_diff = now - self.received_fragments[id]["timestamp_last_append"]
@@ -131,6 +133,8 @@ class Defragment(Capability, threading.Thread):
             }
             log_msg = "opened new fragment list for messageID " + str(msg_id)
             self.protocol.log("debug", log_msg)
+
+        #print "received fragments:", len(self.received_fragments[msg_id]["fragment_list"].keys())
 
         # Add fragment to fragment container's list if not already in list
         if ((msg_num not in self.received_fragments[msg_id]["fragment_list"].keys() ) and

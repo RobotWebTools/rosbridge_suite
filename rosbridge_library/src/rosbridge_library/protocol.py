@@ -57,6 +57,7 @@ except ImportError:
         print "using python default json"
 
 # TODO: integrate this parameter in a better and configurable way.. at init or similar.
+# if this is too high, clients network stacks will get flooded.. depends on message_size, bandwidth/performance/client_limits/...
 delay_between_fragments = 0.1
 
 class Protocol:
@@ -73,7 +74,8 @@ class Protocol:
 
     fragment_size = None
     png = None
-
+    buffer = ""
+    busy = False
 
     def __init__(self, client_id):
         """ Keyword arguments:
@@ -86,14 +88,53 @@ class Protocol:
         self.capabilities = []
         self.operations = {}
 
-    def incoming(self, message_string):
+    # added default None to allow recalling incoming until buffer is empty
+    def incoming(self, message_string=""):
         """ Process an incoming message from the client
 
         Keyword arguments:
         message_string -- the wire-level message sent by the client
 
         """
-        msg = self.deserialize(message_string)
+        # TODO: implement workaround for strings that contain -more than 1/-partial JSON object(s)
+        # current state(tcp buffer 20000000): still needs timeout of 0.01s ; getting good performance with big message sizes (10000)
+
+        # "test" code
+        old_buffer_len = len(self.buffer)
+        message_len = len(message_string)
+        self.buffer = self.buffer + message_string
+
+        #print message_string
+        #print "BUFFER len:", len(self.buffer)
+        msg = None
+
+        try:
+            json.loads(self.buffer)
+            msg = self.deserialize(self.buffer)
+            self.buffer = ""
+
+        except Exception, e:
+            #print e
+            # only try longer strings than old_buffer (old_buffer should be incomplete json ..)
+            # ...this is not true if two objects arrive within 1 socket read
+            for end in range(1,len(self.buffer)):
+                #print "   trying:", self.buffer[0:end]
+                try:
+                    json.loads(self.buffer[0:end])
+                    msg = self.deserialize(self.buffer[0:end])
+                    self.buffer = self.buffer[end:len(self.buffer)]
+                    #print "successfull json load!"
+                    break
+                except Exception,e:
+                    #print e
+                    pass
+
+
+        #else:
+            #print "BUFFER empty"
+        #print "after parsing... msg:", msg
+
+        # "original" code
         if msg is None:
             return
 
@@ -117,7 +158,7 @@ class Protocol:
         #  maybe need to be improved to bind parameter values to specific operation.. -> pass as parameter to self.operations[op] needs default values.. bla
         if "fragment_size" in msg.keys():
             self.fragment_size = msg["fragment_size"]
-            print "  fragment_size set to:", self.fragment_size
+            #print "  fragment_size set to:", self.fragment_size
         
         if "png" in msg.keys():
             self.png = msg["msg"]
@@ -126,8 +167,15 @@ class Protocol:
 
         try:
             self.operations[op](msg)
+
         except Exception as exc:
             self.log("error", "%s: %s" % (op, str(exc)), mid)
+        
+#        if self.buffer != "":
+#            # TODO: add timeout for leading data..
+#            #print " buffer not empty!", self.buffer
+#            #time.sleep(0.1)
+#            self.incoming()
 
     def outgoing(self, message):
         """ Pass an outgoing message to the client.  This method should be
@@ -159,7 +207,7 @@ class Protocol:
 
             fragment_list = None
 
-            print "  fragment_size is set to:", self.fragment_size
+            #print "  fragment_size is set to:", self.fragment_size
 
             if self.fragment_size != None and len(serialized) > self.fragment_size:
                 mid = message.get("id", None)
@@ -171,9 +219,10 @@ class Protocol:
 
             if fragment_list != None:
                 for fragment in fragment_list:
+                    #time.sleep(delay_between_fragments)
                     self.outgoing(json.dumps(fragment))
-                    time.sleep(delay_between_fragments)
             else:
+                #time.sleep(delay_between_fragments)
                 self.outgoing(serialized)
 
     def finish(self):

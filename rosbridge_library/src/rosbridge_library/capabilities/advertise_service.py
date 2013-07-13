@@ -3,7 +3,10 @@ from rosbridge_library.capability import Capability
 import rospy
 from datetime import datetime
 import time
-import threading
+try:
+    import threading
+except AttributeError, e:
+    print "hier"
 try:
     import ujson as json
 except ImportError:
@@ -75,7 +78,7 @@ class ReceivedResponses():
 
 
 class ROS_Service_Template( threading.Thread):
-    service_request_timeout = 3600 #seconds
+    service_request_timeout = 600 #seconds
     check_response_delay = 0.1 #seconds
 
     service_name = None
@@ -100,6 +103,7 @@ class ROS_Service_Template( threading.Thread):
 
     def __init__(self, client_callback, service_module, service_type, service_name, client_id):
         threading.Thread.__init__(self)
+
         
         print " ROS_Service_Template used to create a rosbridge-ServiceInstance"
         self.service_name = service_name
@@ -111,16 +115,26 @@ class ROS_Service_Template( threading.Thread):
         self.spawn_ROS_service( service_module, service_type, service_name, client_id)
 
 
+
     def handle_service_request(self, req):
-        print "----------------------------------------------------------------"
-        print  "handle_service_request called"
-        print "  service_request:"
-        print req
-        print "  service_name:", self.service_name
-        print "  service_type:", self.service_type
-        print "  service providing client_id:", self.client_id
-        
-        print "  client_callback:" ,self.client_callback
+        while not self.spawned or self.busy:
+            #print "waiting for busy service provider; spawned?", self.spawned, "busy?", self.busy
+            # if stop_Service was called.. kill unsent requests to that service
+            if self.finish_flag:
+                return None
+            # wait for delay_between requests to allow the currently working request to be finished..
+            time.sleep(0.1)
+
+        self.busy = True
+#        print "----------------------------------------------------------------"
+#        print  "handle_service_request called"
+#        print "  service_request:"
+#        print req
+#        print "  service_name:", self.service_name
+#        print "  service_type:", self.service_type
+#        print "  service providing client_id:", self.client_id
+#
+#        print "  client_callback:" , self.client_callback
 
         # generate request_id
         request_id = "count:"+str(self.request_counter)+"_time:" +datetime.now().strftime("%H:%M:%f")
@@ -142,25 +156,22 @@ class ROS_Service_Template( threading.Thread):
                                     }
         request_message = json.dumps(request_message_object)
 
-        print " request_message:", request_message
+        #print " request_message:", request_message
 
         # TODO: check cases! this cond should not be necessary
         if request_id not in self.request_list.keys():
             self.request_list[request_id] = request_message_object
 
-        while self.busy:
-            print "waiting for busy service provider"
-            # if stop_Service was called.. kill unsent requests to that service
-            if self.finish_flag:
-                return None
-            time.sleep(0.5)
+
 
         answer = None
         try:
             # TODO: better handling of multiple request; only use one main handler for each service
-            self.busy = True
+            #self.busy = True
+            #time.sleep(0.1)
             self.client_callback (request_message_object)
-            print " sent request to client that serves the service"
+            
+            #print " sent request to client that serves the service"
 
             # TODO: add timeout to this loop! remove request_id from request_list after timeout!
             begin = datetime.now()
@@ -168,7 +179,7 @@ class ROS_Service_Template( threading.Thread):
 
             # if stop_service was called.. stop waiting for response
             while not self.finish_flag and request_id not in self.response_list.keys() and duration.total_seconds() < self.service_request_timeout:
-                print " waiting for response to request_id:", request_id
+                #print " waiting for response to request_id:", request_id
                 time.sleep(self.check_response_delay)
                 duration = datetime.now() - begin
 
@@ -177,25 +188,38 @@ class ROS_Service_Template( threading.Thread):
                 #print "  request_list:", self.request_list
                 answer = self.response_list[request_id]
                 del self.response_list[request_id]
+
+
             else:
                 # request failed due to timeout
                 print "request timed out!"
                 answer = None
 
-            self.busy = False
+            
             del self.request_list[request_id]
-            print "----------------------------------------------------------------"
+            #print "----------------------------------------------------------------"
+            
         except Exception, e:
             print e
+
+        #print "answer is None?:",answer == None
+        # block before leaving and allowing next request, if request did not time out..
+        #time.sleep(0.1)
+        self.busy = False
+
         return answer
 
 
     def stop_ROS_service(self):
         print " stopping ROS service"
-        self.finish_flag = True
-        self.ros_serviceproxy.shutdown("reason: stop service requested")
-        
 
+        self.finish_flag = True
+        # wait for request_loops to run into finish_flags
+        time.sleep(3)
+        self.ros_serviceproxy.shutdown("reason: stop service requested")
+        self.spawned = False
+
+    spawned = False
     def spawn_ROS_service(self, service_module, service_type, service_name, client_id):
         print " spawn_ROS_service called"
         try:
@@ -210,9 +234,11 @@ class ROS_Service_Template( threading.Thread):
         print "  client_id:", self.client_id
         print "  service-name:", self.service_name
         print "  service-type:", self.service_type
+        self.spawned = True
 
 
 class AdvertiseService(Capability):
+
     opcode_advertise_service = "advertise_service"      # rosbridge-client -> rosbridge # register in protocol.py!
     service_list = ServiceList().list                   # links to singleton
 

@@ -1,0 +1,11 @@
+echo "running single request to allow caches to load etc.."
+./non-ros_service_client_fragmented.py &
+sleep 5
+
+echo "running flooding test"
+for i in {1..50} 
+do
+ ./non-ros_service_client_fragmented.py &
+ sleep 0.0
+done
+echo "finished flooding test"
