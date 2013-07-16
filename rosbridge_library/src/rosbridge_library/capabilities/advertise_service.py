@@ -239,10 +239,10 @@ class ROS_Service_Template( threading.Thread):
 
         some_module = importlib.import_module(service_module)
         self.ros_serviceproxy = rospy.Service( service_name, getattr(some_module, service_type), self.handle_service_request)
-        #print " ROS service spawned."
-#        print "  client_id:", self.client_id
-#        print "  service-name:", self.service_name
-#        print "  service-type:", self.service_type
+        print " ROS service spawned."
+        print "  client_id:", self.client_id
+        print "  service-name:", self.service_name
+        print "  service-type:", self.service_type
         self.spawned = True
 
 

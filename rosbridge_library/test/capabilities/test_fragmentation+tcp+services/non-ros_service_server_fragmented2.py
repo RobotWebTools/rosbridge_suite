@@ -20,7 +20,7 @@ def get_ipv4_address():
     p = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
     ifc_resp = p.communicate()
     patt = re.compile(r'inet\s*\w*\S*:\s*(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
-    resp = patt.findall(ifc_resp[0])[0]
+    resp = patt.findall(ifc_resp[0])[1]
     #print resp
     return resp
 

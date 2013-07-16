@@ -19,7 +19,7 @@ def get_ipv4_address():
     p = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
     ifc_resp = p.communicate()
     patt = re.compile(r'inet\s*\w*\S*:\s*(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
-    resp = patt.findall(ifc_resp[0])[0]
+    resp = patt.findall(ifc_resp[0])[1]
     #print resp
     return resp
 
@@ -31,7 +31,7 @@ def get_ipv4_address():
 client_socket_timeout = 6                      # seconds
 max_msg_length = 2000000                        # bytes
 
-rosbridge_ip = "192.168.2.14" #get_ipv4_address()                       # hostname or ip
+rosbridge_ip = get_ipv4_address()                       # hostname or ip
 rosbridge_port = 9090                           # port as integer
 
 service_name = "send_bytes2"                   # service name
