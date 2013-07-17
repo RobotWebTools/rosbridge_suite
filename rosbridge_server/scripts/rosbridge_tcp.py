@@ -106,7 +106,7 @@ import time
 if __name__ == "__main__":
     loaded = False
     retry_count = 0
-    my_ip = get_ipv4_address()
+    #my_ip = get_ipv4_address()
     print "server-ip:", my_ip
     while not loaded:
         retry_count += 1
