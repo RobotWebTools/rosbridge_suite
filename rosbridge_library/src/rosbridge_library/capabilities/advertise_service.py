@@ -1,7 +1,7 @@
 import importlib        # TODO: try to use ros_loader instead of import blabla
 from rosbridge_library.capability import Capability
 import rospy
-from rosbridge_library.internal.ros_loader import get_service_instance
+from rosbridge_library.internal.ros_loader import get_service_class
 from datetime import datetime
 import time
 try:
@@ -223,7 +223,12 @@ class ROS_Service_Template( threading.Thread):
         # ..try to close tcp-socket
         service_list = ServiceList().list
         del service_list[self.service_name]
-        self.client_callback ({"values":None})
+
+        # inform client that service had been stopped
+        try:
+            self.client_callback ({"values":None})
+        except Exception, e:
+            pass
         
         
 
@@ -234,20 +239,23 @@ class ROS_Service_Template( threading.Thread):
         #print " spawn_ROS_service called"
         try:
 
-            exec("from rosbridge_library import srv.SendBytes")
-            print "from", "rosbridge_library", "import", "srv"
+            #exec("from rosbridge_library import srv.SendBytes")
+            #print "from", "rosbridge_library", "import", "srv"
 
             print "from", service_module, "import", service_type
-            exec("from " + service_module + " import " + service_type)
+            #exec("from " + service_module + " import " + service_type)
             #print "  import of",service_type, "from", service_module, "succeeded!"
         except Exception, e:
             print "  import of",service_type, "from", service_module, "FAILED!"
             print e
 
         some_module = importlib.import_module(service_module)
-        #ros_service_type = get_service_instance(service_type)
-        #self.ros_serviceproxy = rospy.Service( service_name, ros_service_type, self.handle_service_request)
         self.ros_serviceproxy = rospy.Service( service_name, getattr(some_module, service_type), self.handle_service_request)
+
+        # try to use ros_loader instead of "import .." stuff above
+#        ros_service_type = get_service_class(service_type)
+#        self.ros_serviceproxy = rospy.Service( service_name, ros_service_type, self.handle_service_request)
+        
         print " ROS service spawned."
         print "  client_id:", self.client_id
         print "  service-name:", self.service_name

@@ -42,9 +42,9 @@ service_module = "rosbridge_library.srv"        # make sure srv and msg files ar
 service_type = "SendBytes"                     # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
 service_name = "send_bytes2"                   # service name
 
-send_fragment_size = 10000
+send_fragment_size = 10
 send_fragment_delay = 0.1
-receive_fragment_size = 10000
+receive_fragment_size = 10
 
 ####################### variables end ##########################################
 
@@ -131,15 +131,18 @@ def findBrackets( aString ):
 
 import sys
 
+buffer = ""
+
 def wait_for_service_request():                                                 # receive data from rosbridge
     data = None
+    global buffer
 
     # TODO: only check for fragmentlists.. server side blocking of busy service provider!
 
     try:
         done = False
         global buffer
-        buffer = ""
+        #buffer = ""
         while not done:
             incoming = tcp_socket.recv(max_msg_length)
             if incoming == '':
@@ -150,7 +153,7 @@ def wait_for_service_request():                                                 
             else:
                 buffer = buffer + incoming
             #print "incoming:",incoming
-            #print "buffer:", buffer
+            print "buffer:", buffer
             # try to access service_request directly (not fragmented)
             try:
                 data_object = json.loads(buffer)
@@ -161,13 +164,15 @@ def wait_for_service_request():                                                 
             except Exception, e:
                 print "direct_access error:"
                 print e
-                if data_object["values"] == None:
-                    print "server replaced services"
-                    sys.exit(1)
-                pass
+                #if json.loads(buffer)["values"] == None:
+                    #print "server replaced services"
+                    #sys.exit(1)
+                
 
             # opcode was not "service_request" -> try to defragment
+            print "trying to defragment"
             try:
+                
                 #result = json.loads("["+buffer+"]")
 
                 #result = nestedExpr('{','}').parseString(buffer).asList()
@@ -197,25 +202,28 @@ def wait_for_service_request():                                                 
                         for fragment in result:
                             unsorted_result.append(fragment)
                             sorted_result[int(fragment["num"])] = fragment
-                        #print "unsorted_list:", unsorted_result
-                        #print "sorted_list:", sorted_result
+                        print "unsorted_list:", unsorted_result
+                        print "sorted_list:", sorted_result
 
                         for fragment in sorted_result:
                             reconstructed = reconstructed + fragment["data"]
 
+                        print "reconstructed", reconstructed
                         buffer = ""
                         done = True
+                        print "reconstructed message from", len(result), "fragments"
+                        #print reconstructed
                         return reconstructed
                 except Exception, e:
                     print e
                     print "not possible to defragment:", buffer
                     # try to devide into multiple json objects
             except Exception, e:
-                print "defrag_error:"
+                print "defrag_error:", buffer
                 print e
                 pass
     except Exception, e:
-        #print "network-error(?):", e
+        print "network-error(?):", e
         pass
     return data
 
@@ -298,7 +306,7 @@ try:                                                                            
 
             print "sending", len(fragment_list), "messages as response"
             for fragment in fragment_list:
-                #print "sending:" ,fragment
+                print "sending:" ,fragment
                 send_service_response(fragment)                 # send service_response to rosbridge
                 time.sleep(send_fragment_delay)
         except Exception, e: # allows to try to receive next request/data

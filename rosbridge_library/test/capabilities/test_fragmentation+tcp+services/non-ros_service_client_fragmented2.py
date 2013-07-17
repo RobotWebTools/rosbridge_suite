@@ -46,8 +46,8 @@ service_name = "send_bytes2"                   # service name
 def request_service():
     service_request_object = { "op" : "call_service",
                                "service": "/"+service_name,
-                               "fragment_size": 1000,
-                               "args": { "count" : 5000
+                               "fragment_size": 12,
+                               "args": { "count" : 500
                                         }
                               }
     service_request = json.dumps(service_request_object)
@@ -172,6 +172,9 @@ try:
     returned_data = json.loads(reconstructed)
     if returned_data["values"] == None:
         print "response was None -> service was not available"
+    else:
+        print "received:"
+        print reconstructed
     #print "returned json:", returned_data
 
     #print
