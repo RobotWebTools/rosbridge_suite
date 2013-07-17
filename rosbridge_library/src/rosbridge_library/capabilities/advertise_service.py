@@ -1,6 +1,7 @@
 import importlib        # TODO: try to use ros_loader instead of import blabla
 from rosbridge_library.capability import Capability
 import rospy
+from rosbridge_library.internal.ros_loader import get_service_instance
 from datetime import datetime
 import time
 try:
@@ -226,11 +227,17 @@ class ROS_Service_Template( threading.Thread):
         
         
 
+    
 
     spawned = False
     def spawn_ROS_service(self, service_module, service_type, service_name, client_id):
         #print " spawn_ROS_service called"
         try:
+
+            exec("from rosbridge_library import srv.SendBytes")
+            print "from", "rosbridge_library", "import", "srv"
+
+            print "from", service_module, "import", service_type
             exec("from " + service_module + " import " + service_type)
             #print "  import of",service_type, "from", service_module, "succeeded!"
         except Exception, e:
@@ -238,6 +245,8 @@ class ROS_Service_Template( threading.Thread):
             print e
 
         some_module = importlib.import_module(service_module)
+        #ros_service_type = get_service_instance(service_type)
+        #self.ros_serviceproxy = rospy.Service( service_name, ros_service_type, self.handle_service_request)
         self.ros_serviceproxy = rospy.Service( service_name, getattr(some_module, service_type), self.handle_service_request)
         print " ROS service spawned."
         print "  client_id:", self.client_id
