@@ -11,18 +11,6 @@ except ImportError:
     except ImportError:
         import json
 
-import socket, subprocess, re
-
-def get_ipv4_address():
-    """
-    Returns IP address(es) of current machine.
-    """
-    p = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
-    ifc_resp = p.communicate()
-    patt = re.compile(r'inet\s*\w*\S*:\s*(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
-    resp = patt.findall(ifc_resp[0])[1]
-    #print resp
-    return resp
 
 
 
@@ -35,7 +23,7 @@ def get_ipv4_address():
 tcp_socket_timeout = 10                         # seconds
 max_msg_length = 20000                           # bytes
 
-rosbridge_ip = get_ipv4_address() #"192.168.2.14"                      # hostname or ip
+rosbridge_ip = "localhost"                      # hostname or ip
 rosbridge_port = 9090                           # port as integer
 
 service_module = "rosbridge_library.srv"        # make sure srv and msg files are available within specified module on rosbridge-server!
@@ -223,7 +211,7 @@ def wait_for_service_request():                                                 
                 print e
                 pass
     except Exception, e:
-        print "network-error(?):", e
+        #print "network-error(?):", e
         pass
     return data
 

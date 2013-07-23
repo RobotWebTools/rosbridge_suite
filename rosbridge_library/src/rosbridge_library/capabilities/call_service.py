@@ -40,12 +40,14 @@ class CallService(Capability):
     call_service_msg_fields = [(True, "service", (str, unicode)),
            (False, "fragment_size", int), (False, "compression", (str, unicode))]
 
+    opcode = "call_service"
+
     def __init__(self, protocol):
         # Call superclas constructor
         Capability.__init__(self, protocol)
 
         # Register the operations that this capability provides
-        protocol.register_operation("call_service", self.call_service)
+        protocol.register_operation(self.opcode, self.call_service)
 
     def call_service(self, message):
         # Pull out the ID
@@ -68,7 +70,7 @@ class CallService(Capability):
         e_cb = partial(self._failure, cid)
 
         # Kick off the service caller thread
-        ServiceCaller(trim_servicename(service), args, s_cb, e_cb).start()
+        ServiceCaller(trim_servicename(service), args, s_cb, e_cb, self.protocol).start()
 
     def _success(self, cid, service, fragment_size, compression, message):
         outgoing_message = {

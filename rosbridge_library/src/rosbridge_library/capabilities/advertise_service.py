@@ -1,13 +1,12 @@
 import importlib        # TODO: try to use ros_loader instead of import blabla
+#from rosbridge_library.internal.ros_loader import get_service_class
+
 from rosbridge_library.capability import Capability
 import rospy
-from rosbridge_library.internal.ros_loader import get_service_class
 from datetime import datetime
 import time
-try:
-    import threading
-except AttributeError, e:
-    print "hier"
+import threading
+# try to use ujson, then simplejson, then default python json
 try:
     import ujson as json
 except ImportError:
@@ -19,7 +18,7 @@ except ImportError:
 
 class ServiceList():
     """
-    Singleton class to hold lists of received fragments in one 'global' object
+    Singleton class to hold lists of registered services in one 'global' object
     """
     class __impl:
         """ Implementation of the singleton interface """
@@ -49,7 +48,7 @@ class ServiceList():
 
 class ReceivedResponses():
     """
-    Singleton class to hold lists of received fragments in one 'global' object
+    Singleton class to hold lists of received service responses in one 'global' object
     """
     class __impl:
         """ Implementation of the singleton interface """
@@ -77,10 +76,11 @@ class ReceivedResponses():
         return setattr(self.__instance, attr, value)
 
 
-
+# instances of this class are created for every externally advertised service
 class ROS_Service_Template( threading.Thread):
-    service_request_timeout = 15 #seconds
-    check_response_delay = 0.1 #seconds
+    service_request_timeout = 600           #seconds
+    check_response_delay = 0.1              #seconds
+    wait_for_busy_service_provider = 0.1    #seconds
 
     service_name = None
     service_node_name = None
@@ -95,18 +95,17 @@ class ROS_Service_Template( threading.Thread):
 
     request_counter = 0
     request_list = {}     # holds requests until they are answered (response successfully sent to ROS-client)
-                          # ..probably not needed, but maybe good for retransmission of request or s.th. similar
     response_list = ReceivedResponses().list    # holds service_responses until they are sent back to ROS-client
-                                                # .. links to singleton
+    protocol = None
 
     finish_flag = False
     busy = False
+    spawned = False
 
-    def __init__(self, client_callback, service_module, service_type, service_name, client_id):
+    def __init__(self, client_callback, service_module, service_type, service_name, client_id, protocol):
         threading.Thread.__init__(self)
 
-        
-        #print " ROS_Service_Template used to create a rosbridge-ServiceInstance"
+        self.protocol = protocol
         self.service_name = service_name
         self.service_module = service_module
         self.service_type = service_type
@@ -116,32 +115,25 @@ class ROS_Service_Template( threading.Thread):
         self.spawn_ROS_service( service_module, service_type, service_name, client_id)
 
 
-
     def handle_service_request(self, req):
+        # stay in this loop until (this) instance is not waiting for response for an "old" request
+        # (.. probably not best solution so far)
         while not self.spawned or self.busy:
-            #print "waiting for busy service provider; spawned?", self.spawned, "busy?", self.busy
-            # if stop_Service was called.. kill unsent requests to that service
+            # if stop_service was called.. 
             if self.finish_flag:
+                # kill unsent requests to that service
                 return None
-            # wait for delay_between requests to allow the currently working request to be finished..
-            time.sleep(0.1)
+            time.sleep(self.wait_for_busy_service_provider)
 
         self.busy = True
-#        print "----------------------------------------------------------------"
-#        print  "handle_service_request called"
-#        print "  service_request:"
-#        print req
-#        print "  service_name:", self.service_name
-#        print "  service_type:", self.service_type
-#        print "  service providing client_id:", self.client_id
-#
-#        print "  client_callback:" , self.client_callback
 
         # generate request_id
-        request_id = "count:"+str(self.request_counter)+"_time:" +datetime.now().strftime("%H:%M:%f")
-        self.request_counter = (self.request_counter + 1) % 500000  # TODO modulo blabla..
+        # ..service_name avoids having same id's for different service-requests
+        request_id = "service:" + self.service_name + "_count:" + str(self.request_counter) + "_time:" + datetime.now().strftime("%H:%M:%f")
+        # increment request_counter
+        self.request_counter = (self.request_counter + 1) % 500000
 
-        # TODO: check for more complex parameter and types and bla --> need better parser!
+        # TODO: check for more complex parameters and types --> better argument parser!
         # --> see message_conversion
         args_list = str(req).split("\n")
         args_dict = {}
@@ -149,154 +141,97 @@ class ROS_Service_Template( threading.Thread):
             key, value = arg.split(":")
             args_dict[key] = value
 
-        request_message_object = {"op":"service_request",                                   # advertise topic
+        request_message_object = {"op":"service_request",
                                     "request_id": request_id,
                                     "service_type": self.service_type,
                                     "service_name": self.service_name,
                                     "args": args_dict
                                     }
-        request_message = json.dumps(request_message_object)
-
-        #print " request_message:", request_message
-
-        # TODO: check cases! this cond should not be necessary
+        # add request to request_list
         if request_id not in self.request_list.keys():
             self.request_list[request_id] = request_message_object
-
-
-
+        # answer will be passed to client that requested service
         answer = None
         try:
             # TODO: better handling of multiple request; only use one main handler for each service
-            #self.busy = True
-            #time.sleep(0.1)
-            self.client_callback (request_message_object)
-            
-            #print " sent request to client that serves the service"
-
-            # TODO: add timeout to this loop! remove request_id from request_list after timeout!
+            # send JSON-service request to client that is providing the service (via protocol)
+            self.client_callback( request_message_object )
             begin = datetime.now()
             duration = datetime.now() - begin
-
-            # if stop_service was called.. stop waiting for response
+            # wait for service response by checking response_list
+            # ..if stop_service was called.. stop waiting for response
             while not self.finish_flag and request_id not in self.response_list.keys() and duration.total_seconds() < self.service_request_timeout:
-                #print " waiting for response to request_id:", request_id
                 time.sleep(self.check_response_delay)
                 duration = datetime.now() - begin
-
+            # if response found..
             if request_id in self.response_list:
-                #print "  response_list:", self.response_list
-                #print "  request_list:", self.request_list
                 answer = self.response_list[request_id]
+                # remove response from response_list
                 del self.response_list[request_id]
-
             else:
-                # request failed due to timeout
+                # request failed due to timeout (or some other reason?!)
                 print "request timed out!"
                 answer = None
+            # remove request from request_list
             del self.request_list[request_id]
-            #print "----------------------------------------------------------------"
-            
+        # TODO: more detailed exception handling
         except Exception, e:
             print e
-
-        #print "answer is None?:",answer == None
-        # block before leaving and allowing next request, if request did not time out..
-        #time.sleep(0.1)
         self.busy = False
-
         return answer
 
-
     def stop_ROS_service(self):
-        print " stopping ROS service"
         self.spawned = False
         self.finish_flag = True
-        self.ros_serviceproxy.shutdown("reason: stop service requested")
-
-        # wait for request_loops to run into finish_flags
+        self.ros_serviceproxy.shutdown("reason: stop_service requested by providing client")
+        # set answer for unfinished requests to None
+        # --> response can be found, but will be the same as for failed/timed out requests..
         for request_id in self.request_list.keys():
             self.response_list[request_id] = None
-        time.sleep(3)
-
-        # inform client that service is not active anymore
-        # ..try to close tcp-socket
+        # wait for request_loops to run into finish_flags
+        while len(self.request_list) > 0:
+            time.sleep(self.check_response_delay)
+        # remove service from service_list
         service_list = ServiceList().list
         del service_list[self.service_name]
-
-        # inform client that service had been stopped
-        try:
-            self.client_callback ({"values":None})
-        except Exception, e:
-            pass
-        
-        
-
+        self.protocol.log("info", "removed service: "+ self.service_name)
     
-
-    spawned = False
     def spawn_ROS_service(self, service_module, service_type, service_name, client_id):
-        #print " spawn_ROS_service called"
-        try:
-
-            #exec("from rosbridge_library import srv.SendBytes")
-            #print "from", "rosbridge_library", "import", "srv"
-
-            print "from", service_module, "import", service_type
-            #exec("from " + service_module + " import " + service_type)
-            #print "  import of",service_type, "from", service_module, "succeeded!"
-        except Exception, e:
-            print "  import of",service_type, "from", service_module, "FAILED!"
-            print e
-
+        # TODO: check if this can be replaced by ros_loader
+        # import service type for ros-service that we want to register in ros
         some_module = importlib.import_module(service_module)
+        # register service in ros
         self.ros_serviceproxy = rospy.Service( service_name, getattr(some_module, service_type), self.handle_service_request)
-
-        # try to use ros_loader instead of "import .." stuff above
-#        ros_service_type = get_service_class(service_type)
-#        self.ros_serviceproxy = rospy.Service( service_name, ros_service_type, self.handle_service_request)
-        
-        print " ROS service spawned."
-        print "  client_id:", self.client_id
-        print "  service-name:", self.service_name
-        print "  service-type:", self.service_type
+        # log service registration
+        log_msg = "registered service: " + self.service_name
+        self.protocol.log("info", log_msg)
         self.spawned = True
-
 
 class AdvertiseService(Capability):
 
     opcode_advertise_service = "advertise_service"      # rosbridge-client -> rosbridge # register in protocol.py!
     service_list = ServiceList().list                   # links to singleton
 
-
     def __init__(self, protocol):
         self.protocol = protocol
         Capability.__init__(self, protocol)
         protocol.register_operation(self.opcode_advertise_service, self.advertise_service)
 
-
     def advertise_service(self, message):
-        #print "advertise_service called:"
-        #print "  client_id:", self.protocol.client_id
-        # register client internal with service to allow routing of service requests
-        #print "  ", message
         opcode = message["op"]
         service_type = message["service_type"]
         service_name = message["service_name"]
         service_module = message["service_module"]
         client_id = self.protocol.client_id
         client_callback = self.protocol.send
-        # TODO: define what happens when existing service gets advertised
+        # this part defines what is happening when a client is trying to "replace" an already registered service
         if service_name not in self.service_list.keys():
-            #print " registering new service, did not exist before.."
-            self.service_list[service_name] = ROS_Service_Template(client_callback , service_module, service_type, service_name, client_id)
+            self.service_list[service_name] = ROS_Service_Template(client_callback , service_module, service_type, service_name, client_id, self.protocol)
         else:
-            print " replacing existing service"
+            log_msg = "is replacing service: " + service_name + " [provided before by client:" + str(self.service_list[service_name].client_id) + "]"
+            self.protocol.log("info", log_msg)
             self.service_list[service_name].stop_ROS_service()
-            #del self.service_list[service_name]
-            self.service_list[service_name] = ROS_Service_Template(client_callback , service_module, service_type, service_name, client_id)
-
-        #print "  self.service_list:", self.service_list
+            self.service_list[service_name] = ROS_Service_Template(client_callback , service_module, service_type, service_name, client_id, self.protocol )
 
     def finish(self):
         self.finish_flag = True

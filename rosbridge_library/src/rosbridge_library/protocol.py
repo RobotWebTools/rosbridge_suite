@@ -89,6 +89,7 @@ class Protocol:
         self.operations = {}
 
     # added default None to allow recalling incoming until buffer is empty
+    # TODO: improove parsing of incomplete/multiple json --> allows to get rid of delay between client-side sending (which is only possible if only one client is connected..
     def incoming(self, message_string=""):
         """ Process an incoming message from the client
 
@@ -97,7 +98,6 @@ class Protocol:
 
         """
         # TODO: implement workaround for strings that contain -more than 1/-partial JSON object(s)
-        # current state(tcp buffer 20000000): still needs timeout of 0.01s ; getting good performance with big message sizes (10000)
 
         # "test" code
         old_buffer_len = len(self.buffer)
@@ -129,12 +129,6 @@ class Protocol:
                     #print e
                     pass
 
-
-        #else:
-            #print "BUFFER empty"
-        #print "after parsing... msg:", msg
-
-        # "original" code
         if msg is None:
             return
 

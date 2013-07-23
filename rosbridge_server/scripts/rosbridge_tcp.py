@@ -32,9 +32,10 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
             self.protocol.outgoing = self.send_message
             client_id_seed = client_id_seed + 1
             clients_connected = clients_connected + 1
+            self.protocol.log("info", "connected. " + str(clients_connected) + " client total.")
         except Exception as exc:
             logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
-        loginfo("Client connected.  %d clients total.", clients_connected)
+        
 
     def handle(self):
         """
@@ -63,7 +64,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         global clients_connected
         clients_connected = clients_connected - 1
         self.protocol.finish()
-        loginfo("Client disconnected.  %d clients total.", clients_connected)        
+        self.protocol.log("info", "disconnected. " + str(clients_connected) + " client total." )
 
     busy = False
     queue = []
@@ -110,8 +111,9 @@ if __name__ == "__main__":
     #print "server-ip:", my_ip
     while not loaded:
         retry_count += 1
-        print retry_count
+        print "trying to start rosbridge TCP server.."
         try:
+            print ""
             init_node("rosbridge_tcp")
             signal(SIGINT, SIG_DFL)
 

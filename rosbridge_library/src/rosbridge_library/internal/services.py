@@ -46,7 +46,7 @@ class InvalidServiceException(Exception):
 
 class ServiceCaller(Thread):
 
-    def __init__(self, service, args, success_callback, error_callback):
+    def __init__(self, service, args, success_callback, error_callback, protocol):
         """ Create a service caller for the specified service.  Use start()
         to start in a separate thread or run() to run in this thread.
 
@@ -95,28 +95,24 @@ def args_to_service_request_instance(service, inst, args):
 
 
 def call_service(service, args=None):
-    try:
-        # Given the service name, fetch the type and class of the service,
-        # and a request instance
-        service_type = get_service_type(service)
-        if service_type is None:
-            raise InvalidServiceException(service)
 
-        service_class = get_service_class(service_type)
-        inst = get_service_request_instance(service_type)
+    # Given the service name, fetch the type and class of the service,
+    # and a request instance
+    service_type = get_service_type(service)
+    if service_type is None:
+        raise InvalidServiceException(service)
 
-        # Populate the instance with the provided args
-        args_to_service_request_instance(service, inst, args)
+    service_class = get_service_class(service_type)
+    inst = get_service_request_instance(service_type)
 
-        # Call the service
-        proxy = ServiceProxy(service, service_class)
-        response = proxy.call(inst)
+    # Populate the instance with the provided args
+    args_to_service_request_instance(service, inst, args)
 
-        # Turn the response into JSON and pass to the callback
-        json_response = extract_values(response)
+    # Call the service
+    proxy = ServiceProxy(service, service_class)
+    response = proxy.call(inst)
 
-        return json_response
-    except Exception, e:
-        # TODO: use logger, warn or error level
-        print "service error, returning none", e
-        return None
+    # Turn the response into JSON and pass to the callback
+    json_response = extract_values(response)
+
+    return json_response

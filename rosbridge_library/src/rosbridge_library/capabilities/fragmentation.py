@@ -31,6 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from rosbridge_library.capability import Capability
+import math
 
 
 class Fragmentation(Capability):
@@ -74,7 +75,12 @@ class Fragmentation(Capability):
         message_length = len(serialized)
         if message_length <= fragment_size:
             return [message]
-        
+
+        msg_id = message.get("id", None)
+
+        log_msg = "sending " + str(int(math.ceil(message_length / fragment_size))) + " parts [fragment size: " + str(fragment_size) +"]"
+        self.protocol.log("info", log_msg)
+
         return self._fragment_generator(serialized, fragment_size, mid)
     
     def _fragment_generator(self, msg, size, mid):
