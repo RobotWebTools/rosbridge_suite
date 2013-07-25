@@ -22,7 +22,7 @@ max_msg_length = 2000000                        # bytes
 rosbridge_ip = "localhost"                       # hostname or ip
 rosbridge_port = 9090                           # port as integer
 
-service_name = "send_bytes2"                   # service name
+service_name = "send_bytes"                   # service name
 
 ####################### variables end ##########################################
 

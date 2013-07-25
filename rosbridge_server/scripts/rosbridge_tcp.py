@@ -16,10 +16,11 @@ client_id_seed = 0
 clients_connected = 0
 
 # Maximum length per socket_read for incoming data
-max_msg_length = 20000000
-socket_timeout = 10
+max_msg_length = 2048
+socket_timeout = 10     #seconds
 
-send_delay = 0.1
+send_delay = 0.1    #seconds
+retry_startup_delay = 5 #seconds
 
 class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     """
@@ -137,5 +138,5 @@ if __name__ == "__main__":
         except Exception, e:
             #print "remove me", e
             #print "waiting 1 second before retrying.."
-            time.sleep(1)
+            time.sleep(retry_startup_delay)
     print "server loaded"

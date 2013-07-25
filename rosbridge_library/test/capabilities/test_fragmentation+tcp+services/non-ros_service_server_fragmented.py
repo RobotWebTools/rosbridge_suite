@@ -33,7 +33,7 @@ def get_ipv4_address():
 ################################################################################
 
 tcp_socket_timeout = 10                         # seconds
-max_msg_length = 20000                           # bytes
+max_msg_length = 20                           # bytes
 
 rosbridge_ip = get_ipv4_address() #"192.168.2.14"                      # hostname or ip
 rosbridge_port = 9090                           # port as integer

@@ -38,26 +38,22 @@ class InvalidArgumentException(Exception):
 class MissingArgumentException(Exception):
     pass
 
-from rosbridge_library.internal.pngcompression import encode
+#from rosbridge_library.internal.pngcompression import encode
 from rosbridge_library.capabilities.fragmentation import Fragmentation
-import time
 
 # try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
 try:
     import ujson as json
-    print "protocol.py is using ujson"
 except ImportError:
-    print "importing ujson failed"
     try:
         import simplejson as json
-        print "using simplejson"
     except ImportError:
-        print "importing simplejson failed"
         import json
-        print "using python default json"
+
 
 # TODO: integrate this parameter in a better and configurable way.. at init or similar.
-# if this is too high, clients network stacks will get flooded.. depends on message_size, bandwidth/performance/client_limits/...
+# if this is too high, clients network stacks will get flooded (when sending fragments of a huge message..)
+# .. depends on message_size/bandwidth/performance/client_limits/...
 delay_between_fragments = 0.1
 
 class Protocol:
@@ -74,6 +70,7 @@ class Protocol:
 
     fragment_size = None
     png = None
+    # buffer used to gather partial JSON-objects (could be caused by small tcp-buffers or similar..)
     buffer = ""
     busy = False
 
@@ -88,8 +85,12 @@ class Protocol:
         self.capabilities = []
         self.operations = {}
 
-    # added default None to allow recalling incoming until buffer is empty
-    # TODO: improove parsing of incomplete/multiple json --> allows to get rid of delay between client-side sending (which is only possible if only one client is connected..
+    # TODO: improove parsing of incomplete/multiple json
+    # TODO: implement workaround for strings that contain -more than 1/-partial JSON object(s)
+    # TODO: add timeout for leading data.. or other "errors" on incoming buffer (that are not covered yet)
+
+    # added default message_string="" to allow recalling incoming until buffer is empty without giving a parameter
+    # --> allows to get rid of (..or minimize) delay between client-side sends
     def incoming(self, message_string=""):
         """ Process an incoming message from the client
 
@@ -97,10 +98,6 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
-        # TODO: implement workaround for strings that contain -more than 1/-partial JSON object(s)
-
-        # "test" code
-        old_buffer_len = len(self.buffer)
         message_len = len(message_string)
         self.buffer = self.buffer + message_string
 
@@ -108,26 +105,53 @@ class Protocol:
         #print "BUFFER len:", len(self.buffer)
         msg = None
 
+
+# ###################
+        #print "incoming-buffer:" , self.buffer
+# ###################
+
+        # take care of having multiple JSON-objects in receiving buffer
+
+        # first, try to load the whole buffer as a JSON-object
         try:
-            json.loads(self.buffer)
+            # check if json throws exception before calling deserialize.. do NOT keep this line! -> not needed!
+            #json.loads(self.buffer)
             msg = self.deserialize(self.buffer)
             self.buffer = ""
 
+        # if loading the whole object fails try to load part of it (from first opening bracket "{" to next closing bracket "}"
         except Exception, e:
-            #print e
+            print e
             # only try longer strings than old_buffer (old_buffer should be incomplete json ..)
             # ...this is not true if two objects arrive within 1 socket read
-            for end in range(1,len(self.buffer)):
-                #print "   trying:", self.buffer[0:end]
-                try:
-                    json.loads(self.buffer[0:end])
-                    msg = self.deserialize(self.buffer[0:end])
-                    self.buffer = self.buffer[end:len(self.buffer)]
-                    #print "successfull json load!"
+
+            opening_brackets = [i for i, letter in enumerate(self.buffer) if letter == '{']
+            closing_brackets = [i for i, letter in enumerate(self.buffer) if letter == '}']
+
+
+            import time
+            print opening_brackets
+            print closing_brackets
+            time.sleep(1)
+
+            for start in opening_brackets:
+                for end in closing_brackets:
+                #for end in range(1,len(self.buffer)):
+                    #print "   trying:", self.buffer[0:end]
+                    try:
+                        #json.loads(self.buffer[0:end])
+                        msg = self.deserialize(self.buffer[start:end+1])
+                        # TODO: check if throwing away leading data like this is okay.. loops look okay..
+                        self.buffer = self.buffer[end+1:len(self.buffer)]
+                        #print "successfull json load!"
+                        break
+                    except Exception,e:
+                        print e
+                        pass
+                # if load was successfull --> break outer loop, too.. -> no need to check if json begins at a "later" opening bracket..
+                if msg != None:
                     break
-                except Exception,e:
-                    #print e
-                    pass
+
 
         if msg is None:
             return
@@ -165,11 +189,8 @@ class Protocol:
         except Exception as exc:
             self.log("error", "%s: %s" % (op, str(exc)), mid)
         
-#        if self.buffer != "":
-#            # TODO: add timeout for leading data..
-#            #print " buffer not empty!", self.buffer
-#            #time.sleep(0.1)
-#            self.incoming()
+
+
 
     def outgoing(self, message):
         """ Pass an outgoing message to the client.  This method should be
@@ -196,27 +217,24 @@ class Protocol:
         serialized = self.serialize(message, cid)
         if serialized is not None:
             if self.png == "png":
+                # TODO: png compression on outgoing messages
                 # encode message
                 pass
 
             fragment_list = None
-
-            #print "  fragment_size is set to:", self.fragment_size
-
             if self.fragment_size != None and len(serialized) > self.fragment_size:
                 mid = message.get("id", None)
-                  #"fragment_size": msg.get("fragment_size", None),
-                  #"queue_length": msg.get("queue_length", 0),
-                  #"compression": msg.get("compression", "none")
+
                 # TODO: think about splitting into fragments that have specified size including header-fields!
+                # --> estimate header size --> split content into fragments that have the requested overall size, rather than requested content size
                 fragment_list = Fragmentation(self).fragment(message, self.fragment_size, mid )
 
+            # fragment list not empty -> send fragments
             if fragment_list != None:
                 for fragment in fragment_list:
-                    #time.sleep(delay_between_fragments)
                     self.outgoing(json.dumps(fragment))
+            # else send message as it is
             else:
-                #time.sleep(delay_between_fragments)
                 self.outgoing(serialized)
 
     def finish(self):
@@ -249,6 +267,7 @@ class Protocol:
                          % msg["op"], cid)
             return None
 
+
     def deserialize(self, msg, cid=None):
         """ Turns the wire-level representation into a dictionary of values
 
@@ -267,7 +286,10 @@ class Protocol:
 
             self.log("error",
              "Unable to deserialize message from client: %s" % msg, cid)
-            return None
+
+            # re-raise Exception to allow handling outside of deserialize function instead of returning None
+            raise
+            #return None
 
     def register_operation(self, opcode, handler):
         """ Register a handler for an opcode

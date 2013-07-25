@@ -172,7 +172,8 @@ try:
     returned_data = json.loads(reconstructed)
     if returned_data["values"] == None:
         print "response was None -> service was not available"
-    #print "returned json:", returned_data
+    else:
+        print "returned json:", returned_data
 
     #print
     ##print "received:"

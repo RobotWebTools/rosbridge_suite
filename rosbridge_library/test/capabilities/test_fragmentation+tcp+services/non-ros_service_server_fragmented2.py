@@ -28,10 +28,10 @@ rosbridge_port = 9090                           # port as integer
 
 service_module = "rosbridge_library.srv"        # make sure srv and msg files are available within specified module on rosbridge-server!
 service_type = "SendBytes"                     # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
-service_name = "send_bytes2"                   # service name
+service_name = "send_bytes"                   # service name
 
 send_fragment_size = 10
-send_fragment_delay = 0.1
+send_fragment_delay = 0.000#1
 receive_fragment_size = 10
 
 ####################### variables end ##########################################
@@ -47,7 +47,6 @@ def calculate_service_response(request):
     print "request_message:", request_object
 
     count = int(request_object["args"]["count"] )                                    # do service calculation
-
 
     print "count:", count
     message = ""
