@@ -1,9 +1,8 @@
 #!/usr/bin/python
 import socket
 import time
-
 from random import randint
-try:                       # try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
+try:
     import ujson as json
 except ImportError:
     try:
@@ -12,9 +11,8 @@ except ImportError:
         import json
 
 
-
-
-# TODO: handle multiple service requests at the same time
+# TODO: handle multiple service requests at the same time; ..probably done.
+# --> added a request queue to rosbridge, so requests are only sent one after another
 
 ####################### variables begin ########################################
 # these parameters should be changed to match the actual environment           #
@@ -31,6 +29,7 @@ service_type = "SendBytes"                     # make sure this matches an exist
 service_name = "send_bytes"                   # service name
 
 send_fragment_size = 10
+# delay between sends to rosbridge is not needed anymore, if using my version of protocol
 send_fragment_delay = 0.000#1
 receive_fragment_size = 10
 
@@ -53,6 +52,8 @@ def calculate_service_response(request):
     for i in range(0,count):
         message += str(chr(randint(32,126)))
 #        message += "}{"
+        # TODO: brackets should be allowed, as long as json is valid
+        # replace brackets.. this needs to be solved!!
         message = message.replace("}","-")
         message = message.replace("{","-")
         if i% 100000 == 0:

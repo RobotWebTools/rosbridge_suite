@@ -1,7 +1,5 @@
 #!/usr/bin/python
 import socket
-
-
 try:
     import ujson as json
 except ImportError:
@@ -23,6 +21,8 @@ rosbridge_ip = "localhost"                       # hostname or ip
 rosbridge_port = 9090                           # port as integer
 
 service_name = "send_bytes"                   # service name
+request_byte_count = 50000
+receiving_fragment_size = 100
 
 ####################### variables end ##########################################
 
@@ -34,12 +34,12 @@ service_name = "send_bytes"                   # service name
 def request_service():
     service_request_object = { "op" : "call_service",
                                "service": "/"+service_name,
-                               "fragment_size": 12,
-                               "args": { "count" : 500
+                               "fragment_size": receiving_fragment_size,
+                               "args": { "count" : request_byte_count
                                         }
                               }
     service_request = json.dumps(service_request_object)
-    #print "sending JSON-message to rosbridge:", service_request
+    print "sending JSON-message to rosbridge:", service_request
     sock.send(service_request)
 
 ################################################################################
@@ -71,11 +71,8 @@ try:
                     break
             else:
                 buffer = buffer + incoming
-            #print "incoming:",incoming
-            #print "+++++++++++++++++++++"
-            #service_response = json.loads(incoming)                                 # service_response contains JSON service response as sent by rosbridge
-            #print "response:", service_response
-            #print "+++++++++++++++++++++"
+
+            print "buffer-length:", len(buffer)
 
             # try to access service_request directly (not fragmented)
             try:
@@ -85,29 +82,36 @@ try:
                     done = True
 
             except Exception, e:
-                print "direct access to JSON failed.."
-                print e
-                print "buffer:", buffer
+                #print "direct access to JSON failed.."
+                #print e
                 pass
 
 
     # TODO: if opcode is fragment --> defragment, else access service request directly
+
+    # TODO: use the same processing scheme for multiple/partial JSON as in protocol
+
             try:
-                print "defragmenting incoming messages"
-                #result = json.loads("["+buffer+"]")
+                #print "defragmenting incoming messages"
                 # TODO: allow "}{" in strings!
                 result_string = buffer.split("}{")
-                #print "split;",result_string
                 result = []
                 for fragment in result_string:
                     if fragment[0] != "{":
                         fragment = "{"+fragment
                     if fragment[len(fragment)-1] != "}":
                         fragment = fragment + "}"
-                    result.append(json.loads(fragment))
-                #result = json.loads(str(result_string))
-                #print "result:", result
+                        
+                    try:
+                        result.append(json.loads(fragment))
+                    except Exception, e:
+                        print e
+                        print result_string
+                        raise
+
+
                 fragment_count = len(result)
+                print "fragment_count:", fragment_count
                 announced = int(result[0]["total"])
                 if fragment_count == announced:
                     # sort fragments
@@ -116,8 +120,6 @@ try:
                     for fragment in result:
                         unsorted_result.append(fragment)
                         sorted_result[int(fragment["num"])] = fragment
-                    #print "unsorted_list:", unsorted_result
-                    #print "sorted_list:", sorted_result
 
                     reconstructed = ''
                     for fragment in sorted_result:
@@ -125,40 +127,13 @@ try:
 
                     done = True
             except Exception, e:
-                #print "===="
-                #print "["+buffer+"]"
-                #print "###"
                 #print e
-                #print "###"
                 pass
 
-            # don't break after first receive if using fragment_size!
-            #break
         except Exception, e:
-
-            pass
-#            print "---------------------"
-#            print buffer
-#            print "---------------------"
-#            print "received message length:",  len(incoming)
-#            print "Exception occured:"
 #            print e
-#            print "---------------------"
+            pass
 
-    #print "result:", result
-
-    #if reconstructed == None:
-    #    # TODO: sort before reconstructing!!!
-    #    reconstructed = ''
-    #    for fragment in result:
-    #        print "  ", fragment["data"]
-    #        reconstructed = reconstructed + fragment["data"]
-    #    print
-    #    print "reconstructed message :",reconstructed
-
-    ## TODO: check why json arrives as string!
-    #reconstructed = reconstructed.strip('"')
-    #print "reconstructed message2:",reconstructed
 
     returned_data = json.loads(reconstructed)
     if returned_data["values"] == None:
@@ -166,21 +141,6 @@ try:
     else:
         print "received:"
         print reconstructed
-    #print "returned json:", returned_data
-
-    #print
-    ##print "received:"
-    #print "------------------------------------------------------"
-    #print "service response contained: ", len(returned_data["values"]["data"]),"bytes"
-    ##for key, value in returned_data.iteritems():
-    ##    print key, "(length):", len(value)
-    #
-    ##answer = returned_data["values"]
-    #
-    ##print "service_answer:", json.dumps(answer)
-
-    #print "service response received successfully: ",len(returned_data["values"]["data"]),"bytes"
-    #print ".",
     
 
 except Exception, e:

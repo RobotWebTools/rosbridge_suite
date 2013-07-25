@@ -55,7 +55,7 @@ except ImportError:
 # if this is too high, clients network stacks will get flooded (when sending fragments of a huge message..)
 # .. depends on message_size/bandwidth/performance/client_limits/...
 # !! this might be related to (or even be avoided by using) throttle_rate !!
-delay_between_fragments = 0.1
+delay_between_fragments = 0.01
 
 class Protocol:
     """ The interface for a single client to interact with ROS.

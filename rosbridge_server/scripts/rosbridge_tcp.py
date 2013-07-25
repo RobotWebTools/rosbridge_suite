@@ -16,7 +16,7 @@ client_id_seed = 0
 clients_connected = 0
 
 # Maximum length per socket_read for incoming data
-max_msg_length = 2048
+max_msg_length = 1024
 socket_timeout = 10     #seconds
 
 send_delay = 0.1    #seconds
