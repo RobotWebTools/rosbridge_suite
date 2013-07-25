@@ -1,4 +1,4 @@
-import importlib        # TODO: try to use ros_loader instead of import blabla
+import importlib        # TODO: try to use ros_loader instead of importlib
 #from rosbridge_library.internal.ros_loader import get_service_class
 
 from rosbridge_library.capability import Capability
@@ -6,14 +6,7 @@ import rospy
 from datetime import datetime
 import time
 import threading
-# try to use ujson, then simplejson, then default python json
-try:
-    import ujson as json
-except ImportError:
-    try:
-        import simplejson as json
-    except ImportError:
-        import json
+
 
 
 class ServiceList():

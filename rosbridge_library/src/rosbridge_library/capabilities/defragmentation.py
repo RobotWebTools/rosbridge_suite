@@ -2,15 +2,6 @@ from rosbridge_library.capability import Capability
 from datetime import datetime
 import threading
 
-# try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
-try:
-    import ujson as json
-except ImportError:
-    try:
-        import simplejson as json
-    except ImportError:
-        import json
-
 class ReceivedFragments():
     """
     Singleton class to hold lists of received fragments in one 'global' object
@@ -82,8 +73,6 @@ class Defragment(Capability, threading.Thread):
     #   4.c) remove the fragment list to free up memory                        
     def defragment(self, message):
         now = datetime.now()
-
-        
 
         if self.received_fragments != None:
             for id in self.received_fragments.keys() :

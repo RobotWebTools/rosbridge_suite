@@ -54,6 +54,7 @@ except ImportError:
 # TODO: integrate this parameter in a better and configurable way.. at init or similar.
 # if this is too high, clients network stacks will get flooded (when sending fragments of a huge message..)
 # .. depends on message_size/bandwidth/performance/client_limits/...
+# !! this might be related to (or even be avoided by using) throttle_rate !!
 delay_between_fragments = 0.1
 
 class Protocol:
@@ -68,10 +69,13 @@ class Protocol:
 
     """
 
+    # fragment_size can be set per client (each client has its own instance of protocol)
+    # ..same for other parameters
     fragment_size = None
     png = None
     # buffer used to gather partial JSON-objects (could be caused by small tcp-buffers or similar..)
     buffer = ""
+    old_buffer = ""
     busy = False
 
     def __init__(self, client_id):
@@ -98,97 +102,77 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
-        message_len = len(message_string)
         self.buffer = self.buffer + message_string
-
-        #print message_string
-        #print "BUFFER len:", len(self.buffer)
         msg = None
 
 
-# ###################
-        #print "incoming-buffer:" , self.buffer
-# ###################
-
         # take care of having multiple JSON-objects in receiving buffer
-
-        # first, try to load the whole buffer as a JSON-object
+        # ..first, try to load the whole buffer as a JSON-object
         try:
-            # check if json throws exception before calling deserialize.. do NOT keep this line! -> not needed!
-            #json.loads(self.buffer)
             msg = self.deserialize(self.buffer)
             self.buffer = ""
 
-        # if loading the whole object fails try to load part of it (from first opening bracket "{" to next closing bracket "}"
+        # if loading whole object fails try to load part of it (from first opening bracket "{" to next closing bracket "}"
+        # .. this causes Exceptions on "inner" closing brackets --> so I suppressed logging of deserialization errors
         except Exception, e:
-            print e
-            # only try longer strings than old_buffer (old_buffer should be incomplete json ..)
-            # ...this is not true if two objects arrive within 1 socket read
 
             opening_brackets = [i for i, letter in enumerate(self.buffer) if letter == '{']
             closing_brackets = [i for i, letter in enumerate(self.buffer) if letter == '}']
 
-
-            import time
-            print opening_brackets
-            print closing_brackets
-            time.sleep(1)
-
             for start in opening_brackets:
                 for end in closing_brackets:
-                #for end in range(1,len(self.buffer)):
-                    #print "   trying:", self.buffer[0:end]
                     try:
-                        #json.loads(self.buffer[0:end])
                         msg = self.deserialize(self.buffer[start:end+1])
                         # TODO: check if throwing away leading data like this is okay.. loops look okay..
                         self.buffer = self.buffer[end+1:len(self.buffer)]
-                        #print "successfull json load!"
+                        # jump out of inner loop if json-decode succeeded
                         break
                     except Exception,e:
-                        print e
+                        # debug json-decode errors with this line
+                        #print e
                         pass
                 # if load was successfull --> break outer loop, too.. -> no need to check if json begins at a "later" opening bracket..
                 if msg != None:
                     break
 
-
+        # if decoding of buffer failed .. simply return
         if msg is None:
             return
 
+        # process fields JSON-message object that "control" rosbridge
         mid = None
         if "id" in msg:
             mid = msg["id"]
-
         if "op" not in msg:
             if "receiver" in msg:
                 self.log("error", "Received a rosbridge v1.0 message.  Please refer to rosbridge.org for the correct format of rosbridge v2.0 messages.  Original message was: %s" % message_string)
             else:
                 self.log("error", "Received a message without an op.  All messages require 'op' field with value one of: %s.  Original message was: %s" % (self.operations.keys(), message_string), mid)
             return
-
         op = msg["op"]
         if op not in self.operations:
             self.log("error", "Unknown operation: %s.  Allowed operations: %s" % (op, self.operations.keys()), mid)
             return
-
         # this way a client can change/overwrite it's active values anytime by just including parameter field in any message sent to rosbridge
         #  maybe need to be improved to bind parameter values to specific operation.. -> pass as parameter to self.operations[op] needs default values.. bla
         if "fragment_size" in msg.keys():
             self.fragment_size = msg["fragment_size"]
-            #print "  fragment_size set to:", self.fragment_size
-        
         if "png" in msg.keys():
             self.png = msg["msg"]
-
-
-
+        
+        # now try to pass message to according operation
         try:
             self.operations[op](msg)
-
         except Exception as exc:
             self.log("error", "%s: %s" % (op, str(exc)), mid)
-        
+
+        # if anything left in buffer .. re-call self.incoming
+        # TODO: check what happens if we have "garbage" on tcp-stack --> infinite loop might be triggered! .. might get out of it when next valid JSON arrives
+        if len(self.buffer) > 0:
+            # try to avoid infinite loop..
+            if self.old_buffer != self.buffer:
+                self.old_buffer = self.buffer
+                self.incoming()
 
 
 
@@ -267,8 +251,8 @@ class Protocol:
                          % msg["op"], cid)
             return None
 
-
     def deserialize(self, msg, cid=None):
+
         """ Turns the wire-level representation into a dictionary of values
 
         Default behaviour assumes JSON. Override to use a different container.
@@ -282,10 +266,18 @@ class Protocol:
         """
         try:
             return json.loads(msg)
-        except:
+        except Exception, e:
+            # if we tried to deserialize whole buffer .. first try to let self.incoming check for multiple/partial json-decodes before logging error
+            # .. this means, if buffer is not == msg --> we tried to decode part of buffer
 
-            self.log("error",
-             "Unable to deserialize message from client: %s" % msg, cid)
+            # TODO: implement a way to have a final Exception when nothing works out to decode (multiple/broken/partial JSON..)
+
+            # supressed logging of exception on json-decode to keep rosbridge-logs "clean"
+#            if msg != self.buffer:
+#                error_msg = "Unable to deserialize message from client: %s"  % msg
+#                error_msg += "\nException was: " +str(e)
+#
+#                self.log("error", error_msg, cid)
 
             # re-raise Exception to allow handling outside of deserialize function instead of returning None
             raise
