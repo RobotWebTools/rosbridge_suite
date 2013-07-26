@@ -87,7 +87,7 @@ def calculate_service_response(request):
 ################################################################################
 
 def connect_tcp_socket():
-    ws_sock = create_connection(self.ws_uri)                # connect to rosbridge
+    ws_sock = create_connection(ws_uri)                # connect to rosbridge
     #tcp_sock.settimeout(10)
     #tcp_sock.connect((rosbridge_ip, rosbridge_port))
     return ws_sock

@@ -1,5 +1,6 @@
 #!/usr/bin/python
-import socket
+#import socket
+from websocket import create_connection
 try:
     import ujson as json
 except ImportError:
@@ -23,6 +24,9 @@ rosbridge_port = 9090                           # port as integer
 service_name = "send_bytes"                   # service name
 request_byte_count = 50000
 receiving_fragment_size = 100
+
+ws_uri = "ws://" + str(rosbridge_ip)
+ws_uri += ":" + str(rosbridge_port)
 
 ####################### variables end ##########################################
 
@@ -49,9 +53,8 @@ def request_service():
 # should not need to be changed (but could be improved ;) )                    #
 ################################################################################
 try:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)                        #connect to rosbridge
-    sock.settimeout(client_socket_timeout)
-    sock.connect((rosbridge_ip, rosbridge_port))
+    sock = create_connection(ws_uri)                        #connect to rosbridge
+
 
     request_service()                                                               # send service_request
 
