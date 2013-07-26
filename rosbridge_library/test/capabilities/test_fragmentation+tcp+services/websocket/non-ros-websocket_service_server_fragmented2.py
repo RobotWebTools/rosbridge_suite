@@ -1,5 +1,7 @@
 #!/usr/bin/python
-import socket
+#import socket
+from websocket import create_connection
+
 import time
 from random import randint
 try:
@@ -32,6 +34,9 @@ send_fragment_size = 10
 # delay between sends to rosbridge is not needed anymore, if using my version of protocol
 send_fragment_delay = 0.000#1
 receive_fragment_size = 10
+
+ws_uri = "ws://" + str(rosbridge_ip)
+ws_uri += ":" + str(rosbridge_port)
 
 ####################### variables end ##########################################
 
@@ -82,10 +87,10 @@ def calculate_service_response(request):
 ################################################################################
 
 def connect_tcp_socket():
-    tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)                # connect to rosbridge
-    tcp_sock.settimeout(10)
-    tcp_sock.connect((rosbridge_ip, rosbridge_port))
-    return tcp_sock
+    ws_sock = create_connection(self.ws_uri)                # connect to rosbridge
+    #tcp_sock.settimeout(10)
+    #tcp_sock.connect((rosbridge_ip, rosbridge_port))
+    return ws_sock
 
 def advertise_service():                                                        # advertise service
     advertise_message_object = {"op":"advertise_service",                       
