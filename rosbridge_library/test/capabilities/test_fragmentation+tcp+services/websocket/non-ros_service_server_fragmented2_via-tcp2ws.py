@@ -1,7 +1,5 @@
 #!/usr/bin/python
-#import socket
-from websocket import create_connection
-
+import socket
 import time
 from random import randint
 try:
@@ -30,13 +28,10 @@ service_module = "rosbridge_library.srv"        # make sure srv and msg files ar
 service_type = "SendBytes"                     # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
 service_name = "send_bytes"                   # service name
 
-send_fragment_size = 1000
+send_fragment_size = 10
 # delay between sends to rosbridge is not needed anymore, if using my version of protocol
 send_fragment_delay = 0.000#1
-receive_fragment_size = 1000
-
-ws_uri = "ws://" + str(rosbridge_ip)
-ws_uri += ":" + str(rosbridge_port)
+receive_fragment_size = 10
 
 ####################### variables end ##########################################
 
@@ -87,10 +82,10 @@ def calculate_service_response(request):
 ################################################################################
 
 def connect_tcp_socket():
-    ws_sock = create_connection(ws_uri)                # connect to rosbridge
-    #tcp_sock.settimeout(10)
-    #tcp_sock.connect((rosbridge_ip, rosbridge_port))
-    return ws_sock
+    tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)                # connect to rosbridge
+    tcp_sock.settimeout(10)
+    tcp_sock.connect((rosbridge_ip, rosbridge_port))
+    return tcp_sock
 
 def advertise_service():                                                        # advertise service
     advertise_message_object = {"op":"advertise_service",                       
@@ -137,9 +132,7 @@ def wait_for_service_request():                                                 
         global buffer
         #buffer = ""
         while not done:
-	    time.sleep(1)
             incoming = tcp_socket.recv(max_msg_length)
-	    print "incoming:", incoming
             if incoming == '':
                 print "connection closed by peer"
                 sys.exit(1)

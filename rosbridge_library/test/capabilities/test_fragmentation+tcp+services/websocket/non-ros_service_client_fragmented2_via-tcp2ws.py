@@ -1,7 +1,5 @@
 #!/usr/bin/python
-#import socket
-from websocket import create_connection
-import time
+import socket
 try:
     import ujson as json
 except ImportError:
@@ -23,11 +21,8 @@ rosbridge_ip = "localhost"                       # hostname or ip
 rosbridge_port = 9095                           # port as integer
 
 service_name = "send_bytes"                   # service name
-request_byte_count = 50
-receiving_fragment_size = 1000
-
-ws_uri = "ws://" + str(rosbridge_ip)
-ws_uri += ":" + str(rosbridge_port)
+request_byte_count = 50000
+receiving_fragment_size = 100
 
 ####################### variables end ##########################################
 
@@ -54,8 +49,9 @@ def request_service():
 # should not need to be changed (but could be improved ;) )                    #
 ################################################################################
 try:
-    sock = create_connection(ws_uri)                        #connect to rosbridge
-
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)                        #connect to rosbridge
+    sock.settimeout(client_socket_timeout)
+    sock.connect((rosbridge_ip, rosbridge_port))
 
     request_service()                                                               # send service_request
 
@@ -66,7 +62,6 @@ try:
     reconstructed = None
     while not done:     # should not need a loop (maximum wait can be set by client_socket_timeout), but since its for test/demonstration only .. leave it as it is for now
         try:
-	    time.sleep(1)
             incoming = sock.recv(max_msg_length)                                    # receive service_response from rosbridge
             if buffer == "":
                 buffer = incoming

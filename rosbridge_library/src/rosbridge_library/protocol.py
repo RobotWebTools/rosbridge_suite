@@ -102,6 +102,7 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
+#	print "incoming:", message_string
         self.buffer = self.buffer + message_string
         msg = None
 
@@ -184,7 +185,7 @@ class Protocol:
         message -- the wire-level message to send to the client
 
         """
-        print "outgoing message"
+ #       print "outgoing message", message
         pass
 
     def send(self, message, cid=None):
@@ -199,6 +200,7 @@ class Protocol:
 
         """
         serialized = self.serialize(message, cid)
+#	print "send:", serialized
         if serialized is not None:
             if self.png == "png":
                 # TODO: png compression on outgoing messages

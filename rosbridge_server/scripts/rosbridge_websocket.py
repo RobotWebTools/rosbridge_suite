@@ -70,6 +70,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             rospy.loginfo("Awaiting proper authentication...")
 
     def on_message(self, message):
+#	print "tornado on_message:", message
         global authenticate
         # check if we need to authenticate
         if authenticate and not self.authenticated:
@@ -103,6 +104,7 @@ class RosbridgeWebSocket(WebSocketHandler):
         rospy.loginfo("Client disconnected. %d clients total.", clients_connected)
 
     def send_message(self, message):
+#	print "tornado send:", message
         IOLoop.instance().add_callback(partial(self.write_message, message))
 
 if __name__ == "__main__":
