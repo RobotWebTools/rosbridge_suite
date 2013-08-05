@@ -1,0 +1,55 @@
+rosbridge-client can always use fragment_size to request fragments from rosbridge if message size exceeds the given value. (set to None to disable fragmentation for a client)
+any other field in the examples below is required.
+
+notes for using fragmentation:
+- client-side defragmentation (reconstruction of original message) is required
+  .. this requires client-side parsing for multiple JSON-objects in incoming data/buffer/stream
+- if client can only send small messages, client has to generate fragment messages by itself
+  .. rosbridge should be able to defragment those whithout further action
+- patched protocol.py to be more flexible with incomplete & multiple JSON-objects on input stream (client-side sending without adding delay of 0.01s between messages)
+  .. if not using patched protocol, use delays
+
+
+Examples:
+
+{																																				use to advertise a service
+ "op":"advertise_service",                       												: op-code
+ "service_module": "rosbridge_library.srv",															: module where srv-file is located (within ros)
+ "service_type": "SendBytes",																						: service type (selects srv-file)
+ "service_name": "send_bytes",																					: service name
+ "fragment_size": 1000																									: optional, request fragments if message size is bigger than this value
+}
+
+{																																				use to unadvertise a service
+ "op":"stop_service",                           												: op-code
+ "service_name": "send_bytes"																						: service name
+}
+
+{																																				use this to call a service, no matter if provided by ros or non-ros client (not added by ipa-fxm-db)
+ "op" : "call_service",																									: op-code
+ "service": "/send_bytes",                     													: select service
+ "fragment_size": 1000																									: optional, request fragments if message size is bigger than this value
+ "args": { "count" : 26 }																								: args contains the service parameters as defined in srv-file
+}
+
+{																																				do NOT use to send requests (use call_service); this is a request from rosbridge to a non-ros-service-provider (non-ros-service-provider needs to parse it)
+ "op":"service_request",																								: op-code
+ "request_id": "01234-abcxyz",																					: send this value back to rosbridge with the service_response
+ "args": { "count" : 26 }																								: service request parameters as defined in srv-file
+}
+
+{																																				use to deliver a service response to rosbridge
+ "op": "service_response",																							: op-code
+ "request_id": "01234-abcxyz", 							  													: identifies which request this response is meant for
+ "data": { "data" : "abcdefghijklmnopqrstuvwxyz" } 											: data contaings the service response data as defined in srv-file ("data" is defined in srv-file, so we have it "twice")
+}
+
+{																																				automatically used by rosbridge if fragment_size is set; can be used by client (e.g. huge service_responses)
+ "op":"fragment",																												: op-code
+ "id": 123456,																													: message id
+ "data": "........",																										: contains part of a json-message (service_response, published message, ..)
+ "num": 0,																															: number of fragment
+ "total": 1																															: total number of fragments that belong to this fragmented message
+}
+
+

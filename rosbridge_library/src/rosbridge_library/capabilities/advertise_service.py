@@ -136,8 +136,8 @@ class ROS_Service_Template( threading.Thread):
 
         request_message_object = {"op":"service_request",
                                     "request_id": request_id,
-                                    "service_type": self.service_type,
-                                    "service_name": self.service_name,
+#                                    "service_type": self.service_type,
+#                                    "service_name": self.service_name,
                                     "args": args_dict
                                     }
         # add request to request_list
