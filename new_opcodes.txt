@@ -6,9 +6,9 @@ notes for general message encoding:
 - receiver-side: 	use .decode("base64","strict") to decode this data when it is received
 
 notes for using fragmentation:
-- client-side defragmentation (reconstruction of original message) is required
+- client-side defragmentation (reconstruction of original message) is required (buffer incoming data, find json-objects, access json-fields, ..)
   .. this requires client-side parsing for multiple JSON-objects in incoming data/buffer/stream
-- if client can only send small messages, client has to generate fragment messages by itself
+- if client can only send small messages, client has to generate fragment messages by itself (split original message, put into fragment-messages, send those to rosbridge, ..)
   .. rosbridge should be able to defragment those whithout further action
 - patched protocol.py to be more flexible with incomplete & multiple JSON-objects on input stream (client-side sending without adding delay of 0.01s between messages)
   .. if not using patched protocol, use delays

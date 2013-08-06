@@ -117,10 +117,11 @@ def wait_for_service_request():                                                 
                     done = True
                     return data                                                 # if parsing was successful --> return data string
             except Exception, e:
-                print "direct_access error:"
-                print e
+                #print "direct_access error:"
+                #print e
+                pass
                
-            print "trying to defragment"
+            #print "trying to defragment"
             try:                                                                # opcode was not "service_request" -> try to defragment
                 result_string = buffer.split("}{")                              # split buffer into fragments and re-fill with curly brackets
                 result = []
