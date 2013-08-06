@@ -1,3 +1,8 @@
+** 
+TODO: if clients can receive JSON-objects quickly one after another (almost instantly -> use buffer) rosbridge.protocol can be tweaked to send messages faster.
+      ..if client can set (and override default) delay (like fragment_size), the client could tell rosbridge how fast it can receive messages
+**
+
 rosbridge-client can always use fragment_size to request fragments from rosbridge if message size exceeds the given value. (set to None to disable fragmentation for a client)
 any other field in the examples below is required.
 

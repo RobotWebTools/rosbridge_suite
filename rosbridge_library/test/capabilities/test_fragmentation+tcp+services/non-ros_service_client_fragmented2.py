@@ -21,7 +21,7 @@ rosbridge_ip = "localhost"                      # hostname or ip
 rosbridge_port = 9090                           # port as integer
 
 service_name = "send_bytes"                     # service name
-request_byte_count = 5000
+request_byte_count = 500000
 receiving_fragment_size = 1000
 
 ####################### variables end ##########################################
@@ -69,7 +69,7 @@ try:
                     break
             else:
                 buffer = buffer + incoming
-            print "buffer-length:", len(buffer)
+            #print "buffer-length:", len(buffer)
             try:                                                                # try to access service_request directly (not fragmented)
                 data_object = json.loads(buffer)
                 if data_object["op"] == "service_response":
