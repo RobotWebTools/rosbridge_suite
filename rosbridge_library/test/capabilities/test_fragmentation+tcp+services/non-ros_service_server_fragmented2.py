@@ -16,15 +16,15 @@ except ImportError:
 # these parameters should be changed to match the actual environment           #
 ################################################################################
 
-tcp_socket_timeout = 10                         # seconds
+tcp_socket_timeout = 10                          # seconds
 max_msg_length = 20000                           # bytes
 
-rosbridge_ip = "localhost"                      # hostname or ip
-rosbridge_port = 9090                           # port as integer
+rosbridge_ip = "localhost"                       # hostname or ip
+rosbridge_port = 9090                            # port as integer
 
-service_module = "rosbridge_library.srv"        # make sure srv and msg files are available within specified module on rosbridge-server!
-service_type = "SendBytes"                     # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
-service_name = "send_bytes"                   # service name
+service_module = "rosbridge_library.srv"         # make sure srv and msg files are available within specified module on rosbridge-server!
+service_type = "SendBytes"                       # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+service_name = "send_bytes"                      # service name
 
 send_fragment_size = 1000
 # delay between sends to rosbridge is not needed anymore, if using my version of protocol (uses buffer to collect data from stream)

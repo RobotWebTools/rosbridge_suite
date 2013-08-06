@@ -14,13 +14,13 @@ except ImportError:
 # these parameters should be changed to match the actual environment           #
 ################################################################################
 
-client_socket_timeout = 6                      # seconds
+client_socket_timeout = 6                       # seconds
 max_msg_length = 2000000                        # bytes
 
-rosbridge_ip = "localhost"                       # hostname or ip
+rosbridge_ip = "localhost"                      # hostname or ip
 rosbridge_port = 9090                           # port as integer
 
-service_name = "send_bytes"                   # service name
+service_name = "send_bytes"                     # service name
 request_byte_count = 5000
 receiving_fragment_size = 1000
 

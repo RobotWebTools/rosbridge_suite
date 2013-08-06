@@ -1,6 +1,10 @@
 rosbridge-client can always use fragment_size to request fragments from rosbridge if message size exceeds the given value. (set to None to disable fragmentation for a client)
 any other field in the examples below is required.
 
+notes for general message encoding:
+- sender-side: 		use .encode("base64","strict") to avoid parsing conflicts for data that is passed within string fields (just on the string that contains data, not the rest of the json message)
+- receiver-side: 	use .decode("base64","strict") to decode this data when it is received
+
 notes for using fragmentation:
 - client-side defragmentation (reconstruction of original message) is required
   .. this requires client-side parsing for multiple JSON-objects in incoming data/buffer/stream
