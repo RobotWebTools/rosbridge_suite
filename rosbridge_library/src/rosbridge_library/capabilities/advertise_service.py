@@ -3,6 +3,7 @@ import importlib        # TODO: try to use ros_loader instead of importlib
 
 from rosbridge_library.capability import Capability
 import rospy
+from rospy import service
 from datetime import datetime
 import time
 import threading
@@ -195,6 +196,12 @@ class ROS_Service_Template( threading.Thread):
         some_module = importlib.import_module(service_module)
         # register service in ros
         self.ros_serviceproxy = rospy.Service( service_name, getattr(some_module, service_type), self.handle_service_request)
+
+        # TODO: check if service successfully registered in ros. current state is that rosbridge "thinks" service is registered, but calls will fail
+#        myServiceManager = rospy.service.ServiceManager()
+#        myServiceManager.register(service_name, self.ros_serviceproxy)
+#        print myServiceManager.get_services()
+
         # log service registration
         log_msg = "registered service: " + self.service_name
         self.protocol.log("info", log_msg)
