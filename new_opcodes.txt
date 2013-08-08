@@ -24,7 +24,7 @@ Examples:
 
 {																																				use to advertise a service
  "op":"advertise_service",                       												: op-code
- "service_module": "rosbridge_library.srv",															: module where srv-file is located (within ros)
+ "service_module": "rosbridge_library",															: module where srv-file is located (within ros)
  "service_type": "SendBytes",																						: service type (selects srv-file)
  "service_name": "send_bytes",																					: service name
  "fragment_size": 1000,																									: optional, request fragments if message size is bigger than this value [default = None]
