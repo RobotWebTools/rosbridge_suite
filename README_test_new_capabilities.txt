@@ -1,5 +1,5 @@
-find a script that allows to start a service provider connected via rosbridge
-and another on that calls this service, waits for the response and prints the
+there is script that allows to start a service provider connected via rosbridge
+and another one that calls this service, waits for the response and prints the
 received data to the console.
 
 script location:
