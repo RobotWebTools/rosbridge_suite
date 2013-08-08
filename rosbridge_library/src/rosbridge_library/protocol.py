@@ -31,6 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import rospy
+import time
 
 class InvalidArgumentException(Exception):
     pass
@@ -51,11 +52,12 @@ except ImportError:
         import json
 
 
-# TODO: integrate this parameter in a better and configurable way.. at init or similar.
-# if this is too high, clients network stacks will get flooded (when sending fragments of a huge message..)
-# .. depends on message_size/bandwidth/performance/client_limits/...
-# !! this might be related to (or even be avoided by using) throttle_rate !!
-delay_between_fragments = 0.01
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
 
 class Protocol:
     """ The interface for a single client to interact with ROS.
@@ -77,6 +79,11 @@ class Protocol:
     buffer = ""
     old_buffer = ""
     busy = False
+    # TODO: integrate this parameter in a better and configurable way.. at init or similar.
+    # if this is too high, clients network stacks will get flooded (when sending fragments of a huge message..)
+    # .. depends on message_size/bandwidth/performance/client_limits/...
+    # !! this might be related to (or even be avoided by using) throttle_rate !!
+    delay_between_messages = 0.501
 
     def __init__(self, client_id):
         """ Keyword arguments:
@@ -158,6 +165,8 @@ class Protocol:
         #  maybe need to be improved to bind parameter values to specific operation.. -> pass as parameter to self.operations[op] needs default values.. bla
         if "fragment_size" in msg.keys():
             self.fragment_size = msg["fragment_size"]
+        if "message_intervall" in msg.keys() and is_number(msg["message_intervall"]):
+            self.delay_between_messages = msg["message_intervall"]
         if "png" in msg.keys():
             self.png = msg["msg"]
         
@@ -219,9 +228,11 @@ class Protocol:
             if fragment_list != None:
                 for fragment in fragment_list:
                     self.outgoing(json.dumps(fragment))
+                    time.sleep(self.delay_between_messages)
             # else send message as it is
             else:
                 self.outgoing(serialized)
+                time.sleep(self.delay_between_messages)
 
     def finish(self):
         """ Indicate that the client is finished and clean up resources.

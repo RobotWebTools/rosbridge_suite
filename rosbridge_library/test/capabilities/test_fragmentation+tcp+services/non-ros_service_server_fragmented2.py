@@ -30,6 +30,7 @@ send_fragment_size = 1000
 # delay between sends to rosbridge is not needed anymore, if using my version of protocol (uses buffer to collect data from stream)
 send_fragment_delay = 0.000#1
 receive_fragment_size = 10
+receive_message_intervall = 01.0
 
 ####################### variables end ##########################################
 
@@ -85,7 +86,8 @@ def advertise_service():                                                        
                                 "service_module": service_module,
                                 "service_type": service_type,
                                 "service_name": service_name,
-                                "fragment_size": receive_fragment_size
+                                "fragment_size": receive_fragment_size,
+                                "message_intervall": receive_message_intervall
                                 }
     advertise_message = json.dumps(advertise_message_object)                    
     tcp_socket.send(str(advertise_message))

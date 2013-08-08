@@ -8,6 +8,7 @@ import socket, subprocess, re
 
 import SocketServer
 import sys
+import time
 
 #TODO: take care of socket timeouts and make sure to close sockets after killing programm to release network ports
 
@@ -68,42 +69,43 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         self.protocol.log("info", "disconnected. " + str(clients_connected) + " client total." )
 
     busy = False
-    queue = []
+    #queue = []
     # TODO: cleaner
     def send_message(self, message=None):
         """
         Callback from rosbridge
         """
+        self.request.send(message)
 
-        if self.busy:
-            if message!=None:
-                print "adding to queue"
-                self.queue.append(message)
-        else:
+#        if self.busy:
+#            if message!=None:
+#                #print "adding to queue"
+#                self.queue.append(message)
+#        else:
+#
+#            self.busy = True
+#
+#
+#            if message == None and len(self.queue) > 0:
+#                message = self.queue[0]
+#                self.queue = self.queue[1:]
+#                #print self.queue
+#            if message != None:
+#                # Send data to TCP socket
+#                #print "waiting; queue-len:",len(self.queue), self.protocol.client_id
+#                #print "sending:",message
+#                self.request.send(message)
+#                #time.sleep(self.protocol.)
+#
+#            self.busy = False
+#            if len(self.queue) > 0:
+#                #print "accessing queue", len(self.queue)
+#                self.send_message()
+#
+#
+##        self.busy = False
 
-            self.busy = True
-            
 
-            if message == None and len(self.queue) > 0:
-                message = self.queue[0]
-                self.queue = self.queue[1:]
-                #print self.queue
-            if message != None:
-                # Send data to TCP socket
-                #print "waiting; queue-len:",len(self.queue), self.protocol.client_id
-                #print "sending:",message
-                self.request.send(message)
-                time.sleep(send_delay)
-                
-            self.busy = False
-            if len(self.queue) > 0:
-                print "accessing queue", len(self.queue)
-                self.send_message()
-
-
-#        self.busy = False
-
-import time
 
 if __name__ == "__main__":
     loaded = False
