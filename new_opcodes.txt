@@ -6,6 +6,9 @@ TODO: if clients can receive JSON-objects quickly one after another (almost inst
 rosbridge-client can always use fragment_size to request fragments from rosbridge if message size exceeds the given value. (set to None to disable fragmentation for a client)
 any other field in the examples below is required.
 
+notes for advertising services:
+- make sure the srv-file is located in the module (/folder) as defined in advertise_service message (rosbridge server-side)
+
 notes for general message encoding:
 - sender-side: 		use .encode("base64","strict") to avoid parsing conflicts for data that is passed within string fields (just on the string that contains data, not the rest of the json message)
 - receiver-side: 	use .decode("base64","strict") to decode this data when it is received
@@ -26,7 +29,8 @@ Examples:
  "service_module": "rosbridge_library.srv",															: module where srv-file is located (within ros)
  "service_type": "SendBytes",																						: service type (selects srv-file)
  "service_name": "send_bytes",																					: service name
- "fragment_size": 1000																									: optional, request fragments if message size is bigger than this value
+ "fragment_size": 1000,																									: optional, request fragments if message size is bigger than this value [default = None]
+ "message_intervall": 0.0																								: optional, set delay between messages sent from rosbridge [default = 0.01]
 }
 
 {																																				use to unadvertise a service
@@ -37,7 +41,8 @@ Examples:
 {																																				use this to call a service, no matter if provided by ros or non-ros client (not added by ipa-fxm-db)
  "op" : "call_service",																									: op-code
  "service": "/send_bytes",                     													: select service
- "fragment_size": 1000																									: optional, request fragments if message size is bigger than this value
+ "fragment_size": 1000,																									: optional, request fragments if message size is bigger than this value
+ "message_intervall": 0.0,																							: optional, set delay between messages sent from rosbridge [default = 0.01]
  "args": { "count" : 26 }																								: args contains the service parameters as defined in srv-file
 }
 
