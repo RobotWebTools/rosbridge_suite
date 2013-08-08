@@ -228,6 +228,8 @@ class Protocol:
             if fragment_list != None:
                 for fragment in fragment_list:
                     self.outgoing(json.dumps(fragment))
+                    # okay to use delay here (sender's send()-function) because rosbridge is sending next request only to service provider when last one had finished)
+                    #  --> if this was not the case this delay needed to be implemented in service-provider's (meaning message receiver's) send_message()-function in rosbridge_tcp.py)
                     time.sleep(self.delay_between_messages)
             # else send message as it is
             else:

@@ -25,6 +25,10 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     """
     TCP Socket server for rosbridge
     """
+
+    busy = False
+    queue = []
+
     def setup(self):
         global client_id_seed, clients_connected
         try:
@@ -70,6 +74,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Callback from rosbridge
         """
+
         self.request.send(message)
 
 

@@ -1,10 +1,7 @@
-** 
-TODO: if clients can receive JSON-objects quickly one after another (almost instantly -> use buffer) rosbridge.protocol can be tweaked to send messages faster.
-      ..if client can set (and override default) delay (like fragment_size), the client could tell rosbridge how fast it can receive messages
-**
 
-rosbridge-client can always use fragment_size to request fragments from rosbridge if message size exceeds the given value. (set to None to disable fragmentation for a client)
-any other field in the examples below is required.
+
+notes about message field "fragment_size":
+- rosbridge-client can always use fragment_size to request fragments from rosbridge if message size exceeds the given value. (set to None to disable fragmentation for a client, default = None)
 
 notes for advertising services:
 - make sure the srv-file is located in the module (/folder) as defined in advertise_service message (rosbridge server-side)
@@ -18,8 +15,11 @@ notes for using fragmentation:
   .. this requires client-side parsing for multiple JSON-objects in incoming data/buffer/stream
 - if client can only send small messages, client has to generate fragment messages by itself (split original message, put into fragment-messages, send those to rosbridge, ..)
   .. rosbridge should be able to defragment those whithout further action
-- patched protocol.py to be more flexible with incomplete & multiple JSON-objects on input stream (client-side sending without adding delay of 0.01s between messages)
-  .. if not using patched protocol, use delays
+
+notes about field "message_intervall":
+- if client is implemented "simple" without any advanced JSON-parsing (multiple objects) of incoming data, then be sure to set message field "message_intervall" to an appropriate value (default = 0.01 seconds)
+- if client can handle many JSON-objects on incoming data, then feel free to set "message_intervall" to 0.0
+- rosbridge itself should be able to parse for multiple JSON-objects (when using my modified protocol.py), so client should be safe to send messages without any delay inbetween 
 
 
 Examples:
