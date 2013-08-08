@@ -78,7 +78,9 @@ class Fragmentation(Capability):
 
         msg_id = message.get("id", None)
 
-        log_msg = "sending " + str(int(math.ceil(message_length / fragment_size))) + " parts [fragment size: " + str(fragment_size) +"]"
+        expected_duration = int(math.ceil(math.ceil(message_length / fragment_size)) * self.protocol.delay_between_messages)
+
+        log_msg = "sending " + str(int(math.ceil(message_length / fragment_size))) + " parts [fragment size: " + str(fragment_size) +"; expected duration: ~" + str(expected_duration) + "s]"
         self.protocol.log("info", log_msg)
 
         return self._fragment_generator(serialized, fragment_size, mid)

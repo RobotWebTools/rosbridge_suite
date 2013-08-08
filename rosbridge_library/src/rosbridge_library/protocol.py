@@ -31,6 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import rospy
+import time
 
 class InvalidArgumentException(Exception):
     pass
@@ -51,11 +52,12 @@ except ImportError:
         import json
 
 
-# TODO: integrate this parameter in a better and configurable way.. at init or similar.
-# if this is too high, clients network stacks will get flooded (when sending fragments of a huge message..)
-# .. depends on message_size/bandwidth/performance/client_limits/...
-# !! this might be related to (or even be avoided by using) throttle_rate !!
-delay_between_fragments = 0.01
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
 
 class Protocol:
     """ The interface for a single client to interact with ROS.
@@ -77,6 +79,10 @@ class Protocol:
     buffer = ""
     old_buffer = ""
     busy = False
+    # if this is too low, ("simple")clients network stacks will get flooded (when sending fragments of a huge message..)
+    # .. depends on message_size/bandwidth/performance/client_limits/...
+    # !! this might be related to (or even be avoided by using) throttle_rate !!
+    delay_between_messages = 0.01
 
     def __init__(self, client_id):
         """ Keyword arguments:
@@ -89,10 +95,6 @@ class Protocol:
         self.capabilities = []
         self.operations = {}
 
-    # TODO: improove parsing of incomplete/multiple json
-    # TODO: implement workaround for strings that contain -more than 1/-partial JSON object(s)
-    # TODO: add timeout for leading data.. or other "errors" on incoming buffer (that are not covered yet)
-
     # added default message_string="" to allow recalling incoming until buffer is empty without giving a parameter
     # --> allows to get rid of (..or minimize) delay between client-side sends
     def incoming(self, message_string=""):
@@ -102,10 +104,8 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
-#	print "incoming:", message_string
         self.buffer = self.buffer + message_string
         msg = None
-
 
         # take care of having multiple JSON-objects in receiving buffer
         # ..first, try to load the whole buffer as a JSON-object
@@ -155,9 +155,11 @@ class Protocol:
             self.log("error", "Unknown operation: %s.  Allowed operations: %s" % (op, self.operations.keys()), mid)
             return
         # this way a client can change/overwrite it's active values anytime by just including parameter field in any message sent to rosbridge
-        #  maybe need to be improved to bind parameter values to specific operation.. -> pass as parameter to self.operations[op] needs default values.. bla
+        #  maybe need to be improved to bind parameter values to specific operation.. 
         if "fragment_size" in msg.keys():
             self.fragment_size = msg["fragment_size"]
+        if "message_intervall" in msg.keys() and is_number(msg["message_intervall"]):
+            self.delay_between_messages = msg["message_intervall"]
         if "png" in msg.keys():
             self.png = msg["msg"]
         
@@ -168,7 +170,7 @@ class Protocol:
             self.log("error", "%s: %s" % (op, str(exc)), mid)
 
         # if anything left in buffer .. re-call self.incoming
-        # TODO: check what happens if we have "garbage" on tcp-stack --> infinite loop might be triggered! .. might get out of it when next valid JSON arrives
+        # TODO: check what happens if we have "garbage" on tcp-stack --> infinite loop might be triggered! .. might get out of it when next valid JSON arrives since only data after last 'valid' closing bracket is kept
         if len(self.buffer) > 0:
             # try to avoid infinite loop..
             if self.old_buffer != self.buffer:
@@ -185,7 +187,6 @@ class Protocol:
         message -- the wire-level message to send to the client
 
         """
- #       print "outgoing message", message
         pass
 
     def send(self, message, cid=None):
@@ -200,7 +201,6 @@ class Protocol:
 
         """
         serialized = self.serialize(message, cid)
-#	print "send:", serialized
         if serialized is not None:
             if self.png == "png":
                 # TODO: png compression on outgoing messages
@@ -219,9 +219,13 @@ class Protocol:
             if fragment_list != None:
                 for fragment in fragment_list:
                     self.outgoing(json.dumps(fragment))
+                    # okay to use delay here (sender's send()-function) because rosbridge is sending next request only to service provider when last one had finished)
+                    #  --> if this was not the case this delay needed to be implemented in service-provider's (meaning message receiver's) send_message()-function in rosbridge_tcp.py)
+                    time.sleep(self.delay_between_messages)
             # else send message as it is
             else:
                 self.outgoing(serialized)
+                time.sleep(self.delay_between_messages)
 
     def finish(self):
         """ Indicate that the client is finished and clean up resources.
@@ -269,12 +273,12 @@ class Protocol:
         try:
             return json.loads(msg)
         except Exception, e:
-            # if we tried to deserialize whole buffer .. first try to let self.incoming check for multiple/partial json-decodes before logging error
+            # if we did try to deserialize whole buffer .. first try to let self.incoming check for multiple/partial json-decodes before logging error
             # .. this means, if buffer is not == msg --> we tried to decode part of buffer
 
             # TODO: implement a way to have a final Exception when nothing works out to decode (multiple/broken/partial JSON..)
 
-            # supressed logging of exception on json-decode to keep rosbridge-logs "clean"
+            # supressed logging of exception on json-decode to keep rosbridge-logs "clean", otherwise console logs would get spammed for every failed json-decode try
 #            if msg != self.buffer:
 #                error_msg = "Unable to deserialize message from client: %s"  % msg
 #                error_msg += "\nException was: " +str(e)

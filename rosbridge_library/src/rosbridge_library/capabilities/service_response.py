@@ -14,7 +14,9 @@ except ImportError:
 
 class ServiceResponse(Capability):
 
-    # TODO: unterscheiden von call_service_response
+    # this defines an opcode for incoming responses (seen from rosbridge, response coming from non-ros service provider connected to rosbridge)
+    #  call_service uses the same opcode for sending responses to non-ros clients that requested a service..
+    #  this is works fine, but feel free to change opcode-names to whatever you think suits better..
     opcode_service_response = "service_response"        # rosbridge-client -> rosbridge # register in protocol.py!
     response_list = ReceivedResponses().list
 
@@ -26,12 +28,9 @@ class ServiceResponse(Capability):
 
 
     def service_response(self, message):
-        #print "service_response called"
-        #print "  ", message
+        # just put response into singleton list for responses.. the requesting process will find it there and clean up after delivery to client
         self.response_list[message["request_id"]] = message["data"]
-        # this be the callback for rosbridge-client ; called from within ros-service
 
-        # pass response to ros-side by sending through superclass that provides service to ros-side
 
     def finish(self):
         self.protocol.unregister_operation("service_response")

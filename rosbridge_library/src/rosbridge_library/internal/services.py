@@ -46,7 +46,7 @@ class InvalidServiceException(Exception):
 
 class ServiceCaller(Thread):
 
-    def __init__(self, service, args, success_callback, error_callback, protocol):
+    def __init__(self, service, args, success_callback, error_callback):
         """ Create a service caller for the specified service.  Use start()
         to start in a separate thread or run() to run in this thread.
 
@@ -95,13 +95,11 @@ def args_to_service_request_instance(service, inst, args):
 
 
 def call_service(service, args=None):
-
     # Given the service name, fetch the type and class of the service,
     # and a request instance
     service_type = get_service_type(service)
     if service_type is None:
         raise InvalidServiceException(service)
-
     service_class = get_service_class(service_type)
     inst = get_service_request_instance(service_type)
 

@@ -182,19 +182,7 @@ def _load_class(modname, subname, classname):
         # roslib maintains a cache of loaded manifests, so no need to duplicate
         roslib.launcher.load_manifest(modname)
     except Exception as exc:
-        loaded = False
-        while not loaded:
-            print "retrying to load package"
-            time.sleep(1)
-            try:
-                roslib.launcher.load_manifest(modname)
-                loaded = True
-            except Exception as e:
-                print e
-                print "still failed"
-        if not loaded:
-            print "!!could not load package"
-            raise InvalidPackageException(modname, exc)
+        raise InvalidPackageException(modname, exc)
 
 
     try:
@@ -231,7 +219,7 @@ def _get_from_cache(cache, lock, key):
     Locks the lock before doing anything. Returns None if key not in cache """
     lock.acquire()
     ret = None
-    if key in cache.keys():
+    if key in cache:
         ret = cache[key]
     lock.release()
     return ret
