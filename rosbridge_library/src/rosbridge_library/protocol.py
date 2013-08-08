@@ -287,7 +287,7 @@ class Protocol:
 
             # TODO: implement a way to have a final Exception when nothing works out to decode (multiple/broken/partial JSON..)
 
-            # supressed logging of exception on json-decode to keep rosbridge-logs "clean"
+            # supressed logging of exception on json-decode to keep rosbridge-logs "clean", otherwise console logs would get spammed for every failed json-decode try
 #            if msg != self.buffer:
 #                error_msg = "Unable to deserialize message from client: %s"  % msg
 #                error_msg += "\nException was: " +str(e)
