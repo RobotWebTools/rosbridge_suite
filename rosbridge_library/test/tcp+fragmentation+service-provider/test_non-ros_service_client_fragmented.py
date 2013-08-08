@@ -93,7 +93,7 @@ try:
                     try:
                         result.append(json.loads(fragment))                     # try to parse json from string, and append if successful
                     except Exception, e:
-                        print e
+                        #print e
                         #print result_string
                         raise                                                   # re-raise the last exception, allows to see and continue with processing of exception
 
