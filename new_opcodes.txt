@@ -1,5 +1,3 @@
-
-
 notes about message field "fragment_size":
 - rosbridge-client can always use fragment_size to request fragments from rosbridge if message size exceeds the given value. (set to None to disable fragmentation for a client, default = None)
 
@@ -65,5 +63,4 @@ Examples:
  "num": 0,																															: number of fragment
  "total": 1																															: total number of fragments that belong to this fragmented message
 }
-
 
