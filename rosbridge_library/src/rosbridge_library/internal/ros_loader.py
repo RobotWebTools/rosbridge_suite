@@ -219,8 +219,7 @@ def _get_from_cache(cache, lock, key):
     Locks the lock before doing anything. Returns None if key not in cache """
     lock.acquire()
     ret = None
-    # caused an error at some point, this worked better..
-    if key in cache.keys():
+    if key in cache:
         ret = cache[key]
     lock.release()
     return ret

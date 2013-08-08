@@ -20,9 +20,7 @@ class StopService(Capability):
         Capability.__init__(self, protocol)
         protocol.register_operation(self.opcode_unadvertise_service, self.unadvertise_service)
 
-    # TODO: unadvertise
     def unadvertise_service(self, message):
-        opcode = message["op"]
         service_name = message["service_name"]
         client_id = self.protocol.client_id
 
