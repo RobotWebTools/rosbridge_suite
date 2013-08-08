@@ -4,7 +4,6 @@ from rospy import init_node, get_param, loginfo, logerr
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 
 from signal import signal, SIGINT, SIG_DFL
-import socket, subprocess, re
 
 import SocketServer
 import sys
@@ -20,7 +19,6 @@ clients_connected = 0
 max_msg_length = 1024
 socket_timeout = 10     #seconds
 
-send_delay = 0.1    #seconds
 retry_startup_delay = 5 #seconds
 
 class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
@@ -68,50 +66,16 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         self.protocol.finish()
         self.protocol.log("info", "disconnected. " + str(clients_connected) + " client total." )
 
-    busy = False
-    #queue = []
-    # TODO: cleaner
     def send_message(self, message=None):
         """
         Callback from rosbridge
         """
         self.request.send(message)
 
-#        if self.busy:
-#            if message!=None:
-#                #print "adding to queue"
-#                self.queue.append(message)
-#        else:
-#
-#            self.busy = True
-#
-#
-#            if message == None and len(self.queue) > 0:
-#                message = self.queue[0]
-#                self.queue = self.queue[1:]
-#                #print self.queue
-#            if message != None:
-#                # Send data to TCP socket
-#                #print "waiting; queue-len:",len(self.queue), self.protocol.client_id
-#                #print "sending:",message
-#                self.request.send(message)
-#                #time.sleep(self.protocol.)
-#
-#            self.busy = False
-#            if len(self.queue) > 0:
-#                #print "accessing queue", len(self.queue)
-#                self.send_message()
-#
-#
-##        self.busy = False
-
-
 
 if __name__ == "__main__":
     loaded = False
     retry_count = 0
-    #my_ip = get_ipv4_address()
-    #print "server-ip:", my_ip
     while not loaded:
         retry_count += 1
         print "trying to start rosbridge TCP server.."
