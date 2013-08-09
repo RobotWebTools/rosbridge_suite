@@ -67,6 +67,170 @@ class ReceivedResponses():
         """ Delegate access to implementation """
         return setattr(self.__instance, attr, value)
 
+import pprint
+
+class DictDotLookup(object):
+    """
+    Creates objects that behave much like a dictionaries, but allow nested
+    key access using object '.' (dot) lookups.
+    """
+    def __init__(self, d):
+        for k in d:
+            if isinstance(d[k], dict):
+                self.__dict__[k] = DictDotLookup(d[k])
+            elif isinstance(d[k], (list, tuple)):
+                l = []
+                for v in d[k]:
+                    if isinstance(v, dict):
+                        l.append(DictDotLookup(v))
+                    else:
+                        l.append(v)
+                self.__dict__[k] = l
+            else:
+                self.__dict__[k] = d[k]
+
+    def __getitem__(self, name):
+        if name in self.__dict__:
+            return self.__dict__[name]
+
+    def __iter__(self):
+        return iter(self.__dict__.keys())
+
+    def __repr__(self):
+        return pprint.pformat(self.__dict__)
+
+def dict2obj(dict_in):
+    obj = myStruct()
+    for key in dict_in.keys():
+        print key, ":", dict_in[key]
+        if type(dict_in[key]) is dict:
+            setattr(obj, key, dict2obj(dict_in[key]))
+            #obj.key = dict2obj(dict_in[key])
+        else:
+            setattr(obj, key, dict_in[key])
+            #obj.key = dict_in[key]
+    return obj
+
+class myStruct(object):
+    pass
+
+###########
+def j2p(x):
+    """j2p creates a pythonic interface to nested arrays and
+    dictionaries, as returned by json readers.
+
+    >>> a = { 'x':[5,8], 'y':5}
+    >>> aa = j2p(a)
+    >>> aa.y=7
+    >>> print a
+    {'x': [5, 8], 'y':7}
+    >>> aa.x[1]=99
+    >>> print a
+    {'x': [5, 99], 'y':7}
+
+    >>> aa.x[0] = {'g':5, 'h':9}
+    >>> print a
+    {'x': [ {'g':5, 'h':9} , 99], 'y':7}
+    >>> print aa.x[0].g
+    5
+    """
+    if isinstance(x, list):
+        return _list_proxy(x)
+    elif isinstance(x, dict):
+        return _dict_proxy(x)
+    else:
+        return x
+
+class _list_proxy(object):
+    def __init__(self, proxied_list):
+        object.__setattr__(self, 'data', proxied_list)
+    def __getitem__(self, a):
+        return j2p(object.__getattribute__(self, 'data').__getitem__(a))
+    def __setitem__(self, a, v):
+        return object.__getattribute__(self, 'data').__setitem__(a, v)
+
+
+class _dict_proxy(_list_proxy):
+    def __init__(self, proxied_dict):
+        _list_proxy.__init__(self, proxied_dict)
+    def __getattribute__(self, a):
+        return j2p(object.__getattribute__(self, 'data').__getitem__(a))
+    def __setattr__(self, a, v):
+        return object.__getattribute__(self, 'data').__setitem__(a, v)
+
+
+def p2j(x):
+    """p2j gives back the underlying json-ic json-ic nested
+    dictionary/list structure of an object or attribute created with
+    j2p.
+    """
+    if isinstance(x, (_list_proxy, _dict_proxy)):
+        return object.__getattribute__(x, 'data')
+    else:
+        return x
+
+#############
+class Struct(object):
+    def __init__(self, d):
+        self.d = d
+    def __getattr__(self, key):
+        return self.d[key]
+
+class dotdictify(dict):
+    def __init__(self, value=None):
+        if value is None:
+            pass
+        elif isinstance(value, dict):
+            for key in value:
+                self.__setitem__(key, value[key])
+        else:
+            raise TypeError, 'expected dict'
+
+    def __setitem__(self, key, value):
+        if '.' in key:
+            myKey, restOfKey = key.split('.', 1)
+            target = self.setdefault(myKey, dotdictify())
+            if not isinstance(target, dotdictify):
+                raise KeyError, 'cannot set "%s" in "%s" (%s)' % (restOfKey, myKey, repr(target))
+            target[restOfKey] = value
+        else:
+            if isinstance(value, dict) and not isinstance(value, dotdictify):
+                value = dotdictify(value)
+            dict.__setitem__(self, key, value)
+
+    def __getattr__(self,key):
+        try:
+            return self._response[key]
+        except KeyError,err:
+            raise AttributeError(key)
+
+    def __getitem__(self, key):
+        if '.' not in key:
+            #print "dict  :", str(self)
+            return self.__getattr__(key)
+            #return dict.getattr(key)
+        myKey, restOfKey = key.split('.', 1)
+        target = dict.__getitem__(self, myKey)
+        if not isinstance(target, dotdictify):
+            raise KeyError, 'cannot get "%s" in "%s" (%s)' % (restOfKey, myKey, repr(target))
+        return target[restOfKey]
+
+    def __contains__(self, key):
+        if '.' not in key:
+            return dict.__contains__(self, key)
+        myKey, restOfKey = key.split('.', 1)
+        target = dict.__getitem__(self, myKey)
+        if not isinstance(target, dotdictify):
+            return False
+        return restOfKey in target
+
+    def setdefault(self, key, default):
+        if key not in self:
+            self[key] = default
+        return self[key]
+
+    __setattr__ = __setitem__
+    __getattr__ = __getitem__
 
 # instances of this class are created for every externally advertised service
 class ROS_Service_Template( threading.Thread):
@@ -181,6 +345,16 @@ class ROS_Service_Template( threading.Thread):
         except Exception, e:
             print e
         self.busy = False
+
+        #answer = Struct(**answer)
+        #answer = Struct(answer)
+        #answer = dict2obj(answer)
+        #answer = DictDotLookup(answer)
+        #answer = j2p(answer)
+
+        #print "answer:", str(answer)
+        #print "test", answer.snake_arm_config_trajectory.data
+
         return answer
 
     def stop_ROS_service(self):

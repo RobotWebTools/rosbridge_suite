@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosbridge_library)
 
-find_package(catkin REQUIRED COMPONENTS message_generation rospy rosservice rostopic roscpp rosgraph geometry_msgs)
+find_package(catkin REQUIRED COMPONENTS message_generation rospy rosservice rostopic roscpp rosgraph geometry_msgs genpy)
 
 # Generate messages for testing (NOINSTALL)
 add_message_files(

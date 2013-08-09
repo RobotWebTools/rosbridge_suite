@@ -3,4 +3,4 @@ geometry_msgs/PoseArray snake_arm_tcp_trajectory
 ---
 #response definition
 
-float64 snake_arm_config_trajectory
+std_msgs/Float64 snake_arm_config_trajectory
