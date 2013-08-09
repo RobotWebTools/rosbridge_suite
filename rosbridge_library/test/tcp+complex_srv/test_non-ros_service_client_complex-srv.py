@@ -125,7 +125,7 @@ try:
         print "response was None -> service was not available"
     else:
         print "received:"
-        print returned_data["values"]["data"].decode('base64','strict')         # decode values-field
+        print returned_data#["values"]#["data"].decode('base64','strict')         # decode values-field
     
 except Exception, e:
     print "ERROR - could not receive service_response"

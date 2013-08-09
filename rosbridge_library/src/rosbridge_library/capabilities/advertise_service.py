@@ -1,5 +1,4 @@
 from rosbridge_library.internal.ros_loader import get_service_class
-from rosbridge_library.internal.message_conversion import populate_instance
 from rosbridge_library.internal.message_conversion import extract_values
 
 from rosbridge_library.capability import Capability
@@ -7,7 +6,6 @@ import rospy
 from datetime import datetime
 import time
 import threading
-
 
 
 class ServiceList():

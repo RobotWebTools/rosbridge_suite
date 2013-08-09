@@ -50,7 +50,7 @@ def calculate_service_response(request):
 #        if i% 100000 == 0:
 #            print count - i, "bytes left to generate"
 
-    message = '{"success": True, [{"snake_arm_config_trajectory": {"snake_arm_config_deviation": 0.0}]}'
+    message = {"snake_arm_config_trajectory":  42.0}
     
     """
     IMPORTANT!
