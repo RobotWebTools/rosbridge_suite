@@ -1,4 +1,6 @@
 from rosbridge_library.internal.ros_loader import get_service_class
+from rosbridge_library.internal.message_conversion import populate_instance
+from rosbridge_library.internal.message_conversion import extract_values
 
 from rosbridge_library.capability import Capability
 import rospy
@@ -108,6 +110,10 @@ class ROS_Service_Template( threading.Thread):
 
 
     def handle_service_request(self, req):
+
+        print "req"
+        print req
+
         # stay in this loop until (this) instance is not waiting for response for an "old" request
         # (.. probably not best solution so far)
         while not self.spawned or self.busy:
@@ -125,18 +131,25 @@ class ROS_Service_Template( threading.Thread):
         # increment request_counter
         self.request_counter = (self.request_counter + 1) % 500000
 
+
+        #msg_instance = populate_instance(req, self.service_class)
+        values = extract_values(req)
+
+        print "values:"
+        print values
+
         # TODO: check for more complex parameters and types --> better argument parser!
         # --> see message_conversion
-        args_list = str(req).split("\n")
-        args_dict = {}
-        for arg in args_list:
-            key, value = arg.split(":")
-            #args_dict[key.strip()] = value.strip()
-            args_dict[key] = value
+#        args_list = str(req).split("\n")
+#        args_dict = {}
+#        for arg in args_list:
+#            key, value = arg.split(":")
+#            #args_dict[key.strip()] = value.strip()
+#            args_dict[key] = value
 
         request_message_object = {"op":"service_request",
                                     "request_id": request_id,
-                                    "args": args_dict
+                                    "args": values #args_dict
                                     }
         # add request to request_list
         if request_id not in self.request_list.keys():
@@ -156,6 +169,8 @@ class ROS_Service_Template( threading.Thread):
             # if response found..
             if request_id in self.response_list:
                 answer = self.response_list[request_id]
+                print "received JSON:"
+                print answer
                 # remove response from response_list
                 del self.response_list[request_id]
             else:
@@ -185,12 +200,14 @@ class ROS_Service_Template( threading.Thread):
         service_list = ServiceList().list
         del service_list[self.service_name]
         self.protocol.log("info", "removed service: "+ self.service_name)
-    
+
+    service_class = None
+
     def spawn_ROS_service(self, service_module, service_type, service_name, client_id):
         # import service type for ros-service that we want to register in ros
-        service_class = get_service_class(service_module+'/'+service_type)
+        self.service_class = get_service_class(service_module+'/'+service_type)
         # register service in ros
-        self.ros_serviceproxy = rospy.Service( service_name, service_class, self.handle_service_request)
+        self.ros_serviceproxy = rospy.Service( service_name, self.service_class, self.handle_service_request)
 
         # TODO: check if service successfully registered in ros. current state is that rosbridge "thinks" service is registered, but calls will fail
 #        myServiceManager = rospy.service.ServiceManager()
