@@ -1,5 +1,6 @@
 from rosbridge_library.capability import Capability
 from advertise_service import ReceivedResponses
+from rosbridge_library.internal import ros_loader, message_conversion
 
 # try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
 try:
@@ -28,8 +29,16 @@ class ServiceResponse(Capability):
 
 
     def service_response(self, message):
-        # just put response into singleton list for responses.. the requesting process will find it there and clean up after delivery to client
-        self.response_list[message["request_id"]] = message["data"]
+        # convert the message into according response instance
+        # then just put response into singleton list for responses.. the requesting process will find it there and clean up after delivery to client
+
+        ## Create a message instance
+        inst = ros_loader.get_service_response_instance(message["service_module"]+"/"+message["service_type"])
+        
+        # Populate the instance, propagating any exceptions that may be thrown
+        message_conversion.populate_instance(message["data"], inst)
+        
+        self.response_list[message["request_id"]] = inst
 
 
     def finish(self):

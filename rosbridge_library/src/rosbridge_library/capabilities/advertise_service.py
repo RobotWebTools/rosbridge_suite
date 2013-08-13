@@ -1,4 +1,5 @@
 from rosbridge_library.internal.ros_loader import get_service_class
+from rosbridge_library.internal import message_conversion
 
 from rosbridge_library.capability import Capability
 import rospy
@@ -125,19 +126,12 @@ class ROS_Service_Template( threading.Thread):
         # increment request_counter
         self.request_counter = (self.request_counter + 1) % 500000
 
-        # TODO: check for more complex parameters and types --> better argument parser!
-        # --> see message_conversion
-        args_list = str(req).split("\n")
-        args_dict = {}
-        for arg in args_list:
-            key, value = arg.split(":")
-            #args_dict[key.strip()] = value.strip()
-            args_dict[key] = value
-
+        req_extracted = message_conversion.extract_values(req)
         request_message_object = {"op":"service_request",
-                                    "request_id": request_id,
-                                    "args": args_dict
-                                    }
+                                  "request_id": request_id,
+                                  "args": req_extracted
+                                 }
+                                    
         # add request to request_list
         if request_id not in self.request_list.keys():
             self.request_list[request_id] = request_message_object
