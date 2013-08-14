@@ -104,6 +104,8 @@ class ROS_Service_Template( threading.Thread):
     check_response_delay = 0.1              #seconds
     wait_for_busy_service_provider = 0.1    #seconds
 
+    max_requests = 500000
+
     service_name = None
     service_node_name = None
     service_module = None
@@ -153,7 +155,7 @@ class ROS_Service_Template( threading.Thread):
         # ..service_name avoids having same id's for different service-requests
         request_id = "service:" + self.service_name + "_count:" + str(self.request_counter) + "_time:" + datetime.now().strftime("%H:%M:%f")
         # increment request_counter
-        self.request_counter = (self.request_counter + 1) % 500000
+        self.request_counter = (self.request_counter + 1) % self.max_requests
 
         req_extracted = message_conversion.extract_values(req)
         request_message_object = {"op":"service_request",
@@ -210,7 +212,7 @@ class ROS_Service_Template( threading.Thread):
             time.sleep(self.check_response_delay)
         # remove service from service_list
 #        service_list = ServiceList().list
-        del self.service_list[self.service_name]
+        del self.protocol.service_list[self.service_name]
         self.protocol.log("info", "removed service: "+ self.service_name)
     
     def spawn_ROS_service(self, service_module, service_type, service_name, client_id):
