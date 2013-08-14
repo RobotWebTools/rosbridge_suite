@@ -38,6 +38,35 @@ class ServiceList():
         """ Delegate access to implementation """
         return setattr(self.__instance, attr, value)
 
+class RequestList():
+    """
+    Singleton class to hold lists of received requests in one 'global' object
+    """
+    class __impl:
+        """ Implementation of the singleton interface """
+        def spam(self):
+            """ Test method, return singleton id """
+            return id(self)
+
+    __instance = None
+    list = {}
+
+    def __init__(self):
+        """ Create singleton instance """
+        if RequestList.__instance is None:
+            RequestList.__instance = RequestList.__impl()
+            self.list = {}
+
+        self.__dict__['_RequestList__instance'] = RequestList.__instance
+
+    def __getattr__(self, attr):
+        """ Delegate access to implementation """
+        return getattr(self.__instance, attr)
+
+    def __setattr__(self, attr, value):
+        """ Delegate access to implementation """
+        return setattr(self.__instance, attr, value)
+
 
 class ReceivedResponses():
     """
@@ -87,7 +116,7 @@ class ROS_Service_Template( threading.Thread):
     ros_serviceproxy = None
 
     request_counter = 0
-    request_list = {}     # holds requests until they are answered (response successfully sent to ROS-client)
+
     response_list = ReceivedResponses().list    # holds service_responses until they are sent back to ROS-client
     protocol = None
 
@@ -133,8 +162,12 @@ class ROS_Service_Template( threading.Thread):
                                  }
                                     
         # add request to request_list
-        if request_id not in self.request_list.keys():
-            self.request_list[request_id] = request_message_object
+        if request_id not in self.protocol.request_list.keys():
+            # put information about request into request_list, we need this later to create a response instance with service-module and -type
+            self.protocol.request_list[request_id] = { "service_name" : self.service_name,
+                                                       "service_module" : self.service_module,
+                                                       "service_type" : self.service_type
+                                                     }
         # answer will be passed to client that requested service
         answer = None
         try:
@@ -157,7 +190,7 @@ class ROS_Service_Template( threading.Thread):
                 print "request timed out!"
                 answer = None
             # remove request from request_list
-            del self.request_list[request_id]
+            del self.protocol.request_list[request_id]
         # TODO: more detailed exception handling
         except Exception, e:
             print e
@@ -170,14 +203,14 @@ class ROS_Service_Template( threading.Thread):
         self.ros_serviceproxy.shutdown("reason: stop_service requested by providing client")
         # set answer for unfinished requests to None
         # --> response can be found, but will be the same as for failed/timed out requests..
-        for request_id in self.request_list.keys():
-            self.response_list[request_id] = None
+        for request_id in self.protocol.request_list.keys():
+            self.protocol.response_list[request_id] = None
         # wait for request_loops to run into finish_flags
-        while len(self.request_list) > 0:
+        while len(self.protocol.request_list) > 0:
             time.sleep(self.check_response_delay)
         # remove service from service_list
-        service_list = ServiceList().list
-        del service_list[self.service_name]
+#        service_list = ServiceList().list
+        del self.service_list[self.service_name]
         self.protocol.log("info", "removed service: "+ self.service_name)
     
     def spawn_ROS_service(self, service_module, service_type, service_name, client_id):
@@ -200,11 +233,14 @@ class AdvertiseService(Capability):
 
     opcode_advertise_service = "advertise_service"      # rosbridge-client -> rosbridge # register in protocol.py!
     service_list = ServiceList().list                   # links to singleton
+    request_list = RequestList().list     # holds requests until they are answered (response successfully sent to ROS-client)
 
     def __init__(self, protocol):
         self.protocol = protocol
         Capability.__init__(self, protocol)
         protocol.register_operation(self.opcode_advertise_service, self.advertise_service)
+        self.protocol.service_list = self.service_list
+        self.protocol.request_list = self.request_list
 
     def advertise_service(self, message):
         opcode = message["op"]
