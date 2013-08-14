@@ -32,12 +32,21 @@ class ServiceResponse(Capability):
         # convert the message into according response instance
         # then just put response into singleton list for responses.. the requesting process will find it there and clean up after delivery to client
 
+        # get information about the request with the same id as the incoming response
+        # ..this information gets written into "request_list" by advertise_service.py within "handle_service_request()"
+        request = self.protocol.request_list[message["request_id"]]
+
+        # get module and type
+        service_module = request["service_module"]
+        service_type = request["service_type"]
+
         ## Create a message instance
-        inst = ros_loader.get_service_response_instance(message["service_module"]+"/"+message["service_type"])
+        inst = ros_loader.get_service_response_instance(service_module+"/"+service_type)
         
         # Populate the instance, propagating any exceptions that may be thrown
         message_conversion.populate_instance(message["data"], inst)
-        
+
+        # add response instance to response_list
         self.response_list[message["request_id"]] = inst
 
 
