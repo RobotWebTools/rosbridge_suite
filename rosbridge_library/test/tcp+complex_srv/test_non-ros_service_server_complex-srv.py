@@ -23,7 +23,7 @@ rosbridge_ip = "localhost"                       # hostname or ip
 rosbridge_port = 9090                            # port as integer
 
 service_module = "rosbridge_library"         # make sure srv and msg files are available within specified module on rosbridge-server!
-service_type = "MirorCalculateTipfollowingTrajectoryTest"                       # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+service_type = "TestNestedService"           # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
 service_name = "nested_srv"                      # service name
 
 send_fragment_size = 1000
@@ -50,7 +50,7 @@ def calculate_service_response(request):
 #        if i% 100000 == 0:
 #            print count - i, "bytes left to generate"
 
-    message = {"snake_arm_config_trajectory": {"data": 42.0}}
+    message = {"data": {"data": 42.0}}
     
     """
     IMPORTANT!
