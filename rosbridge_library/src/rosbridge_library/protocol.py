@@ -118,6 +118,18 @@ class Protocol:
         # .. this causes Exceptions on "inner" closing brackets --> so I suppressed logging of deserialization errors
         except Exception, e:
 
+            # TODO: handling of partial/multiple/broken json data in incoming buffer
+            # this way is problematic when json contains nested json-objects ( e.g. { ... { "config": [0,1,2,3] } ...  } )
+            # .. if outer json is not fully received, stepping through opening brackets will find { "config" : ... } as a valid json object
+            # .. and pass this "inner" object to rosbridge and throw away the leading part of the "outer" object..
+            # solution for now:
+            # .. check for "op"-field. i can still imagine cases where a nested message ( e.g. complete service_response fits into the data field of a fragment..)
+            # .. would cause trouble, but if a response fits as a whole into a fragment, simply do not pack it into a fragment.
+            #
+            # --> from that follows current limitiation:
+            #     fragment data must NOT (!) contain a complete json-object that has an "op-field"
+            #
+            # an alternative solution would be to only check from first opening bracket and have a time out on data in input buffer.. (to handle broken data)
             opening_brackets = [i for i, letter in enumerate(self.buffer) if letter == '{']
             closing_brackets = [i for i, letter in enumerate(self.buffer) if letter == '}']
 
@@ -125,10 +137,11 @@ class Protocol:
                 for end in closing_brackets:
                     try:
                         msg = self.deserialize(self.buffer[start:end+1])
-                        # TODO: check if throwing away leading data like this is okay.. loops look okay..
-                        self.buffer = self.buffer[end+1:len(self.buffer)]
-                        # jump out of inner loop if json-decode succeeded
-                        break
+                        if msg.get("op",None) != None:
+                            # TODO: check if throwing away leading data like this is okay.. loops look okay..
+                            self.buffer = self.buffer[end+1:len(self.buffer)]
+                            # jump out of inner loop if json-decode succeeded
+                            break
                     except Exception,e:
                         # debug json-decode errors with this line
                         #print e
