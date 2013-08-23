@@ -16,7 +16,7 @@ client_id_seed = 0
 clients_connected = 0
 
 # Maximum length per socket_read for incoming data
-max_msg_length = 1024
+max_msg_length = 65536
 socket_timeout = 10     #seconds
 
 retry_startup_delay = 5 #seconds
@@ -103,6 +103,7 @@ if __name__ == "__main__":
             server = SocketServer.ThreadingTCPServer(("", port), RosbridgeTcpSocket)
 
             loginfo("Rosbridge TCP server started on port %d", port)
+            print max_msg_length
 
             server.serve_forever()
             loaded = True
