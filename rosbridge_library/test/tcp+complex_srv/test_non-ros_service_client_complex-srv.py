@@ -35,9 +35,8 @@ def request_service():
                                "service": "/"+service_name,                     # select service
                                "fragment_size": receiving_fragment_size,        # optional: tells rosbridge to send fragments if message size is bigger than requested
                                "message_intervall": receive_message_intervall,
-                               "args": { "snake_arm_tcp_trajectory": {"header": {"stamp": {"secs": 0, "nsecs": 0}, "frame_id": "", "seq": 0}, "poses": [{"position": {"y": 0.0, "x": 0.0, "z": 0.0}, "orientation": {"y": 0.0, "x": 0.0, "z": 0.0, "w": 0.0}}, {"position": {"y": 0.0, "x": 0.0, "z": 0.0}, "orientation": {"y": 0.0, "x": 0.0, "z": 0.0, "w": 0.0}}, {"position": {"y": 0.0, "x": 0.0, "z": 0.0}, "orientation": {"y": 0.0, "x": 0.0, "z": 0.0, "w": 0.0}}, {"position": {"y": 0.0, "x": 0.0, "z": 0.0}, "orientation": {"y": 0.0, "x": 0.0, "z": 0.0, "w": 0.0}}, {"position": {"y": 0.0, "x": 0.0, "z": 0.0}, "orientation": {"y": 0.0, "x": 0.0, "z": 0.0, "w": 0.0}}]}
+                               "args": { "pose": {"position": {"y": 0.0, "x": 0.0, "z": 0.0}, "orientation": {"y": 0.0, "x": 0.0, "z": 0.0, "w": 0.0}}}
                                         #"count" : request_byte_count           # count is the parameter for send_bytes as defined in srv-file (always put into args field!)
-                                        }
                               }
     service_request = json.dumps(service_request_object)
     print "sending JSON-message to rosbridge:", service_request

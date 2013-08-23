@@ -1,0 +1,5 @@
+#request definition
+geometry_msgs/Pose pose
+---
+#response definition
+std_msgs/Float64 data
