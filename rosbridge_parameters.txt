@@ -17,4 +17,3 @@ defragmentation.py:
 protocol.py:
 - default "delay_between_messages" if client does not set
 - default outgoing max_message_size (-> fragment_size, currently = None)
-
