@@ -21,7 +21,7 @@ rosbridge_ip = "localhost"                      # hostname or ip
 rosbridge_port = 9090                           # port as integer
 
 service_name = "send_bytes"                     # service name
-request_byte_count = 500000
+request_byte_count = 500000                   ## note: receiving more than ~100.000 bytes without setting a fragment_size was not possible during testing..
 receiving_fragment_size = 1000
 receive_message_intervall = 0.0
 

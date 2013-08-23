@@ -50,8 +50,16 @@ class Defragment(Capability, threading.Thread):
     opcode = "fragment"
     global received_fragments
 
+    protocol = None
+
     def __init__(self, protocol):
         Capability.__init__(self, protocol)
+
+        self.protocol = protocol
+
+        # populate parameters
+        if self.protocol.parameters != None:
+            self.fragment_timeout = self.protocol.parameters["fragment_timeout"]
 
         protocol.register_operation(self.opcode, self.defragment)
 

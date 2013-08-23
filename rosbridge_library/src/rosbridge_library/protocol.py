@@ -96,6 +96,10 @@ class Protocol:
         self.capabilities = []
         self.operations = {}
 
+        if self.parameters:
+            self.fragment_size = self.parameters["max_message_size"]
+            self.delay_between_messages = self.parameters["delay_between_messages"]
+
     # added default message_string="" to allow recalling incoming until buffer is empty without giving a parameter
     # --> allows to get rid of (..or minimize) delay between client-side sends
     def incoming(self, message_string=""):
@@ -172,6 +176,7 @@ class Protocol:
         #  maybe need to be improved to bind parameter values to specific operation.. 
         if "fragment_size" in msg.keys():
             self.fragment_size = msg["fragment_size"]
+            #print "fragment size set to:", self.fragment_size
         if "message_intervall" in msg.keys() and is_number(msg["message_intervall"]):
             self.delay_between_messages = msg["message_intervall"]
         if "png" in msg.keys():

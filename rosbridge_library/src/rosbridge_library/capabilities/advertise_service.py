@@ -135,7 +135,14 @@ class ROS_Service_Template( threading.Thread):
         self.service_type = service_type
         self.client_id = client_id
         self.client_callback = client_callback
-        
+
+        # populate parameters
+        if self.protocol.parameters != None:
+            self.service_request_timeout  = self.protocol.parameters["service_request_timeout"]
+            self.check_response_delay = self.protocol.parameters["check_response_delay"]
+            self.wait_for_busy_service_provider = self.protocol.parameters["wait_for_busy_service_provider"]
+            self.max_requests = self.protocol.parameters["max_service_requests"]
+
         self.spawn_ROS_service( service_module, service_type, service_name, client_id)
 
 
