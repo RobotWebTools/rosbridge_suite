@@ -9,11 +9,13 @@ catkin_package()
 
 install(PROGRAMS
   scripts/rosbridge_websocket
+  scripts/rosbridge_tcp
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 install(FILES
   launch/rosbridge_websocket.launch
+  launch/rosbridge_tcp.launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
 
