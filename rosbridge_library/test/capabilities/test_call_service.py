@@ -54,9 +54,28 @@ class TestCallService(unittest.TestCase):
 
         time.sleep(0.5)
 
+        self.assertEqual("true", received["msg"]["result"])
         for x, y in zip(ret.loggers, received["msg"]["values"]["loggers"]):
             self.assertEqual(x.name, y["name"])
             self.assertEqual(x.level, y["level"])
+
+    def test_call_service_fail(self):
+        proto = Protocol("test_call_service_fail")
+        s = CallService(proto)
+        send_msg = loads(dumps({"op": "call_service", "service": "/rosout/set_logger_level", "args": '["ros", "invalid"]'}))
+
+        received = {"msg": None}
+
+        def cb(msg, cid=None): 
+            received["msg"] = msg
+
+        proto.send = cb
+
+        s.call_service(send_msg)
+
+        time.sleep(0.5)
+
+        self.assertEqual("false", received["msg"]["result"])
 
 
 PKG = 'rosbridge_library'
