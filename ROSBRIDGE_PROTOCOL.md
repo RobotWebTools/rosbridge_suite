@@ -423,7 +423,8 @@ Calls a ROS service
 { "op": "service_response",
   (optional) "id": <string>,
   "service": <string>,
-  (optional) "values": <list<json>>
+  (optional) "values": <list<json>>,
+  "result": <boolean>
 }
 ```
 
@@ -434,6 +435,7 @@ A response to a ROS service call
     this field can be omitted (and will be by the rosbridge server)
  * **id** – if an ID was provided to the service request, then the service
     response will contain the ID
+ * **result** - return value of service callback. true means success, false failure.
 
 ## 4 Further considerations
 
