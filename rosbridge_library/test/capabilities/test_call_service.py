@@ -54,7 +54,7 @@ class TestCallService(unittest.TestCase):
 
         time.sleep(0.5)
 
-        self.assertEqual("true", received["msg"]["result"])
+        self.assertTrue(received["msg"]["result"])
         for x, y in zip(ret.loggers, received["msg"]["values"]["loggers"]):
             self.assertEqual(x.name, y["name"])
             self.assertEqual(x.level, y["level"])
@@ -75,7 +75,7 @@ class TestCallService(unittest.TestCase):
 
         time.sleep(0.5)
 
-        self.assertEqual("false", received["msg"]["result"])
+        self.assertFalse(received["msg"]["result"])
 
 
 PKG = 'rosbridge_library'
