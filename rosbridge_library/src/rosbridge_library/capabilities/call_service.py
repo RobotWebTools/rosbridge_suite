@@ -75,7 +75,7 @@ class CallService(Capability):
             "op": "service_response",
             "service": service,
             "values": message,
-            "result": "true"
+            "result": True
         }
         if cid is not None:
             outgoing_message["id"] = cid
@@ -89,7 +89,7 @@ class CallService(Capability):
         outgoing_message = {
             "op": "service_response",
             "service": service,
-            "result": "false"
+            "result": False
         }
         if cid is not None:
             outgoing_message["id"] = cid
