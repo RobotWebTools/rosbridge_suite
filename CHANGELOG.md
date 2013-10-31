@@ -1,4 +1,7 @@
 DEVEL
+ *
+
+2013-10-31 - **0.5.1**
  * Implement multiple subscriptions to latched topics (fixes #1) (RainCT)
  * more natural json for call service result (OTL)
  * Add service call fail handling (OTL)
