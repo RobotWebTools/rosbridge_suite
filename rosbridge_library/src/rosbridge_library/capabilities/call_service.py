@@ -89,6 +89,7 @@ class CallService(Capability):
         outgoing_message = {
             "op": "service_response",
             "service": service,
+            "values": str(exc),
             "result": False
         }
         if cid is not None:
