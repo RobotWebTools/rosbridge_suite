@@ -1,3 +1,36 @@
+# Software License Agreement (BSD License)
+#
+# Copyright (c) 2012, Willow Garage, Inc.
+# Copyright (c) 2013, PAL Robotics SL
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#  * Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above
+#    copyright notice, this list of conditions and the following
+#    disclaimer in the documentation and/or other materials provided
+#    with the distribution.
+#  * Neither the name of Willow Garage, Inc. nor the names of its
+#    contributors may be used to endorse or promote products derived
+#    from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
 from threading import Lock
 from rospy import Subscriber, logerr
 from rostopic import get_topic_type
@@ -92,6 +125,10 @@ class MultiSubscriber():
         """
         with self.lock:
             self.subscriptions[client_id] = callback
+            # If the topic is latched, add_callback will immediately invoke
+            # the given callback.
+            self.subscriber.impl.add_callback(self.callback, [callback])
+            self.subscriber.impl.remove_callback(self.callback, [callback])
 
     def unsubscribe(self, client_id):
         """ Unsubscribe the specified client from this subscriber
@@ -109,7 +146,7 @@ class MultiSubscriber():
             ret = len(self.subscriptions) != 0
             return ret
 
-    def callback(self, msg):
+    def callback(self, msg, callbacks=None):
         """ Callback for incoming messages on the rospy.Subscriber
 
         Converts the incoming msg to JSON, then passes the JSON to the
@@ -117,6 +154,7 @@ class MultiSubscriber():
 
         Keyword Arguments:
         msg - the ROS message coming from the subscriber
+        callbacks - subscriber callbacks to invoke
 
         """
         # Try to convert the msg to JSON
@@ -127,8 +165,9 @@ class MultiSubscriber():
             return
         
         # Get the callbacks to call
-        with self.lock:
-            callbacks = self.subscriptions.values()
+        if not callbacks:
+            with self.lock:
+                callbacks = self.subscriptions.values()
 
         # Pass the JSON to each of the callbacks
         for callback in callbacks:
@@ -185,3 +224,4 @@ class SubscriberManager():
 
 
 manager = SubscriberManager()
+
