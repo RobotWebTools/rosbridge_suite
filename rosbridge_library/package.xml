@@ -17,6 +17,7 @@
   <author email="jonathan.c.mace@gmail.com">Jonathan Mace</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>geometry_msgs</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>rosservice</build_depend>
   <build_depend>rostopic</build_depend>
