@@ -85,7 +85,8 @@ ROS operations:
   * **advertise** – advertise that you are publishing a topic
   * **unadvertise** – stop advertising that you are publishing topic publish - a published ROS-message
   * **subscribe** - a request to subscribe to a topic
-  * **unsubscribe** - a request to unsubscribe from a topic call_service - a service call
+  * **unsubscribe** - a request to unsubscribe from a topic
+  * **call_service** - a service call
   * **service_response** - a service response
 
 In general, actions or operations that the client takes (such as publishing and
