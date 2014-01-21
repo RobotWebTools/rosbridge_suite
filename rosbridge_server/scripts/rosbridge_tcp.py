@@ -131,18 +131,18 @@ if __name__ == "__main__":
 #TODO: check if ROS parameter server uses None string for 'None-value' or Null or something else, then change code accordingly
 
             # update parameters from parameter server or use default value ( second parameter of get_param )
-            port = get_param('/rosbridge/port', port)
-            host = get_param('/rosbridge/host', host)
-            incoming_buffer = get_param('/rosbridge/incoming_buffer', incoming_buffer)
-            socket_timeout = get_param('/rosbridge/socket_timeout', socket_timeout)
-            retry_startup_delay = get_param('/rosbridge/retry_startup_delay', retry_startup_delay)
-            service_request_timeout = get_param('/rosbridge/service_request_timeout', service_request_timeout)
-            check_response_delay = get_param('/rosbridge/check_response_delay', check_response_delay)
-            wait_for_busy_service_provider = get_param('/rosbridge/wait_for_busy_service_provider', wait_for_busy_service_provider)
-            max_service_requests = get_param('/rosbridge/max_service_requests', max_service_requests)
-            fragment_timeout = get_param('/rosbridge/fragment_timeout', fragment_timeout)
-            delay_between_messages = get_param('/rosbridge/delay_between_messages', delay_between_messages)
-            max_message_size = get_param('/rosbridge/max_message_size', max_message_size)
+            port = get_param('~port', port)
+            host = get_param('~host', host)
+            incoming_buffer = get_param('~incoming_buffer', incoming_buffer)
+            socket_timeout = get_param('~socket_timeout', socket_timeout)
+            retry_startup_delay = get_param('~retry_startup_delay', retry_startup_delay)
+            service_request_timeout = get_param('~service_request_timeout', service_request_timeout)
+            check_response_delay = get_param('~check_response_delay', check_response_delay)
+            wait_for_busy_service_provider = get_param('~wait_for_busy_service_provider', wait_for_busy_service_provider)
+            max_service_requests = get_param('~max_service_requests', max_service_requests)
+            fragment_timeout = get_param('~fragment_timeout', fragment_timeout)
+            delay_between_messages = get_param('~delay_between_messages', delay_between_messages)
+            max_message_size = get_param('~max_message_size', max_message_size)
             if max_message_size == "None":
                 max_message_size = None
 
