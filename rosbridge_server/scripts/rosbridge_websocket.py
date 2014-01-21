@@ -114,9 +114,8 @@ if __name__ == "__main__":
     keyfile = rospy.get_param('~keyfile', None)
     # if authentication should be used
     authenticate = rospy.get_param('~authenticate', False)
-    # the port to run on (TODO: move to ~port)
-    port = rospy.get_param('/rosbridge/port', 9090)
-    address = rospy.get_param('/rosbridge/address', "")
+    port = rospy.get_param('~port', 9090)
+    address = rospy.get_param('~address', "")
 
     if "--port" in sys.argv:
         idx = sys.argv.index("--port")+1
