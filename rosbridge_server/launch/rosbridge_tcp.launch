@@ -18,30 +18,42 @@
   <arg name="keyfile" />
   <arg name="authenticate" default="false" />
   
-  <param name="/rosbridge/port" value="$(arg port)"/>
-
-  <param name="/rosbridge/host" value="$(arg host)"/>
-  <param name="/rosbridge/incoming_buffer" value="$(arg incoming_buffer)"/>
-  <param name="/rosbridge/socket_timeout" value="$(arg socket_timeout)"/>
-  <param name="/rosbridge/retry_startup_delay" value="$(arg retry_startup_delay)"/>
-  <param name="/rosbridge/service_request_timeout" value="$(arg service_request_timeout)"/>
-  <param name="/rosbridge/check_response_delay" value="$(arg check_response_delay)"/>
-  <param name="/rosbridge/wait_for_busy_service_provider" value="$(arg wait_for_busy_service_provider)"/>
-  <param name="/rosbridge/max_service_requests" value="$(arg max_service_requests)"/>
-  <param name="/rosbridge/fragment_timeout" value="$(arg fragment_timeout)"/>
-  <param name="/rosbridge/delay_between_messages" value="$(arg delay_between_messages)"/>
-  <param name="/rosbridge/max_message_size" value="$(arg max_message_size)"/>
-
   <group if="$(arg ssl)">
     <node name="rosbridge_tcp" pkg="rosbridge_server" type="rosbridge_tcp" output="screen">
       <param name="certfile" value="$(arg certfile)" />
       <param name="keyfile" value="$(arg keyfile)" />
       <param name="authenticate" value="$(arg authenticate)" />
+
+      <param name="port" value="$(arg port)"/>
+      <param name="host" value="$(arg host)"/>
+      <param name="incoming_buffer" value="$(arg incoming_buffer)"/>
+      <param name="socket_timeout" value="$(arg socket_timeout)"/>
+      <param name="retry_startup_delay" value="$(arg retry_startup_delay)"/>
+      <param name="service_request_timeout" value="$(arg service_request_timeout)"/>
+      <param name="check_response_delay" value="$(arg check_response_delay)"/>
+      <param name="wait_for_busy_service_provider" value="$(arg wait_for_busy_service_provider)"/>
+      <param name="max_service_requests" value="$(arg max_service_requests)"/>
+      <param name="fragment_timeout" value="$(arg fragment_timeout)"/>
+      <param name="delay_between_messages" value="$(arg delay_between_messages)"/>
+      <param name="max_message_size" value="$(arg max_message_size)"/>
     </node>
   </group>
   <group unless="$(arg ssl)">
     <node name="rosbridge_tcp" pkg="rosbridge_server" type="rosbridge_tcp" output="screen">
       <param name="authenticate" value="$(arg authenticate)" />
+
+      <param name="port" value="$(arg port)"/>
+      <param name="host" value="$(arg host)"/>
+      <param name="incoming_buffer" value="$(arg incoming_buffer)"/>
+      <param name="socket_timeout" value="$(arg socket_timeout)"/>
+      <param name="retry_startup_delay" value="$(arg retry_startup_delay)"/>
+      <param name="service_request_timeout" value="$(arg service_request_timeout)"/>
+      <param name="check_response_delay" value="$(arg check_response_delay)"/>
+      <param name="wait_for_busy_service_provider" value="$(arg wait_for_busy_service_provider)"/>
+      <param name="max_service_requests" value="$(arg max_service_requests)"/>
+      <param name="fragment_timeout" value="$(arg fragment_timeout)"/>
+      <param name="delay_between_messages" value="$(arg delay_between_messages)"/>
+      <param name="max_message_size" value="$(arg max_message_size)"/>
     </node>
   </group>
   

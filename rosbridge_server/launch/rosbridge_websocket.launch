@@ -6,19 +6,20 @@
   <arg name="keyfile" />
   <arg name="authenticate" default="false" />
   
-  <param name="/rosbridge/port" value="$(arg port)"/>
-  <param name="/rosbridge/address" value="$(arg address)"/>
-  
   <group if="$(arg ssl)">
     <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket" output="screen">
       <param name="certfile" value="$(arg certfile)" />
       <param name="keyfile" value="$(arg keyfile)" />
       <param name="authenticate" value="$(arg authenticate)" />
+      <param name="port" value="$(arg port)"/>
+      <param name="address" value="$(arg address)"/>
     </node>
   </group>
   <group unless="$(arg ssl)">
     <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket" output="screen">
       <param name="authenticate" value="$(arg authenticate)" />
+      <param name="port" value="$(arg port)"/>
+      <param name="address" value="$(arg address)"/>
     </node>
   </group>
   
