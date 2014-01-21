@@ -1,3 +1,4 @@
+import time
 #!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
@@ -182,6 +183,7 @@ def _load_class(modname, subname, classname):
         roslib.launcher.load_manifest(modname)
     except Exception as exc:
         raise InvalidPackageException(modname, exc)
+
 
     try:
         pypkg = __import__('%s.%s' % (modname, subname))
