@@ -1,6 +1,7 @@
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2012, Willow Garage, Inc.
+# Copyright (c) 2014, Creativa 77 SRL
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,7 +45,7 @@ class Publish(Capability):
 
         # Register the operations that this capability provides
         protocol.register_operation("publish", self.publish)
-        
+
         # Save the topics that are published on for the purposes of unregistering
         self._published = {}
 
@@ -52,17 +53,18 @@ class Publish(Capability):
         # Do basic type checking
         self.basic_type_check(message, self.publish_msg_fields)
         topic = message["topic"]
+        latch = message.get("latch", False)
 
         # Register as a publishing client, propagating any exceptions
         client_id = self.protocol.client_id
-        manager.register(client_id, topic)
+        manager.register(client_id, topic, latch=latch)
         self._published[topic] = True
 
         # Get the message if one was provided
         msg = message.get("msg", {})
 
         # Publish the message
-        manager.publish(client_id, topic, msg)
+        manager.publish(client_id, topic, msg, latch=latch)
         
     def finish(self):
         client_id = self.protocol.client_id
