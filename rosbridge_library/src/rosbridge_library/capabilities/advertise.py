@@ -1,6 +1,7 @@
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2012, Willow Garage, Inc.
+# Copyright (c) 2014, Creativa 77 SRL
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -53,9 +54,9 @@ class Registration():
     def unregister(self):
         manager.unregister(self.client_id, self.topic)
 
-    def register_advertisement(self, msg_type, adv_id=None):
+    def register_advertisement(self, msg_type, adv_id=None, latch=False):
         # Register with the publisher manager, propagating any exception
-        manager.register(self.client_id, self.topic, msg_type)
+        manager.register(self.client_id, self.topic, msg_type, latch=latch)
 
         self.clients[adv_id] = True
 
@@ -88,10 +89,11 @@ class Advertise(Capability):
     def advertise(self, message):
         # Pull out the ID
         aid = message.get("id", None)
-        
+
         self.basic_type_check(message, self.advertise_msg_fields)
         topic = message["topic"]
         msg_type = message["type"]
+        latch = message.get("latch", False)
 
         # Create the Registration if one doesn't yet exist
         if not topic in self._registrations:
@@ -99,7 +101,7 @@ class Advertise(Capability):
             self._registrations[topic] = Registration(client_id, topic)
 
         # Register, propagating any exceptions
-        self._registrations[topic].register_advertisement(msg_type, aid)
+        self._registrations[topic].register_advertisement(msg_type, aid, latch)
 
     def unadvertise(self, message):
         # Pull out the ID

@@ -1,6 +1,7 @@
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2012, Willow Garage, Inc.
+# Copyright (c) 2014, Creativa 77 SRL
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,6 +35,7 @@ from time import time
 from copy import copy
 from threading import Lock
 from rospy import Publisher, SubscribeListener
+from rospy import logwarn
 from rostopic import get_topic_type
 from rosbridge_library.internal import ros_loader, message_conversion
 from rosbridge_library.internal.topics import TopicNotEstablishedException, TypeConflictException
@@ -120,13 +122,15 @@ class MultiPublisher():
     Provides an API to publish messages and register clients that are using
     this publisher """
 
-    def __init__(self, topic, msg_type=None):
+    def __init__(self, topic, msg_type=None, latched_client_id=None):
         """ Register a publisher on the specified topic.
 
         Keyword arguments:
         topic    -- the name of the topic to register the publisher to
         msg_type -- (optional) the type to register the publisher as.  If not
         provided, an attempt will be made to infer the topic type
+        latch    -- (optional) if a client requested this publisher to be latched,
+                    provide the client_id of that client here
 
         Throws:
         TopicNotEstablishedException -- if no msg_type was specified by the
@@ -157,9 +161,10 @@ class MultiPublisher():
 
         # Create the publisher and associated member variables
         self.clients = {}
+        self.latched_client_id = latched_client_id
         self.topic = topic
         self.msg_class = msg_class
-        self.publisher = Publisher(topic, msg_class)
+        self.publisher = Publisher(topic, msg_class, latch=(latched_client_id!=None))
         self.listener = PublisherConsistencyListener()
         self.listener.attach(self.publisher)
 
@@ -250,7 +255,7 @@ class PublisherManager():
     def __init__(self):
         self._publishers = {}
 
-    def register(self, client_id, topic, msg_type=None):
+    def register(self, client_id, topic, msg_type=None, latch=False):
         """ Register a publisher on the specified topic.
 
         Publishers are shared between clients, so a single MultiPublisher
@@ -260,6 +265,7 @@ class PublisherManager():
         client_id -- the ID of the client making this request
         topic     -- the name of the topic to publish on
         msg_type  -- (optional) the type to publish
+        latch     -- (optional) whether to make this publisher latched
 
         Throws:
         Exception -- exceptions are propagated from the MultiPublisher if
@@ -267,8 +273,18 @@ class PublisherManager():
         the publisher
 
         """
+        latched_client_id = client_id if latch else None
         if not topic in self._publishers:
-            self._publishers[topic] = MultiPublisher(topic, msg_type)
+            self._publishers[topic] = MultiPublisher(topic, msg_type, latched_client_id)
+        elif latch and self._publishers[topic].latched_client_id != client_id:
+            logwarn("Client ID %s attempted to register topic [%s] as latched " +
+                    "but this topic was previously registered." % (client_id, topic))
+            logwarn("Only a single registered latched publisher is supported at the time")
+        elif not latch and self._publishers[topic].latched_client_id:
+            logwarn("New non-latched publisher registration for topic [%s] which is " +
+                    "already registered as latched. but this topic was previously " +
+                    "registered." % topic)
+            logwarn("Only a single registered latched publisher is supported at the time")
 
         if msg_type is not None:
             self._publishers[topic].verify_type(msg_type)
@@ -304,7 +320,7 @@ class PublisherManager():
         for topic in self._publishers.keys():
             self.unregister(client_id, topic)
 
-    def publish(self, client_id, topic, msg):
+    def publish(self, client_id, topic, msg, latch=False):
         """ Publish a message on the given topic.
 
         Tries to create a publisher on the topic if one does not already exist.
@@ -313,6 +329,7 @@ class PublisherManager():
         client_id -- the ID of the client making this request
         topic     -- the topic to publish the message on
         msg       -- a JSON-like dict of fields and values
+        latch     -- (optional) whether to make this publisher latched
 
         Throws:
         Exception -- a variety of exceptions are propagated.  They can be
@@ -320,7 +337,7 @@ class PublisherManager():
         or if the provided msg does not map to the msg class of the publisher.
 
         """
-        self.register(client_id, topic)
+        self.register(client_id, topic, latch=latch)
 
         self._publishers[topic].publish(msg)
 
