@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>rosbridge_server</name>
-  <version>0.5.1</version>
+  <version>0.5.2</version>
   <description>A WebSocket interface to rosbridge.</description>
 
   <maintainer email="baalexander@gmail.com">Brandon Alexander</maintainer>

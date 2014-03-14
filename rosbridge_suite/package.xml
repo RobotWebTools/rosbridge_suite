@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>rosbridge_suite</name>
-  <version>0.5.1</version>
+  <version>0.5.2</version>
   <description>
     Rosbridge provides a JSON API to ROS functionality for non-ROS programs.
     There are a variety of front ends that interface with rosbridge, including

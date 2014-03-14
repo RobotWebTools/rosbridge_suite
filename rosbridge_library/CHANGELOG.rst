@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.2 (2014-03-14)
+------------------
 * First attempt adding latching support for topic publishers
 * merging changes of groovy-devel into hydro-devel
 * adding missing dependency in rosbridge_library `#70 <https://github.com/RobotWebTools/rosbridge_suite/issues/70>`_
