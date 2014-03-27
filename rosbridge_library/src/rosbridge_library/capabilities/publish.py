@@ -54,17 +54,18 @@ class Publish(Capability):
         self.basic_type_check(message, self.publish_msg_fields)
         topic = message["topic"]
         latch = message.get("latch", False)
+        queue_size = message.get("queue_size", 100)
 
         # Register as a publishing client, propagating any exceptions
         client_id = self.protocol.client_id
-        manager.register(client_id, topic, latch=latch)
+        manager.register(client_id, topic, latch=latch, queue_size=queue_size)
         self._published[topic] = True
 
         # Get the message if one was provided
         msg = message.get("msg", {})
 
         # Publish the message
-        manager.publish(client_id, topic, msg, latch=latch)
+        manager.publish(client_id, topic, msg, latch=latch, queue_size=queue_size)
         
     def finish(self):
         client_id = self.protocol.client_id
