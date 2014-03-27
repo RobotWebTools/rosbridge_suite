@@ -2,6 +2,11 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use queue_size for publishers
+* Contributors: Jon Binney
+
 0.5.2 (2014-03-14)
 ------------------
 * First attempt adding latching support for topic publishers
