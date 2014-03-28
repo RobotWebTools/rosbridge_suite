@@ -4,6 +4,45 @@ Changelog for package rosbridge_server
 
 Forthcoming
 -----------
+* update changelog
+* rosbridge_server: add install tag for python files, not just symlinks, to make them executable
+* added parameter lookup to rosbridge_tcp.py, modules where those are used, and default parameters to launch file; internal default-values still get used when launch-file does not provide them; internal defaults can be changed within rosbridge_tcp.py
+* increaing max_msg_length - still hardcoded
+* preparing pull request for upstream..
+* cleanup: files, notes, some code
+* cleanup tcp-server
+* added message_field <message_intervall> to allow client to control delay between messages from rosbridge
+* tested rosbridge_websocket with new capabilities; websocket test scripts not working yet..; but new caps are working when using rosbridge_websocket and tcp2ws wrapper --> so only testscripts need to be fixed for websockets.
+* feierabend.. morgen weiter mit server & client JSON-decoder, see notes
+* only current changes; not yet done..
+* code cleanup, not yet finished..; rosbridge logging much cleaner now
+* file extension for websocket server .py
+* ...
+* ...
+* fixed test_server_defragment - recodegit status
+* linuxonandroid
+* added extension to server script; + symlink
+* fixed some parts; ..still better do some redesign for queueing of messages..
+* forced tcp_send to use queue and use delay between sends
+* blocking behavior for service requests to non-ros; test-scripts use get-ip4 helper function; ..needs a lot cleanup before next steps..
+* message_size debugging; TODO: sort list of received fragments! ; make sure receive_buffers are big enough for fragment_size + header..
+* some code cleanup
+* some minor changes: comments, debug-output, ..
+* first working classes: service_server
+* added socket_timeout and exception-handling for clients that do not send any data at all but are listening only.
+* Catkin fixes for rosbridge TCP.
+* Catkinizes rosbridge_tcp.
+  Adds launch file too.
+* Clean up of Rosbridge TCP.
+* add rosbridge_server with tcp socket support
+* adapt rosbridge_tcp to groovy-devel structure
+* add rosbridge_server with tcp socket support
+* Removes trailing commas.
+* removing global bin installation in setup.py
+* Param bug fixed
+* SSL options added
+* Contributors: Brandon Alexander, Jihoon Lee, Russell Toris, dave, fxm-db, ipa-fxm, ipa-mig, root
+
 * rosbridge_server: add install tag for python files, not just symlinks, to make them executable
 * added parameter lookup to rosbridge_tcp.py, modules where those are used, and default parameters to launch file; internal default-values still get used when launch-file does not provide them; internal defaults can be changed within rosbridge_tcp.py
 * increaing max_msg_length - still hardcoded
