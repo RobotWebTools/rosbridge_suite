@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.5 (2014-03-28)
+------------------
 * update changelog
 * adding missing dependency in rosbridge_library `#70 <https://github.com/RobotWebTools/rosbridge_suite/issues/70>`_
 * support publishing non-ascii letters

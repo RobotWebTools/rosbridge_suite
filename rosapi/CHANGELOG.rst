@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.5 (2014-03-28)
+------------------
 * add missing dependency
 * update changelog
 * Removes trailing commas.
