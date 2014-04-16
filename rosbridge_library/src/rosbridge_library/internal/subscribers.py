@@ -161,7 +161,8 @@ class MultiSubscriber():
         json = None
         try:
             json = message_conversion.extract_values(msg)
-        except:
+        except Exception as exc:
+            logerr("Exception while converting messages in subscriber callback : %s", exc)
             return
         
         # Get the callbacks to call
