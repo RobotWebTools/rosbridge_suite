@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.4 (2014-04-17)
+------------------
 * removing wrong import
 * test case for fixed size of uint8 array
 * uses regular expresion to match uint8 array and char array.

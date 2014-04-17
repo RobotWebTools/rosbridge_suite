@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.4 (2014-04-17)
+------------------
 * add rosnode and rosgraph
 * Contributors: Jihoon Lee
 
