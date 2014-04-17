@@ -2,6 +2,14 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* removing wrong import
+* test case for fixed size of uint8 array
+* uses regular expresion to match uint8 array and char array.
+* logerr when it fails while message_conversion
+* Contributors: Jihoon Lee
+
 0.5.3 (2014-03-28)
 ------------------
 * use queue_size for publishers

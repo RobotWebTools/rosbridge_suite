@@ -2,6 +2,9 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.3 (2014-03-28)
 ------------------
 * rosbridge_server: add install tag for python files, not just symlinks, to make them executable
