@@ -39,8 +39,6 @@ from rosbridge_library.internal import ros_loader
 import re
 import string
 from base64 import standard_b64encode, standard_b64decode
-from rospy_message_converter import json_message_converter
-
 
 type_map = {
    "bool":    ["bool"],
