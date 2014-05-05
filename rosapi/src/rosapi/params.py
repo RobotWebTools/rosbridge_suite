@@ -31,14 +31,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import rospy
+import threading
 
 from json import loads, dumps
-from httplib import CannotSendRequest, ResponseNotReady
 
 
 """ Methods to interact with the param server.  Values have to be passed
 as JSON in order to facilitate dynamically typed SRV messages """
 
+# rospy parameter server isn't thread-safe
+param_server_lock = threading.RLock()
 
 def set_param(name, value):
     d = None
@@ -46,7 +48,8 @@ def set_param(name, value):
         d = loads(value)
     except ValueError:
         raise Exception("Due to the type flexibility of the ROS parameter server, the value argument to set_param must be a JSON-formatted string.")
-    rospy.set_param(name, d)
+    with param_server_lock:
+        rospy.set_param(name, d)
     
     
 def get_param(name, default):
@@ -57,26 +60,25 @@ def get_param(name, default):
         except ValueError:
             d = default
     
-    return dumps(get_param_obsessively(name, d))
-
-def get_param_obsessively(name, d):
-    # Workaround to a rospy bug
-    try:
-        return rospy.get_param(name, d)
-    except CannotSendRequest, ResponseNotReady:
-        return get_param_obsessively(name, d)
+    with param_server_lock:
+        value = rospy.get_param(name, d)
+    return dumps(value)
 
 def has_param(name):
-    return rospy.has_param(name)
+    with param_server_lock:
+        return rospy.has_param(name)
 
 
 def delete_param(name):
-    if has_param(name):
-        rospy.delete_param(name)
+    with param_server_lock:
+        if has_param(name):
+            rospy.delete_param(name)
         
         
 def search_param(name):
-    return rospy.search_param(name)
+    with param_server_lock:
+        return rospy.search_param(name)
 
 def get_param_names():
-    return rospy.get_param_names()
+    with param_server_lock:
+        return rospy.get_param_names()
