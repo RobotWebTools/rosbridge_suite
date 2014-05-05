@@ -63,7 +63,7 @@ def get_param_obsessively(name, d):
     # Workaround to a rospy bug
     try:
         return rospy.get_param(name, d)
-    except CannotSendRequest, ResponseNotReady:
+    except (CannotSendRequest, ResponseNotReady):
         return get_param_obsessively(name, d)
 
 def has_param(name):
