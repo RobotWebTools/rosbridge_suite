@@ -97,7 +97,7 @@ def args_to_service_request_instance(service, inst, args):
 def call_service(service, args=None):
     # Given the service name, fetch the type and class of the service,
     # and a request instance
-    service_type = get_service_type(service)
+    service_type = get_service_type(str(service))
     if service_type is None:
         raise InvalidServiceException(service)
     service_class = get_service_class(service_type)
