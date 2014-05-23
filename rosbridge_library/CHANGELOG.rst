@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.0 (2014-05-23)
+------------------
 * Ensure that service name is a string
   Closes `#104 <https://github.com/RobotWebTools/rosbridge_suite/issues/104>`_
 * Contributors: Piyush Khandelwal

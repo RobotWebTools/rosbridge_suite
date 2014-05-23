@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.0 (2014-05-23)
+------------------
 * Ensure proper locking for Parameter Server access
 * Contributors: Lasse Rasinen
 
