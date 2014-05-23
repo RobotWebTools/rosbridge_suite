@@ -1,6 +1,16 @@
 DEVEL
  *
 
+2014-03-14 - **0.5.2**
+ * Added error messages on result=False When call_service returns False as result, values contains the error message. (Pro)
+ * Specific IP adress binding using roslaunch (Steffel Fenix)
+ * support publishing non-ascii letters (furushchev)
+ * Fixed wrong unicode encoding (Pro)
+ * adding missing dependency in rosbridge_library (jihoonl)
+ * Decorated call_service item as list (nus)
+ * merging changes of groovy-devel into hydro-devel (jihoonl)
+ * First attempt adding latching support for topic publishers (adamantivm)
+
 2013-10-31 - **0.5.1**
  * Implement multiple subscriptions to latched topics (fixes #1) (RainCT)
  * more natural json for call service result (OTL)

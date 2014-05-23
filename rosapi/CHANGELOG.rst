@@ -2,6 +2,19 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.0 (2014-05-23)
+------------------
+* Ensure proper locking for Parameter Server access
+* Contributors: Lasse Rasinen
+
+0.5.4 (2014-04-17)
+------------------
+* add rosnode and rosgraph
+* Contributors: Jihoon Lee
+
+0.5.3 (2014-03-28)
+------------------
+
 0.5.2 (2014-03-14)
 ------------------
 

@@ -40,7 +40,6 @@ import re
 import string
 from base64 import standard_b64encode, standard_b64decode
 
-
 type_map = {
    "bool":    ["bool"],
    "int":     ["int8", "byte", "uint8", "char",
@@ -61,6 +60,8 @@ ros_primitive_types = ["bool", "byte", "char", "int8", "uint8", "int16",
 ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
 ros_binary_types = ["uint8[]", "char[]"]
 list_braces = re.compile(r'\[[^\]]*\]')
+ros_binary_types_list_braces = [("uint8[]", re.compile(r'uint8\[[^\]]*\]')), 
+                                ("char[]", re.compile(r'char\[[^\]]*\]'))]
 
 
 class InvalidMessageException(Exception):
@@ -96,8 +97,9 @@ def populate_instance(msg, inst):
 
 def _from_inst(inst, rostype):
     # Special case for uint8[], we base64 encode the string
-    if rostype in ros_binary_types:
-        return standard_b64encode(inst)
+    for binary_type, expression in ros_binary_types_list_braces:
+        if expression.sub(binary_type, rostype) in ros_binary_types:
+            return standard_b64encode(inst)
 
     # Check for time or duration
     if rostype in ros_time_types:
@@ -142,8 +144,9 @@ def _from_object_inst(inst, rostype):
 
 def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
     # Check if it's uint8[], and if it's a string, try to b64decode
-    if rostype in ros_binary_types:
-        return _to_binary_inst(msg)
+    for binary_type, expression in ros_binary_types_list_braces:
+        if expression.sub(binary_type, rostype) in ros_binary_types:
+            return _to_binary_inst(msg)
 
     # Check the type for time or rostime
     if rostype in ros_time_types:

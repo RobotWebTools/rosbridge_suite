@@ -247,6 +247,19 @@ class TestMessageConversion(unittest.TestCase):
             ret = test_int8_msg(rostype, b64str_int8s)
             self.assertEqual(ret, str_int8s)
 
+        for msgtype in ["TestUInt8FixedSizeArray16"]:
+            rostype = "rosbridge_library/" + msgtype
+
+            int8s = range(0, 16)
+            ret = test_int8_msg(rostype, int8s)
+            self.assertEqual(ret, str(bytearray(int8s)))
+
+            str_int8s = str(bytearray(int8s))
+
+            b64str_int8s = standard_b64encode(str_int8s)
+            ret = test_int8_msg(rostype, b64str_int8s)
+            self.assertEqual(ret, str_int8s)
+            
 
 PKG = 'rosbridge_library'
 NAME = 'test_message_conversion'

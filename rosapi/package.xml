@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>rosapi</name>
-  <version>0.5.5</version>
+  <version>0.6.0</version>
   <description>
     Provides service calls for getting ros meta-information, like list of
     topics, services, params, etc.
@@ -21,6 +21,8 @@
   <build_depend>message_generation</build_depend>
   <run_depend>rosbridge_library</run_depend>
   <run_depend>rospy</run_depend>
+  <run_depend>rosnode</run_depend>
+  <run_depend>rosgraph</run_depend>
   <run_depend>message_runtime</run_depend>
 
 </package>

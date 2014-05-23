@@ -2,6 +2,17 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.0 (2014-05-23)
+------------------
+
+0.5.4 (2014-04-17)
+------------------
+
+0.5.3 (2014-03-28)
+------------------
+* rosbridge_server: add install tag for python files, not just symlinks, to make them executable
+* Contributors: ipa-mig
+
 0.5.2 (2014-03-14)
 ------------------
 * move global param into local param to address issue `#25 <https://github.com/RobotWebTools/rosbridge_suite/issues/25>`_
