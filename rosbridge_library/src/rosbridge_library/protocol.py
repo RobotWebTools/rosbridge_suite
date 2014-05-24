@@ -172,7 +172,7 @@ class Protocol:
             self.log("error", "Unknown operation: %s.  Allowed operations: %s" % (op, self.operations.keys()), mid)
             return
         # this way a client can change/overwrite it's active values anytime by just including parameter field in any message sent to rosbridge
-        #  maybe need to be improved to bind parameter values to specific operation.. 
+        #  maybe need to be improved to bind parameter values to specific operation..
         if "fragment_size" in msg.keys():
             self.fragment_size = msg["fragment_size"]
             #print "fragment size set to:", self.fragment_size
@@ -180,7 +180,7 @@ class Protocol:
             self.delay_between_messages = msg["message_intervall"]
         if "png" in msg.keys():
             self.png = msg["msg"]
-        
+
         # now try to pass message to according operation
         try:
             self.operations[op](msg)
@@ -362,4 +362,3 @@ class Protocol:
             rospy.loginfo(stdout_formatted_msg)
         else:
             rospy.logdebug(stdout_formatted_msg)
-
