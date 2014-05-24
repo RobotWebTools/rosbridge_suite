@@ -33,11 +33,8 @@
 import rospy
 import time
 
-class InvalidArgumentException(Exception):
-    pass
-
-class MissingArgumentException(Exception):
-    pass
+from rosbridge_library.internal.exceptions import InvalidArgumentException
+from rosbridge_library.internal.exceptions import MissingArgumentException
 
 #from rosbridge_library.internal.pngcompression import encode
 from rosbridge_library.capabilities.fragmentation import Fragmentation
@@ -84,6 +81,8 @@ class Protocol:
     # !! this might be related to (or even be avoided by using) throttle_rate !!
     delay_between_messages = 0.01
     request_list = None
+
+    parameters = None
 
     def __init__(self, client_id):
         """ Keyword arguments:
