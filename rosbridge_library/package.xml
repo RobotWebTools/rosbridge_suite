@@ -38,4 +38,8 @@
   <run_depend>message_runtime</run_depend>
 <!--  <test_depend>roscpp</test_depend>-->
 
+  <test_depend>trajectory_msgs</test_depend>
+  <test_depend>tf2_msgs</test_depend>
+  <test_depend>diagnostic_msgs</test_depend>
+  <test_depend>visualization_msgs</test_depend>
 </package>
