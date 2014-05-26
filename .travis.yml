@@ -17,7 +17,7 @@ install:
   - sudo apt-get update -qq
   - sudo apt-get install python-catkin-pkg python-rosdep ros-groovy-catkin ros-hydro-catkin -qq
   - sudo rosdep init
-  - rosdep update 
+  - rosdep update
   - mkdir -p /tmp/ws/src
   - ln -s `pwd` /tmp/ws/src/package
   - cd /tmp/ws
@@ -29,6 +29,12 @@ script:
   - catkin_make
   - catkin_make install
   - rm -rf build/ install/ devel/
+  - sudo apt-get install ros-groovy-rostest
+  - sudo apt-get install ros-hydro-rostest
   - source /opt/ros/hydro/setup.bash
   - catkin_make
   - catkin_make install
+  - source devel/setup.bash
+  - export ROS_MASTER_URI=http://localhost:11311
+  - export ROS_HOSTNAME=localhost
+  - rostest rosbridge_library test_all.test

@@ -170,8 +170,7 @@ class MultiPublisher():
 
     def unregister(self):
         """ Unregisters the publisher and clears the clients """
-        # Rospy's unregister is unreliable.
-        # self.publisher.unregister()
+        self.publisher.unregister()
         self.clients.clear()
 
     def verify_type(self, msg_type):
