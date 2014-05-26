@@ -206,8 +206,14 @@ class TestMessageHandlers(unittest.TestCase):
             handler = handler.set_throttle_rate(throttle_rate)
             handler.publish = cb
             x = 0
+            time_padding = 0.01
             for i in range(1, 10):
-                fin = time.time() + throttle_rate / 1000.0
+                # We guarantee that in the while loop below only the first message is handled
+                # All subsequent messages (within throttling window - time_padding ) are dropped
+                # Time padding is a test-only hack around race condition when time.time() - fin is within
+                # the throttling window, but handler.handle_message(x) gets a later timestamp that is outside.
+                time.sleep(2*time_padding)
+                fin = time.time() + throttle_rate / 1000.0 - time_padding
                 while time.time() < fin:
                     handler.handle_message(x)
                     x = x + 1
@@ -324,4 +330,3 @@ PKG = 'rosbridge_library'
 NAME = 'test_message_handlers'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestMessageHandlers)
-
