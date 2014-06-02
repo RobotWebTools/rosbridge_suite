@@ -36,6 +36,7 @@ import rospy
 
 from rosbridge_library.internal import ros_loader
 
+import math
 import re
 import string
 from base64 import standard_b64encode, standard_b64decode
@@ -107,6 +108,10 @@ def _from_inst(inst, rostype):
 
     # Check for primitive types
     if rostype in ros_primitive_types:
+       #JSON does not support Inf and NaN. They are mapped to 0.
+       if rostype in ["float32", "float64"]:
+          if math.isnan(inst) or math.isinf(inst):
+             return 0
         return inst
 
     # Check if it's a list or tuple
@@ -126,7 +131,7 @@ def _from_list_inst(inst, rostype):
     rostype = list_braces.sub("", rostype)
     
     # Shortcut for primitives
-    if rostype in ros_primitive_types:
+    if rostype in ros_primitive_types and not rostype in ["float32", "float64"]:
         return list(inst)
 
     # Call to _to_inst for every element of the list
