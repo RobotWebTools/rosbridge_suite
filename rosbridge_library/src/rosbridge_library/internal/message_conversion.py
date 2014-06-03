@@ -108,10 +108,10 @@ def _from_inst(inst, rostype):
 
     # Check for primitive types
     if rostype in ros_primitive_types:
-       #JSON does not support Inf and NaN. They are mapped to 0.
-       if rostype in ["float32", "float64"]:
-          if math.isnan(inst) or math.isinf(inst):
-             return 0
+        #JSON does not support Inf and NaN. They are mapped to 0.
+        if rostype in ["float32", "float64"]:
+            if math.isnan(inst) or math.isinf(inst):
+                return 0
         return inst
 
     # Check if it's a list or tuple
