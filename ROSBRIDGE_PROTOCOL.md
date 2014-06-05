@@ -281,8 +281,8 @@ the advertise command.
      type, then the topic will be established with this type.
    * If the topic already exists with a different type, an error status message
      is sent and this message is dropped.
-   * If the topic already exists with the same type, a warning status message
-     is sent and this message is dropped.
+   * If the topic already exists with the same type, the sender of this message
+     is registered as another publisher.
    * If the topic doesnt already exist but the type cannot be resolved, then an
      error status message is sent and this message is dropped.
 
@@ -301,6 +301,8 @@ This stops advertising that you are publishing a topic.
 
    * If the topic does not exist, a warning status message is sent and this
      message is dropped
+   * If the topic exists and there are still clients left advertising it,
+     rosbridge will continue to advertise it until all of them have unadvertised
    * If the topic exists but rosbridge is not advertising it, a warning status
      message is sent and this message is dropped
 
