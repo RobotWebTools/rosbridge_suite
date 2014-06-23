@@ -30,7 +30,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import Image
+from PIL import Image
 from base64 import standard_b64encode, standard_b64decode
 from StringIO import StringIO
 from math import floor, ceil, sqrt
