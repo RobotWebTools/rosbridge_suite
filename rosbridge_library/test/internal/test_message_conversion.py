@@ -90,6 +90,13 @@ class TestMessageConversion(unittest.TestCase):
             for rostype in ["float32", "float64"]:
                 self.assertEqual(c._to_primitive_inst(msg, rostype, rostype, []), msg)
                 self.assertEqual(c._to_inst(msg, rostype, rostype), msg)
+                c._to_inst(msg, rostype, rostype)
+
+    def test_float_special_cases(self):
+        for msg in [1e9999999, -1e9999999, float('nan')]:
+            for rostype in ["float32", "float64"]:
+                self.assertEqual(c._from_inst(msg, rostype), None)
+                self.assertEqual(dumps({"data":c._from_inst(msg, rostype)}), "{\"data\": null}")
 
     def test_signed_int_base_msgs(self):
         int8s = range(-127, 128)
@@ -259,10 +266,9 @@ class TestMessageConversion(unittest.TestCase):
             b64str_int8s = standard_b64encode(str_int8s)
             ret = test_int8_msg(rostype, b64str_int8s)
             self.assertEqual(ret, str_int8s)
-            
+
 
 PKG = 'rosbridge_library'
 NAME = 'test_message_conversion'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestMessageConversion)
-
