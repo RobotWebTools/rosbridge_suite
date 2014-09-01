@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.1 (2014-09-01)
+------------------
 * make rosapis use absolute namespace
 * Contributors: Jihoon Lee
 

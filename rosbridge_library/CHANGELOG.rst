@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.1 (2014-09-01)
+------------------
 * Handle float infinity and NAN s
 * Windows-related fix for PIL Image module import
 * Fixed typo in raising type errors.
