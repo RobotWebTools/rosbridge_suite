@@ -2,6 +2,33 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.1 (2014-09-01)
+------------------
+* Handle float infinity and NAN s
+* Windows-related fix for PIL Image module import
+* Fixed typo in raising type errors.
+* something messed up indentation
+  not sure how that could happen, worked here.
+* map Inf and NaN to null
+  JSON does not support Inf and NaN values. Currently they are just written into the JSON and JSON.parse on the client side will fail. Correct is to map them to null which will then be parsed correctly by JSON.parse on the client side.
+  The issue with that is that the shortcut for lists of floats might be impossible (maybe someone else with more experience in python comes up with something else?). Maybe something similar is necessary in the to_inst case, but I can not really test them.
+  Real world application is to process laser scans, they contain inf and nan values for some drivers if the measurements are invalid or out of range.
+* Update .travis.yml and package.xml for rosbridge_library tests
+* Put back unregister for the publisher and clarify the reconnect behavior
+  of the test case. The exponential backoff of the client causes hard to
+  understand timing of the events.
+  All specs passed locally on hydro:
+  SUMMARY
+  * RESULT: SUCCESS
+  * TESTS: 103
+  * ERRORS: 0
+  * FAILURES: 0
+* Add copyright notice to the file
+* Remove extra whitespace
+* Make the test more deterministic
+* Remove circular dependency.
+* Contributors: Achim Königs, Alex Sorokin, Alexander Sorokin, Jonathan Wade, jon-weisz
+
 0.6.0 (2014-05-23)
 ------------------
 * Ensure that service name is a string

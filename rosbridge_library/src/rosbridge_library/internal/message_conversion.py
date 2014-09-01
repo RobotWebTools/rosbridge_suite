@@ -36,6 +36,7 @@ import rospy
 
 from rosbridge_library.internal import ros_loader
 
+import math
 import re
 import string
 from base64 import standard_b64encode, standard_b64decode
@@ -60,7 +61,7 @@ ros_primitive_types = ["bool", "byte", "char", "int8", "uint8", "int16",
 ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
 ros_binary_types = ["uint8[]", "char[]"]
 list_braces = re.compile(r'\[[^\]]*\]')
-ros_binary_types_list_braces = [("uint8[]", re.compile(r'uint8\[[^\]]*\]')), 
+ros_binary_types_list_braces = [("uint8[]", re.compile(r'uint8\[[^\]]*\]')),
                                 ("char[]", re.compile(r'char\[[^\]]*\]'))]
 
 
@@ -107,6 +108,10 @@ def _from_inst(inst, rostype):
 
     # Check for primitive types
     if rostype in ros_primitive_types:
+        #JSON does not support Inf and NaN. They are mapped to None and encoded as null.
+        if rostype in ["float32", "float64"]:
+            if math.isnan(inst) or math.isinf(inst):
+                return None
         return inst
 
     # Check if it's a list or tuple
@@ -124,9 +129,9 @@ def _from_list_inst(inst, rostype):
 
     # Remove the list indicators from the rostype
     rostype = list_braces.sub("", rostype)
-    
+
     # Shortcut for primitives
-    if rostype in ros_primitive_types:
+    if rostype in ros_primitive_types and not rostype in ["float32", "float64"]:
         return list(inst)
 
     # Call to _to_inst for every element of the list
