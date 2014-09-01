@@ -2,6 +2,11 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* make rosapis use absolute namespace
+* Contributors: Jihoon Lee
+
 0.6.0 (2014-05-23)
 ------------------
 * Ensure proper locking for Parameter Server access
