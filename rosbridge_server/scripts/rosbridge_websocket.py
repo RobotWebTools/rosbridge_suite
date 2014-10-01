@@ -105,6 +105,9 @@ class RosbridgeWebSocket(WebSocketHandler):
     def send_message(self, message):
         IOLoop.instance().add_callback(partial(self.write_message, message))
 
+    def check_origin(self, origin):
+        return True
+
 if __name__ == "__main__":
     rospy.init_node("rosbridge_websocket")
     signal(SIGINT, SIG_DFL)
