@@ -24,7 +24,6 @@ install:
   - rosdep install --from-paths src --ignore-src --rosdistro hydro -y
 
 script:
-  - source /opt/ros/groovy/setup.bash
   - source /opt/ros/hydro/setup.bash
   - catkin_make
   - catkin_make install
