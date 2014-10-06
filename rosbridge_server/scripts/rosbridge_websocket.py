@@ -32,7 +32,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import rospy
-import json
+import sys
 
 from rosauth.srv import Authentication
 
@@ -44,8 +44,7 @@ from tornado.web import Application
 from tornado.websocket import WebSocketHandler
 
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-
-import sys
+from rosbridge_library.util import json
 
 # Global ID seed for clients
 client_id_seed = 0
@@ -104,6 +103,9 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     def send_message(self, message):
         IOLoop.instance().add_callback(partial(self.write_message, message))
+
+    def check_origin(self, origin):
+        return True
 
 if __name__ == "__main__":
     rospy.init_node("rosbridge_websocket")

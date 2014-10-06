@@ -2,6 +2,18 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.2 (2014-10-06)
+------------------
+* Merge pull request #125 from megawac/json
+  Remove unused imports; move json imports to utility
+* override to enable support for allowing alternate origins
+  To accept all cross-origin traffic (which was the default prior to Tornado 4.0), simply override this method to always return true.
+* import backports.ssl_match_hostname 3.4.0.2
+* upgrade tornado to 4.0.2
+* Remove unused json imports; move json imports to utility
+  Fixes #7
+* Contributors: Graeme Yeates, Ramon Wijnands, Russell Toris
+
 0.6.1 (2014-09-01)
 ------------------
 

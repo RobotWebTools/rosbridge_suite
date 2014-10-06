@@ -2,6 +2,12 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.2 (2014-10-06)
+------------------
+* Remove unused json imports; move json imports to utility
+  Fixes #7
+* Contributors: Graeme Yeates
+
 0.6.1 (2014-09-01)
 ------------------
 * Handle float infinity and NAN s

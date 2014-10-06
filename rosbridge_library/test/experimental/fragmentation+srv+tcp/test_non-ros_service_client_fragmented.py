@@ -1,12 +1,6 @@
 #!/usr/bin/python
 import socket
-try:
-    import ujson as json
-except ImportError:
-    try:
-        import simplejson as json
-    except ImportError:
-        import json
+from rosbridge_library.util import json
 
 
 

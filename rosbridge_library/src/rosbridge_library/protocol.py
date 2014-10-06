@@ -38,15 +38,7 @@ from rosbridge_library.internal.exceptions import MissingArgumentException
 
 #from rosbridge_library.internal.pngcompression import encode
 from rosbridge_library.capabilities.fragmentation import Fragmentation
-
-# try to import json-lib: 1st try usjon, 2nd try simplejson, else import standard python json
-try:
-    import ujson as json
-except ImportError:
-    try:
-        import simplejson as json
-    except ImportError:
-        import json
+from rosbridge_library.util import json
 
 
 def is_number(s):
