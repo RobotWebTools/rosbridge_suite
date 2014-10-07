@@ -70,7 +70,7 @@ class MessageHandler():
         self.publish(msg)
 
     def transition(self):
-        if self.throttle_rate == 0:
+        if self.throttle_rate == 0 and self.queue_length == 0:
             return self
         elif self.queue_length == 0:
             return ThrottleMessageHandler(self)
@@ -88,7 +88,7 @@ class ThrottleMessageHandler(MessageHandler):
             MessageHandler.handle_message(self, msg)
 
     def transition(self):
-        if self.throttle_rate == 0:
+        if self.throttle_rate == 0 and self.queue_length == 0:
             return MessageHandler(self)
         elif self.queue_length == 0:
             return self
@@ -120,7 +120,7 @@ class QueueMessageHandler(MessageHandler, Thread):
                 self.c.notify()
 
     def transition(self):
-        if self.throttle_rate == 0:
+        if self.throttle_rate == 0 and self.queue_length == 0:
             self.finish()
             return MessageHandler(self)
         elif self.queue_length == 0:
