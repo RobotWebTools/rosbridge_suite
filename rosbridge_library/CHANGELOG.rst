@@ -2,6 +2,11 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.3 (2014-10-07)
+------------------
+* install util python module to fix `#128 <https://github.com/RobotWebTools/rosbridge_suite/issues/128>`_
+* Contributors: Jihoon Lee
+
 0.6.2 (2014-10-06)
 ------------------
 * Remove unused json imports; move json imports to utility
