@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.4 (2014-10-08)
+------------------
 * add backports to setup.py, so backports.ssl_match_hostname can be properly resolved
 * Contributors: Nils Berg
 
