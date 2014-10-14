@@ -22,8 +22,8 @@ install:
   - ln -s `pwd` /tmp/ws/src/package
   - cd /tmp/ws
   - rosdep install --from-paths src --ignore-src --rosdistro hydro -y
-
-script:
+  - sudo pip install ujson
+before_script:
   - source /opt/ros/hydro/setup.bash
   - catkin_make
   - catkin_make install
@@ -31,4 +31,7 @@ script:
   - source devel/setup.bash
   - export ROS_MASTER_URI=http://localhost:11311
   - export ROS_HOSTNAME=localhost
+script:
+  - rostest rosbridge_library test_all.test
+  - sudo pip uninstall ujson -y -q
   - rostest rosbridge_library test_all.test
