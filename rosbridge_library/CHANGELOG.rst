@@ -10,6 +10,19 @@ Changelog for package rosbridge_library
 * install util python module to fix `#128 <https://github.com/RobotWebTools/rosbridge_suite/issues/128>`_
 * Contributors: Jihoon Lee
 
+0.6.5 (2014-10-14)
+------------------
+* 0.6.4
+* update changelog
+* modify tests
+  less duplicated code, some other changes to (hopefully) improve reliability. Tested locally about 30 times without encountering any failures.
+* Change the behavior of MessageHandler.transition()
+  Now reflects usage in the tests, i.e. a QueueMessageHandler only needs queue_length to be defined, not throttle_rate.
+* 0.6.3
+* update change log
+* install util python module to fix #128
+* Contributors: Jihoon Lee, Nils Berg
+
 0.6.2 (2014-10-06)
 ------------------
 * Remove unused json imports; move json imports to utility

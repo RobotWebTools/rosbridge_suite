@@ -10,6 +10,15 @@ Changelog for package rosbridge_server
 0.6.3 (2014-10-07)
 ------------------
 
+0.6.5 (2014-10-14)
+------------------
+* 0.6.4
+* update changelog
+* add backports to setup.py, so backports.ssl_match_hostname can be properly resolved
+* 0.6.3
+* update change log
+* Contributors: Jihoon Lee, Nils Berg
+
 0.6.2 (2014-10-06)
 ------------------
 * Merge pull request #125 from megawac/json

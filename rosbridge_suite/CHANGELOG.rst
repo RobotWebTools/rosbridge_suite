@@ -8,6 +8,14 @@ Changelog for package rosbridge_suite
 0.6.3 (2014-10-07)
 ------------------
 
+0.6.5 (2014-10-14)
+------------------
+* 0.6.4
+* update changelog
+* 0.6.3
+* update change log
+* Contributors: Jihoon Lee
+
 0.6.2 (2014-10-06)
 ------------------
 
