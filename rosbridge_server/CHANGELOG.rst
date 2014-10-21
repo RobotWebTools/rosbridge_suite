@@ -10,6 +10,12 @@ Changelog for package rosbridge_server
 0.6.3 (2014-10-07)
 ------------------
 
+0.6.6 (2014-10-21)
+------------------
+* Install Tornado via rosdep
+  Use python-tornado-pip to make sure we get the speedups introduced in Tornado 3.2.
+* Contributors: Matt Vollrath
+
 0.6.5 (2014-10-14)
 ------------------
 * 0.6.4
