@@ -10,6 +10,9 @@ Changelog for package rosbridge_library
 * install util python module to fix `#128 <https://github.com/RobotWebTools/rosbridge_suite/issues/128>`_
 * Contributors: Jihoon Lee
 
+0.6.6 (2014-10-21)
+------------------
+
 0.6.5 (2014-10-14)
 ------------------
 * 0.6.4
