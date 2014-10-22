@@ -2,6 +2,11 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.7 (2014-10-22)
+------------------
+* updated package manifests
+* Contributors: Russell Toris
+
 0.6.6 (2014-10-21)
 ------------------
 
