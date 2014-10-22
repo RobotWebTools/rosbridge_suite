@@ -2,11 +2,10 @@
 Changelog for package rosbridge_suite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.6.4 (2014-10-08)
+0.6.7 (2014-10-22)
 ------------------
-
-0.6.3 (2014-10-07)
-------------------
+* updated package manifests
+* Contributors: Russell Toris
 
 0.6.6 (2014-10-21)
 ------------------
@@ -18,6 +17,12 @@ Changelog for package rosbridge_suite
 * 0.6.3
 * update change log
 * Contributors: Jihoon Lee
+
+0.6.4 (2014-10-08)
+------------------
+
+0.6.3 (2014-10-07)
+------------------
 
 0.6.2 (2014-10-06)
 ------------------

@@ -1,27 +1,27 @@
 <?xml version="1.0"?>
 <package>
   <name>rosbridge_server</name>
-  <version>0.6.6</version>
+  <version>0.6.7</version>
   <description>A WebSocket interface to rosbridge.</description>
-
-  <maintainer email="baalexander@gmail.com">Brandon Alexander</maintainer>
 
   <license>BSD</license>
 
-  <url type="website">https://github.com/RobotWebTools/rosbridge_suite</url>
+  <url type="website">http://ros.org/wiki/rosbridge_server</url>
+  <url type="bugtracker">https://github.com/RobotWebTools/rosbridge_suite/issues</url>
+  <url type="repository">https://github.com/RobotWebTools/rosbridge_suite</url>
 
   <author email="jonathan.c.mace@gmail.com">Jonathan Mace</author>
+  <maintainer email="rctoris@wpi.edu">Russell Toris</maintainer>
+  <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rosbridge_library</build_depend>
   <build_depend>rosapi</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>python-imaging</build_depend>
-  <build_depend>python-tornado-pip</build_depend>
   <run_depend>rosbridge_library</run_depend>
   <run_depend>rosapi</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>python-imaging</run_depend>
   <run_depend>rosauth</run_depend>
-  <run_depend>python-tornado-pip</run_depend>
 </package>
