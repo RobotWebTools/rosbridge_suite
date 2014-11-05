@@ -2,6 +2,12 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.8 (2014-11-05)
+------------------
+* add a lock to calls to load_manifest - apparently, it's not thread safe
+  fixes #103 and #108
+* Contributors: Nils Berg
+
 0.6.7 (2014-10-22)
 ------------------
 * updated package manifests
