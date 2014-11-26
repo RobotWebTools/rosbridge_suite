@@ -148,7 +148,7 @@ class ROS_Service_Template( threading.Thread):
         # stay in this loop until (this) instance is not waiting for response for an "old" request
         # (.. probably not best solution so far)
         while not self.spawned or self.busy:
-            # if stop_service was called.. 
+            # if unadvertise_service was called..
             if self.finish_flag:
                 # kill unsent requests to that service
                 return None
@@ -182,7 +182,7 @@ class ROS_Service_Template( threading.Thread):
             begin = datetime.now()
             duration = datetime.now() - begin
             # wait for service response by checking response_list
-            # ..if stop_service was called.. stop waiting for response
+            # ..if unadvertise_service was called.. stop waiting for response
             while not self.finish_flag and request_id not in self.response_list.keys() and duration.total_seconds() < self.service_request_timeout:
                 time.sleep(self.check_response_delay)
                 duration = datetime.now() - begin
@@ -206,7 +206,7 @@ class ROS_Service_Template( threading.Thread):
     def stop_ROS_service(self):
         self.spawned = False
         self.finish_flag = True
-        self.ros_serviceproxy.shutdown("reason: stop_service requested by providing client")
+        self.ros_serviceproxy.shutdown("reason: unadvertise_service requested by providing client")
         # set answer for unfinished requests to None
         # --> response can be found, but will be the same as for failed/timed out requests..
         for request_id in self.protocol.request_list.keys():

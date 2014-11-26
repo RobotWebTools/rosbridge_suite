@@ -87,7 +87,7 @@ def advertise_service():                                                        
     tcp_socket.send(str(advertise_message))
 
 def unadvertise_service():                                                      # unadvertise service
-    unadvertise_message_object = {"op":"stop_service",                           
+    unadvertise_message_object = {"op":"unadvertise_service",
                                   "service": service_name
                                  }
     unadvertise_message = json.dumps(unadvertise_message_object)                   

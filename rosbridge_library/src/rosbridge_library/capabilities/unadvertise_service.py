@@ -2,8 +2,8 @@ from rosbridge_library.capability import Capability
 from advertise_service import ServiceList
 
 
-class StopService(Capability):
-    opcode_unadvertise_service = "stop_service"
+class UnadvertiseService(Capability):
+    opcode_unadvertise_service = "unadvertise_service"
 
     service_list = ServiceList().list
 
