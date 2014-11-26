@@ -172,7 +172,7 @@ class ROS_Service_Template( threading.Thread):
         if request_id not in self.protocol.request_list.keys():
             # put information about request into request_list, we need this later to create a response instance with service-module and -type
             self.protocol.request_list[request_id] = { "service_name" : self.service_name,
-                                                       "service_type" : self.service_type
+                                                       "type" : self.service_type
                                                      }
         # answer will be passed to client that requested service
         answer = None
@@ -249,7 +249,7 @@ class AdvertiseService(Capability):
         self.protocol.request_list = self.request_list
 
     def advertise_service(self, message):
-        service_type = message["service_type"]
+        service_type = message["type"]
         service_name = message["service_name"]
         client_id = self.protocol.client_id
         client_callback = self.protocol.send

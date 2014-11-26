@@ -78,7 +78,7 @@ def connect_tcp_socket():
 
 def advertise_service():                                                        # advertise service
     advertise_message_object = {"op":"advertise_service",
-                                "service_type": service_type,
+                                "type": service_type,
                                 "service_name": service_name,
                                 "fragment_size": receive_fragment_size,
                                 "message_intervall": receive_message_intervall

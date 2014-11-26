@@ -26,8 +26,8 @@ class ServiceResponse(Capability):
         # ..this information gets written into "request_list" by advertise_service.py within "handle_service_request()"
         request = self.protocol.request_list[message["id"]]
 
-        # get module and type
-        service_type = request["service_type"]
+        # get the type
+        service_type = request["type"]
 
         ## Create a message instance
         inst = ros_loader.get_service_response_instance(service_type)
