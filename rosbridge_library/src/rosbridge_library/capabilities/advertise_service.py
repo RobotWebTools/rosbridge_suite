@@ -108,7 +108,6 @@ class ROS_Service_Template( threading.Thread):
 
     service_name = None
     service_node_name = None
-    service_module = None
     service_type = None
     client_callback = None
 
@@ -126,12 +125,11 @@ class ROS_Service_Template( threading.Thread):
     busy = False
     spawned = False
 
-    def __init__(self, client_callback, service_module, service_type, service_name, client_id, protocol):
+    def __init__(self, client_callback, service_type, service_name, client_id, protocol):
         threading.Thread.__init__(self)
 
         self.protocol = protocol
         self.service_name = service_name
-        self.service_module = service_module
         self.service_type = service_type
         self.client_id = client_id
         self.client_callback = client_callback
@@ -143,7 +141,7 @@ class ROS_Service_Template( threading.Thread):
             self.wait_for_busy_service_provider = self.protocol.parameters["wait_for_busy_service_provider"]
             self.max_requests = self.protocol.parameters["max_service_requests"]
 
-        self.spawn_ROS_service( service_module, service_type, service_name, client_id)
+        self.spawn_ROS_service(service_type, service_name, client_id)
 
 
     def handle_service_request(self, req):
@@ -174,7 +172,6 @@ class ROS_Service_Template( threading.Thread):
         if request_id not in self.protocol.request_list.keys():
             # put information about request into request_list, we need this later to create a response instance with service-module and -type
             self.protocol.request_list[request_id] = { "service_name" : self.service_name,
-                                                       "service_module" : self.service_module,
                                                        "service_type" : self.service_type
                                                      }
         # answer will be passed to client that requested service
@@ -222,9 +219,9 @@ class ROS_Service_Template( threading.Thread):
         del self.protocol.service_list[self.service_name]
         self.protocol.log("info", "removed service: "+ self.service_name)
     
-    def spawn_ROS_service(self, service_module, service_type, service_name, client_id):
+    def spawn_ROS_service(self, service_type, service_name, client_id):
         # import service type for ros-service that we want to register in ros
-        service_class = get_service_class(service_module+'/'+service_type)
+        service_class = get_service_class(service_type)
         # register service in ros
         self.ros_serviceproxy = rospy.Service( service_name, service_class, self.handle_service_request)
 
@@ -254,17 +251,16 @@ class AdvertiseService(Capability):
     def advertise_service(self, message):
         service_type = message["service_type"]
         service_name = message["service_name"]
-        service_module = message["service_module"]
         client_id = self.protocol.client_id
         client_callback = self.protocol.send
         # this part defines what is happening when a client is trying to "replace" an already registered service
         if service_name not in self.service_list.keys():
-            self.service_list[service_name] = ROS_Service_Template(client_callback , service_module, service_type, service_name, client_id, self.protocol)
+            self.service_list[service_name] = ROS_Service_Template(client_callback, service_type, service_name, client_id, self.protocol)
         else:
             log_msg = "is replacing service: " + service_name + " [provided before by client:" + str(self.service_list[service_name].client_id) + "]"
             self.protocol.log("info", log_msg)
             self.service_list[service_name].stop_ROS_service()
-            self.service_list[service_name] = ROS_Service_Template(client_callback , service_module, service_type, service_name, client_id, self.protocol )
+            self.service_list[service_name] = ROS_Service_Template(client_callback, service_type, service_name, client_id, self.protocol )
 
     def finish(self):
         self.finish_flag = True

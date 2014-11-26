@@ -27,11 +27,10 @@ class ServiceResponse(Capability):
         request = self.protocol.request_list[message["id"]]
 
         # get module and type
-        service_module = request["service_module"]
         service_type = request["service_type"]
 
         ## Create a message instance
-        inst = ros_loader.get_service_response_instance(service_module+"/"+service_type)
+        inst = ros_loader.get_service_response_instance(service_type)
         
         # Populate the instance, propagating any exceptions that may be thrown
         message_conversion.populate_instance(message["data"], inst)

@@ -16,8 +16,7 @@ max_msg_length = 20000                           # bytes
 rosbridge_ip = "localhost"                       # hostname or ip
 rosbridge_port = 9090                            # port as integer
 
-service_module = "rosbridge_library"         # make sure srv and msg files are available within specified module on rosbridge-server!
-service_type = "SendBytes"                       # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+service_type = "rosbridge_library/SendBytes"                       # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
 service_name = "send_bytes"                      # service name
 
 send_fragment_size = 1000
@@ -78,8 +77,7 @@ def connect_tcp_socket():
     return tcp_sock
 
 def advertise_service():                                                        # advertise service
-    advertise_message_object = {"op":"advertise_service",                       
-                                "service_module": service_module,
+    advertise_message_object = {"op":"advertise_service",
                                 "service_type": service_type,
                                 "service_name": service_name,
                                 "fragment_size": receive_fragment_size,
