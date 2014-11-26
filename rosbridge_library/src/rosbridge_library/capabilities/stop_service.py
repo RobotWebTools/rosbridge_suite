@@ -13,7 +13,7 @@ class StopService(Capability):
         protocol.register_operation(self.opcode_unadvertise_service, self.unadvertise_service)
 
     def unadvertise_service(self, message):
-        service_name = message["service_name"]
+        service_name = message["service"]
         client_id = self.protocol.client_id
 
         # unregister service in ROS

@@ -79,7 +79,7 @@ def connect_tcp_socket():
 def advertise_service():                                                        # advertise service
     advertise_message_object = {"op":"advertise_service",
                                 "type": service_type,
-                                "service_name": service_name,
+                                "service": service_name,
                                 "fragment_size": receive_fragment_size,
                                 "message_intervall": receive_message_intervall
                                 }
@@ -88,7 +88,7 @@ def advertise_service():                                                        
 
 def unadvertise_service():                                                      # unadvertise service
     unadvertise_message_object = {"op":"stop_service",                           
-                                  "service_name": service_name
+                                  "service": service_name
                                  }
     unadvertise_message = json.dumps(unadvertise_message_object)                   
     tcp_socket.send(str(unadvertise_message))

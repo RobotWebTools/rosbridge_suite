@@ -171,7 +171,7 @@ class ROS_Service_Template( threading.Thread):
         # add request to request_list
         if request_id not in self.protocol.request_list.keys():
             # put information about request into request_list, we need this later to create a response instance with service-module and -type
-            self.protocol.request_list[request_id] = { "service_name" : self.service_name,
+            self.protocol.request_list[request_id] = { "service" : self.service_name,
                                                        "type" : self.service_type
                                                      }
         # answer will be passed to client that requested service
@@ -250,7 +250,7 @@ class AdvertiseService(Capability):
 
     def advertise_service(self, message):
         service_type = message["type"]
-        service_name = message["service_name"]
+        service_name = message["service"]
         client_id = self.protocol.client_id
         client_callback = self.protocol.send
         # this part defines what is happening when a client is trying to "replace" an already registered service
