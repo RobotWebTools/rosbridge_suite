@@ -158,7 +158,7 @@ class ROS_Service_Template( threading.Thread):
 
         self.busy = True
 
-        # generate request_id
+        # generate request ID
         # ..service_name avoids having same id's for different service-requests
         request_id = "service:" + self.service_name + "_count:" + str(self.request_counter) + "_time:" + datetime.now().strftime("%H:%M:%f")
         # increment request_counter
@@ -166,7 +166,7 @@ class ROS_Service_Template( threading.Thread):
 
         req_extracted = message_conversion.extract_values(req)
         request_message_object = {"op":"service_request",
-                                  "request_id": request_id,
+                                  "id": request_id,
                                   "args": req_extracted
                                  }
                                     
@@ -252,7 +252,6 @@ class AdvertiseService(Capability):
         self.protocol.request_list = self.request_list
 
     def advertise_service(self, message):
-        opcode = message["op"]
         service_type = message["service_type"]
         service_name = message["service_name"]
         service_module = message["service_module"]

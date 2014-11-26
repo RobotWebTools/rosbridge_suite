@@ -24,7 +24,7 @@ class ServiceResponse(Capability):
 
         # get information about the request with the same id as the incoming response
         # ..this information gets written into "request_list" by advertise_service.py within "handle_service_request()"
-        request = self.protocol.request_list[message["request_id"]]
+        request = self.protocol.request_list[message["id"]]
 
         # get module and type
         service_module = request["service_module"]
@@ -37,7 +37,7 @@ class ServiceResponse(Capability):
         message_conversion.populate_instance(message["data"], inst)
 
         # add response instance to response_list
-        self.response_list[message["request_id"]] = inst
+        self.response_list[message["id"]] = inst
 
 
     def finish(self):
