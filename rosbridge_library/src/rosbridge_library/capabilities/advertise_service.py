@@ -166,7 +166,7 @@ class ROS_Service_Template( threading.Thread):
         request_message_object = {"op": "call_service",
                                   "id": request_id,
                                   "name": self.service_name,
-                                  "values": req_extracted
+                                  "args": req_extracted
                                  }
                                     
         # add request to request_list
