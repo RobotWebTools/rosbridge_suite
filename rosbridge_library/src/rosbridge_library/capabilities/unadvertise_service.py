@@ -1,37 +1,25 @@
 from rosbridge_library.capability import Capability
-from advertise_service import ServiceList
 
 
 class UnadvertiseService(Capability):
-    opcode_unadvertise_service = "unadvertise_service"
 
-    service_list = ServiceList().list
+    #unadvertise_service_msg_fields = [(True, "service", (str, unicode))]
 
     def __init__(self, protocol):
-        self.protocol = protocol 
+        # Call superclass constructor
         Capability.__init__(self, protocol)
-        protocol.register_operation(self.opcode_unadvertise_service, self.unadvertise_service)
+
+        # Register the operations that this capability provides
+        protocol.register_operation("unadvertise_service", self.unadvertise_service)
 
     def unadvertise_service(self, message):
+        # parse the message
         service_name = message["service"]
-        client_id = self.protocol.client_id
 
         # unregister service in ROS
-        if service_name in self.service_list.keys():
-            if client_id == self.service_list[service_name].client_id:
-                self.service_list[service_name].stop_ROS_service()
-            else:
-                self.protocol.log("warning", "tried to remove service: " + service_name + " ['owned' by client: " + str(self.service_list[service_name].client_id) + "]")
+        if service_name in self.protocol.external_service_list.keys():
+            self.protocol.external_service_list[service_name].service_handle.shutdown("Unadvertise request.")
+            del self.protocol.external_service_list[service_name]
+            self.protocol.log("info", "Unadvertised service %s." % service_name)
         else:
-            self.protocol.log("warning", "tried to remove service: " + service_name + " [service was not registered]")
-
-    def finish(self):
-        self.protocol.unregister_operation("unadvertise_server")
-    
-
-
-
-
-
-
-
+            self.protocol.log("error", "Service %s has no been advertised externally." % service_name)
