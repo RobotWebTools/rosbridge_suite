@@ -238,14 +238,19 @@ class ROS_Service_Template( threading.Thread):
 
 class AdvertiseService(Capability):
 
+    call_service_msg_fields = [(True, "service", (str, unicode)), (False, "type", (str, unicode))]
+
     opcode_advertise_service = "advertise_service"      # rosbridge-client -> rosbridge # register in protocol.py!
     service_list = ServiceList().list                   # links to singleton
     request_list = RequestList().list     # holds requests until they are answered (response successfully sent to ROS-client)
 
     def __init__(self, protocol):
-        self.protocol = protocol
+        # Call superclas constructor
         Capability.__init__(self, protocol)
-        protocol.register_operation(self.opcode_advertise_service, self.advertise_service)
+
+        # Register the operations that this capability provides
+        protocol.register_operation("advertise_service", self.advertise_service)
+
         self.protocol.service_list = self.service_list
         self.protocol.request_list = self.request_list
 
