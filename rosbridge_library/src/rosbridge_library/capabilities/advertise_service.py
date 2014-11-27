@@ -165,7 +165,7 @@ class ROS_Service_Template( threading.Thread):
         req_extracted = message_conversion.extract_values(req)
         request_message_object = {"op": "call_service",
                                   "id": request_id,
-                                  "name": self.service_name,
+                                  "service": self.service_name,
                                   "args": req_extracted
                                  }
                                     
