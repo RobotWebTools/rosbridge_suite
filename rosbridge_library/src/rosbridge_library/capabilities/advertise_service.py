@@ -163,9 +163,10 @@ class ROS_Service_Template( threading.Thread):
         self.request_counter = (self.request_counter + 1) % self.max_requests
 
         req_extracted = message_conversion.extract_values(req)
-        request_message_object = {"op":"service_request",
+        request_message_object = {"op": "call_service",
                                   "id": request_id,
-                                  "args": req_extracted
+                                  "name": self.service_name,
+                                  "values": req_extracted
                                  }
                                     
         # add request to request_list

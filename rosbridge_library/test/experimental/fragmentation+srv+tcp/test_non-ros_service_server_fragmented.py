@@ -108,7 +108,7 @@ def wait_for_service_request():                                                 
             buffer = buffer + incoming                                          # append data to buffer
             try:                                                                # try to parse JSON from buffer
                 data_object = json.loads(buffer)
-                if data_object["op"] == "service_request":
+                if data_object["op"] == "call_service":
                     data = buffer
                     done = True
                     return data                                                 # if parsing was successful --> return data string
@@ -118,7 +118,7 @@ def wait_for_service_request():                                                 
                 pass
                
             #print "trying to defragment"
-            try:                                                                # opcode was not "service_request" -> try to defragment
+            try:                                                                # opcode was not "call_service" -> try to defragment
                 result_string = buffer.split("}{")                              # split buffer into fragments and re-fill with curly brackets
                 result = []
                 for fragment in result_string:
