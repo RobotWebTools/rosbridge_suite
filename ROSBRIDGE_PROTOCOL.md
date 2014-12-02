@@ -87,6 +87,9 @@ ROS operations:
   * **subscribe** - a request to subscribe to a topic
   * **unsubscribe** - a request to unsubscribe from a topic
   * **call_service** - a service call
+  * **advertise_service** - advertise an external service server
+  * **unadvertise_service** - unadvertise an external service server
+  * **service_request** - a service request
   * **service_response** - a service response
 
 In general, actions or operations that the client takes (such as publishing and
@@ -420,7 +423,33 @@ Calls a ROS service
  * **compression** – an optional string to specify the compression scheme to be
     used on messages. Valid values are "none" and "png"
 
-#### 3.4.7 Service Response
+#### 3.4.7 Advertise Service
+
+```json
+{ "op": "advertise_service",
+  "type": <string>,
+  "service": <string>
+}
+```
+
+Advertises an external ROS service server. Requests come to the client via Call Service.
+
+ * **service** – the name of the service to advertise
+ * **type** – the advertised service message type
+
+#### 3.4.8 Unadvertise Service
+
+```json
+{ "op": "unadvertise_service",
+  "service": <string>
+}
+```
+
+Stops advertising an external ROS service server
+
+ * **service** – the name of the service to unadvertise
+
+#### 3.4.9 Service Response
 
 ```json
 { "op": "service_response",
@@ -461,11 +490,6 @@ sample a single message from a topic.
 Rosbridge will support messages that were latched to topics internally in ROS.
 It is possible that the publish opcode will be extended so that remote clients
 can latch messages too.
-
-### 4.4 Advertising Services
-
-Rosbridge currently does not support services advertised by the remote client.
-It could be extended to support this.
 
 ### 4.5 Rosbridge package structure
 

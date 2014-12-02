@@ -40,13 +40,13 @@ from rosbridge_library.capabilities.defragmentation import Defragment
 # imports for external service_server
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.service_response import ServiceResponse
-from rosbridge_library.capabilities.stop_service import StopService
+from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 
 
 
 class RosbridgeProtocol(Protocol):
     """ Adds the handlers for the rosbridge opcodes """
-    rosbridge_capabilities = [CallService, Advertise, Publish, Subscribe, Defragment, AdvertiseService, ServiceResponse, StopService]
+    rosbridge_capabilities = [CallService, Advertise, Publish, Subscribe, Defragment, AdvertiseService, ServiceResponse, UnadvertiseService]
 
     print "registered capabilities (classes):"
     for cap in rosbridge_capabilities:
