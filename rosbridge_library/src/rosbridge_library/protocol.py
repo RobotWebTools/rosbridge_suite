@@ -72,7 +72,8 @@ class Protocol:
     # .. depends on message_size/bandwidth/performance/client_limits/...
     # !! this might be related to (or even be avoided by using) throttle_rate !!
     delay_between_messages = 0.01
-    request_list = None
+    # global list of non-ros advertised services
+    external_service_list = {}
 
     parameters = None
 

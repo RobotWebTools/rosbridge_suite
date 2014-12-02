@@ -16,8 +16,7 @@ max_msg_length = 20000                           # bytes
 rosbridge_ip = "localhost"                       # hostname or ip
 rosbridge_port = 9090                            # port as integer
 
-service_module = "rosbridge_library"         # make sure srv and msg files are available within specified module on rosbridge-server!
-service_type = "TestNestedService"           # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+service_type = "rosbridge_library/TestNestedService"           # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
 service_name = "nested_srv"                      # service name
 
 send_fragment_size = 1000
@@ -55,7 +54,7 @@ def calculate_service_response(request):
     service_response_data = message                                   # service response (as defined in srv-file)
 
     response_object = { "op": "service_response",
-                        "request_id": request_object["request_id"],
+                        "id": request_object["id"],
                         "data": service_response_data                           # put service response in "data"-field of response object (in this case it's twice "data", because response value is also named data (in srv-file)
                       }
     response_message = json.dumps(response_object)
@@ -78,10 +77,9 @@ def connect_tcp_socket():
     return tcp_sock
 
 def advertise_service():                                                        # advertise service
-    advertise_message_object = {"op":"advertise_service",                       
-                                "service_module": service_module,
-                                "service_type": service_type,
-                                "service_name": service_name,
+    advertise_message_object = {"op":"advertise_service",
+                                "type": service_type,
+                                "service": service_name,
                                 "fragment_size": receive_fragment_size,
                                 "message_intervall": receive_message_intervall
                                 }
@@ -89,8 +87,8 @@ def advertise_service():                                                        
     tcp_socket.send(str(advertise_message))
 
 def unadvertise_service():                                                      # unadvertise service
-    unadvertise_message_object = {"op":"stop_service",                           
-                                  "service_name": service_name
+    unadvertise_message_object = {"op":"unadvertise_service",
+                                  "service": service_name
                                  }
     unadvertise_message = json.dumps(unadvertise_message_object)                   
     tcp_socket.send(str(unadvertise_message))
@@ -110,7 +108,7 @@ def wait_for_service_request():                                                 
             buffer = buffer + incoming                                          # append data to buffer
             try:                                                                # try to parse JSON from buffer
                 data_object = json.loads(buffer)
-                if data_object["op"] == "service_request":
+                if data_object["op"] == "call_service":
                     data = buffer
                     done = True
                     return data                                                 # if parsing was successful --> return data string
@@ -120,7 +118,7 @@ def wait_for_service_request():                                                 
                 pass
                
             #print "trying to defragment"
-            try:                                                                # opcode was not "service_request" -> try to defragment
+            try:                                                                # opcode was not "call_service" -> try to defragment
                 result_string = buffer.split("}{")                              # split buffer into fragments and re-fill with curly brackets
                 result = []
                 for fragment in result_string:
