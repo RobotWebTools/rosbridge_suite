@@ -2,6 +2,20 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.0 (2014-12-02)
+------------------
+* rewrite of advertise service
+* cleanup init function
+* matches original call_service
+* matches original call_service
+* service_request --> reuse of call_service (previously defined)
+* stop_service --> unadvertise_service
+* service_name --> service
+* service_type --> type
+* removed service_module
+* request_id --> id
+* Contributors: Russell Toris
+
 0.6.8 (2014-11-05)
 ------------------
 * add a lock to calls to load_manifest - apparently, it's not thread safe
