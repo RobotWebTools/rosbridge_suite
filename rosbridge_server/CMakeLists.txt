@@ -3,8 +3,6 @@ project(rosbridge_server)
 
 find_package(catkin REQUIRED COMPONENTS rosbridge_library rosbridge_tools rosapi rospy)
 
-catkin_python_setup()
-
 catkin_package()
 
 install(PROGRAMS
