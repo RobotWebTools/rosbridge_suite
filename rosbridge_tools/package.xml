@@ -1,15 +1,14 @@
 <?xml version="1.0"?>
 <package>
-  <name>rosapi</name>
+  <name>rosbridge_tools</name>
   <version>0.7.1</version>
   <description>
-    Provides service calls for getting ros meta-information, like list of
-    topics, services, params, etc.
+    Third party libraries(backports and tornado) used for Robot Webtools.
   </description>
 
   <license>BSD</license>
 
-  <url type="website">http://ros.org/wiki/rosapi</url>
+  <url type="website">http://ros.org/wiki/rosbridge_server</url>
   <url type="bugtracker">https://github.com/RobotWebTools/rosbridge_suite/issues</url>
   <url type="repository">https://github.com/RobotWebTools/rosbridge_suite</url>
 
@@ -18,14 +17,4 @@
   <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
-
-  <build_depend>rosbridge_library</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>message_generation</build_depend>
-
-  <run_depend>rosbridge_library</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>rosnode</run_depend>
-  <run_depend>rosgraph</run_depend>
-  <run_depend>message_runtime</run_depend>
 </package>

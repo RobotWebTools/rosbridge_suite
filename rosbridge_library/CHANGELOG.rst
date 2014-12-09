@@ -2,6 +2,9 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.1 (2014-12-09)
+------------------
+
 0.7.0 (2014-12-02)
 ------------------
 * rewrite of advertise service

@@ -7,8 +7,6 @@ rosbridge provides a JSON interface to ROS, allowing any client to send JSON to 
 
 For full documentation, see [the ROS wiki](http://ros.org/wiki/rosbridge_suite).
 
-[Doxygen](http://docs.ros.org/indigo/api/rosbridge_suite/html/) files can be found on the ROS wiki.
-
 This project is released as part of the [Robot Web Tools](http://robotwebtools.org/) effort.
 
 ### Packages
