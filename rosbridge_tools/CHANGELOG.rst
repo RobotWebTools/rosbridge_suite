@@ -2,8 +2,8 @@
 Changelog for package rosbridge_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.1 (2014-12-09)
+------------------
 * seprate out third party library and ros related script
 * Contributors: Jihoon Lee
 

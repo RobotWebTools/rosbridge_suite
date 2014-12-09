@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.1 (2014-12-09)
+------------------
 * Merge pull request `#147 <https://github.com/RobotWebTools/rosbridge_suite/issues/147>`_ from RobotWebTools/migrate_third_parties
   separate tornado and backports from rosbridge_server
 * seprate out third party library and ros related script
