@@ -24,6 +24,9 @@ import collections
 import hashlib
 import os
 import struct
+
+# To use rosbridge version of tornado 
+import rosbridge_tools.tornado as tornado
 import tornado.escape
 import tornado.web
 

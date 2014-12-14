@@ -4,6 +4,9 @@ import datetime
 import os
 import sys
 
+# To use rosbridge version of tornado 
+import rosbridge_tools.tornado as tornado
+
 from tornado.options import OptionParser, Error
 from tornado.util import basestring_type
 from tornado.test.util import unittest

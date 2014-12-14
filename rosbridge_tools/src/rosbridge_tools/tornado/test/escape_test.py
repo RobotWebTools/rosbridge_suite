@@ -2,6 +2,9 @@
 
 
 from __future__ import absolute_import, division, print_function, with_statement
+
+# To use rosbridge version of tornado 
+import rosbridge_tools.tornado as tornado
 import tornado.escape
 
 from tornado.escape import utf8, xhtml_escape, xhtml_unescape, url_escape, url_unescape, to_unicode, json_decode, json_encode

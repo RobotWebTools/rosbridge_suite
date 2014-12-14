@@ -79,6 +79,9 @@ import sys
 import os
 import textwrap
 
+# To use rosbridge version of tornado 
+import rosbridge_tools.tornado as tornado
+
 from tornado.escape import _unicode
 from tornado.log import define_logging_options
 from tornado import stack_context

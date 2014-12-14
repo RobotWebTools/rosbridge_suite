@@ -24,6 +24,9 @@ import pycurl
 import threading
 import time
 
+# To use rosbridge version of tornado 
+import rosbridge_tools.tornado as tornado
+
 from tornado import httputil
 from tornado import ioloop
 from tornado.log import gen_log

@@ -4,6 +4,9 @@ from __future__ import absolute_import, division, print_function, with_statement
 import errno
 import socket
 
+# To use rosbridge version of tornado 
+import rosbridge_tools.tornado as tornado
+
 from tornado.platform import interface
 
 

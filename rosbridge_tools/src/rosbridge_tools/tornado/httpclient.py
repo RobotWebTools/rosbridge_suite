@@ -44,6 +44,9 @@ import functools
 import time
 import weakref
 
+# To use rosbridge version of tornado 
+import rosbridge_tools.tornado as tornado
+
 from tornado.concurrent import TracebackFuture
 from tornado.escape import utf8, native_str
 from tornado import httputil, stack_context
