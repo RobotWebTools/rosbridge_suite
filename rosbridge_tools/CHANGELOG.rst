@@ -7,6 +7,11 @@ Changelog for package rosbridge_tools
 * seprate out third party library and ros related script
 * Contributors: Jihoon Lee
 
+0.7.3 (2014-12-15)
+------------------
+* setup.py includes all packages (fixes catkin_make install)
+* Contributors: Russell Toris
+
 0.7.2 (2014-12-15)
 ------------------
 * alias rosbridge_tools.tornado as tornado
