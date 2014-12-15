@@ -7,6 +7,15 @@ Changelog for package rosbridge_tools
 * seprate out third party library and ros related script
 * Contributors: Jihoon Lee
 
+0.7.2 (2014-12-15)
+------------------
+* alias rosbridge_tools.tornado as tornado
+* move modules under rosbridge_tools
+* 0.7.1
+* update changelog
+* seprate out third party library and ros related script
+* Contributors: Jihoon Lee
+
 0.7.0 (2014-12-02)
 ------------------
 
