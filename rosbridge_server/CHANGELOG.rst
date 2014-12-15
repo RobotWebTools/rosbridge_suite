@@ -12,6 +12,20 @@ Changelog for package rosbridge_server
 * remove python-imaging dependency. it is used in rosbridge_library
 * Contributors: Jihoon Lee, Russell Toris
 
+0.7.2 (2014-12-15)
+------------------
+* use alias to import rosbridge_tool tornado
+* move modules under rosbridge_tools
+* 0.7.1
+* update changelog
+* Merge pull request #147 from RobotWebTools/migrate_third_parties
+  separate tornado and backports from rosbridge_server
+* seprate out third party library and ros related script
+* remove setup.py
+* add rosbridge_tools as rosbridge_server dependency
+* remove python-imaging dependency. it is used in rosbridge_library
+* Contributors: Jihoon Lee, Russell Toris
+
 0.7.0 (2014-12-02)
 ------------------
 

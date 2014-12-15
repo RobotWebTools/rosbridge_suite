@@ -5,6 +5,12 @@ Changelog for package rosbridge_library
 0.7.1 (2014-12-09)
 ------------------
 
+0.7.2 (2014-12-15)
+------------------
+* 0.7.1
+* update changelog
+* Contributors: Jihoon Lee
+
 0.7.0 (2014-12-02)
 ------------------
 * rewrite of advertise service

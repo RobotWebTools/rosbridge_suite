@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>rosbridge_tools</name>
-  <version>0.7.1</version>
+  <version>0.7.2</version>
   <description>
     Third party libraries(backports and tornado) used for Robot Webtools.
   </description>
