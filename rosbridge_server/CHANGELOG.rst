@@ -12,6 +12,11 @@ Changelog for package rosbridge_server
 * remove python-imaging dependency. it is used in rosbridge_library
 * Contributors: Jihoon Lee, Russell Toris
 
+0.7.4 (2014-12-16)
+------------------
+* reverts back to internal tornado until fix is ready
+* Contributors: Russell Toris
+
 0.7.3 (2014-12-15)
 ------------------
 
