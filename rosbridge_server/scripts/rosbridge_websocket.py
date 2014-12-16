@@ -39,6 +39,7 @@ from rosauth.srv import Authentication
 from signal import signal, SIGINT, SIG_DFL
 from functools import partial
 
+import rosbridge_tools.tornado as tornado
 from tornado.ioloop import IOLoop
 from tornado.web import Application
 from tornado.websocket import WebSocketHandler
