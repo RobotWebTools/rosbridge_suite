@@ -32,8 +32,7 @@ provides WSGI support in two ways:
 from __future__ import absolute_import, division, print_function, with_statement
 
 import sys
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
+import tornado
 
 from tornado.concurrent import Future
 from tornado import escape

@@ -12,9 +12,6 @@
 
 from __future__ import absolute_import, division, print_function, with_statement
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 try:
     from tornado import gen
     from tornado.httpclient import AsyncHTTPClient

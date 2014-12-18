@@ -30,9 +30,6 @@ from __future__ import absolute_import, division, print_function, with_statement
 
 import socket
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.escape import native_str
 from tornado.http1connection import HTTP1ServerConnection, HTTP1ConnectionParameters
 from tornado import gen

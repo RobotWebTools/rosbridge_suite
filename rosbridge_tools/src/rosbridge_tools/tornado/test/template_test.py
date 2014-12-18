@@ -4,9 +4,6 @@ import os
 import sys
 import traceback
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.escape import utf8, native_str, to_unicode
 from tornado.template import Template, DictLoader, ParseError, Loader
 from tornado.test.util import unittest

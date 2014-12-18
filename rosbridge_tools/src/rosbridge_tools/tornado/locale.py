@@ -47,9 +47,6 @@ import numbers
 import os
 import re
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado import escape
 from tornado.log import gen_log
 from tornado.util import u

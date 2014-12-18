@@ -42,9 +42,6 @@ import threading
 import time
 import traceback
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.concurrent import TracebackFuture, is_future
 from tornado.log import app_log, gen_log
 from tornado import stack_context

@@ -21,9 +21,6 @@ import errno
 import os
 import socket
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.log import app_log
 from tornado.ioloop import IOLoop
 from tornado.iostream import IOStream, SSLIOStream

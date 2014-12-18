@@ -25,9 +25,6 @@ from __future__ import absolute_import, division, print_function, with_statement
 import re
 import sys
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.util import bytes_type, unicode_type, basestring_type, u
 
 try:

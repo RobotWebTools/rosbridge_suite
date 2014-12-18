@@ -7,10 +7,6 @@ import logging
 import operator
 import textwrap
 import sys
-
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.httpclient import AsyncHTTPClient
 from tornado.ioloop import IOLoop
 from tornado.netutil import Resolver

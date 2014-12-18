@@ -27,9 +27,6 @@ from __future__ import absolute_import, division, print_function, with_statement
 
 import os
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 if os.name == 'nt':
     from tornado.platform.common import Waker
     from tornado.platform.windows import set_close_exec

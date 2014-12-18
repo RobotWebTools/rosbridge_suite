@@ -4,9 +4,6 @@ import os
 import socket
 import sys
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 # Encapsulate the choice of unittest or unittest2 here.
 # To be used as 'from tornado.test.util import unittest'.
 if sys.version_info < (2, 7):

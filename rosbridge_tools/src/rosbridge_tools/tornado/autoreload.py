@@ -90,9 +90,6 @@ import types
 import subprocess
 import weakref
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado import ioloop
 from tornado.log import gen_log
 from tornado import process

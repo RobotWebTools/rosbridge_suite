@@ -31,9 +31,6 @@ import numbers
 import re
 import time
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.escape import native_str, parse_qs_bytes, utf8
 from tornado.log import gen_log
 from tornado.util import ObjectDict, bytes_type

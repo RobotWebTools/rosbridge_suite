@@ -20,9 +20,6 @@ from contextlib import closing
 import os
 import socket
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.concurrent import Future
 from tornado.netutil import bind_sockets, Resolver
 from tornado.tcpclient import TCPClient, _Connector

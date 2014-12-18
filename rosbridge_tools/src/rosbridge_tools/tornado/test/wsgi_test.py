@@ -1,9 +1,6 @@
 from __future__ import absolute_import, division, print_function, with_statement
 from wsgiref.validate import validator
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.escape import json_decode
 from tornado.test.httpserver_test import TypeCheckHandler
 from tornado.testing import AsyncHTTPTestCase

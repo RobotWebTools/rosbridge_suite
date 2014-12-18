@@ -69,9 +69,6 @@ import hmac
 import time
 import uuid
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.concurrent import TracebackFuture, chain_future, return_future
 from tornado import gen
 from tornado import httpclient

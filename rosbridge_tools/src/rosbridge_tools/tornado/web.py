@@ -73,9 +73,6 @@ import tornado
 import traceback
 import types
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.concurrent import Future, is_future
 from tornado import escape
 from tornado import gen

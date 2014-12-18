@@ -29,9 +29,6 @@ import time
 
 from binascii import hexlify
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado import ioloop
 from tornado.iostream import PipeIOStream
 from tornado.log import gen_log

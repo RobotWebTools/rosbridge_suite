@@ -2,9 +2,6 @@ from __future__ import absolute_import, division, print_function, with_statement
 import pycares
 import socket
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado import gen
 from tornado.ioloop import IOLoop
 from tornado.netutil import Resolver, is_valid_ip

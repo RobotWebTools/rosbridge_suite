@@ -7,10 +7,6 @@ import os
 import signal
 import subprocess
 import sys
-
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.httpclient import HTTPClient, HTTPError
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop

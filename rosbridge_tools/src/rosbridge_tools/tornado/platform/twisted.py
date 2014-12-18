@@ -84,8 +84,6 @@ import twisted.names.resolve
 
 from zope.interface import implementer
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
 from tornado.escape import utf8
 from tornado import gen
 import tornado.ioloop

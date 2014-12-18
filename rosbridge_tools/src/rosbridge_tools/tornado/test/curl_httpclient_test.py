@@ -2,9 +2,6 @@ from __future__ import absolute_import, division, print_function, with_statement
 
 from hashlib import md5
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.escape import utf8
 from tornado.httpclient import HTTPRequest
 from tornado.stack_context import ExceptionStackContext

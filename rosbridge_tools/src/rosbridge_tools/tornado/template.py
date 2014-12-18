@@ -197,9 +197,6 @@ import posixpath
 import re
 import threading
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado import escape
 from tornado.log import app_log
 from tornado.util import bytes_type, ObjectDict, exec_in, unicode_type

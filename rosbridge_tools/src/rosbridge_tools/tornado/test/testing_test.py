@@ -2,9 +2,6 @@
 
 from __future__ import absolute_import, division, print_function, with_statement
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado import gen, ioloop
 from tornado.testing import AsyncTestCase, gen_test
 from tornado.test.util import unittest

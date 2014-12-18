@@ -21,9 +21,6 @@ import socket
 import sys
 import traceback
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.concurrent import Future, return_future, ReturnValueIgnoredError
 from tornado.escape import utf8, to_unicode
 from tornado import gen

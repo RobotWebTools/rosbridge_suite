@@ -27,9 +27,6 @@ from __future__ import absolute_import, division, print_function, with_statement
 import functools
 import sys
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.stack_context import ExceptionStackContext, wrap
 from tornado.util import raise_exc_info, ArgReplacer
 

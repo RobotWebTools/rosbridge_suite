@@ -5,10 +5,6 @@
 
 
 from __future__ import absolute_import, division, print_function, with_statement
-
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.auth import OpenIdMixin, OAuthMixin, OAuth2Mixin, TwitterMixin, GoogleMixin, AuthError
 from tornado.concurrent import Future
 from tornado.escape import json_decode

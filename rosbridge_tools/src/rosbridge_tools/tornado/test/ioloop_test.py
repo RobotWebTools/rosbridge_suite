@@ -10,9 +10,6 @@ import sys
 import threading
 import time
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado import gen
 from tornado.ioloop import IOLoop, TimeoutError
 from tornado.log import app_log

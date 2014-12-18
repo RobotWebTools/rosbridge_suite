@@ -25,10 +25,6 @@ import signal
 import tempfile
 import threading
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
-
 try:
     import fcntl
     from twisted.internet.defer import Deferred

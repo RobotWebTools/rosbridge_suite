@@ -34,9 +34,6 @@ import logging
 import logging.handlers
 import sys
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.escape import _unicode
 from tornado.util import unicode_type, basestring_type
 

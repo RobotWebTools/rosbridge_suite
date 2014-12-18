@@ -2,10 +2,6 @@ from __future__ import absolute_import, division, print_function, with_statement
 
 import datetime
 import os
-
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 import tornado.locale
 from tornado.escape import utf8
 from tornado.test.util import unittest

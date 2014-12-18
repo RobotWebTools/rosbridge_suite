@@ -2,9 +2,6 @@
 from __future__ import absolute_import, division, print_function, with_statement
 import sys
 
-# To use rosbridge version of tornado 
-import rosbridge_tools.tornado as tornado
-
 from tornado.escape import utf8
 from tornado.util import raise_exc_info, Configurable, u, exec_in, ArgReplacer
 from tornado.test.util import unittest
