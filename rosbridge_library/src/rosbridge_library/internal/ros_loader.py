@@ -35,6 +35,7 @@ import roslib
 import rospy
 
 from threading import Lock
+from os.path import splitext
 
 """ ros_loader contains methods for dynamically loading ROS message classes at
 runtime.  It's achieved by using roslib to load the manifest files for the
@@ -189,7 +190,8 @@ def _load_class(modname, subname, classname):
         raise InvalidModuleException(modname, subname, exc)
 
     try:
-        return getattr(getattr(pypkg, subname), classname)
+        classname_without_msg = splitext(classname)[0]
+        return getattr(getattr(pypkg, subname), classname_without_msg)
     except Exception as exc:
         raise InvalidClassException(modname, subname, classname, exc)
 
