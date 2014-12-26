@@ -44,6 +44,34 @@ Changelog for package rosbridge_server
 0.7.0 (2014-12-02)
 ------------------
 
+0.7.6 (2014-12-26)
+------------------
+* 0.7.5
+* update changelog
+* Function in robridge_tools for importing tornado
+* Revert "reverts back to internal tornado until fix is ready"
+  This reverts commit 49eeb1d97da154213d3170c95169b5677b329d07.
+* 0.7.4
+* changelog updated
+* reverts back to internal tornado until fix is ready
+* 0.7.3
+* changelog updated
+* 0.7.2
+* changelog updated
+* use alias to import rosbridge_tool tornado
+* move modules under rosbridge_tools
+* 0.7.1
+* update changelog
+* Merge pull request #147 from RobotWebTools/migrate_third_parties
+  separate tornado and backports from rosbridge_server
+* seprate out third party library and ros related script
+* remove setup.py
+* add rosbridge_tools as rosbridge_server dependency
+* remove python-imaging dependency. it is used in rosbridge_library
+* 0.7.0
+* changelog updated
+* Contributors: Jihoon Lee, Jon Binney, Russell Toris
+
 0.6.8 (2014-11-05)
 ------------------
 
