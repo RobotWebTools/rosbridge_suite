@@ -7,6 +7,14 @@ Changelog for package rosbridge_tools
 * seprate out third party library and ros related script
 * Contributors: Jihoon Lee
 
+Forthcoming
+-----------
+* Function in robridge_tools for importing tornado
+* Remove tornado import aliases
+* Revert "reverts back to internal tornado until fix is ready"
+  This reverts commit 49eeb1d97da154213d3170c95169b5677b329d07.
+* Contributors: Jon Binney
+
 0.7.3 (2014-12-15)
 ------------------
 * setup.py includes all packages (fixes catkin_make install)
