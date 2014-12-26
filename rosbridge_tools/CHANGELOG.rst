@@ -7,8 +7,8 @@ Changelog for package rosbridge_tools
 * seprate out third party library and ros related script
 * Contributors: Jihoon Lee
 
-Forthcoming
------------
+0.7.5 (2014-12-26)
+------------------
 * Function in robridge_tools for importing tornado
 * Remove tornado import aliases
 * Revert "reverts back to internal tornado until fix is ready"
