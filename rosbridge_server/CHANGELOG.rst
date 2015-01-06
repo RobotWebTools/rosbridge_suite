@@ -44,6 +44,12 @@ Changelog for package rosbridge_server
 0.7.0 (2014-12-02)
 ------------------
 
+0.7.7 (2015-01-06)
+------------------
+* remove rosbridge_tools from dependency `#163 <https://github.com/RobotWebTools/rosbridge_suite/issues/163>`_
+* reverting back the changes
+* Contributors: Jihoon Lee
+
 0.7.6 (2014-12-26)
 ------------------
 * 0.7.5
