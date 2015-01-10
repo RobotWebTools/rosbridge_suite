@@ -18,6 +18,9 @@ import os
 import sys
 import zlib
 
+# To use rosbridge version of tornado 
+import rosbridge_tools.tornado as tornado
+
 
 try:
     xrange  # py2
