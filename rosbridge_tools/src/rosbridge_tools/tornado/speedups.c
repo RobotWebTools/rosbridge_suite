@@ -47,6 +47,6 @@ PyInit_speedups() {
 #else  // Python 2.x
 PyMODINIT_FUNC
 initspeedups() {
-    Py_InitModule("tornado.speedups", methods);
+    Py_InitModule("rosbridge_tools.tornado.speedups", methods);
 }
 #endif
