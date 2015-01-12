@@ -79,7 +79,7 @@ if (platform.python_implementation() == 'CPython' and
     # This extension builds and works on pypy as well, although pypy's jit
     # produces equivalent performance.
     d['ext_modules'] = [
-        Extension('tornado.speedups', sources=['tornado/speedups.c']),
+        Extension('tornado.speedups', sources=['src/tornado/speedups.c']),
     ]
 
     if os.environ.get('TORNADO_EXTENSION') != '1':
