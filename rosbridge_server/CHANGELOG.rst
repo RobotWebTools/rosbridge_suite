@@ -44,8 +44,8 @@ Changelog for package rosbridge_server
 0.7.0 (2014-12-02)
 ------------------
 
-Forthcoming
------------
+0.7.8 (2015-01-16)
+------------------
 * Fix path to Tornado speedup extension source
 * Build Tornado speedups
   Fixes `#135 <https://github.com/RobotWebTools/rosbridge_suite/issues/135>`_
