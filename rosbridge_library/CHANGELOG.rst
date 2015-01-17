@@ -34,6 +34,9 @@ Changelog for package rosbridge_library
 * request_id --> id
 * Contributors: Russell Toris
 
+0.7.8 (2015-01-16)
+------------------
+
 0.7.7 (2015-01-06)
 ------------------
 
