@@ -33,7 +33,8 @@
 
 import rospy
 
-from rosapi import proxy, objectutils, params
+import ros_api
+from ros_api import proxy, objectutils, params
 from rosapi.srv import *
 from rosapi.msg import *
 
@@ -132,24 +133,24 @@ def get_service_response_details(request):
     return ServiceResponseDetailsResponse([dict_to_typedef(d) for d in objectutils.get_service_response_typedef_recursive(request.type)])
 
 def set_param(request):
-    rosapi.params.set_param(request.name, request.value)
+    ros_api.params.set_param(request.name, request.value)
     return SetParamResponse()
 
 def get_param(request):
-    return GetParamResponse(rosapi.params.get_param(request.name, request.default))
+    return GetParamResponse(ros_api.params.get_param(request.name, request.default))
 
 def has_param(request):
-    return HasParamResponse(rosapi.params.has_param(request.name))
+    return HasParamResponse(ros_api.params.has_param(request.name))
 
 def search_param(request):
-    return SearchParamResponse(rosapi.params.search_param(request.name))
+    return SearchParamResponse(ros_api.params.search_param(request.name))
 
 def delete_param(request):
-    rosapi.params.delete_param(request.name)
+    ros_api.params.delete_param(request.name)
     return DeleteParamResponse()
 
 def get_param_names(request):
-    return GetParamNamesResponse(rosapi.params.get_param_names())
+    return GetParamNamesResponse(ros_api.params.get_param_names())
 
 def get_time(request):
     return GetTimeResponse(rospy.get_rostime())
