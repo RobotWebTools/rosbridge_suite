@@ -26,6 +26,7 @@ add_service_files(
   ServiceRequestDetails.srv
   ServiceResponseDetails.srv
   Services.srv
+  ServicesForType.srv
   ServiceType.srv
   SetParam.srv
   Subscribers.srv
