@@ -31,13 +31,13 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from rospy import get_published_topics
 from rosservice import get_service_list
 from rosservice import get_service_type as rosservice_get_service_type
 from rosservice import get_service_node as rosservice_get_service_node
 from rosservice import get_service_uri
 from rosservice import rosservice_find
 from rostopic import find_by_type
+from rostopic import get_topic_type as rosservice_get_topic_type
 from ros import rosnode, rosgraph
 from rosnode import get_node_names
 from rosgraph.masterapi import Master
@@ -46,8 +46,12 @@ from rosapi.msg import TypeDef
 
 
 def get_topics():
-    """ Returns a list of all the topics being published in the ROS system """
-    return [x[0] for x in get_published_topics()]
+    """ Returns a list of all the active topics in the ROS system """
+    try:
+        publishers, subscribers, services = Master('/rosbridge').getSystemState()
+        return list(set([x for x, _ in publishers] + [x for x, _, in subscribers]))
+    except:
+        return []
 
 
 def get_topics_for_type(type):
@@ -72,11 +76,11 @@ def get_nodes():
 def get_topic_type(topic):
     """ Returns the type of the specified ROS topic """
     # If the topic is published, return its type
-    for x in get_published_topics():
-        if x[0] == topic:
-            return x[1]
-    # Topic isn't published so return an empty string
-    return ""
+    topic_type, _, _ = rosservice_get_topic_type(topic)
+    if topic_type is None:
+        # Topic isn't published so return an empty string
+        return ""
+    return topic_type
 
 
 def get_service_type(service):
