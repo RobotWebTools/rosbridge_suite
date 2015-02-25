@@ -23,8 +23,8 @@ Changelog for package rosapi
 0.7.0 (2014-12-02)
 ------------------
 
-Forthcoming
------------
+0.7.10 (2015-02-25)
+-------------------
 * Make get_topics() and get_topic_type() reference the full list of active topics.
 * Contributors: Justin Huang
 
