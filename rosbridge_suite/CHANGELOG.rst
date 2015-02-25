@@ -23,6 +23,9 @@ Changelog for package rosbridge_suite
 0.7.0 (2014-12-02)
 ------------------
 
+Forthcoming
+-----------
+
 0.7.9 (2015-02-24)
 ------------------
 
