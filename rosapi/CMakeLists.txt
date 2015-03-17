@@ -44,7 +44,7 @@ catkin_package(
   CATKIN_DEPENDS message_runtime
 )
 
-install(PROGRAMS scripts/rosapi
+install(PROGRAMS scripts/rosapi_node
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
