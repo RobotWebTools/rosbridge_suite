@@ -170,7 +170,7 @@ def dict_to_typedef(typedefdict):
 
 if __name__ == '__main__':
      try:
-         rospy.init_node('rosapi')
+         rospy.init_node('rosapi_node')
          register_services()
          rospy.loginfo("Rosapi started")
          rospy.spin()
