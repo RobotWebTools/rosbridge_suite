@@ -31,12 +31,13 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from rospy import get_published_topics
 from rosservice import get_service_list
 from rosservice import get_service_type as rosservice_get_service_type
 from rosservice import get_service_node as rosservice_get_service_node
 from rosservice import get_service_uri
+from rosservice import rosservice_find
 from rostopic import find_by_type
+from rostopic import get_topic_type as rosservice_get_topic_type
 from ros import rosnode, rosgraph
 from rosnode import get_node_names
 from rosgraph.masterapi import Master
@@ -45,8 +46,12 @@ from rosapi.msg import TypeDef
 
 
 def get_topics():
-    """ Returns a list of all the topics being published in the ROS system """
-    return [x[0] for x in get_published_topics()]
+    """ Returns a list of all the active topics in the ROS system """
+    try:
+        publishers, subscribers, services = Master('/rosbridge').getSystemState()
+        return list(set([x for x, _ in publishers] + [x for x, _, in subscribers]))
+    except:
+        return []
 
 
 def get_topics_for_type(type):
@@ -58,29 +63,34 @@ def get_services():
     return get_service_list()
 
 
+def get_services_for_type(service_type):
+    """ Returns a list of services as specific service type """
+    return rosservice_find(service_type)
+
+
 def get_nodes():
     """ Returns a list of all the nodes registered in the ROS system """
     return rosnode.get_node_names()
 
-    
+
 def get_topic_type(topic):
     """ Returns the type of the specified ROS topic """
     # If the topic is published, return its type
-    for x in get_published_topics():
-        if x[0]==topic:
-            return x[1]
-    # Topic isn't published so return an empty string
-    return ""
+    topic_type, _, _ = rosservice_get_topic_type(topic)
+    if topic_type is None:
+        # Topic isn't published so return an empty string
+        return ""
+    return topic_type
 
 
 def get_service_type(service):
     """ Returns the type of the specified ROS service, """
     try:
-        return rosservice_get_service_type(service)
+        return rosservice_find(service)
     except:
         return ""
 
-    
+
 def get_publishers(topic):
     """ Returns a list of node names that are publishing the specified topic """
     try:
@@ -93,7 +103,7 @@ def get_publishers(topic):
     except socket.error:
         return []
 
-    
+
 def get_subscribers(topic):
     """ Returns a list of node names that are subscribing to the specified topic """
     try:
@@ -106,7 +116,7 @@ def get_subscribers(topic):
     except socket.error:
         return []
 
-    
+
 def get_service_providers(servicetype):
     """ Returns a list of node names that are advertising a service with the specified type """
     try:
@@ -118,12 +128,12 @@ def get_service_providers(servicetype):
             return []
     except socket.error:
         return []
-        
-        
+
+
 def get_service_node(service):
     """ Returns the name of the node that is providing the given service, or empty string """
     node = rosservice_get_service_node(service)
-    if node==None:
+    if node == None:
         node = ""
     return node
 
@@ -131,7 +141,7 @@ def get_service_node(service):
 def get_service_host(service):
     """ Returns the name of the machine that is hosting the given service, or empty string """
     uri = get_service_uri(service)
-    if uri==None:
+    if uri == None:
         uri = ""
     else:
         uri = uri[9:]

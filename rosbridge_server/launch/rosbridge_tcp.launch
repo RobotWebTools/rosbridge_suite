@@ -57,5 +57,5 @@
     </node>
   </group>
   
-  <node name="rosapi" pkg="rosapi" type="rosapi" />
+  <node name="rosapi" pkg="rosapi" type="rosapi_node" />
 </launch>
