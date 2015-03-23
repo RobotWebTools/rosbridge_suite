@@ -44,8 +44,8 @@ Changelog for package rosbridge_server
 0.7.0 (2014-12-02)
 ------------------
 
-Forthcoming
------------
+0.7.11 (2015-03-23)
+-------------------
 * rename rosapi script to rosapi_node to address `#170 <https://github.com/RobotWebTools/rosbridge_suite/issues/170>`_
 * Enabled TCP nodelay in Websocket handler
 * Contributors: Jihoon Lee, Sebastien Mamessier
