@@ -59,6 +59,7 @@ class RosbridgeWebSocket(WebSocketHandler):
         try:
             self.protocol = RosbridgeProtocol(client_id_seed)
             self.protocol.outgoing = self.send_message
+            self.set_nodelay(True)
             self.authenticated = False
             client_id_seed = client_id_seed + 1
             clients_connected = clients_connected + 1

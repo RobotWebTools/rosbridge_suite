@@ -23,6 +23,21 @@ Changelog for package rosapi
 0.7.0 (2014-12-02)
 ------------------
 
+0.7.11 (2015-03-23)
+-------------------
+* rename rosapi script to rosapi_node to address `#170 <https://github.com/RobotWebTools/rosbridge_suite/issues/170>`_
+* Contributors: Jihoon Lee
+
+0.7.10 (2015-02-25)
+-------------------
+* Make get_topics() and get_topic_type() reference the full list of active topics.
+* Contributors: Justin Huang
+
+0.7.9 (2015-02-24)
+------------------
+* add findding service function as specific service type
+* Contributors: dwlee
+
 0.7.8 (2015-01-16)
 ------------------
 

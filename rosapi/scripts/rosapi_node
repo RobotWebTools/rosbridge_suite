@@ -42,6 +42,7 @@ def register_services():
     rospy.Service('/rosapi/topics', Topics, get_topics)
     rospy.Service('/rosapi/topics_for_type', TopicsForType, get_topics_for_type)
     rospy.Service('/rosapi/services', Services, get_services)
+    rospy.Service('/rosapi/services_for_type', ServicesForType, get_services_for_type)
     rospy.Service('/rosapi/nodes', Nodes, get_nodes)
     rospy.Service('/rosapi/topic_type', TopicType, get_topic_type)
     rospy.Service('/rosapi/service_type', ServiceType, get_service_type)
@@ -72,6 +73,10 @@ def get_topics_for_type(request):
 def get_services(request):
     """ Called by the rosapi/Services service. Returns a list of all the services being advertised. """
     return ServicesResponse(proxy.get_services())
+
+def get_services_for_type(request):
+    """ Called by the rosapi/ServicesForType service. Returns a list of all the services that are publishing a given type """
+    return ServicesForTypeResponse(proxy.get_services_for_type(request.type))
 
 def get_nodes(request):
     """ Called by the rosapi/Nodes service. Returns a list of all the nodes that are registered """
@@ -165,7 +170,7 @@ def dict_to_typedef(typedefdict):
 
 if __name__ == '__main__':
      try:
-         rospy.init_node('rosapi')
+         rospy.init_node('rosapi_node')
          register_services()
          rospy.loginfo("Rosapi started")
          rospy.spin()
