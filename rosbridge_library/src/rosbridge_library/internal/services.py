@@ -31,7 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from threading import Thread
-from rospy import ServiceProxy
+from rospy import ServiceProxy, resolve_name
 from rosservice import get_service_type
 from rosbridge_library.internal.ros_loader import get_service_class
 from rosbridge_library.internal.ros_loader import get_service_request_instance
@@ -97,6 +97,9 @@ def args_to_service_request_instance(service, inst, args):
 def call_service(service, args=None):
     # Given the service name, fetch the type and class of the service,
     # and a request instance
+
+    service = resolve_name(service)
+
     service_type = get_service_type(str(service))
     if service_type is None:
         raise InvalidServiceException(service)
