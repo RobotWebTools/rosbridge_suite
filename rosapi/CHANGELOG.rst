@@ -23,6 +23,9 @@ Changelog for package rosapi
 0.7.0 (2014-12-02)
 ------------------
 
+0.7.12 (2015-04-07)
+-------------------
+
 0.7.11 (2015-03-23)
 -------------------
 * rename rosapi script to rosapi_node to address `#170 <https://github.com/RobotWebTools/rosbridge_suite/issues/170>`_

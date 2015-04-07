@@ -34,6 +34,13 @@ Changelog for package rosbridge_library
 * request_id --> id
 * Contributors: Russell Toris
 
+0.7.12 (2015-04-07)
+-------------------
+* use <test_depend> for test dependencies
+* use rospy.resolve_name for namespaced service calls
+* fix resolving namespaced service calls
+* Contributors: Ramon Wijnands
+
 0.7.11 (2015-03-23)
 -------------------
 
