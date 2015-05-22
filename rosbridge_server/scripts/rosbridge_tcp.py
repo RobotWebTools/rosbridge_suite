@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-from rospy import init_node, get_param, loginfo, logerr
+from rospy import init_node, get_param, loginfo, logerr, on_shutdown
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 
+from functools import partial
 from signal import signal, SIGINT, SIG_DFL
 
 import SocketServer
@@ -69,7 +70,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
             self.protocol.log("info", "connected. " + str(clients_connected) + " client total.")
         except Exception as exc:
             logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
-        
+
 
     def handle(self):
         """
@@ -107,6 +108,9 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
 
         self.request.send(message)
 
+
+def shutdown_hook(server):
+        server.shutdown()
 
 if __name__ == "__main__":
     loaded = False
@@ -248,7 +252,7 @@ if __name__ == "__main__":
                 else:
                     print "--max_message_size argument provided without a value. (can be None or <Integer>)"
                     sys.exit(-1)
-                    
+
             """
             ...END (parameter handling)
             """
@@ -257,6 +261,7 @@ if __name__ == "__main__":
             # Server host is a tuple ('host', port)
             # empty string for host makes server listen on all available interfaces
             server = SocketServer.ThreadingTCPServer((host, port), RosbridgeTcpSocket)
+            on_shutdown(partial(shutdown_hook, server))
 
             loginfo("Rosbridge TCP server started on port %d", port)
 
