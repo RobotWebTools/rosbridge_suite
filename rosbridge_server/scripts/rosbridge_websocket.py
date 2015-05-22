@@ -114,7 +114,7 @@ def shutdown_hook():
 if __name__ == "__main__":
     rospy.init_node("rosbridge_websocket")
     rospy.on_shutdown(shutdown_hook)    # register shutdown hook to stop the server
-    
+
     # SSL options
     certfile = rospy.get_param('~certfile', None)
     keyfile = rospy.get_param('~keyfile', None)
