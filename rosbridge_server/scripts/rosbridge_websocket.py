@@ -38,8 +38,10 @@ from rosauth.srv import Authentication
 
 from signal import signal, SIGINT, SIG_DFL
 from functools import partial
+from socket import error
 
 from tornado.ioloop import IOLoop
+from tornado.ioloop import PeriodicCallback
 from tornado.web import Application
 from tornado.websocket import WebSocketHandler
 
@@ -78,15 +80,15 @@ class RosbridgeWebSocket(WebSocketHandler):
                 if msg['op'] == 'auth':
                     # check the authorization information
                     auth_srv = rospy.ServiceProxy('authenticate', Authentication)
-                    resp = auth_srv(msg['mac'], msg['client'], msg['dest'], 
-                                                  msg['rand'], rospy.Time(msg['t']), msg['level'], 
+                    resp = auth_srv(msg['mac'], msg['client'], msg['dest'],
+                                                  msg['rand'], rospy.Time(msg['t']), msg['level'],
                                                   rospy.Time(msg['end']))
                     self.authenticated = resp.authenticated
                     if self.authenticated:
                         rospy.loginfo("Client %d has authenticated.", self.protocol.client_id)
                         return
                 # if we are here, no valid authentication was given
-                rospy.logwarn("Client %d did not authenticate. Closing connection.", 
+                rospy.logwarn("Client %d did not authenticate. Closing connection.",
                               self.protocol.client_id)
                 self.close()
             except:
@@ -132,10 +134,18 @@ if __name__ == "__main__":
             sys.exit(-1)
 
     application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)])
-    if certfile is not None and keyfile is not None:
-        application.listen(port, address, ssl_options={ "certfile": certfile, "keyfile": keyfile})
-    else:
-        application.listen(port, address)
-    rospy.loginfo("Rosbridge WebSocket server started on port %d", port)
+
+    connected = False
+    while(not connected):
+        try:
+            if certfile is not None and keyfile is not None:
+                application.listen(port, address, ssl_options={ "certfile": certfile, "keyfile": keyfile})
+            else:
+                application.listen(port, address)
+            rospy.loginfo("Rosbridge WebSocket server started on port %d", port)
+            connected = True
+        except error as e:
+            rospy.logwarn("Unable to start server: " + str(e) + " Retrying in 2s.")
+            rospy.sleep(2.)
 
     IOLoop.instance().start()
