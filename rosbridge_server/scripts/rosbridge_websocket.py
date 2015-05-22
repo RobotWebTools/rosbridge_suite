@@ -108,10 +108,13 @@ class RosbridgeWebSocket(WebSocketHandler):
     def check_origin(self, origin):
         return True
 
+def shutdown_hook():
+    IOLoop.instance().stop()
+
 if __name__ == "__main__":
     rospy.init_node("rosbridge_websocket")
-    signal(SIGINT, SIG_DFL)
-
+    rospy.on_shutdown(shutdown_hook)    # register shutdown hook to stop the server
+    
     # SSL options
     certfile = rospy.get_param('~certfile', None)
     keyfile = rospy.get_param('~keyfile', None)
