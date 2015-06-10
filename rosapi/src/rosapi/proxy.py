@@ -65,7 +65,10 @@ def get_services():
 
 def get_services_for_type(service_type):
     """ Returns a list of services as specific service type """
-    return rosservice_find(service_type)
+    try:
+        return rosservice_find(service_type)
+    except:
+        return ""
 
 
 def get_nodes():
