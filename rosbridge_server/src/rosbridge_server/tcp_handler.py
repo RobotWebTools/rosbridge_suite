@@ -34,19 +34,19 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     def setup(self):
         cls = self.__class__
         parameters = {
-           "port": cls.port,
-           "host": cls.host,
-           "incoming_buffer": cls.incoming_buffer,
-           "socket_timeout": cls.socket_timeout,
-           "retry_startup_delay": cls.retry_startup_delay,
-           "service_request_timeout": cls.service_request_timeout,
-           "check_response_delay": cls.check_response_delay,
-           "wait_for_busy_service_provider": cls.wait_for_busy_service_provider,
-           "max_service_requests": cls.max_service_requests,
-           "fragment_timeout": cls.fragment_timeout,
-           "delay_between_messages": cls.delay_between_messages,
-           "max_message_size": cls.max_message_size
-         }
+            "port": cls.port,
+            "host": cls.host,
+            "incoming_buffer": cls.incoming_buffer,
+            "socket_timeout": cls.socket_timeout,
+            "retry_startup_delay": cls.retry_startup_delay,
+            "service_request_timeout": cls.service_request_timeout,
+            "check_response_delay": cls.check_response_delay,
+            "wait_for_busy_service_provider": cls.wait_for_busy_service_provider,
+            "max_service_requests": cls.max_service_requests,
+            "fragment_timeout": cls.fragment_timeout,
+            "delay_between_messages": cls.delay_between_messages,
+            "max_message_size": cls.max_message_size
+        }
 
         try:
             self.protocol = RosbridgeProtocol(cls.client_id_seed, parameters = parameters)
