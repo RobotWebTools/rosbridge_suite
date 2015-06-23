@@ -19,7 +19,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>rosbridge_library</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>message_generation</build_depend>
 
