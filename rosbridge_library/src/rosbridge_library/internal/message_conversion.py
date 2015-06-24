@@ -33,7 +33,7 @@
 
 import roslib
 import rospy
-
+import bson
 from rosbridge_library.internal import ros_loader
 
 import math
@@ -100,7 +100,7 @@ def _from_inst(inst, rostype):
     # Special case for uint8[], we base64 encode the string
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
-            return standard_b64encode(inst)
+            return bson.Binary(inst)
 
     # Check for time or duration
     if rostype in ros_time_types:

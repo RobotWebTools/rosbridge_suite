@@ -32,7 +32,7 @@
 
 import rospy
 import time
-
+import bson
 from rosbridge_library.internal.exceptions import InvalidArgumentException
 from rosbridge_library.internal.exceptions import MissingArgumentException
 
@@ -47,6 +47,15 @@ def is_number(s):
         return True
     except ValueError:
         return False
+        
+def has_binary(d):
+    if type(d)==bson.Binary:
+        return True
+    if type(d)==dict:
+        for k,v in d.iteritems():
+            if has_binary(v):
+                return True
+    return False                
 
 class Protocol:
     """ The interface for a single client to interact with ROS.
@@ -260,7 +269,10 @@ class Protocol:
         Returns a JSON string representing the dictionary
         """
         try:
-            return json.dumps(msg)
+            if has_binary(msg):
+                return bson.BSON.encode(msg)
+            else:    
+                return json.dumps(msg)
         except:
             if cid is not None:
                 # Only bother sending the log message if there's an id
