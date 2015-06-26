@@ -99,8 +99,6 @@ class Subscription():
         compression is to be used (current valid values are 'png')
 
          """
-        # Subscribe with the manager. This will propagate any exceptions
-        manager.subscribe(self.client_id, self.topic, self.on_msg, msg_type)
 
         client_details = {
             "throttle_rate": throttle_rate,
@@ -112,6 +110,9 @@ class Subscription():
         self.clients[sid] = client_details
 
         self.update_params()
+
+        # Subscribe with the manager. This will propagate any exceptions
+        manager.subscribe(self.client_id, self.topic, self.on_msg, msg_type)
 
     def unsubscribe(self, sid=None):
         """ Unsubscribe this particular client's subscription
