@@ -33,13 +33,14 @@
 
 import roslib
 import rospy
-import bson
+
 from rosbridge_library.internal import ros_loader
 
 import math
 import re
 import string
 from base64 import standard_b64encode, standard_b64decode
+import bson
 
 type_map = {
    "bool":    ["bool"],
@@ -64,6 +65,14 @@ list_braces = re.compile(r'\[[^\]]*\]')
 ros_binary_types_list_braces = [("uint8[]", re.compile(r'uint8\[[^\]]*\]')),
                                 ("char[]", re.compile(r'char\[[^\]]*\]'))]
 
+binary_encoder_type = rospy.get_param('~binary_encoder', 'b64')
+if binary_encoder_type == 'b64':
+    binary_encoder = standard_b64encode
+elif binary_encoder_type == 'bson':
+    binary_encoder = bson.Binary   
+else:
+    print "Unknown encoder type '%s'"%binary_encoder_type
+    exit(0)
 
 class InvalidMessageException(Exception):
     def __init__(self, inst):
@@ -100,7 +109,7 @@ def _from_inst(inst, rostype):
     # Special case for uint8[], we base64 encode the string
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
-            return bson.Binary(inst)
+            return binary_encoder(inst)
 
     # Check for time or duration
     if rostype in ros_time_types:
