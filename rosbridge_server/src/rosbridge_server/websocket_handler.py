@@ -41,7 +41,7 @@ from tornado.websocket import WebSocketHandler
 
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import json
-
+import bson
 
 class RosbridgeWebSocket(WebSocketHandler):
     client_id_seed = 0
@@ -97,7 +97,8 @@ class RosbridgeWebSocket(WebSocketHandler):
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
 
     def send_message(self, message):
-        IOLoop.instance().add_callback(partial(self.write_message, message))
+        binary = type(message)==bson.BSON
+        IOLoop.instance().add_callback(partial(self.write_message, message, binary))
 
     def check_origin(self, origin):
         return True
