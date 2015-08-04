@@ -50,6 +50,7 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     def open(self):
         cls = self.__class__
+        self.blocked = []
         try:
             self.protocol = RosbridgeProtocol(cls.client_id_seed)
             self.protocol.outgoing = self.send_message
@@ -96,9 +97,15 @@ class RosbridgeWebSocket(WebSocketHandler):
         self.protocol.finish()
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
 
-    def send_message(self, message):
+    def send_message(self, message, topic=None):
+        if (self.stream._write_buffer_size==0):
+            self.blocked = []
         binary = type(message)==bson.BSON
-        IOLoop.instance().add_callback(partial(self.write_message, message, binary))
+        if topic == None or not binary:
+            IOLoop.instance().add_callback(partial(self.write_message, message, binary))
+        elif not topic in self.blocked:
+            self.blocked.append(topic)
+            IOLoop.instance().add_callback(partial(self.write_message, message, binary))    
 
     def check_origin(self, origin):
         return True

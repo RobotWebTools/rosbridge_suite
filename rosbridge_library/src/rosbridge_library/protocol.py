@@ -244,7 +244,7 @@ class Protocol:
                     time.sleep(self.delay_between_messages)
             # else send message as it is
             else:
-                self.outgoing(serialized)
+                self.outgoing(serialized, message.get("topic"))
                 time.sleep(self.delay_between_messages)
 
     def finish(self):
