@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-from rospy import init_node, get_param, loginfo, logerr
-from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
+from rospy import init_node, get_param, loginfo, logerr, on_shutdown
+from rosbridge_server import RosbridgeTcpSocket
 
+from functools import partial
 from signal import signal, SIGINT, SIG_DFL
 
 import SocketServer
@@ -13,100 +14,9 @@ import time
 
 #TODO: add new parameters to websocket version! those of rosbridge_tcp.py might not be needed, but the others should work well when adding them to .._websocket.py
 
-# Global ID seed for clients
-client_id_seed = 0
-clients_connected = 0
 
-# list of possible parameters ( with internal default values <-- get overwritten from parameter server and commandline)
-# rosbridge_tcp.py:
-port = 9090                             # integer (portnumber)
-host = ""                               # hostname / IP as string
-incoming_buffer = 65536                 # bytes
-socket_timeout = 10                     # seconds
-retry_startup_delay = 5                 # seconds
-# advertise_service.py:
-service_request_timeout = 600           # seconds
-check_response_delay = 0.01             # seconds
-wait_for_busy_service_provider = 0.01   # seconds
-max_service_requests = 1000000          # requests
-# defragmentation.py:
-fragment_timeout = 600                  # seconds
-# protocol.py:
-delay_between_messages = 0.01           # seconds
-max_message_size = None                 # bytes
-
-
-class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
-    """
-    TCP Socket server for rosbridge
-    """
-
-    busy = False
-    queue = []
-
-    def setup(self):
-        global client_id_seed, clients_connected
-        parameters = {
-           "port": port,
-           "host": host,
-           "incoming_buffer": incoming_buffer,
-           "socket_timeout": socket_timeout,
-           "retry_startup_delay": retry_startup_delay,
-           "service_request_timeout": service_request_timeout,
-           "check_response_delay": check_response_delay,
-           "wait_for_busy_service_provider": wait_for_busy_service_provider,
-           "max_service_requests": max_service_requests,
-           "fragment_timeout": fragment_timeout,
-           "delay_between_messages": delay_between_messages,
-           "max_message_size": max_message_size
-         }
-
-        try:
-            self.protocol = RosbridgeProtocol(client_id_seed, parameters = parameters)
-            self.protocol.outgoing = self.send_message
-            client_id_seed = client_id_seed + 1
-            clients_connected = clients_connected + 1
-            self.protocol.log("info", "connected. " + str(clients_connected) + " client total.")
-        except Exception as exc:
-            logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
-        
-
-    def handle(self):
-        """
-        Listen for TCP messages
-        """
-        self.request.settimeout(socket_timeout)
-        while 1:
-            try:
-              data = self.request.recv(incoming_buffer)
-              # Exit on empty string
-              if data.strip() == '':
-                  break
-              elif len(data.strip()) > 0:
-                  #time.sleep(5)
-                  self.protocol.incoming(data.strip(''))
-              else:
-                  pass
-            except Exception, e:
-                pass
-                self.protocol.log("debug", "socket connection timed out! (ignore warning if client is only listening..)")
-
-    def finish(self):
-        """
-        Called when TCP connection finishes
-        """
-        global clients_connected
-        clients_connected = clients_connected - 1
-        self.protocol.finish()
-        self.protocol.log("info", "disconnected. " + str(clients_connected) + " client total." )
-
-    def send_message(self, message=None):
-        """
-        Callback from rosbridge
-        """
-
-        self.request.send(message)
-
+def shutdown_hook(server):
+        server.shutdown()
 
 if __name__ == "__main__":
     loaded = False
@@ -131,18 +41,18 @@ if __name__ == "__main__":
 #TODO: check if ROS parameter server uses None string for 'None-value' or Null or something else, then change code accordingly
 
             # update parameters from parameter server or use default value ( second parameter of get_param )
-            port = get_param('~port', port)
-            host = get_param('~host', host)
-            incoming_buffer = get_param('~incoming_buffer', incoming_buffer)
-            socket_timeout = get_param('~socket_timeout', socket_timeout)
-            retry_startup_delay = get_param('~retry_startup_delay', retry_startup_delay)
-            service_request_timeout = get_param('~service_request_timeout', service_request_timeout)
-            check_response_delay = get_param('~check_response_delay', check_response_delay)
-            wait_for_busy_service_provider = get_param('~wait_for_busy_service_provider', wait_for_busy_service_provider)
-            max_service_requests = get_param('~max_service_requests', max_service_requests)
-            fragment_timeout = get_param('~fragment_timeout', fragment_timeout)
-            delay_between_messages = get_param('~delay_between_messages', delay_between_messages)
-            max_message_size = get_param('~max_message_size', max_message_size)
+            port = get_param('~port', RosbridgeTcpSocket.port)
+            host = get_param('~host', RosbridgeTcpSocket.host)
+            incoming_buffer = get_param('~incoming_buffer', RosbridgeTcpSocket.incoming_buffer)
+            socket_timeout = get_param('~socket_timeout', RosbridgeTcpSocket.socket_timeout)
+            retry_startup_delay = get_param('~retry_startup_delay', RosbridgeTcpSocket.retry_startup_delay)
+            service_request_timeout = get_param('~service_request_timeout', RosbridgeTcpSocket.service_request_timeout)
+            check_response_delay = get_param('~check_response_delay', RosbridgeTcpSocket.check_response_delay)
+            wait_for_busy_service_provider = get_param('~wait_for_busy_service_provider', RosbridgeTcpSocket.wait_for_busy_service_provider)
+            max_service_requests = get_param('~max_service_requests', RosbridgeTcpSocket.max_service_requests)
+            fragment_timeout = get_param('~fragment_timeout', RosbridgeTcpSocket.fragment_timeout)
+            delay_between_messages = get_param('~delay_between_messages', RosbridgeTcpSocket.delay_between_messages)
+            max_message_size = get_param('~max_message_size', RosbridgeTcpSocket.max_message_size)
             if max_message_size == "None":
                 max_message_size = None
 
@@ -248,7 +158,21 @@ if __name__ == "__main__":
                 else:
                     print "--max_message_size argument provided without a value. (can be None or <Integer>)"
                     sys.exit(-1)
-                    
+
+            # export parameters to handler class
+            RosbridgeTcpSocket.port = port
+            RosbridgeTcpSocket.host = host
+            RosbridgeTcpSocket.incoming_buffer = incoming_buffer
+            RosbridgeTcpSocket.socket_timeout = socket_timeout
+            RosbridgeTcpSocket.retry_startup_delay = retry_startup_delay
+            RosbridgeTcpSocket.service_request_timeout = service_request_timeout
+            RosbridgeTcpSocket.check_response_delay = check_response_delay
+            RosbridgeTcpSocket.wait_for_busy_service_provider = wait_for_busy_service_provider
+            RosbridgeTcpSocket.max_service_requests = max_service_requests
+            RosbridgeTcpSocket.fragment_timeout = fragment_timeout
+            RosbridgeTcpSocket.delay_between_messages = delay_between_messages
+            RosbridgeTcpSocket.max_message_size = max_message_size
+
             """
             ...END (parameter handling)
             """
@@ -257,6 +181,7 @@ if __name__ == "__main__":
             # Server host is a tuple ('host', port)
             # empty string for host makes server listen on all available interfaces
             server = SocketServer.ThreadingTCPServer((host, port), RosbridgeTcpSocket)
+            on_shutdown(partial(shutdown_hook, server))
 
             loginfo("Rosbridge TCP server started on port %d", port)
 

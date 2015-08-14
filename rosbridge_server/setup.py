@@ -9,7 +9,13 @@ from distutils.core import setup, Extension
 from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup(
-    packages=['backports', 'backports.ssl_match_hostname', 'tornado', 'tornado.platform'],
+    packages=[
+        'rosbridge_server',
+        'backports',
+        'backports.ssl_match_hostname',
+        'tornado',
+        'tornado.platform'
+    ],
     package_dir={'': 'src'}
 )
 

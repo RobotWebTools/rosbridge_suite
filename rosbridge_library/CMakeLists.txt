@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosbridge_library)
 
-find_package(catkin REQUIRED COMPONENTS message_generation rospy rosservice rostopic roscpp rosgraph geometry_msgs)
+find_package(catkin REQUIRED COMPONENTS message_generation rospy std_msgs geometry_msgs)
 
 # Generate messages for testing (NOINSTALL)
 add_message_files(
@@ -27,7 +27,7 @@ add_service_files(
   TestEmpty.srv
   TestMultipleRequestFields.srv
   TestMultipleResponseFields.srv
-  TestNestedService.srv  
+  TestNestedService.srv
   TestRequestAndResponse.srv
   TestRequestOnly.srv
   TestResponseOnly.srv
@@ -43,7 +43,9 @@ generate_messages(
   geometry_msgs
 )
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS message_runtime std_msgs geometry_msgs
+)
 
 # Test launch files
 # add_rostest(test/test_all.test)
