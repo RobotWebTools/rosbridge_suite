@@ -23,6 +23,11 @@ Changelog for package rosapi
 0.7.0 (2014-12-02)
 ------------------
 
+0.7.13 (2015-08-14)
+-------------------
+* Fix catkin_lint issues
+* Contributors: Matt Vollrath
+
 0.7.12 (2015-04-07)
 -------------------
 

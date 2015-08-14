@@ -34,6 +34,20 @@ Changelog for package rosbridge_library
 * request_id --> id
 * Contributors: Russell Toris
 
+0.7.13 (2015-08-14)
+-------------------
+* Nevermind o_O
+* Add test_depend too (just in case)
+* Add dependency on python bson
+* Get parameter at encode time
+* Add flag for using the bson encoding
+* revert comment regarding unpublisher
+* avoiding racing condition
+* Add bson encoding to the server side
+* Fix catkin_lint issues
+* don't unregister topic from rosbridge. It creates md5 sum warning.. #138
+* Contributors: David Lu, Jihoon Lee, Matt Vollrath, dwlee
+
 0.7.12 (2015-04-07)
 -------------------
 * use <test_depend> for test dependencies
