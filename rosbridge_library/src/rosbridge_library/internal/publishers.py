@@ -308,9 +308,10 @@ class PublisherManager():
 
         self._publishers[topic].unregister_client(client_id)
 
-        if not self._publishers[topic].has_clients():
-            self._publishers[topic].unregister()
-            del self._publishers[topic]
+        #https://github.com/RobotWebTools/rosbridge_suite/issues/138
+        #if not self._publishers[topic].has_clients():
+        #    self._publishers[topic].unregister()
+        #    del self._publishers[topic]
 
     def unregister_all(self, client_id):
         """ Unregisters a client from all publishers that they are registered
