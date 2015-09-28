@@ -86,7 +86,7 @@ def get_topic_type(topic):
 def get_service_type(service):
     """ Returns the type of the specified ROS service, """
     try:
-        return rosservice_find(service)
+        return rosservice_get_service_type(service)
     except:
         return ""
 
