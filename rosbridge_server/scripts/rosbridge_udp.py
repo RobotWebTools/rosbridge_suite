@@ -36,7 +36,7 @@ import sys
 
 from socket import error
 from twisted.internet import reactor
-from rosbridge_server import UDPHandler
+from rosbridge_server import RosbridgeUdpSocket
 def shutdown_hook():
     pass
 if __name__ == "__main__":
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     certfile = rospy.get_param('~certfile', None)
     keyfile = rospy.get_param('~keyfile', None)
     # if authentication should be used
-    RosbridgeWebSocket.authenticate = rospy.get_param('~authenticate', False)
+    RosbridgeUdpSocket.authenticate = rospy.get_param('~authenticate', False)
     port = rospy.get_param('~port', 9090)
     address = rospy.get_param('~address', "")
 
@@ -59,5 +59,5 @@ if __name__ == "__main__":
             print "--port argument provided without a value."
             sys.exit(-1)
     rospy.loginfo("Rosbridge UDP server started on port %d", port)
-    reactor.listenUDP(port, UDPHandler())
+    reactor.listenUDP(port, RosbridgeUdpSocket())
     reactor.run()

@@ -5,7 +5,7 @@ import bson
 
 from twisted.internet.protocol import DatagramProtocol
 
-class UDPHandler(DatagramProtocol):
+class RosbridgeUdpSocket(DatagramProtocol):
     client_id_seed = 0
     clients_connected = 0
     authenticate = False
@@ -26,7 +26,7 @@ class UDPHandler(DatagramProtocol):
             rospy.loginfo("Awaiting proper authentication...")
 
     def datagramReceived(self, message, (host, port)):
-        print "received %r from %s:%d" % (data, host, port)
+        #print "received %r from %s:%d" % (message, host, port)
         cls = self.__class__
         # check if we need to authenticate
         if cls.authenticate and not self.authenticated:
