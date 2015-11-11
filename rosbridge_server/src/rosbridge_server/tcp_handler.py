@@ -3,7 +3,6 @@ from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 
 import SocketServer
 
-
 class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     """
     TCP Socket server for rosbridge
@@ -90,5 +89,4 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Callback from rosbridge
         """
-
         self.request.send(message)

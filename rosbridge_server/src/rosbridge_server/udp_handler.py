@@ -3,12 +3,27 @@ from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import json
 import bson
 
-from twisted.internet.protocol import DatagramProtocol
+from twisted.internet.protocol import DatagramProtocol,Factory
 
-class RosbridgeUdpSocket(DatagramProtocol):
+class RosbridgeUdpFactory(DatagramProtocol):
+    def startProtocol(self):
+        self.socks = dict()
+    def datagramReceived(self, message, (host, port)):
+        endpoint = host.__str__() + port.__str__()
+        if endpoint in self.socks:
+            self.socks[endpoint].datagramReceived(message)
+        else:
+            writefunc = lambda msg: self.transport.write(msg, (host,port))
+            self.socks[endpoint] = RosbridgeUdpSocket(writefunc)
+            self.socks[endpoint].startProtocol()
+            self.socks[endpoint].datagramReceived(message)
+
+class RosbridgeUdpSocket:
     client_id_seed = 0
     clients_connected = 0
     authenticate = False
+    def __init__(self,write):
+        self.write = write
 
     def startProtocol(self):
         cls = self.__class__
@@ -25,8 +40,7 @@ class RosbridgeUdpSocket(DatagramProtocol):
         if cls.authenticate:
             rospy.loginfo("Awaiting proper authentication...")
 
-    def datagramReceived(self, message, (host, port)):
-        #print "received %r from %s:%d" % (message, host, port)
+    def datagramReceived(self, message):
         cls = self.__class__
         # check if we need to authenticate
         if cls.authenticate and not self.authenticated:
@@ -60,7 +74,6 @@ class RosbridgeUdpSocket(DatagramProtocol):
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
     def send_message(self, message):
         binary = type(message)==bson.BSON
-        print "sending {0}".format(message)
-        self.transport.write(message)
+        self.write(message)
     def check_origin(self, origin):
         return False
