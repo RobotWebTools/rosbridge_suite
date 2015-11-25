@@ -25,7 +25,7 @@ if __name__ == "__main__":
         retry_count += 1
         print "trying to start rosbridge TCP server.."
         try:
-            print ""
+            print "rosbridge"
             init_node("rosbridge_tcp")
             signal(SIGINT, SIG_DFL)
 
