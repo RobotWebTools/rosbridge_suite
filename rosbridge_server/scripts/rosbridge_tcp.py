@@ -180,6 +180,7 @@ if __name__ == "__main__":
 
             # Server host is a tuple ('host', port)
             # empty string for host makes server listen on all available interfaces
+            SocketServer.ThreadingTCPServer.allow_reuse_address = True
             server = SocketServer.ThreadingTCPServer((host, port), RosbridgeTcpSocket)
             on_shutdown(partial(shutdown_hook, server))
 

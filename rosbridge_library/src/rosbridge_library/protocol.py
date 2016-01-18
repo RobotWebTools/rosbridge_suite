@@ -80,7 +80,7 @@ class Protocol:
     # if this is too low, ("simple")clients network stacks will get flooded (when sending fragments of a huge message..)
     # .. depends on message_size/bandwidth/performance/client_limits/...
     # !! this might be related to (or even be avoided by using) throttle_rate !!
-    delay_between_messages = 0.01
+    delay_between_messages = 0
     # global list of non-ros advertised services
     external_service_list = {}
 
