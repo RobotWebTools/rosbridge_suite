@@ -43,13 +43,23 @@ if __name__ == "__main__":
     rospy.init_node("rosbridge_websocket")
     rospy.on_shutdown(shutdown_hook)    # register shutdown hook to stop the server
 
-    # SSL options
-    certfile = rospy.get_param('~certfile', None)
-    keyfile = rospy.get_param('~keyfile', None)
+    ##################################################
+    # Parameter handling                             #
+    ##################################################
+     # get RosbridgeProtocol parameters
+    RosbridgeUdpSocket.fragment_timeout = get_param('~fragment_timeout',
+                                                    RosbridgeUdpSocket.fragment_timeout)
+    RosbridgeUdpSocket.delay_between_messages = get_param('~delay_between_messages',
+                                                          RosbridgeUdpSocket.delay_between_messages)
+    RosbridgeUdpSocket.max_message_size = get_param('~max_message_size',
+                                                    RosbridgeUdpSocket.max_message_size)
+    if RosbridgeUdpSocket.max_message_size == "None":
+        RosbridgeUdpSocket.max_message_size = None
+
     # if authentication should be used
     RosbridgeUdpSocket.authenticate = rospy.get_param('~authenticate', False)
     port = rospy.get_param('~port', 9090)
-    address = rospy.get_param('~address', "")
+    interface = rospy.get_param('~interface', "")
 
     if "--port" in sys.argv:
         idx = sys.argv.index("--port")+1
@@ -58,6 +68,47 @@ if __name__ == "__main__":
         else:
             print "--port argument provided without a value."
             sys.exit(-1)
+
+    if "--interface" in sys.argv:
+        idx = sys.argv.index("--interface")+1
+        if idx < len(sys.argv):
+            interface = int(sys.argv[idx])
+        else:
+            print "--interface argument provided without a value."
+            sys.exit(-1)
+
+    if "--fragment_timeout" in sys.argv:
+        idx = sys.argv.index("--fragment_timeout") + 1
+        if idx < len(sys.argv):
+            RosbridgeUdpSocket.fragment_timeout = int(sys.argv[idx])
+        else:
+            print "--fragment_timeout argument provided without a value."
+            sys.exit(-1)
+
+    if "--delay_between_messages" in sys.argv:
+        idx = sys.argv.index("--delay_between_messages") + 1
+        if idx < len(sys.argv):
+            RosbridgeUdpSocket.delay_between_messages = float(sys.argv[idx])
+        else:
+            print "--delay_between_messages argument provided without a value."
+            sys.exit(-1)
+
+    if "--max_message_size" in sys.argv:
+        idx = sys.argv.index("--max_message_size") + 1
+        if idx < len(sys.argv):
+            value = sys.argv[idx]
+            if value == "None":
+                RosbridgeUdpSocket.max_message_size = None
+            else:
+                RosbridgeUdpSocket.max_message_size = int(value)
+        else:
+            print "--max_message_size argument provided without a value. (can be None or <Integer>)"
+            sys.exit(-1)
+
+    ##################################################
+    # Done with parameter handling                   #
+    ##################################################
+
     rospy.loginfo("Rosbridge UDP server started on port %d", port)
-    reactor.listenUDP(port, RosbridgeUdpFactory())
+    reactor.listenUDP(port, RosbridgeUdpFactory(), interface=interface)
     reactor.run()

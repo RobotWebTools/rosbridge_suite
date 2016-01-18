@@ -48,8 +48,20 @@ class RosbridgeWebSocket(WebSocketHandler):
     clients_connected = 0
     authenticate = False
 
+    # The following are passed on to RosbridgeProtocol
+    # defragmentation.py:
+    fragment_timeout = 600                  # seconds
+    # protocol.py:
+    delay_between_messages = 0              # seconds
+    max_message_size = None                 # bytes
+
     def open(self):
         cls = self.__class__
+        parameters = {
+            "fragment_timeout": cls.fragment_timeout,
+            "delay_between_messages": cls.delay_between_messages,
+            "max_message_size": cls.max_message_size
+        }
         try:
             self.protocol = RosbridgeProtocol(cls.client_id_seed)
             self.protocol.outgoing = self.send_message
