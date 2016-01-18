@@ -63,7 +63,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             "max_message_size": cls.max_message_size
         }
         try:
-            self.protocol = RosbridgeProtocol(cls.client_id_seed)
+            self.protocol = RosbridgeProtocol(cls.client_id_seed, parameters=parameters)
             self.protocol.outgoing = self.send_message
             self.set_nodelay(True)
             self.authenticated = False
