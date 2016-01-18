@@ -13,7 +13,6 @@
 
     <param name="port" value="$(arg port)"/>
     <param name="interface" value="$(arg interface)"/>
-    <param name="retry_startup_delay" value="$(arg retry_startup_delay)"/>
     <param name="fragment_timeout" value="$(arg fragment_timeout)"/>
     <param name="delay_between_messages" value="$(arg delay_between_messages)"/>
     <param name="max_message_size" value="$(arg max_message_size)"/>
