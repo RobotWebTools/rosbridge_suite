@@ -32,7 +32,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         }
 
         try:
-            self.protocol = RosbridgeProtocol(cls.client_id_seed, parameters = parameters)
+            self.protocol = RosbridgeProtocol(cls.client_id_seed, parameters=parameters)
             self.protocol.outgoing = self.send_message
             cls.client_id_seed += 1
             cls.clients_connected += 1

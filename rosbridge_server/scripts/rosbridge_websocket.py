@@ -53,15 +53,15 @@ if __name__ == "__main__":
     ##################################################
     # Parameter handling                             #
     ##################################################
-    retry_startup_delay = get_param('~retry_startup_delay', 2.0)  # seconds
+    retry_startup_delay = rospy.get_param('~retry_startup_delay', 2.0)  # seconds
 
     # get RosbridgeProtocol parameters
-    RosbridgeWebSocket.fragment_timeout = get_param('~fragment_timeout',
-                                                    RosbridgeWebSocket.fragment_timeout)
-    RosbridgeWebSocket.delay_between_messages = get_param('~delay_between_messages',
-                                                          RosbridgeWebSocket.delay_between_messages)
-    RosbridgeWebSocket.max_message_size = get_param('~max_message_size',
-                                                    RosbridgeWebSocket.max_message_size)
+    RosbridgeWebSocket.fragment_timeout = rospy.get_param('~fragment_timeout',
+                                                          RosbridgeWebSocket.fragment_timeout)
+    RosbridgeWebSocket.delay_between_messages = rospy.get_param('~delay_between_messages',
+                                                                RosbridgeWebSocket.delay_between_messages)
+    RosbridgeWebSocket.max_message_size = rospy.get_param('~max_message_size',
+                                                          RosbridgeWebSocket.max_message_size)
     if RosbridgeWebSocket.max_message_size == "None":
         RosbridgeWebSocket.max_message_size = None
 
