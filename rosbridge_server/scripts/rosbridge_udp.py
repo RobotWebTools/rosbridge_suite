@@ -47,12 +47,12 @@ if __name__ == "__main__":
     # Parameter handling                             #
     ##################################################
      # get RosbridgeProtocol parameters
-    RosbridgeUdpSocket.fragment_timeout = get_param('~fragment_timeout',
-                                                    RosbridgeUdpSocket.fragment_timeout)
-    RosbridgeUdpSocket.delay_between_messages = get_param('~delay_between_messages',
-                                                          RosbridgeUdpSocket.delay_between_messages)
-    RosbridgeUdpSocket.max_message_size = get_param('~max_message_size',
-                                                    RosbridgeUdpSocket.max_message_size)
+    RosbridgeUdpSocket.fragment_timeout = rospy.get_param('~fragment_timeout',
+                                                          RosbridgeUdpSocket.fragment_timeout)
+    RosbridgeUdpSocket.delay_between_messages = rospy.get_param('~delay_between_messages',
+                                                                RosbridgeUdpSocket.delay_between_messages)
+    RosbridgeUdpSocket.max_message_size = rospy.get_param('~max_message_size',
+                                                          RosbridgeUdpSocket.max_message_size)
     if RosbridgeUdpSocket.max_message_size == "None":
         RosbridgeUdpSocket.max_message_size = None
 
