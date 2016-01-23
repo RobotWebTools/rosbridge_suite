@@ -90,13 +90,13 @@ class Defragment(Capability, threading.Thread):
                     log_msg = "fragment list " + str(id) + " timed out.."
 
                     if message["id"] != id:
-                        log_msg += " -> removing it.."
+                        log_msg = ''.join([log_msg, " -> removing it.."])
                         del self.received_fragments[id]
                     else:
-                        log_msg += " -> but we're just about to add fragment #"
-                        log_msg += str(message.get("num")) + " of "
-                        log_msg += str(self.received_fragments[message.get("id")]["total"])
-                        log_msg += " ..keeping the list"
+                        log_msg = ''.join([log_msg, " -> but we're just about to add fragment #"])
+                        log_msg = ''.join([log_msg, str(message.get("num")) + " of "])
+                        log_msg = ''.join([log_msg, str(self.received_fragments[message.get("id")]["total"])])
+                        log_msg = ''.join([log_msg, " ..keeping the list"])
                     self.protocol.log("warning", log_msg)
 
         msg_opcode = message.get("op")
@@ -136,7 +136,7 @@ class Defragment(Capability, threading.Thread):
             self.received_fragments[msg_id]["fragment_list"][msg_num] = msg_data
             self.received_fragments[msg_id]["timestamp_last_append"] = now
             log_msg = "appended fragment #" + str(msg_num)
-            log_msg += " (total: " + str(msg_total)+ ") to fragment list for messageID " + str(msg_id)
+            log_msg = ''.join([log_msg, " (total: " + str(msg_total)+ ") to fragment list for messageID " + str(msg_id)])
             self.protocol.log("debug", log_msg)
         else:
             log_msg = "error while trying to append fragment " + str(msg_num)
@@ -150,7 +150,7 @@ class Defragment(Capability, threading.Thread):
         # Make sure total number of fragments received
         if existing_fragments == announced_total:
             log_msg = "enough/all fragments for messageID " + str(msg_id) + " received"
-            log_msg += " [" + str(existing_fragments) + "]"
+            log_msg =''.join([log_msg, " [" + str(existing_fragments) + "]"])
             self.protocol.log("debug", log_msg)
             # Check each fragment matches up
             received_all_fragments = True
@@ -158,7 +158,7 @@ class Defragment(Capability, threading.Thread):
                 if i not in self.received_fragments[msg_id]["fragment_list"]:
                     received_all_fragments = False
                     log_msg = "fragment #" +str(i)
-                    log_msg += " for messageID " + str(msg_id) + " is missing! "
+                    log_msg = ''.join([log_msg, " for messageID " + str(msg_id) + " is missing! "])
                     self.protocol.log("error", log_msg)
 
         self.received_fragments[msg_id]["is_reconstructing"] = received_all_fragments
@@ -170,10 +170,10 @@ class Defragment(Capability, threading.Thread):
             # Reconstruct the message
             reconstructed_msg = ""
             for i in range(0,message["total"]):
-                reconstructed_msg += self.received_fragments[msg_id]["fragment_list"][i]
+                reconstructed_msg = ''.join([reconstructed_msg, self.received_fragments[msg_id]["fragment_list"][i]])
 
             log_msg = "reconstructed original message:\n"
-            log_msg += reconstructed_msg
+            log_msg = ''.join([log_msg, reconstructed_msg])
             self.protocol.log("debug", log_msg)
 
             duration = datetime.now() - now
@@ -181,10 +181,10 @@ class Defragment(Capability, threading.Thread):
             # Pass the reconstructed message to rosbridge
             self.protocol.incoming(reconstructed_msg)
             log_msg = "reconstructed message (ID:" + str(msg_id) + ") from "
-            log_msg += str(msg_total) + " fragments. "
+            log_msg = ''.join([log_msg, str(msg_total) + " fragments. "])
             # cannot access msg.data if message is a service_response or else!
             #log_msg += "[message length: " + str(len(str(json.loads(reconstructed_msg)["msg"]["data"]))) +"]"
-            log_msg += "[duration: " + str(duration.total_seconds()) +  " s]"
+            log_msg = ''.join([log_msg, "[duration: " + str(duration.total_seconds()) +  " s]"])
             self.protocol.log("info", log_msg)
 
             # Remove fragmentation container
