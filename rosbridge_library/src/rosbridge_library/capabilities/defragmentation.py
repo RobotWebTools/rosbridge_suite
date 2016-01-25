@@ -87,10 +87,10 @@ class Defragment(Capability, threading.Thread):
                 time_diff = now - self.received_fragments[id]["timestamp_last_append"]
                 if (time_diff.total_seconds() > self.fragment_timeout and
                     not self.received_fragments[id]["is_reconstructing"]):
-                    log_msg = ["fragment list " + str(id) + " timed out.."]
+                    log_msg = ["fragment list ", str(id), " timed out.."]
 
                     if message["id"] != id:
-                        log_msg.extend([" -> removing it.."])
+                        log_msg.append(" -> removing it..")
                         del self.received_fragments[id]
                     else:
                         log_msg.extend([" -> but we're just about to add fragment #"])
@@ -171,14 +171,13 @@ class Defragment(Capability, threading.Thread):
             # Reconstruct the message
             reconstructed_msg = ''.join(self.received_fragments[msg_id]["fragment_list"][0:message["total"]])
             log_msg = ["reconstructed original message:\n"]
-            log_msg.extend(reconstructed_msg)
+            log_msg.append(reconstructed_msg)
             log_msg = ''.join(log_msg)
             self.protocol.log("debug", log_msg)
 
             duration = datetime.now() - now
 
             # Pass the reconstructed message to rosbridge
-            reconstructed_msg = ''.join(reconstructed_msg)
             self.protocol.incoming(reconstructed_msg)
             log_msg = ["reconstructed message (ID:" + str(msg_id) + ") from "]
             log_msg.extend([str(msg_total), " fragments. "])
