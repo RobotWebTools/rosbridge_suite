@@ -132,7 +132,7 @@ if __name__ == "__main__":
     application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)])
 
     connected = False
-    while(not connected):
+    while not connected and not rospy.is_shutdown():
         try:
             if certfile is not None and keyfile is not None:
                 application.listen(port, address, ssl_options={ "certfile": certfile, "keyfile": keyfile})
