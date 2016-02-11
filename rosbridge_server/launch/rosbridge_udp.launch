@@ -1,10 +1,6 @@
 <launch>
   <arg name="port" default="9090" />
-  <arg name="host" default="" />
-
-  <arg name="incoming_buffer" default="65536" />
-  <arg name="socket_timeout" default="10" />
-  <arg name="retry_startup_delay" default="5" />
+  <arg name="interface" default="" />
 
   <arg name="fragment_timeout" default="600" />
   <arg name="delay_between_messages" default="0" />
@@ -12,14 +8,11 @@
 
   <arg name="authenticate" default="false" />
 
-  <node name="rosbridge_tcp" pkg="rosbridge_server" type="rosbridge_tcp" output="screen">
+  <node name="rosbridge_udp" pkg="rosbridge_server" type="rosbridge_udp" output="screen">
     <param name="authenticate" value="$(arg authenticate)" />
 
     <param name="port" value="$(arg port)"/>
-    <param name="host" value="$(arg host)"/>
-    <param name="incoming_buffer" value="$(arg incoming_buffer)"/>
-    <param name="socket_timeout" value="$(arg socket_timeout)"/>
-    <param name="retry_startup_delay" value="$(arg retry_startup_delay)"/>
+    <param name="interface" value="$(arg interface)"/>
     <param name="fragment_timeout" value="$(arg fragment_timeout)"/>
     <param name="delay_between_messages" value="$(arg delay_between_messages)"/>
     <param name="max_message_size" value="$(arg max_message_size)"/>

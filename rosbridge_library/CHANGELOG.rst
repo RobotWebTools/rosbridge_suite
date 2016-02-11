@@ -2,37 +2,14 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.1 (2014-12-09)
-------------------
-
-0.7.5 (2014-12-26)
-------------------
-
-0.7.4 (2014-12-16)
-------------------
-
-0.7.3 (2014-12-15)
-------------------
-
-0.7.2 (2014-12-15)
-------------------
-* 0.7.1
-* update changelog
-* Contributors: Jihoon Lee
-
-0.7.0 (2014-12-02)
-------------------
-* rewrite of advertise service
-* cleanup init function
-* matches original call_service
-* matches original call_service
-* service_request --> reuse of call_service (previously defined)
-* stop_service --> unadvertise_service
-* service_name --> service
-* service_type --> type
-* removed service_module
-* request_id --> id
-* Contributors: Russell Toris
+0.7.14 (2016-02-11)
+-------------------
+* Another fix for code
+* Replaced += with ''.join() for python code
+* Default Protocol delay_between_messages = 0
+  This prevents performance problems when multiple clients are subscribing to high frequency topics.
+  Fixes `#203 <https://github.com/RobotWebTools/rosbridge_suite/issues/203>`_
+* Contributors: Matt Vollrath, kiloreux
 
 0.7.13 (2015-08-14)
 -------------------
@@ -95,6 +72,38 @@ Changelog for package rosbridge_library
 * removed service_module
 * request_id --> id
 * Contributors: Jihoon Lee, Russell Toris
+
+0.7.5 (2014-12-26)
+------------------
+
+0.7.4 (2014-12-16)
+------------------
+
+0.7.3 (2014-12-15)
+------------------
+
+0.7.2 (2014-12-15)
+------------------
+* 0.7.1
+* update changelog
+* Contributors: Jihoon Lee
+
+0.7.1 (2014-12-09)
+------------------
+
+0.7.0 (2014-12-02)
+------------------
+* rewrite of advertise service
+* cleanup init function
+* matches original call_service
+* matches original call_service
+* service_request --> reuse of call_service (previously defined)
+* stop_service --> unadvertise_service
+* service_name --> service
+* service_type --> type
+* removed service_module
+* request_id --> id
+* Contributors: Russell Toris
 
 0.6.8 (2014-11-05)
 ------------------

@@ -41,15 +41,11 @@ if __name__ == "__main__":
 #TODO: check if ROS parameter server uses None string for 'None-value' or Null or something else, then change code accordingly
 
             # update parameters from parameter server or use default value ( second parameter of get_param )
-            port = get_param('~port', RosbridgeTcpSocket.port)
-            host = get_param('~host', RosbridgeTcpSocket.host)
+            port = get_param('~port', 9090)
+            host = get_param('~host', '')
             incoming_buffer = get_param('~incoming_buffer', RosbridgeTcpSocket.incoming_buffer)
             socket_timeout = get_param('~socket_timeout', RosbridgeTcpSocket.socket_timeout)
-            retry_startup_delay = get_param('~retry_startup_delay', RosbridgeTcpSocket.retry_startup_delay)
-            service_request_timeout = get_param('~service_request_timeout', RosbridgeTcpSocket.service_request_timeout)
-            check_response_delay = get_param('~check_response_delay', RosbridgeTcpSocket.check_response_delay)
-            wait_for_busy_service_provider = get_param('~wait_for_busy_service_provider', RosbridgeTcpSocket.wait_for_busy_service_provider)
-            max_service_requests = get_param('~max_service_requests', RosbridgeTcpSocket.max_service_requests)
+            retry_startup_delay = get_param('~retry_startup_delay', 5.0)  # seconds
             fragment_timeout = get_param('~fragment_timeout', RosbridgeTcpSocket.fragment_timeout)
             delay_between_messages = get_param('~delay_between_messages', RosbridgeTcpSocket.delay_between_messages)
             max_message_size = get_param('~max_message_size', RosbridgeTcpSocket.max_message_size)
@@ -99,38 +95,6 @@ if __name__ == "__main__":
                     print "--retry_startup_delay argument provided without a value."
                     sys.exit(-1)
 
-            if "--service_request_timeout" in sys.argv:
-                idx = sys.argv.index("--service_request_timeout") + 1
-                if idx < len(sys.argv):
-                    service_request_timeout = int(sys.argv[idx])
-                else:
-                    print "--service_request_timeout argument provided without a value."
-                    sys.exit(-1)
-
-            if "--check_response_delay" in sys.argv:
-                idx = sys.argv.index("--check_response_delay") + 1
-                if idx < len(sys.argv):
-                    check_response_delay = float(sys.argv[idx])
-                else:
-                    print "--check_response_delay argument provided without a value."
-                    sys.exit(-1)
-
-            if "--wait_for_busy_service_provider" in sys.argv:
-                idx = sys.argv.index("--wait_for_busy_service_provider") + 1
-                if idx < len(sys.argv):
-                    wait_for_busy_service_provider = float(sys.argv[idx])
-                else:
-                    print "--wait_for_busy_service_provider argument provided without a value."
-                    sys.exit(-1)
-
-            if "--max_service_requests" in sys.argv:
-                idx = sys.argv.index("--max_service_requests") + 1
-                if idx < len(sys.argv):
-                    max_service_requests = int(sys.argv[idx])
-                else:
-                    print "--max_service_requests argument provided without a value."
-                    sys.exit(-1)
-
             if "--fragment_timeout" in sys.argv:
                 idx = sys.argv.index("--fragment_timeout") + 1
                 if idx < len(sys.argv):
@@ -160,15 +124,8 @@ if __name__ == "__main__":
                     sys.exit(-1)
 
             # export parameters to handler class
-            RosbridgeTcpSocket.port = port
-            RosbridgeTcpSocket.host = host
             RosbridgeTcpSocket.incoming_buffer = incoming_buffer
             RosbridgeTcpSocket.socket_timeout = socket_timeout
-            RosbridgeTcpSocket.retry_startup_delay = retry_startup_delay
-            RosbridgeTcpSocket.service_request_timeout = service_request_timeout
-            RosbridgeTcpSocket.check_response_delay = check_response_delay
-            RosbridgeTcpSocket.wait_for_busy_service_provider = wait_for_busy_service_provider
-            RosbridgeTcpSocket.max_service_requests = max_service_requests
             RosbridgeTcpSocket.fragment_timeout = fragment_timeout
             RosbridgeTcpSocket.delay_between_messages = delay_between_messages
             RosbridgeTcpSocket.max_message_size = max_message_size
@@ -180,6 +137,7 @@ if __name__ == "__main__":
 
             # Server host is a tuple ('host', port)
             # empty string for host makes server listen on all available interfaces
+            SocketServer.ThreadingTCPServer.allow_reuse_address = True
             server = SocketServer.ThreadingTCPServer((host, port), RosbridgeTcpSocket)
             on_shutdown(partial(shutdown_hook, server))
 

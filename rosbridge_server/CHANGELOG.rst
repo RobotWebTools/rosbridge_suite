@@ -2,47 +2,27 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.1 (2014-12-09)
-------------------
-* Merge pull request `#147 <https://github.com/RobotWebTools/rosbridge_suite/issues/147>`_ from RobotWebTools/migrate_third_parties
-  separate tornado and backports from rosbridge_server
-* seprate out third party library and ros related script
-* remove setup.py
-* add rosbridge_tools as rosbridge_server dependency
-* remove python-imaging dependency. it is used in rosbridge_library
-* Contributors: Jihoon Lee, Russell Toris
-
-0.7.5 (2014-12-26)
-------------------
-* Function in robridge_tools for importing tornado
-* Revert "reverts back to internal tornado until fix is ready"
-  This reverts commit 49eeb1d97da154213d3170c95169b5677b329d07.
-* Contributors: Jon Binney
-
-0.7.4 (2014-12-16)
-------------------
-* reverts back to internal tornado until fix is ready
-* Contributors: Russell Toris
-
-0.7.3 (2014-12-15)
-------------------
-
-0.7.2 (2014-12-15)
-------------------
-* use alias to import rosbridge_tool tornado
-* move modules under rosbridge_tools
-* 0.7.1
-* update changelog
-* Merge pull request #147 from RobotWebTools/migrate_third_parties
-  separate tornado and backports from rosbridge_server
-* seprate out third party library and ros related script
-* remove setup.py
-* add rosbridge_tools as rosbridge_server dependency
-* remove python-imaging dependency. it is used in rosbridge_library
-* Contributors: Jihoon Lee, Russell Toris
-
-0.7.0 (2014-12-02)
-------------------
+0.7.14 (2016-02-11)
+-------------------
+* Abort websocket server listen() retry on shutdown
+  This allows the server to shut down via SIGINT or SIGTERM during its listen() retry loop.
+* rospy.get_param instead of get_param
+* actually use those parameters
+* remove reference to retry_startup_delay from rosbridge_udp.launch
+* clean up parameters and handling
+  * make parameters accessible via parameter server for all three versions
+  * remove old advertise_service parameters
+  * UDP and TCP can't do SSL
+  * TCP can't authenticate yet (because the RosbridgeTcpSocket class is instantiated for each request and hence does not hold state)
+  * UDP does not take a hostname or address, but rather an interface
+* Allow TCP Server to reuse address after restart
+  After killing (Ctrl-C) a rosbridge_tcp server instance which has
+  connected clients, starting a new instance (on the same port) can
+  fail with the error: '[Errno 98] Address already in use'. Although the
+  node retries until the server starts, this can take up to a few minutes.
+  Instruct the ThreadingTCPServer to allow the reuse of the same address.
+* Adding UDP
+* Contributors: Matt Vollrath, Nils Berg, Victor Savu, XuHao, xuhao1
 
 0.7.13 (2015-08-14)
 -------------------
@@ -113,6 +93,48 @@ Changelog for package rosbridge_server
 * 0.7.0
 * changelog updated
 * Contributors: Jihoon Lee, Jon Binney, Russell Toris
+
+0.7.5 (2014-12-26)
+------------------
+* Function in robridge_tools for importing tornado
+* Revert "reverts back to internal tornado until fix is ready"
+  This reverts commit 49eeb1d97da154213d3170c95169b5677b329d07.
+* Contributors: Jon Binney
+
+0.7.4 (2014-12-16)
+------------------
+* reverts back to internal tornado until fix is ready
+* Contributors: Russell Toris
+
+0.7.3 (2014-12-15)
+------------------
+
+0.7.2 (2014-12-15)
+------------------
+* use alias to import rosbridge_tool tornado
+* move modules under rosbridge_tools
+* 0.7.1
+* update changelog
+* Merge pull request #147 from RobotWebTools/migrate_third_parties
+  separate tornado and backports from rosbridge_server
+* seprate out third party library and ros related script
+* remove setup.py
+* add rosbridge_tools as rosbridge_server dependency
+* remove python-imaging dependency. it is used in rosbridge_library
+* Contributors: Jihoon Lee, Russell Toris
+
+0.7.1 (2014-12-09)
+------------------
+* Merge pull request `#147 <https://github.com/RobotWebTools/rosbridge_suite/issues/147>`_ from RobotWebTools/migrate_third_parties
+  separate tornado and backports from rosbridge_server
+* seprate out third party library and ros related script
+* remove setup.py
+* add rosbridge_tools as rosbridge_server dependency
+* remove python-imaging dependency. it is used in rosbridge_library
+* Contributors: Jihoon Lee, Russell Toris
+
+0.7.0 (2014-12-02)
+------------------
 
 0.6.8 (2014-11-05)
 ------------------

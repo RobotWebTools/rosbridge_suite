@@ -3,7 +3,6 @@ from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 
 import SocketServer
 
-
 class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     """
     TCP Socket server for rosbridge
@@ -14,42 +13,26 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     client_id_seed = 0
     clients_connected = 0
 
-    # list of possible parameters ( with internal default values
-    port = 9090                             # integer (portnumber)
-    host = ""                               # hostname / IP as string
+    # list of parameters
     incoming_buffer = 65536                 # bytes
     socket_timeout = 10                     # seconds
-    retry_startup_delay = 5                 # seconds
-    # advertise_service.py:
-    service_request_timeout = 600           # seconds
-    check_response_delay = 0.01             # seconds
-    wait_for_busy_service_provider = 0.01   # seconds
-    max_service_requests = 1000000          # requests
+    # The following are passed on to RosbridgeProtocol
     # defragmentation.py:
     fragment_timeout = 600                  # seconds
     # protocol.py:
-    delay_between_messages = 0.01           # seconds
+    delay_between_messages = 0              # seconds
     max_message_size = None                 # bytes
 
     def setup(self):
         cls = self.__class__
         parameters = {
-            "port": cls.port,
-            "host": cls.host,
-            "incoming_buffer": cls.incoming_buffer,
-            "socket_timeout": cls.socket_timeout,
-            "retry_startup_delay": cls.retry_startup_delay,
-            "service_request_timeout": cls.service_request_timeout,
-            "check_response_delay": cls.check_response_delay,
-            "wait_for_busy_service_provider": cls.wait_for_busy_service_provider,
-            "max_service_requests": cls.max_service_requests,
             "fragment_timeout": cls.fragment_timeout,
             "delay_between_messages": cls.delay_between_messages,
             "max_message_size": cls.max_message_size
         }
 
         try:
-            self.protocol = RosbridgeProtocol(cls.client_id_seed, parameters = parameters)
+            self.protocol = RosbridgeProtocol(cls.client_id_seed, parameters=parameters)
             self.protocol.outgoing = self.send_message
             cls.client_id_seed += 1
             cls.clients_connected += 1
@@ -90,5 +73,4 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Callback from rosbridge
         """
-
         self.request.send(message)

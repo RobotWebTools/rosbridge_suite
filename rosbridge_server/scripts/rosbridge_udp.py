@@ -35,17 +35,10 @@ import rospy
 import sys
 
 from socket import error
-
-from tornado.ioloop import IOLoop
-from tornado.ioloop import PeriodicCallback
-from tornado.web import Application
-
-from rosbridge_server import RosbridgeWebSocket
-
-
+from twisted.internet import reactor
+from rosbridge_server import RosbridgeUdpSocket,RosbridgeUdpFactory
 def shutdown_hook():
-    IOLoop.instance().stop()
-
+    pass
 if __name__ == "__main__":
     rospy.init_node("rosbridge_websocket")
     rospy.on_shutdown(shutdown_hook)    # register shutdown hook to stop the server
@@ -53,25 +46,20 @@ if __name__ == "__main__":
     ##################################################
     # Parameter handling                             #
     ##################################################
-    retry_startup_delay = rospy.get_param('~retry_startup_delay', 2.0)  # seconds
+     # get RosbridgeProtocol parameters
+    RosbridgeUdpSocket.fragment_timeout = rospy.get_param('~fragment_timeout',
+                                                          RosbridgeUdpSocket.fragment_timeout)
+    RosbridgeUdpSocket.delay_between_messages = rospy.get_param('~delay_between_messages',
+                                                                RosbridgeUdpSocket.delay_between_messages)
+    RosbridgeUdpSocket.max_message_size = rospy.get_param('~max_message_size',
+                                                          RosbridgeUdpSocket.max_message_size)
+    if RosbridgeUdpSocket.max_message_size == "None":
+        RosbridgeUdpSocket.max_message_size = None
 
-    # get RosbridgeProtocol parameters
-    RosbridgeWebSocket.fragment_timeout = rospy.get_param('~fragment_timeout',
-                                                          RosbridgeWebSocket.fragment_timeout)
-    RosbridgeWebSocket.delay_between_messages = rospy.get_param('~delay_between_messages',
-                                                                RosbridgeWebSocket.delay_between_messages)
-    RosbridgeWebSocket.max_message_size = rospy.get_param('~max_message_size',
-                                                          RosbridgeWebSocket.max_message_size)
-    if RosbridgeWebSocket.max_message_size == "None":
-        RosbridgeWebSocket.max_message_size = None
-
-    # SSL options
-    certfile = rospy.get_param('~certfile', None)
-    keyfile = rospy.get_param('~keyfile', None)
     # if authentication should be used
-    RosbridgeWebSocket.authenticate = rospy.get_param('~authenticate', False)
+    RosbridgeUdpSocket.authenticate = rospy.get_param('~authenticate', False)
     port = rospy.get_param('~port', 9090)
-    address = rospy.get_param('~address', "")
+    interface = rospy.get_param('~interface', "")
 
     if "--port" in sys.argv:
         idx = sys.argv.index("--port")+1
@@ -81,26 +69,18 @@ if __name__ == "__main__":
             print "--port argument provided without a value."
             sys.exit(-1)
 
-    if "--address" in sys.argv:
-        idx = sys.argv.index("--address")+1
+    if "--interface" in sys.argv:
+        idx = sys.argv.index("--interface")+1
         if idx < len(sys.argv):
-            address = int(sys.argv[idx])
+            interface = int(sys.argv[idx])
         else:
-            print "--address argument provided without a value."
-            sys.exit(-1)
-
-    if "--retry_startup_delay" in sys.argv:
-        idx = sys.argv.index("--retry_startup_delay") + 1
-        if idx < len(sys.argv):
-            retry_startup_delay = int(sys.argv[idx])
-        else:
-            print "--retry_startup_delay argument provided without a value."
+            print "--interface argument provided without a value."
             sys.exit(-1)
 
     if "--fragment_timeout" in sys.argv:
         idx = sys.argv.index("--fragment_timeout") + 1
         if idx < len(sys.argv):
-            RosbridgeWebSocket.fragment_timeout = int(sys.argv[idx])
+            RosbridgeUdpSocket.fragment_timeout = int(sys.argv[idx])
         else:
             print "--fragment_timeout argument provided without a value."
             sys.exit(-1)
@@ -108,7 +88,7 @@ if __name__ == "__main__":
     if "--delay_between_messages" in sys.argv:
         idx = sys.argv.index("--delay_between_messages") + 1
         if idx < len(sys.argv):
-            RosbridgeWebSocket.delay_between_messages = float(sys.argv[idx])
+            RosbridgeUdpSocket.delay_between_messages = float(sys.argv[idx])
         else:
             print "--delay_between_messages argument provided without a value."
             sys.exit(-1)
@@ -118,9 +98,9 @@ if __name__ == "__main__":
         if idx < len(sys.argv):
             value = sys.argv[idx]
             if value == "None":
-                RosbridgeWebSocket.max_message_size = None
+                RosbridgeUdpSocket.max_message_size = None
             else:
-                RosbridgeWebSocket.max_message_size = int(value)
+                RosbridgeUdpSocket.max_message_size = int(value)
         else:
             print "--max_message_size argument provided without a value. (can be None or <Integer>)"
             sys.exit(-1)
@@ -129,20 +109,6 @@ if __name__ == "__main__":
     # Done with parameter handling                   #
     ##################################################
 
-    application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)])
-
-    connected = False
-    while not connected and not rospy.is_shutdown():
-        try:
-            if certfile is not None and keyfile is not None:
-                application.listen(port, address, ssl_options={ "certfile": certfile, "keyfile": keyfile})
-            else:
-                application.listen(port, address)
-            rospy.loginfo("Rosbridge WebSocket server started on port %d", port)
-            connected = True
-        except error as e:
-            rospy.logwarn("Unable to start server: " + str(e) +
-                          " Retrying in " + str(retry_startup_delay) + "s.")
-            rospy.sleep(retry_startup_delay)
-
-    IOLoop.instance().start()
+    rospy.loginfo("Rosbridge UDP server started on port %d", port)
+    reactor.listenUDP(port, RosbridgeUdpFactory(), interface=interface)
+    reactor.run()

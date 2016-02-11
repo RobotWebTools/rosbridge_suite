@@ -1,61 +1,40 @@
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2012, Willow Garage, Inc.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-#  * Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-#  * Redistributions in binary form must reproduce the above
-#    copyright notice, this list of conditions and the following
-#    disclaimer in the documentation and/or other materials provided
-#    with the distribution.
-#  * Neither the name of Willow Garage, Inc. nor the names of its
-#    contributors may be used to endorse or promote products derived
-#    from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-
 import rospy
-
-from rosauth.srv import Authentication
-
-from functools import partial
-
-from tornado.ioloop import IOLoop
-from tornado.websocket import WebSocketHandler
-
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import json
 import bson
 
-class RosbridgeWebSocket(WebSocketHandler):
+from twisted.internet.protocol import DatagramProtocol,Factory
+
+class RosbridgeUdpFactory(DatagramProtocol):
+    def startProtocol(self):
+        self.socks = dict()
+    def datagramReceived(self, message, (host, port)):
+        endpoint = host.__str__() + port.__str__()
+        if endpoint in self.socks:
+            self.socks[endpoint].datagramReceived(message)
+        else:
+            writefunc = lambda msg: self.transport.write(msg, (host,port))
+            self.socks[endpoint] = RosbridgeUdpSocket(writefunc)
+            self.socks[endpoint].startProtocol()
+            self.socks[endpoint].datagramReceived(message)
+
+class RosbridgeUdpSocket:
     client_id_seed = 0
     clients_connected = 0
     authenticate = False
 
-    # The following are passed on to RosbridgeProtocol
+    # The following parameters are passed on to RosbridgeProtocol
     # defragmentation.py:
     fragment_timeout = 600                  # seconds
     # protocol.py:
     delay_between_messages = 0              # seconds
     max_message_size = None                 # bytes
 
-    def open(self):
+    def __init__(self,write):
+        self.write = write
+        self.authenticated = False
+
+    def startProtocol(self):
         cls = self.__class__
         parameters = {
             "fragment_timeout": cls.fragment_timeout,
@@ -75,7 +54,7 @@ class RosbridgeWebSocket(WebSocketHandler):
         if cls.authenticate:
             rospy.loginfo("Awaiting proper authentication...")
 
-    def on_message(self, message):
+    def datagramReceived(self, message):
         cls = self.__class__
         # check if we need to authenticate
         if cls.authenticate and not self.authenticated:
@@ -102,15 +81,13 @@ class RosbridgeWebSocket(WebSocketHandler):
             # no authentication required
             self.protocol.incoming(message)
 
-    def on_close(self):
+    def stopProtocol(self):
         cls = self.__class__
         cls.clients_connected -= 1
         self.protocol.finish()
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
-
     def send_message(self, message):
         binary = type(message)==bson.BSON
-        IOLoop.instance().add_callback(partial(self.write_message, message, binary))
-
+        self.write(message)
     def check_origin(self, origin):
-        return True
+        return False
