@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.14 (2016-02-11)
+-------------------
 * Abort websocket server listen() retry on shutdown
   This allows the server to shut down via SIGINT or SIGTERM during its listen() retry loop.
 * rospy.get_param instead of get_param

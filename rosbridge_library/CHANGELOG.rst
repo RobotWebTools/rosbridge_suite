@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.14 (2016-02-11)
+-------------------
 * Another fix for code
 * Replaced += with ''.join() for python code
 * Default Protocol delay_between_messages = 0

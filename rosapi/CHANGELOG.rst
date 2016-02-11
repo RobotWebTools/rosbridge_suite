@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.14 (2016-02-11)
+-------------------
 * Update proxy.py
   Fixes an issue when call the service "/rosapi/service_type"
 * Contributors: Robert Codd-Downey
