@@ -22,4 +22,6 @@
   <run_depend>rosapi</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>rosauth</run_depend>
+  <run_depend>python-twisted-bin</run_depend>
+  <run_depend>python-twisted-web</run_depend>
 </package>

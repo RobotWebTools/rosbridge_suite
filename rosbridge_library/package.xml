@@ -37,8 +37,6 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>python-bson</run_depend>
-  <run_depend>python-twisted-bin</run_depend>
-  <run_depend>python-twisted-web</run_depend>
 
   <test_depend>actionlib_msgs</test_depend>
   <test_depend>diagnostic_msgs</test_depend>
