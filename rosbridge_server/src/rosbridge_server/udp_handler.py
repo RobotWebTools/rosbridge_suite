@@ -85,7 +85,7 @@ class RosbridgeUdpSocket:
         cls = self.__class__
         cls.clients_connected -= 1
         self.protocol.finish()
-        rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
+        rospy.logdebug("Client disconnected. %d clients total.", cls.clients_connected)
     def send_message(self, message):
         binary = type(message)==bson.BSON
         self.write(message)

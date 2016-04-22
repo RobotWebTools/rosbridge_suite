@@ -71,7 +71,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             cls.clients_connected += 1
         except Exception as exc:
             rospy.logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
-        rospy.loginfo("Client connected.  %d clients total.", cls.clients_connected)
+        rospy.logdebug("Client connected.  %d clients total.", cls.clients_connected)
         if cls.authenticate:
             rospy.loginfo("Awaiting proper authentication...")
 
@@ -106,7 +106,7 @@ class RosbridgeWebSocket(WebSocketHandler):
         cls = self.__class__
         cls.clients_connected -= 1
         self.protocol.finish()
-        rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
+        rospy.logdebug("Client disconnected. %d clients total.", cls.clients_connected)
 
     def send_message(self, message):
         binary = type(message)==bson.BSON

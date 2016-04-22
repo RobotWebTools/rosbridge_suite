@@ -36,7 +36,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
             self.protocol.outgoing = self.send_message
             cls.client_id_seed += 1
             cls.clients_connected += 1
-            self.protocol.log("info", "connected. " + str(cls.clients_connected) + " client total.")
+            self.protocol.log("debug", "connected. " + str(cls.clients_connected) + " client total.")
         except Exception as exc:
             rospy.logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
 
@@ -67,7 +67,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         cls = self.__class__
         cls.clients_connected -= 1
         self.protocol.finish()
-        self.protocol.log("info", "disconnected. " + str(cls.clients_connected) + " client total." )
+        self.protocol.log("debug", "disconnected. " + str(cls.clients_connected) + " client total." )
 
     def send_message(self, message=None):
         """
