@@ -2,6 +2,12 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.15 (2016-04-25)
+-------------------
+* Track Twisted run_depend
+  Fixes `#218 <https://github.com/RobotWebTools/rosbridge_suite/issues/218>`_
+* Contributors: Matt Vollrath
+
 0.7.14 (2016-02-11)
 -------------------
 * Abort websocket server listen() retry on shutdown
