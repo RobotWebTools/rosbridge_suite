@@ -5,6 +5,11 @@ Changelog for package rosbridge_suite
 0.7.15 (2016-04-25)
 -------------------
 
+Forthcoming
+-----------
+* changelog updated
+* Contributors: Russell Toris
+
 0.7.14 (2016-02-11)
 -------------------
 
