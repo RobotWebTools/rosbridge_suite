@@ -12,12 +12,15 @@ install(PROGRAMS
   scripts/rosbridge_websocket
   scripts/rosbridge_tcp.py
   scripts/rosbridge_tcp
+  scripts/rosbridge_udp
+  scripts/rosbridge_udp.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 install(FILES
   launch/rosbridge_websocket.launch
   launch/rosbridge_tcp.launch
+  launch/rosbridge_udp.launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
 
