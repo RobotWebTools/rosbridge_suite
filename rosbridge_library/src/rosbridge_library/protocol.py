@@ -294,7 +294,8 @@ class Protocol:
 
         """
         try:
-            return json.loads(msg)
+            return bson.BSON.decode(bson.BSON(msg))
+            #return json.loads(msg)
         except Exception, e:
             # if we did try to deserialize whole buffer .. first try to let self.incoming check for multiple/partial json-decodes before logging error
             # .. this means, if buffer is not == msg --> we tried to decode part of buffer
