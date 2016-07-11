@@ -100,8 +100,8 @@ class RosbridgeWebSocket(WebSocketHandler):
                 self.protocol.incoming(message)
         else:
             # no authentication required
-            #self.protocol.incoming(message)
-            self.protocol.incoming(json.dumps(bson.decode_all(message)[0]))
+            self.protocol.incoming(message)
+            #self.protocol.incoming(json.dumps(bson.decode_all(message)[0]))
 
     def on_close(self):
         cls = self.__class__
