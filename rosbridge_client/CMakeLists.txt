@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(rosbridge_server)
+project(rosbridge_client)
 
-find_package(catkin REQUIRED COMPONENTS rosbridge_library rosapi rospy rospy_message_converter usb_cam)
+find_package(catkin REQUIRED COMPONENTS rospy)
 
 catkin_python_setup()
 

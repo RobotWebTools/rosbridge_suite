@@ -9,6 +9,7 @@ from rospy_message_converter import message_converter
 
 ws = create_connection("ws://ineedcaffeine.xyz:9090")
 
+
 def img_cb(data):
 
     ws_data = bson.BSON.encode({
