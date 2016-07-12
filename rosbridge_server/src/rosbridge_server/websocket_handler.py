@@ -43,6 +43,7 @@ from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import json
 import bson
 
+
 class RosbridgeWebSocket(WebSocketHandler):
     client_id_seed = 0
     clients_connected = 0
