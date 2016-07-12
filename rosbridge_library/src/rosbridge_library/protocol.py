@@ -273,7 +273,7 @@ class Protocol:
             #     return bson.BSON.encode(msg)
             # else:    
             #     return json.dumps(msg)
-            bson.BSON.encode(msg)
+            return bson.BSON.encode(msg)
         except:
             if cid is not None:
                 # Only bother sending the log message if there's an id
