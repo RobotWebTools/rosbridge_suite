@@ -18,6 +18,7 @@ add_service_files(
   HasParam.srv
   MessageDetails.srv
   Nodes.srv
+  NodeDetails.srv
   Publishers.srv
   SearchParam.srv
   ServiceHost.srv
@@ -46,4 +47,3 @@ catkin_package(
 install(PROGRAMS scripts/rosapi_node
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
