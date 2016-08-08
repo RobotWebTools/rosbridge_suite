@@ -53,6 +53,15 @@ def get_topics():
     except:
         return []
 
+def get_topics_types(topics):
+    try:
+        types = []
+        for i in topics:
+            types.append(get_topic_type(i))
+        return types
+    except:
+        return[]
+
 
 def get_topics_for_type(type):
     return find_by_type(type)

@@ -11,6 +11,7 @@ add_message_files(
 
 add_service_files(
   FILES
+  TopicsTypes.srv
   DeleteParam.srv
   GetParam.srv
   GetParamNames.srv
