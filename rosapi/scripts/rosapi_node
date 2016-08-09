@@ -40,7 +40,6 @@ from rosapi.msg import *
 # Initialises the ROS node
 def register_services():
     rospy.Service('/rosapi/topics', Topics, get_topics)
-    rospy.Service('/rosapi/get_topics_types', TopicsTypes, get_topics_types)
     rospy.Service('/rosapi/topics_for_type', TopicsForType, get_topics_for_type)
     rospy.Service('/rosapi/services', Services, get_services)
     rospy.Service('/rosapi/services_for_type', ServicesForType, get_services_for_type)
@@ -66,17 +65,9 @@ def register_services():
 
 def get_topics(request):
     """ Called by the rosapi/Topics service. Returns a list of all the topics being published. """
-    return TopicsResponse(proxy.get_topics())
-
-def get_topics_types(request):
-    """ Called by the rosapi/TopicsTypes service. Returns a list of all the active topics in the ROS system and respective types"""
     topics = proxy.get_topics()
     types = proxy.get_topics_types(topics)
-    typedefs = {}
-    for i in types:
-        for j in [dict_to_typedef(d) for d in objectutils.get_typedef_recursive(i)]:
-            typedefs[j.type] = j
-    return TopicsTypesResponse(topics, types, typedefs.values())
+    return TopicsResponse(topics, types)
 
 def get_topics_for_type(request):
     """ Called by the rosapi/TopicsForType service. Returns a list of all the topics that are publishing a given type """
@@ -142,7 +133,6 @@ def get_message_details(request):
     """ Called by the rosapi/MessageDetails service.  Given the name of a message type, returns the TypeDef
     for that type."""
     typedefs = [dict_to_typedef(d) for d in objectutils.get_typedef_recursive(request.type)]
-    rospy.loginfo(typedefs)
     return MessageDetailsResponse(typedefs)
 
 def get_service_request_details(request):
