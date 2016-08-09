@@ -53,6 +53,15 @@ def get_topics():
     except:
         return []
 
+def get_topics_types(topics):
+    try:
+        types = []
+        for i in topics:
+            types.append(get_topic_type(i))
+        return types
+    except:
+        return[]
+
 
 def get_topics_for_type(type):
     return find_by_type(type)
@@ -72,6 +81,44 @@ def get_nodes():
     """ Returns a list of all the nodes registered in the ROS system """
     return rosnode.get_node_names()
 
+def get_node_publications(node):
+    """ Returns a list of topic names that are been published by the specified node """
+    try:
+      publishers, subscribers, services = Master('/rosbridge').getSystemState()
+      toReturn = []
+      for i,v in publishers:
+        if node in v:
+          toReturn.append(i)
+      toReturn.sort()
+      return toReturn
+    except socket.error:
+      return []
+    
+def get_node_subscriptions(node):
+    """ Returns a list of topic names that are been subscribed by the specified node """
+    try:
+      publishers, subscribers, services = Master('/rosbridge').getSystemState()
+      toReturn = []
+      for i,v in subscribers:
+        if node in v:
+          toReturn.append(i)
+      toReturn.sort()
+      return toReturn
+    except socket.error:
+      return []
+    
+def get_node_services(node):
+    """ Returns a list of service names that are been hosted by the specified node """
+    try:
+      publishers, subscribers, services = Master('/rosbridge').getSystemState()
+      toReturn = []
+      for i,v in services:
+        if node in v:
+          toReturn.append(i)
+      toReturn.sort()
+      return toReturn
+    except socket.error:
+      return []
 
 def get_topic_type(topic):
     """ Returns the type of the specified ROS topic """
