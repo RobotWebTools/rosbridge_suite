@@ -44,6 +44,7 @@ def register_services():
     rospy.Service('/rosapi/services', Services, get_services)
     rospy.Service('/rosapi/services_for_type', ServicesForType, get_services_for_type)
     rospy.Service('/rosapi/nodes', Nodes, get_nodes)
+    rospy.Service('/rosapi/node_details', NodeDetails, get_node_details)
     rospy.Service('/rosapi/topic_type', TopicType, get_topic_type)
     rospy.Service('/rosapi/service_type', ServiceType, get_service_type)
     rospy.Service('/rosapi/publishers', Publishers, get_publishers)
@@ -64,7 +65,9 @@ def register_services():
 
 def get_topics(request):
     """ Called by the rosapi/Topics service. Returns a list of all the topics being published. """
-    return TopicsResponse(proxy.get_topics())
+    topics = proxy.get_topics()
+    types = proxy.get_topics_types(topics)
+    return TopicsResponse(topics, types)
 
 def get_topics_for_type(request):
     """ Called by the rosapi/TopicsForType service. Returns a list of all the topics that are publishing a given type """
@@ -81,6 +84,11 @@ def get_services_for_type(request):
 def get_nodes(request):
     """ Called by the rosapi/Nodes service. Returns a list of all the nodes that are registered """
     return NodesResponse(proxy.get_nodes())
+    
+def get_node_details(request):
+    """ Called by the rosapi/Nodes service. Returns a node description """
+    node = request.node
+    return NodeDetailsResponse(proxy.get_node_subscriptions(node), proxy.get_node_publications(node), proxy.get_node_services(node))
     
 def get_topic_type(request):
     """ Called by the rosapi/TopicType service.  Given the name of a topic, returns the name of the type of that topic.
@@ -124,7 +132,8 @@ def get_service_host(request):
 def get_message_details(request):
     """ Called by the rosapi/MessageDetails service.  Given the name of a message type, returns the TypeDef
     for that type."""
-    return MessageDetailsResponse([dict_to_typedef(d) for d in objectutils.get_typedef_recursive(request.type)])
+    typedefs = [dict_to_typedef(d) for d in objectutils.get_typedef_recursive(request.type)]
+    return MessageDetailsResponse(typedefs)
 
 def get_service_request_details(request):
     """ Called by the rosapi/ServiceRequestDetails service. Given the name of a service type, returns the TypeDef
