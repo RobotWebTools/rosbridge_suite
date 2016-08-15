@@ -2,14 +2,13 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.7.15 (2016-04-25)
 -------------------
 * Track Twisted run_depend
   Fixes `#218 <https://github.com/RobotWebTools/rosbridge_suite/issues/218>`_
-* Contributors: Matt Vollrath
-
-Forthcoming
------------
 * Add rosbridge_udp cmake install rule `#225 <https://github.com/RobotWebTools/rosbridge_suite/issues/225>`_
 * Stop UDP server on ROS shutdown
 * changelog updated

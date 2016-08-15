@@ -2,11 +2,13 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.15 (2016-04-25)
--------------------
-
 Forthcoming
 -----------
+* Fixed deprecated code in pillow
+* Contributors: vladrotea
+
+0.7.15 (2016-04-25)
+-------------------
 * changelog updated
 * Contributors: Russell Toris
 
