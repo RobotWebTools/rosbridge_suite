@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.16 (2016-08-15)
+-------------------
 * Fixed deprecated code in pillow
 * Contributors: vladrotea
 
