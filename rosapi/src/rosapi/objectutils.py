@@ -199,5 +199,5 @@ def _type_name(type, instance):
 def _type_name_from_instance(instance):
     mod = instance.__module__
     type = mod[0:find(mod, '.')]+"/"+instance.__class__.__name__
-    return type   
+    return type 
     

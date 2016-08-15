@@ -38,7 +38,7 @@ from socket import error
 from twisted.internet import reactor
 from rosbridge_server import RosbridgeUdpSocket,RosbridgeUdpFactory
 def shutdown_hook():
-    pass
+    reactor.stop()
 if __name__ == "__main__":
     rospy.init_node("rosbridge_websocket")
     rospy.on_shutdown(shutdown_hook)    # register shutdown hook to stop the server
