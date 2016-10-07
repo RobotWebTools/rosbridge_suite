@@ -30,6 +30,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import fnmatch
 import rospy
 import threading
 
@@ -42,43 +43,55 @@ as JSON in order to facilitate dynamically typed SRV messages """
 # rospy parameter server isn't thread-safe
 param_server_lock = threading.RLock()
 
-def set_param(name, value):
-    d = None
-    try:
-        d = loads(value)
-    except ValueError:
-        raise Exception("Due to the type flexibility of the ROS parameter server, the value argument to set_param must be a JSON-formatted string.")
-    with param_server_lock:
-        rospy.set_param(name, d)
-    
-    
-def get_param(name, default):
-    d = None
-    if default is not "":
+def set_param(name, value, params_glob):
+    if any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
+        d = None
         try:
-            d = loads(default)
+            d = loads(value)
         except ValueError:
-            d = default
+            raise Exception("Due to the type flexibility of the ROS parameter server, the value argument to set_param must be a JSON-formatted string.")
+        with param_server_lock:
+            rospy.set_param(name, d)
     
-    with param_server_lock:
-        value = rospy.get_param(name, d)
-    return dumps(value)
+    
+def get_param(name, default, params_glob):
+    if any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
+        d = None
+        if default is not "":
+            try:
+                d = loads(default)
+            except ValueError:
+                d = default
 
-def has_param(name):
-    with param_server_lock:
-        return rospy.has_param(name)
+        with param_server_lock:
+            value = rospy.get_param(name, d)
+        return dumps(value)
+    else:
+        return default
+
+def has_param(name, params_glob):
+    if any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
+        with param_server_lock:
+            return rospy.has_param(name)
+    else:
+        return False
 
 
-def delete_param(name):
-    with param_server_lock:
-        if has_param(name):
-            rospy.delete_param(name)
+def delete_param(name, params_glob):
+    if any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
+        with param_server_lock:
+            if has_param(name):
+                rospy.delete_param(name)
         
         
-def search_param(name):
+def search_param(name, params_glob):
     with param_server_lock:
-        return rospy.search_param(name)
+        v = rospy.search_param(name)
+        if any(fnmatch.fnmatch(str(v), glob) for glob in params_glob):
+            return v
+        else:
+            return None
 
-def get_param_names():
+def get_param_names(params_glob):
     with param_server_lock:
-        return rospy.get_param_names()
+        return filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob), rospy.get_param_names())

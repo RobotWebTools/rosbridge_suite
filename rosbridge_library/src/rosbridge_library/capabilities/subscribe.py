@@ -30,6 +30,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import fnmatch
 from threading import Lock
 from functools import partial
 from rospy import loginfo
@@ -37,6 +38,7 @@ from rosbridge_library.capability import Capability
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
 from rosbridge_library.internal.pngcompression import encode
+
 try:
     from ujson import dumps
 except ImportError:
@@ -183,6 +185,8 @@ class Subscribe(Capability):
         (False, "queue_length", int), (False, "compression", (str, unicode))]
     unsubscribe_msg_fields = [(True, "topic", (str, unicode))]
 
+    topics_glob = None
+
     def __init__(self, protocol):
         # Call superclass constructor
         Capability.__init__(self, protocol)
@@ -202,6 +206,23 @@ class Subscribe(Capability):
 
         # Make the subscription
         topic = msg["topic"]
+
+        if self.topics_glob is not None:
+            self.protocol.log("info", "Subsciption glob match? "+topic)
+            match = False
+            for glob in self.topics_glob:
+                if (fnmatch.fnmatch(topic, glob)):
+                    self.protocol.log("info", "Yes, with glob: "+glob)
+                    match = True
+                    break
+            if match:
+                self.protocol.log("info", "Continuing subscription...")
+            else:
+                self.protocol.log("info", "Cancelling subscription...")
+                return
+        else:
+            self.protocol.log("info", "No topic security glob, not checking subscription...")
+
         if not topic in self._subscriptions:
             client_id = self.protocol.client_id
             cb = partial(self.publish, topic)
@@ -227,6 +248,22 @@ class Subscribe(Capability):
         self.basic_type_check(msg, self.unsubscribe_msg_fields)
 
         topic = msg["topic"]
+        if self.topics_glob is not None:
+            self.protocol.log("info", "Unsubscription glob match? "+topic)
+            match = False
+            for glob in self.topics_glob:
+                if (fnmatch.fnmatch(topic, glob)):
+                    self.protocol.log("info", "Yes, with glob: "+glob)
+                    match = True
+                    break
+            if match:
+                self.protocol.log("info", "Continuing unsubscription...")
+            else:
+                self.protocol.log("info", "Cancelling unsubscription...")
+                return
+        else:
+            self.protocol.log("info", "No topic security glob, not checking subscription...")
+
         if topic not in self._subscriptions:
             return
         self._subscriptions[topic].unsubscribe(sid)
@@ -251,6 +288,22 @@ class Subscribe(Capability):
 
         """
         # TODO: fragmentation, proper ids
+        if self.topics_glob is not None:
+            self.protocol.log("info", "Publish glob match? "+topic)
+            match = False
+            for glob in self.topics_glob:
+                if (fnmatch.fnmatch(topic, glob)):
+                    self.protocol.log("info", "Yes, with glob: "+glob)
+                    match = True
+                    break
+            if match:
+                self.protocol.log("info", "Continuing publish...")
+            else:
+                self.protocol.log("info", "Cancelling publish...")
+                return
+        else:
+            self.protocol.log("info", "No topic security glob, not checking publish...")
+
         outgoing_msg = {"op": "publish", "topic": topic, "msg": message}
         if compression=="png":
             outgoing_msg_dumped = dumps(outgoing_msg)

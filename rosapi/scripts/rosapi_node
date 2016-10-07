@@ -37,6 +37,18 @@ from rosapi import proxy, objectutils, params
 from rosapi.srv import *
 from rosapi.msg import *
 
+topics_glob = []
+services_glob = []
+params_glob = []
+
+def get_globs():
+    global topics_glob
+    global services_glob
+    global params_glob
+    topics_glob = [element.strip().strip("'") for element in rospy.get_param('~topics_glob', [])[1:-1].split(',')]
+    services_glob = [element.strip().strip("'") for element in rospy.get_param('~services_glob', [])[1:-1].split(',')]
+    params_glob = [element.strip().strip("'") for element in rospy.get_param('~params_glob', [])[1:-1].split(',')]
+
 # Initialises the ROS node
 def register_services():
     rospy.Service('/rosapi/topics', Topics, get_topics)
@@ -65,21 +77,22 @@ def register_services():
 
 def get_topics(request):
     """ Called by the rosapi/Topics service. Returns a list of all the topics being published. """
-    topics = proxy.get_topics()
-    types = proxy.get_topics_types(topics)
+    rospy.logwarn("Topic list:"+str(topics_glob))
+    topics = proxy.get_topics(topics_glob)
+    types = proxy.get_topics_types(topics, topics_glob)
     return TopicsResponse(topics, types)
 
 def get_topics_for_type(request):
     """ Called by the rosapi/TopicsForType service. Returns a list of all the topics that are publishing a given type """
-    return TopicsForTypeResponse(proxy.get_topics_for_type(request.type))
+    return TopicsForTypeResponse(proxy.get_topics_for_type(request.type, topics_glob))
 
 def get_services(request):
     """ Called by the rosapi/Services service. Returns a list of all the services being advertised. """
-    return ServicesResponse(proxy.get_services())
+    return ServicesResponse(proxy.get_services(services_glob))
 
 def get_services_for_type(request):
     """ Called by the rosapi/ServicesForType service. Returns a list of all the services that are publishing a given type """
-    return ServicesForTypeResponse(proxy.get_services_for_type(request.type))
+    return ServicesForTypeResponse(proxy.get_services_for_type(request.type, services_glob))
 
 def get_nodes(request):
     """ Called by the rosapi/Nodes service. Returns a list of all the nodes that are registered """
@@ -95,29 +108,29 @@ def get_topic_type(request):
     Request class has one field, 'topic', which is a string value (the name of the topic)
     Response class has one field, 'type', which is a string value (the type of the topic)
     If the topic does not exist, an empty string is returned. """
-    return TopicTypeResponse(proxy.get_topic_type(request.topic))
+    return TopicTypeResponse(proxy.get_topic_type(request.topic, topics_glob))
     
 def get_service_type(request):
     """ Called by the rosapi/ServiceType service.  Given the name of a service, returns the type of that service
     Request class has one field, 'service', which is a string value (the name of the service)
     Response class has one field, 'type', which is a string value (the type of the service)
     If the service does not exist, an empty string is returned. """
-    return ServiceTypeResponse(proxy.get_service_type(request.service))
+    return ServiceTypeResponse(proxy.get_service_type(request.service, services_glob))
 
 def get_publishers(request):
     """ Called by the rosapi/Publishers service.  Given the name of a topic, returns a list of node names
     that are publishing on that topic. """
-    return PublishersResponse(proxy.get_publishers(request.topic))
+    return PublishersResponse(proxy.get_publishers(request.topic, topics_glob))
 
 def get_subscribers(request):
     """ Called by the rosapi/Subscribers service.  Given the name of a topic, returns a list of node names
     that are subscribing to that topic. """
-    return SubscribersResponse(proxy.get_subscribers(request.topic))
+    return SubscribersResponse(proxy.get_subscribers(request.topic, topics_glob))
 
 def get_service_providers(request):
     """ Called by the rosapi/ServiceProviders service.  Given the name of a topic, returns a list of node names
     that are advertising that service type """
-    return ServiceProvidersResponse(proxy.get_service_providers(request.service))
+    return ServiceProvidersResponse(proxy.get_service_providers(request.service, services_glob))
 
 def get_service_node(request):
     """ Called by the rosapi/ServiceNode service.  Given the name of a service, returns the name of the node
@@ -146,29 +159,30 @@ def get_service_response_details(request):
     return ServiceResponseDetailsResponse([dict_to_typedef(d) for d in objectutils.get_service_response_typedef_recursive(request.type)])
 
 def set_param(request):
-    rosapi.params.set_param(request.name, request.value)
+    rosapi.params.set_param(request.name, request.value, params_glob)
     return SetParamResponse()
 
 def get_param(request):
-    return GetParamResponse(rosapi.params.get_param(request.name, request.default))
+    return GetParamResponse(rosapi.params.get_param(request.name, request.default, params_glob))
 
 def has_param(request):
-    return HasParamResponse(rosapi.params.has_param(request.name))
+    return HasParamResponse(rosapi.params.has_param(request.name, params_glob))
 
 def search_param(request):
-    return SearchParamResponse(rosapi.params.search_param(request.name))
+    return SearchParamResponse(rosapi.params.search_param(request.name, params_glob))
 
 def delete_param(request):
-    rosapi.params.delete_param(request.name)
+    rosapi.params.delete_param(request.name, params_glob)
     return DeleteParamResponse()
 
 def get_param_names(request):
-    return GetParamNamesResponse(rosapi.params.get_param_names())
+    return GetParamNamesResponse(rosapi.params.get_param_names(params_glob))
 
 def get_time(request):
     return GetTimeResponse(rospy.get_rostime())
 
 def dict_to_typedef(typedefdict):
+    rospy.logwarn(typedefdict)
     typedef = TypeDef()
     typedef.type = typedefdict["type"]
     typedef.fieldnames = typedefdict["fieldnames"]
@@ -180,6 +194,7 @@ def dict_to_typedef(typedefdict):
 if __name__ == '__main__':
      try:
          rospy.init_node('rosapi_node')
+         get_globs()
          register_services()
          rospy.loginfo("Rosapi started")
          rospy.spin()

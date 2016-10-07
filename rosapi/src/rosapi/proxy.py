@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import fnmatch
 from rosservice import get_service_list
 from rosservice import get_service_type as rosservice_get_service_type
 from rosservice import get_service_node as rosservice_get_service_node
@@ -45,36 +46,40 @@ from rosgraph.masterapi import Master
 from rosapi.msg import TypeDef
 
 
-def get_topics():
+def get_topics(topics_glob):
     """ Returns a list of all the active topics in the ROS system """
     try:
         publishers, subscribers, services = Master('/rosbridge').getSystemState()
-        return list(set([x for x, _ in publishers] + [x for x, _, in subscribers]))
+        # Filter the list of topics by whether they are public before returning.
+        return filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in topics_glob), list(set([x for x, _ in publishers] + [x for x, _, in subscribers])))
     except:
         return []
 
-def get_topics_types(topics):
+def get_topics_types(topics, topics_glob):
     try:
         types = []
         for i in topics:
-            types.append(get_topic_type(i))
+            types.append(get_topic_type(i, topics_glob))
         return types
     except:
         return[]
 
 
-def get_topics_for_type(type):
-    return find_by_type(type)
+def get_topics_for_type(type, topics_glob):
+    # Filter the list of topics by whether they are public before returning.
+    return filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in topics_glob), find_by_type(type))
 
 
-def get_services():
+def get_services(services_glob):
     """ Returns a list of all the services advertised in the ROS system """
-    return get_service_list()
+    # Filter the list of services by whether they are public before returning.
+    return filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in services_glob), get_service_list())
 
 
-def get_services_for_type(service_type):
+def get_services_for_type(service_type, services_glob):
     """ Returns a list of services as specific service type """
-    return rosservice_find(service_type)
+    # Filter the list of services by whether they are public before returning.
+    return filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in services_glob), rosservice_find(service_type))
 
 
 def get_nodes():
@@ -120,57 +125,76 @@ def get_node_services(node):
     except socket.error:
       return []
 
-def get_topic_type(topic):
+def get_topic_type(topic, topics_glob):
     """ Returns the type of the specified ROS topic """
-    # If the topic is published, return its type
-    topic_type, _, _ = rosservice_get_topic_type(topic)
-    if topic_type is None:
-        # Topic isn't published so return an empty string
+    # Check if the topic is hidden or public.
+    if any(fnmatch.fnmatch(str(topic), glob) for glob in topics_glob):
+        # If the topic is published, return its type
+        topic_type, _, _ = rosservice_get_topic_type(topic)
+        if topic_type is None:
+            # Topic isn't published so return an empty string
+            return ""
+        return topic_type
+    else:
+        # Topic is hidden so return an empty string
         return ""
-    return topic_type
 
 
-def get_service_type(service):
+def get_service_type(service, services_glob):
     """ Returns the type of the specified ROS service, """
-    try:
-        return rosservice_get_service_type(service)
-    except:
+    # Check if the service is hidden or public.
+    if any(fnmatch.fnmatch(str(service), glob) for glob in services_glob):
+        try:
+            return rosservice_get_service_type(service)
+        except:
+            return ""
+    else:
+        # Service is hidden so return an empty string.
         return ""
 
 
-def get_publishers(topic):
+def get_publishers(topic, topics_glob):
     """ Returns a list of node names that are publishing the specified topic """
     try:
-        publishers, subscribers, services = Master('/rosbridge').getSystemState()
-        pubdict = dict(publishers)
-        if topic in pubdict:
-            return pubdict[topic]
+        if any(fnmatch.fnmatch(str(topic), glob) for glob in topics_glob):
+            publishers, subscribers, services = Master('/rosbridge').getSystemState()
+            pubdict = dict(publishers)
+            if topic in pubdict:
+                return pubdict[topic]
+            else:
+                return []
         else:
             return []
     except socket.error:
         return []
 
 
-def get_subscribers(topic):
+def get_subscribers(topic, topics_glob):
     """ Returns a list of node names that are subscribing to the specified topic """
     try:
-        publishers, subscribers, services = Master('/rosbridge').getSystemState()
-        subdict = dict(subscribers)
-        if topic in subdict:
-            return subdict[topic]
+        if any(fnmatch.fnmatch(str(topic), glob) for glob in topics_glob):
+            publishers, subscribers, services = Master('/rosbridge').getSystemState()
+            subdict = dict(subscribers)
+            if topic in subdict:
+                return subdict[topic]
+            else:
+                return []
         else:
             return []
     except socket.error:
         return []
 
 
-def get_service_providers(servicetype):
+def get_service_providers(servicetype, services_glob):
     """ Returns a list of node names that are advertising a service with the specified type """
     try:
-        publishers, subscribers, services = Master('/rosbridge').getSystemState()
-        servdict = dict(services)
-        if servicetype in servdict:
-            return servdict[servicetype]
+        if any(fnmatch.fnmatch(str(topic), glob) for glob in services_glob):
+            publishers, subscribers, services = Master('/rosbridge').getSystemState()
+            servdict = dict(services)
+            if servicetype in servdict:
+                return servdict[servicetype]
+            else:
+                return []
         else:
             return []
     except socket.error:

@@ -1,6 +1,7 @@
 from rosbridge_library.internal.ros_loader import get_service_class
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.capability import Capability
+import fnmatch
 import rospy
 import time
 
@@ -9,6 +10,8 @@ class AdvertisedServiceHandler():
 
     id_counter = 1
     responses = {}
+
+    services_glob = None
 
     def __init__(self, service_name, service_type, protocol):
         self.service_name = service_name
@@ -58,6 +61,22 @@ class AdvertiseService(Capability):
     def advertise_service(self, message):
         # parse the incoming message
         service_name = message["service"]
+
+        if self.services_glob is not None:
+            self.protocol.log("info", "Service advertisement glob match? "+topic)
+            match = False
+            for glob in self.services_glob:
+                if (fnmatch.fnmatch(service_name, glob)):
+                    self.protocol.log("info", "Yes, with glob: "+glob)
+                    match = True
+                    break
+            if match:
+                self.protocol.log("info", "Continuing service advertisement...")
+            else:
+                self.protocol.log("info", "Cancelling service advertisement...")
+                return
+        else:
+            self.protocol.log("info", "No service security glob, not checking service advertisement...")
 
         # check for an existing entry
         if service_name in self.protocol.external_service_list.keys():

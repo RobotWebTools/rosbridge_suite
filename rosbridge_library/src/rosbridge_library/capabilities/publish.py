@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import fnmatch
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
 
@@ -38,6 +39,8 @@ from rosbridge_library.internal.publishers import manager
 class Publish(Capability):
 
     publish_msg_fields = [(True, "topic", (str, unicode))]
+
+    topics_glob = None
 
     def __init__(self, protocol):
         # Call superclas constructor
@@ -55,6 +58,22 @@ class Publish(Capability):
         topic = message["topic"]
         latch = message.get("latch", False)
         queue_size = message.get("queue_size", 100)
+
+        if self.topics_glob is not None:
+            self.protocol.log("info", "Topic publish glob match? "+topic)
+            match = False
+            for glob in self.topics_glob:
+                if (fnmatch.fnmatch(topic, glob)):
+                    self.protocol.log("info", "Yes, with glob: "+glob)
+                    match = True
+                    break
+            if match:
+                self.protocol.log("info", "Continuing topic publish...")
+            else:
+                self.protocol.log("info", "Cancelling topic publish...")
+                return
+        else:
+            self.protocol.log("info", "No topic security glob, not checking publish...")
 
         # Register as a publishing client, propagating any exceptions
         client_id = self.protocol.client_id
