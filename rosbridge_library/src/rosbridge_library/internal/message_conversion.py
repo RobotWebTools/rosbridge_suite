@@ -50,7 +50,7 @@ type_map = {
    "float":   ["float32", "float64"],
    "str":     ["string"],
    "unicode": ["string"],
-   "long":    ["uint64"]
+   "long":    ["int64", "uint64"]
 }
 primitive_types = [bool, int, long, float]
 string_types = [str, unicode]
