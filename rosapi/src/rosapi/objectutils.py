@@ -149,7 +149,7 @@ def _get_special_typedef(type):
     if type=="time" or type=="duration":
         example = {
             "type": type,
-            "fieldnames": ["sec", "nsec"],
+            "fieldnames": ["secs", "nsecs"],
             "fieldtypes": ["int32", "int32"],
             "fieldarraylen": [-1, -1],
             "examples": [ "0", "0" ]
