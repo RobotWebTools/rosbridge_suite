@@ -84,7 +84,8 @@ if __name__ == "__main__":
     RosbridgeWebSocket.params_glob = [element.strip().strip("'") for element in rospy.get_param('~params_glob', [])[1:-1].split(',')]
 
     # To be able to access the list of topics and services, you must be able to access the rosapi services.
-    RosbridgeWebSocket.services_glob.append("/rosapi/*")
+    if RosbridgeWebSocket.services_glob is not None:
+        RosbridgeWebSocket.services_glob.append("/rosapi/*")
 
     if "--port" in sys.argv:
         idx = sys.argv.index("--port")+1

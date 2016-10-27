@@ -182,7 +182,6 @@ def get_time(request):
     return GetTimeResponse(rospy.get_rostime())
 
 def dict_to_typedef(typedefdict):
-    rospy.logwarn(typedefdict)
     typedef = TypeDef()
     typedef.type = typedefdict["type"]
     typedef.fieldnames = typedefdict["fieldnames"]
