@@ -59,21 +59,19 @@ class Publish(Capability):
         latch = message.get("latch", False)
         queue_size = message.get("queue_size", 100)
 
-        if self.topics_glob is not None:
-            self.protocol.log("info", "Topic publish glob match? "+topic)
+        if self.topics_glob:
+            self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in self.topics_glob:
                 if (fnmatch.fnmatch(topic, glob)):
-                    self.protocol.log("info", "Yes, with glob: "+glob)
+                    self.protocol.log("info", "Found match with glob " + glob + ", continuing publish...")
                     match = True
                     break
-            if match:
-                self.protocol.log("info", "Continuing topic publish...")
-            else:
-                self.protocol.log("info", "Cancelling topic publish...")
+            if not match:
+                self.protocol.log("info", "No match found for topic, cancelling publish...")
                 return
         else:
-            self.protocol.log("info", "No topic security glob, not checking publish...")
+            self.protocol.log("warn", "No topic security glob, not checking publish.")
 
         # Register as a publishing client, propagating any exceptions
         client_id = self.protocol.client_id

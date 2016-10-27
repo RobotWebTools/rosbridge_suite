@@ -207,21 +207,19 @@ class Subscribe(Capability):
         # Make the subscription
         topic = msg["topic"]
 
-        if self.topics_glob is not None:
-            self.protocol.log("info", "Subsciption glob match? "+topic)
+        if self.topics_glob:
+            self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in self.topics_glob:
                 if (fnmatch.fnmatch(topic, glob)):
-                    self.protocol.log("info", "Yes, with glob: "+glob)
+                    self.protocol.log("info", "Found match with glob " + glob + ", continuing subscription...")
                     match = True
                     break
-            if match:
-                self.protocol.log("info", "Continuing subscription...")
-            else:
-                self.protocol.log("info", "Cancelling subscription...")
+            if not match:
+                self.protocol.log("info", "No match found for topic, cancelling subscription...")
                 return
         else:
-            self.protocol.log("info", "No topic security glob, not checking subscription...")
+            self.protocol.log("warn", "No topic security glob, not checking subscription.")
 
         if not topic in self._subscriptions:
             client_id = self.protocol.client_id
@@ -248,21 +246,19 @@ class Subscribe(Capability):
         self.basic_type_check(msg, self.unsubscribe_msg_fields)
 
         topic = msg["topic"]
-        if self.topics_glob is not None:
-            self.protocol.log("info", "Unsubscription glob match? "+topic)
+        if self.topics_glob:
+            self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in self.topics_glob:
                 if (fnmatch.fnmatch(topic, glob)):
-                    self.protocol.log("info", "Yes, with glob: "+glob)
+                    self.protocol.log("info", "Found match with glob " + glob + ", continuing unsubscription...")
                     match = True
                     break
-            if match:
-                self.protocol.log("info", "Continuing unsubscription...")
-            else:
-                self.protocol.log("info", "Cancelling unsubscription...")
+            if not match:
+                self.protocol.log("info", "No match found for topic, cancelling unsubscription...")
                 return
         else:
-            self.protocol.log("info", "No topic security glob, not checking subscription...")
+            self.protocol.log("warn", "No topic security glob, not checking unsubscription.")
 
         if topic not in self._subscriptions:
             return
@@ -288,21 +284,19 @@ class Subscribe(Capability):
 
         """
         # TODO: fragmentation, proper ids
-        if self.topics_glob is not None:
-            self.protocol.log("info", "Publish glob match? "+topic)
+        if self.topics_glob:
+            self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in self.topics_glob:
                 if (fnmatch.fnmatch(topic, glob)):
-                    self.protocol.log("info", "Yes, with glob: "+glob)
+                    self.protocol.log("info", "Found match with glob " + glob + ", continuing topic publish...")
                     match = True
                     break
-            if match:
-                self.protocol.log("info", "Continuing publish...")
-            else:
-                self.protocol.log("info", "Cancelling publish...")
+            if not match:
+                self.protocol.log("info", "No match found for topic, cancelling topic publish...")
                 return
         else:
-            self.protocol.log("info", "No topic security glob, not checking publish...")
+            self.protocol.log("warn", "No topic security glob, not checking topic publish.")
 
         outgoing_msg = {"op": "publish", "topic": topic, "msg": message}
         if compression=="png":
