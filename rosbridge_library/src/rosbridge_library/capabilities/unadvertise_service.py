@@ -19,10 +19,10 @@ class UnadvertiseService(Capability):
         # parse the message
         service_name = message["service"]
 
-        if self.services_glob is not None:
+        if UnadvertiseService.services_glob is not None:
             self.protocol.log("info", "Service security glob enabled, checking service: " + service_name)
             match = False
-            for glob in self.services_glob:
+            for glob in UnadvertiseService.services_glob:
                 if (fnmatch.fnmatch(service_name, glob)):
                     self.protocol.log("info", "Found match with glob " + glob + ", continuing service unadvertisement...")
                     match = True

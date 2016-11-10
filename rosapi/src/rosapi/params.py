@@ -48,16 +48,15 @@ def set_param(name, value, params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to set the parameter.
         return
-    else:
-        # If the glob list is empty (i.e. false) or the parameter matches
-        # one of the glob strings, continue to set the parameter.
-        d = None
-        try:
-            d = loads(value)
-        except ValueError:
-            raise Exception("Due to the type flexibility of the ROS parameter server, the value argument to set_param must be a JSON-formatted string.")
-        with param_server_lock:
-            rospy.set_param(name, d)
+    # If the glob list is empty (i.e. false) or the parameter matches
+    # one of the glob strings, continue to set the parameter.
+    d = None
+    try:
+        d = loads(value)
+    except ValueError:
+        raise Exception("Due to the type flexibility of the ROS parameter server, the value argument to set_param must be a JSON-formatted string.")
+    with param_server_lock:
+        rospy.set_param(name, d)
     
     
 def get_param(name, default, params_glob):
@@ -65,42 +64,38 @@ def get_param(name, default, params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to get the parameter.
         return
-    else:
-        # If the glob list is empty (i.e. false) or the parameter matches
-        # one of the glob strings, continue to get the parameter.
-        d = None
-        if default is not "":
-            try:
-                d = loads(default)
-            except ValueError:
-                d = default
-
-        with param_server_lock:
-            value = rospy.get_param(name, d)
-        return dumps(value)
+    # If the glob list is empty (i.e. false) or the parameter matches
+    # one of the glob strings, continue to get the parameter.
+    d = None
+    if default is not "":
+        try:
+            d = loads(default)
+        except ValueError:
+            d = default
+    with param_server_lock:
+        value = rospy.get_param(name, d)
+    return dumps(value)
 
 def has_param(name, params_glob):
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to set the parameter.
         return False
-    else:
-        # If the glob list is empty (i.e. false) or the parameter matches
-        # one of the glob strings, check whether the parameter exists.
-        with param_server_lock:
-            return rospy.has_param(name)
+    # If the glob list is empty (i.e. false) or the parameter matches
+    # one of the glob strings, check whether the parameter exists.
+    with param_server_lock:
+        return rospy.has_param(name)
 
 def delete_param(name, params_glob):
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to delete the parameter.
         return
-    else:
-        # If the glob list is empty (i.e. false) or the parameter matches
-        # one of the glob strings, continue to delete the parameter.
-        with param_server_lock:
-            if has_param(name):
-                rospy.delete_param(name)
+    # If the glob list is empty (i.e. false) or the parameter matches
+    # one of the glob strings, continue to delete the parameter.
+    with param_server_lock:
+        if has_param(name):
+            rospy.delete_param(name)
         
         
 def search_param(name, params_glob):
@@ -108,10 +103,9 @@ def search_param(name, params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to find the parameter.
         return None
-    else:
-        # If the glob list is empty (i.e. false) or the parameter matches
-        # one of the glob strings, continue to find the parameter.
-        return rospy.search_param(name)
+    # If the glob list is empty (i.e. false) or the parameter matches
+    # one of the glob strings, continue to find the parameter.
+    return rospy.search_param(name)
 
 def get_param_names(params_glob):
     with param_server_lock:

@@ -180,6 +180,7 @@ if __name__ == "__main__":
     Publish.topics_glob = RosbridgeWebSocket.topics_glob
     AdvertiseService.services_glob = RosbridgeWebSocket.services_glob
     UnadvertiseService.services_glob = RosbridgeWebSocket.services_glob
+    CallService.services_glob = RosbridgeWebSocket.services_glob
 
     ##################################################
     # Done with parameter handling                   #

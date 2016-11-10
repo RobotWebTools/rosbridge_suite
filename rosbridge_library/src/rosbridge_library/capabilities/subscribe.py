@@ -207,10 +207,10 @@ class Subscribe(Capability):
         # Make the subscription
         topic = msg["topic"]
 
-        if self.topics_glob:
+        if Subscribe.topics_glob:
             self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in self.topics_glob:
+            for glob in Subscribe.topics_glob:
                 if (fnmatch.fnmatch(topic, glob)):
                     self.protocol.log("info", "Found match with glob " + glob + ", continuing subscription...")
                     match = True
@@ -246,10 +246,10 @@ class Subscribe(Capability):
         self.basic_type_check(msg, self.unsubscribe_msg_fields)
 
         topic = msg["topic"]
-        if self.topics_glob:
+        if Subscribe.topics_glob:
             self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in self.topics_glob:
+            for glob in Subscribe.topics_glob:
                 if (fnmatch.fnmatch(topic, glob)):
                     self.protocol.log("info", "Found match with glob " + glob + ", continuing unsubscription...")
                     match = True
@@ -284,10 +284,10 @@ class Subscribe(Capability):
 
         """
         # TODO: fragmentation, proper ids
-        if self.topics_glob:
+        if Subscribe.topics_glob:
             self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in self.topics_glob:
+            for glob in Subscribe.topics_glob:
                 if (fnmatch.fnmatch(topic, glob)):
                     self.protocol.log("info", "Found match with glob " + glob + ", continuing topic publish...")
                     match = True
