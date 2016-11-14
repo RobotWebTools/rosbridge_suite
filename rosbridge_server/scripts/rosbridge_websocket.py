@@ -42,6 +42,11 @@ from tornado.web import Application
 
 from rosbridge_server import RosbridgeWebSocket
 
+from rosbridge_library.capabilities.advertise import Advertise
+from rosbridge_library.capabilities.publish import Publish
+from rosbridge_library.capabilities.subscribe import Subscribe
+from rosbridge_library.capabilities.advertise_service import AdvertiseService
+from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 
 def shutdown_hook():
     IOLoop.instance().stop()
@@ -72,6 +77,15 @@ if __name__ == "__main__":
     RosbridgeWebSocket.authenticate = rospy.get_param('~authenticate', False)
     port = rospy.get_param('~port', 9090)
     address = rospy.get_param('~address', "")
+
+    # Get the glob strings and parse them as arrays.
+    RosbridgeWebSocket.topics_glob = [element.strip().strip("'") for element in rospy.get_param('~topics_glob', [])[1:-1].split(',')]
+    RosbridgeWebSocket.services_glob = [element.strip().strip("'") for element in rospy.get_param('~services_glob', [])[1:-1].split(',')]
+    RosbridgeWebSocket.params_glob = [element.strip().strip("'") for element in rospy.get_param('~params_glob', [])[1:-1].split(',')]
+
+    # To be able to access the list of topics and services, you must be able to access the rosapi services.
+    if RosbridgeWebSocket.services_glob is not None:
+        RosbridgeWebSocket.services_glob.append("/rosapi/*")
 
     if "--port" in sys.argv:
         idx = sys.argv.index("--port")+1
@@ -124,6 +138,49 @@ if __name__ == "__main__":
         else:
             print "--max_message_size argument provided without a value. (can be None or <Integer>)"
             sys.exit(-1)
+
+    if "--topics_glob" in sys.argv:
+        idx = sys.argv.index("--topics_glob") + 1
+        if idx < len(sys.argv):
+            value = sys.argv[idx]
+            if value == "None":
+                RosbridgeWebSocket.topics_glob = None
+            else:
+                RosbridgeWebSocket.topics_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
+        else:
+            print "--topics_glob argument provided without a value. (can be None or a list)"
+            sys.exit(-1)
+
+    if "--services_glob" in sys.argv:
+        idx = sys.argv.index("--services_glob") + 1
+        if idx < len(sys.argv):
+            value = sys.argv[idx]
+            if value == "None":
+                RosbridgeWebSocket.services_glob = None
+            else:
+                RosbridgeWebSocket.services_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
+        else:
+            print "--services_glob argument provided without a value. (can be None or a list)"
+            sys.exit(-1)
+
+    if "--params_glob" in sys.argv:
+        idx = sys.argv.index("--params_glob") + 1
+        if idx < len(sys.argv):
+            value = sys.argv[idx]
+            if value == "None":
+                RosbridgeWebSocket.params_glob = None
+            else:
+                RosbridgeWebSocket.params_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
+        else:
+            print "--params_glob argument provided without a value. (can be None or a list)"
+            sys.exit(-1)
+
+    Subscribe.topics_glob = RosbridgeWebSocket.topics_glob
+    Advertise.topics_glob = RosbridgeWebSocket.topics_glob
+    Publish.topics_glob = RosbridgeWebSocket.topics_glob
+    AdvertiseService.services_glob = RosbridgeWebSocket.services_glob
+    UnadvertiseService.services_glob = RosbridgeWebSocket.services_glob
+    CallService.services_glob = RosbridgeWebSocket.services_glob
 
     ##################################################
     # Done with parameter handling                   #

@@ -1,9 +1,12 @@
+import fnmatch
 from rosbridge_library.capability import Capability
 
 
 class UnadvertiseService(Capability):
 
     #unadvertise_service_msg_fields = [(True, "service", (str, unicode))]
+
+    services_glob = None
 
     def __init__(self, protocol):
         # Call superclass constructor
@@ -15,6 +18,20 @@ class UnadvertiseService(Capability):
     def unadvertise_service(self, message):
         # parse the message
         service_name = message["service"]
+
+        if UnadvertiseService.services_glob is not None:
+            self.protocol.log("info", "Service security glob enabled, checking service: " + service_name)
+            match = False
+            for glob in UnadvertiseService.services_glob:
+                if (fnmatch.fnmatch(service_name, glob)):
+                    self.protocol.log("info", "Found match with glob " + glob + ", continuing service unadvertisement...")
+                    match = True
+                    break
+            if not match:
+                self.protocol.log("info", "No match found for service, cancelling service unadvertisement...")
+                return
+        else:
+            self.protocol.log("warn", "No service security glob, not checking service unadvertisement...")
 
         # unregister service in ROS
         if service_name in self.protocol.external_service_list.keys():

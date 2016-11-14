@@ -30,6 +30,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import fnmatch
 import rospy
 import threading
 
@@ -42,7 +43,13 @@ as JSON in order to facilitate dynamically typed SRV messages """
 # rospy parameter server isn't thread-safe
 param_server_lock = threading.RLock()
 
-def set_param(name, value):
+def set_param(name, value, params_glob):
+    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
+        # If the glob list is not empty and there are no glob matches,
+        # stop the attempt to set the parameter.
+        return
+    # If the glob list is empty (i.e. false) or the parameter matches
+    # one of the glob strings, continue to set the parameter.
     d = None
     try:
         d = loads(value)
@@ -52,33 +59,60 @@ def set_param(name, value):
         rospy.set_param(name, d)
     
     
-def get_param(name, default):
+def get_param(name, default, params_glob):
+    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
+        # If the glob list is not empty and there are no glob matches,
+        # stop the attempt to get the parameter.
+        return
+    # If the glob list is empty (i.e. false) or the parameter matches
+    # one of the glob strings, continue to get the parameter.
     d = None
     if default is not "":
         try:
             d = loads(default)
         except ValueError:
             d = default
-    
     with param_server_lock:
         value = rospy.get_param(name, d)
     return dumps(value)
 
-def has_param(name):
+def has_param(name, params_glob):
+    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
+        # If the glob list is not empty and there are no glob matches,
+        # stop the attempt to set the parameter.
+        return False
+    # If the glob list is empty (i.e. false) or the parameter matches
+    # one of the glob strings, check whether the parameter exists.
     with param_server_lock:
         return rospy.has_param(name)
 
-
-def delete_param(name):
+def delete_param(name, params_glob):
+    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
+        # If the glob list is not empty and there are no glob matches,
+        # stop the attempt to delete the parameter.
+        return
+    # If the glob list is empty (i.e. false) or the parameter matches
+    # one of the glob strings, continue to delete the parameter.
     with param_server_lock:
         if has_param(name):
             rospy.delete_param(name)
         
         
-def search_param(name):
-    with param_server_lock:
-        return rospy.search_param(name)
+def search_param(name, params_glob):
+    if params_glob and not any(fnmatch.fnmatch(str(v), glob) for glob in params_glob):
+        # If the glob list is not empty and there are no glob matches,
+        # stop the attempt to find the parameter.
+        return None
+    # If the glob list is empty (i.e. false) or the parameter matches
+    # one of the glob strings, continue to find the parameter.
+    return rospy.search_param(name)
 
-def get_param_names():
+def get_param_names(params_glob):
     with param_server_lock:
-        return rospy.get_param_names()
+        if params_glob:
+            # If there is a parameter glob, filter by it.
+            return filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob), rospy.get_param_names())
+        else:
+            # If there is no parameter glob, don't filter.
+            return rospy.get_param_names()
+

@@ -56,6 +56,15 @@ if __name__ == "__main__":
     if RosbridgeUdpSocket.max_message_size == "None":
         RosbridgeUdpSocket.max_message_size = None
 
+    # Get the glob strings and parse them as arrays.
+    RosbridgeUdpSocket.topics_glob = [element.strip().strip("'") for element in rospy.get_param('~topics_glob', [])[1:-1].split(',')]
+    RosbridgeUdpSocket.services_glob = [element.strip().strip("'") for element in rospy.get_param('~services_glob', [])[1:-1].split(',')]
+    RosbridgeUdpSocket.params_glob = [element.strip().strip("'") for element in rospy.get_param('~params_glob', [])[1:-1].split(',')]
+
+    # To be able to access the list of topics and services, you must be able to access the rosapi services.
+    if RosbridgeUdpSocket.services_glob is not None:
+        RosbridgeUdpSocket.services_glob.append("/rosapi/*")
+
     # if authentication should be used
     RosbridgeUdpSocket.authenticate = rospy.get_param('~authenticate', False)
     port = rospy.get_param('~port', 9090)
@@ -104,6 +113,49 @@ if __name__ == "__main__":
         else:
             print "--max_message_size argument provided without a value. (can be None or <Integer>)"
             sys.exit(-1)
+
+    if "--topics_glob" in sys.argv:
+        idx = sys.argv.index("--topics_glob") + 1
+        if idx < len(sys.argv):
+            value = sys.argv[idx]
+            if value == "None":
+                RosbridgeUdpSocket.topics_glob = None
+            else:
+                RosbridgeUdpSocket.topics_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
+        else:
+            print "--topics_glob argument provided without a value. (can be None or a list)"
+            sys.exit(-1)
+
+    if "--services_glob" in sys.argv:
+        idx = sys.argv.index("--services_glob") + 1
+        if idx < len(sys.argv):
+            value = sys.argv[idx]
+            if value == "None":
+                RosbridgeUdpSocket.services_glob = None
+            else:
+                RosbridgeUdpSocket.services_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
+        else:
+            print "--services_glob argument provided without a value. (can be None or a list)"
+            sys.exit(-1)
+
+    if "--params_glob" in sys.argv:
+        idx = sys.argv.index("--params_glob") + 1
+        if idx < len(sys.argv):
+            value = sys.argv[idx]
+            if value == "None":
+                RosbridgeUdpSocket.params_glob = None
+            else:
+                RosbridgeUdpSocket.params_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
+        else:
+            print "--params_glob argument provided without a value. (can be None or a list)"
+            sys.exit(-1)
+
+    Subscribe.topics_glob = RosbridgeUdpSocket.topics_glob
+    Advertise.topics_glob = RosbridgeUdpSocket.topics_glob
+    Publish.topics_glob = RosbridgeUdpSocket.topics_glob
+    AdvertiseService.services_glob = RosbridgeUdpSocket.services_glob
+    UnadvertiseService.services_glob = RosbridgeUdpSocket.services_glob
+    CallService.services_glob = RosbridgeUdpSocket.services_glob
 
     ##################################################
     # Done with parameter handling                   #

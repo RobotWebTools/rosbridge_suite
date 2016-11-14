@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import fnmatch
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
 
@@ -75,6 +76,8 @@ class Advertise(Capability):
     advertise_msg_fields = [(True, "topic", (str, unicode)), (True, "type", (str, unicode))]
     unadvertise_msg_fields = [(True, "topic", (str, unicode))]
 
+    topics_glob = None
+
     def __init__(self, protocol):
         # Call superclas constructor
         Capability.__init__(self, protocol)
@@ -96,6 +99,20 @@ class Advertise(Capability):
         latch = message.get("latch", False)
         queue_size = message.get("queue_size", 100)
 
+        if Advertise.topics_glob:
+            self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
+            match = False
+            for glob in Advertise.topics_glob:
+                if (fnmatch.fnmatch(topic, glob)):
+                    self.protocol.log("info", "Found match with glob " + glob + ", continuing advertisement...")
+                    match = True
+                    break
+            if not match:
+                self.protocol.log("info", "No match found for topic, cancelling advertisement...")
+                return
+        else:
+            self.protocol.log("warn", "No topic security glob, not checking advertisement.")
+
         # Create the Registration if one doesn't yet exist
         if not topic in self._registrations:
             client_id = self.protocol.client_id
@@ -110,6 +127,20 @@ class Advertise(Capability):
 
         self.basic_type_check(message, self.unadvertise_msg_fields)
         topic = message["topic"]
+
+        if Advertise.topics_glob:
+            self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
+            match = False
+            for glob in Advertise.topics_glob:
+                if (fnmatch.fnmatch(topic, glob)):
+                    self.protocol.log("info", "Found match with glob " + glob + ", continuing unadvertisement...")
+                    match = True
+                    break
+            if not match:
+                self.protocol.log("info", "No match found for topic, cancelling unadvertisement...")
+                return
+        else:
+            self.protocol.log("warn", "No topic security glob, not checking unadvertisement.")
 
         # Now unadvertise the topic
         if topic not in self._registrations:

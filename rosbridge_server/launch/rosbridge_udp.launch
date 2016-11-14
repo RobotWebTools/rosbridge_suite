@@ -8,6 +8,10 @@
 
   <arg name="authenticate" default="false" />
 
+  <arg name="topics_glob" default="[]" />
+  <arg name="services_glob" default="[]" />
+  <arg name="params_glob" default="[]" />
+
   <node name="rosbridge_udp" pkg="rosbridge_server" type="rosbridge_udp" output="screen">
     <param name="authenticate" value="$(arg authenticate)" />
 
@@ -16,6 +20,10 @@
     <param name="fragment_timeout" value="$(arg fragment_timeout)"/>
     <param name="delay_between_messages" value="$(arg delay_between_messages)"/>
     <param name="max_message_size" value="$(arg max_message_size)"/>
+    
+    <param name="topics_glob" value="$(arg topics_glob)"/>
+    <param name="services_glob" value="$(arg services_glob)"/>
+    <param name="params_glob" value="$(arg params_glob)"/>
   </node>
 
   <node name="rosapi" pkg="rosapi" type="rosapi_node" />
