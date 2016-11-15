@@ -37,8 +37,17 @@ import sys
 from socket import error
 from twisted.internet import reactor
 from rosbridge_server import RosbridgeUdpSocket,RosbridgeUdpFactory
+
+from rosbridge_library.capabilities.advertise import Advertise
+from rosbridge_library.capabilities.publish import Publish
+from rosbridge_library.capabilities.subscribe import Subscribe
+from rosbridge_library.capabilities.advertise_service import AdvertiseService
+from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
+from rosbridge_library.capabilities.call_service import CallService
+
 def shutdown_hook():
     reactor.stop()
+
 if __name__ == "__main__":
     rospy.init_node("rosbridge_websocket")
     rospy.on_shutdown(shutdown_hook)    # register shutdown hook to stop the server
@@ -57,9 +66,9 @@ if __name__ == "__main__":
         RosbridgeUdpSocket.max_message_size = None
 
     # Get the glob strings and parse them as arrays.
-    RosbridgeUdpSocket.topics_glob = [element.strip().strip("'") for element in rospy.get_param('~topics_glob', [])[1:-1].split(',')]
-    RosbridgeUdpSocket.services_glob = [element.strip().strip("'") for element in rospy.get_param('~services_glob', [])[1:-1].split(',')]
-    RosbridgeUdpSocket.params_glob = [element.strip().strip("'") for element in rospy.get_param('~params_glob', [])[1:-1].split(',')]
+    RosbridgeUdpSocket.topics_glob = [element.strip().strip("'") for element in rospy.get_param('~topics_glob', '')[1:-1].split(',')]
+    RosbridgeUdpSocket.services_glob = [element.strip().strip("'") for element in rospy.get_param('~services_glob', '')[1:-1].split(',')]
+    RosbridgeUdpSocket.params_glob = [element.strip().strip("'") for element in rospy.get_param('~params_glob', '')[1:-1].split(',')]
 
     # To be able to access the list of topics and services, you must be able to access the rosapi services.
     if RosbridgeUdpSocket.services_glob is not None:
