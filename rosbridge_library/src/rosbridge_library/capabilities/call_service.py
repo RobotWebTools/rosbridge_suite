@@ -30,6 +30,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import fnmatch
 from functools import partial
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.services import ServiceCaller
