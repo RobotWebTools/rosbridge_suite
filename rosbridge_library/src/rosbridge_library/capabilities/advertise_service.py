@@ -63,18 +63,18 @@ class AdvertiseService(Capability):
         service_name = message["service"]
 
         if AdvertiseService.services_glob is not None and AdvertiseService.services_glob:
-            self.protocol.log("info", "Service security glob enabled, checking service: " + service_name)
+            self.protocol.log("debug", "Service security glob enabled, checking service: " + service_name)
             match = False
             for glob in AdvertiseService.services_glob:
                 if (fnmatch.fnmatch(service_name, glob)):
-                    self.protocol.log("info", "Found match with glob " + glob + ", continuing service advertisement...")
+                    self.protocol.log("debug", "Found match with glob " + glob + ", continuing service advertisement...")
                     match = True
                     break
             if not match:
-                self.protocol.log("info", "No match found for service, cancelling service advertisement...")
+                self.protocol.log("warn", "No match found for service, cancelling service advertisement...")
                 return
         else:
-            self.protocol.log("warn", "No service security glob, not checking service advertisement.")
+            self.protocol.log("debug", "No service security glob, not checking service advertisement.")
 
         # check for an existing entry
         if service_name in self.protocol.external_service_list.keys():

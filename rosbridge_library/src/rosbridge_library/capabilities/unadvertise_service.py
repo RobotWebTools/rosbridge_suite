@@ -20,18 +20,18 @@ class UnadvertiseService(Capability):
         service_name = message["service"]
 
         if UnadvertiseService.services_glob is not None and UnadvertiseService.services_glob:
-            self.protocol.log("info", "Service security glob enabled, checking service: " + service_name)
+            self.protocol.log("debug", "Service security glob enabled, checking service: " + service_name)
             match = False
             for glob in UnadvertiseService.services_glob:
                 if (fnmatch.fnmatch(service_name, glob)):
-                    self.protocol.log("info", "Found match with glob " + glob + ", continuing service unadvertisement...")
+                    self.protocol.log("debug", "Found match with glob " + glob + ", continuing service unadvertisement...")
                     match = True
                     break
             if not match:
-                self.protocol.log("info", "No match found for service, cancelling service unadvertisement...")
+                self.protocol.log("warn", "No match found for service, cancelling service unadvertisement...")
                 return
         else:
-            self.protocol.log("warn", "No service security glob, not checking service unadvertisement...")
+            self.protocol.log("debug", "No service security glob, not checking service unadvertisement...")
 
         # unregister service in ROS
         if service_name in self.protocol.external_service_list.keys():

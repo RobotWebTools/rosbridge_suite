@@ -100,18 +100,18 @@ class Advertise(Capability):
         queue_size = message.get("queue_size", 100)
 
         if Advertise.topics_glob is not None and Advertise.topics_glob:
-            self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
+            self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Advertise.topics_glob:
                 if (fnmatch.fnmatch(topic, glob)):
-                    self.protocol.log("info", "Found match with glob " + glob + ", continuing advertisement...")
+                    self.protocol.log("debug", "Found match with glob " + glob + ", continuing advertisement...")
                     match = True
                     break
             if not match:
-                self.protocol.log("info", "No match found for topic, cancelling advertisement...")
+                self.protocol.log("warn", "No match found for topic, cancelling advertisement...")
                 return
         else:
-            self.protocol.log("warn", "No topic security glob, not checking advertisement.")
+            self.protocol.log("debug", "No topic security glob, not checking advertisement.")
 
         # Create the Registration if one doesn't yet exist
         if not topic in self._registrations:
@@ -129,18 +129,18 @@ class Advertise(Capability):
         topic = message["topic"]
 
         if Advertise.topics_glob is not None and Advertise.topics_glob:
-            self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
+            self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Advertise.topics_glob:
                 if (fnmatch.fnmatch(topic, glob)):
-                    self.protocol.log("info", "Found match with glob " + glob + ", continuing unadvertisement...")
+                    self.protocol.log("debug", "Found match with glob " + glob + ", continuing unadvertisement...")
                     match = True
                     break
             if not match:
-                self.protocol.log("info", "No match found for topic, cancelling unadvertisement...")
+                self.protocol.log("warn", "No match found for topic, cancelling unadvertisement...")
                 return
         else:
-            self.protocol.log("warn", "No topic security glob, not checking unadvertisement.")
+            self.protocol.log("debug", "No topic security glob, not checking unadvertisement.")
 
         # Now unadvertise the topic
         if topic not in self._registrations:
