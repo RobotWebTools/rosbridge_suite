@@ -62,7 +62,7 @@ class CallService(Capability):
         compression = message.get("compression", "none")
         args = message.get("args", [])
 
-        if CallService.services_glob is not None:
+        if CallService.services_glob is not None and CallService.services_glob:
             self.protocol.log("info", "Service security glob enabled, checking service: " + service_name)
             match = False
             for glob in CallService.services_glob:

@@ -60,13 +60,18 @@ if __name__ == "__main__":
                 max_message_size = None
 
             # Get the glob strings and parse them as arrays.
-            RosbridgeTcpSocket.topics_glob = [element.strip().strip("'") for element in get_param('~topics_glob', '')[1:-1].split(',')]
-            RosbridgeTcpSocket.services_glob = [element.strip().strip("'") for element in get_param('~services_glob', '')[1:-1].split(',')]
-            RosbridgeTcpSocket.params_glob = [element.strip().strip("'") for element in get_param('~params_glob', '')[1:-1].split(',')]
-
-            # To be able to access the list of topics and services, you must be able to access the rosapi services.
-            if RosbridgeTcpSocket.services_glob is not None:
-                RosbridgeTcpSocket.services_glob.append("/rosapi/*")
+            RosbridgeTcpSocket.topics_glob = [
+                    element.strip().strip("'")
+                    for element in get_param('~topics_glob', '')[1:-1].split(',')
+                    if len(element.strip().strip("'")) > 0]
+            RosbridgeTcpSocket.services_glob = [
+                    element.strip().strip("'")
+                    for element in get_param('~services_glob', '')[1:-1].split(',')
+                    if len(element.strip().strip("'")) > 0]
+            RosbridgeTcpSocket.params_glob = [
+                    element.strip().strip("'")
+                    for element in get_param('~params_glob', '')[1:-1].split(',')
+                    if len(element.strip().strip("'")) > 0]
         
             # update parameters if provided via commandline
             # .. could implemented 'better' (value/type checking, etc.. )
@@ -151,7 +156,7 @@ if __name__ == "__main__":
                 if idx < len(sys.argv):
                     value = sys.argv[idx]
                     if value == "None":
-                        RosbridgeTcpSocket.topics_glob = None
+                        RosbridgeTcpSocket.topics_glob = []
                     else:
                         RosbridgeTcpSocket.topics_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
                 else:
@@ -163,7 +168,7 @@ if __name__ == "__main__":
                 if idx < len(sys.argv):
                     value = sys.argv[idx]
                     if value == "None":
-                        RosbridgeTcpSocket.services_glob = None
+                        RosbridgeTcpSocket.services_glob = []
                     else:
                         RosbridgeTcpSocket.services_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
                 else:
@@ -175,12 +180,16 @@ if __name__ == "__main__":
                 if idx < len(sys.argv):
                     value = sys.argv[idx]
                     if value == "None":
-                        RosbridgeTcpSocket.params_glob = None
+                        RosbridgeTcpSocket.params_glob = []
                     else:
                         RosbridgeTcpSocket.params_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
                 else:
                     print "--params_glob argument provided without a value. (can be None or a list)"
                     sys.exit(-1)
+
+            # To be able to access the list of topics and services, you must be able to access the rosapi services.
+            if RosbridgeTcpSocket.services_glob:
+                RosbridgeTcpSocket.services_glob.append("/rosapi/*")
 
             Subscribe.topics_glob = RosbridgeTcpSocket.topics_glob
             Advertise.topics_glob = RosbridgeTcpSocket.topics_glob

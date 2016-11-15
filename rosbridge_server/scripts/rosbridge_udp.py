@@ -66,13 +66,18 @@ if __name__ == "__main__":
         RosbridgeUdpSocket.max_message_size = None
 
     # Get the glob strings and parse them as arrays.
-    RosbridgeUdpSocket.topics_glob = [element.strip().strip("'") for element in rospy.get_param('~topics_glob', '')[1:-1].split(',')]
-    RosbridgeUdpSocket.services_glob = [element.strip().strip("'") for element in rospy.get_param('~services_glob', '')[1:-1].split(',')]
-    RosbridgeUdpSocket.params_glob = [element.strip().strip("'") for element in rospy.get_param('~params_glob', '')[1:-1].split(',')]
-
-    # To be able to access the list of topics and services, you must be able to access the rosapi services.
-    if RosbridgeUdpSocket.services_glob is not None:
-        RosbridgeUdpSocket.services_glob.append("/rosapi/*")
+    RosbridgeUdpSocket.topics_glob = [
+        element.strip().strip("'")
+        for element in rospy.get_param('~topics_glob', '')[1:-1].split(',')
+        if len(element.strip().strip("'")) > 0]
+    RosbridgeUdpSocket.services_glob = [
+        element.strip().strip("'")
+        for element in rospy.get_param('~services_glob', '')[1:-1].split(',')
+        if len(element.strip().strip("'")) > 0]
+    RosbridgeUdpSocket.params_glob = [
+        element.strip().strip("'")
+        for element in rospy.get_param('~params_glob', '')[1:-1].split(',')
+        if len(element.strip().strip("'")) > 0]
 
     # if authentication should be used
     RosbridgeUdpSocket.authenticate = rospy.get_param('~authenticate', False)
@@ -128,7 +133,7 @@ if __name__ == "__main__":
         if idx < len(sys.argv):
             value = sys.argv[idx]
             if value == "None":
-                RosbridgeUdpSocket.topics_glob = None
+                RosbridgeUdpSocket.topics_glob = []
             else:
                 RosbridgeUdpSocket.topics_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
         else:
@@ -140,7 +145,7 @@ if __name__ == "__main__":
         if idx < len(sys.argv):
             value = sys.argv[idx]
             if value == "None":
-                RosbridgeUdpSocket.services_glob = None
+                RosbridgeUdpSocket.services_glob = []
             else:
                 RosbridgeUdpSocket.services_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
         else:
@@ -152,12 +157,16 @@ if __name__ == "__main__":
         if idx < len(sys.argv):
             value = sys.argv[idx]
             if value == "None":
-                RosbridgeUdpSocket.params_glob = None
+                RosbridgeUdpSocket.params_glob = []
             else:
                 RosbridgeUdpSocket.params_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
         else:
             print "--params_glob argument provided without a value. (can be None or a list)"
             sys.exit(-1)
+
+    # To be able to access the list of topics and services, you must be able to access the rosapi services.
+    if RosbridgeUdpSocket.services_glob:
+        RosbridgeUdpSocket.services_glob.append("/rosapi/*")
 
     Subscribe.topics_glob = RosbridgeUdpSocket.topics_glob
     Advertise.topics_glob = RosbridgeUdpSocket.topics_glob

@@ -207,7 +207,7 @@ class Subscribe(Capability):
         # Make the subscription
         topic = msg["topic"]
 
-        if Subscribe.topics_glob:
+        if Subscribe.topics_glob is not None and Subscribe.topics_glob:
             self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Subscribe.topics_glob:
@@ -246,7 +246,7 @@ class Subscribe(Capability):
         self.basic_type_check(msg, self.unsubscribe_msg_fields)
 
         topic = msg["topic"]
-        if Subscribe.topics_glob:
+        if Subscribe.topics_glob is not None and Subscribe.topics_glob:
             self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Subscribe.topics_glob:

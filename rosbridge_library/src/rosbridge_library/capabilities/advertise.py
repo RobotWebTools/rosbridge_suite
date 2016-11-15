@@ -99,7 +99,7 @@ class Advertise(Capability):
         latch = message.get("latch", False)
         queue_size = message.get("queue_size", 100)
 
-        if Advertise.topics_glob:
+        if Advertise.topics_glob is not None and Advertise.topics_glob:
             self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Advertise.topics_glob:
@@ -128,7 +128,7 @@ class Advertise(Capability):
         self.basic_type_check(message, self.unadvertise_msg_fields)
         topic = message["topic"]
 
-        if Advertise.topics_glob:
+        if Advertise.topics_glob is not None and Advertise.topics_glob:
             self.protocol.log("info", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Advertise.topics_glob:

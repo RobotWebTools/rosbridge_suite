@@ -62,7 +62,7 @@ class AdvertiseService(Capability):
         # parse the incoming message
         service_name = message["service"]
 
-        if AdvertiseService.services_glob is not None:
+        if AdvertiseService.services_glob is not None and AdvertiseService.services_glob:
             self.protocol.log("info", "Service security glob enabled, checking service: " + service_name)
             match = False
             for glob in AdvertiseService.services_glob:
