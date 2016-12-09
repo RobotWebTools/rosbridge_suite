@@ -39,7 +39,7 @@ from rosservice import get_service_uri
 from rosservice import rosservice_find
 from rostopic import find_by_type
 from rostopic import get_topic_type as rosservice_get_topic_type
-from ros import rosnode, rosgraph, rospy
+from ros import rosnode, rosgraph
 from rosnode import get_node_names
 from rosgraph.masterapi import Master
 
