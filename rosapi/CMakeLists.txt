@@ -12,6 +12,7 @@ add_message_files(
 add_service_files(
   FILES
   DeleteParam.srv
+  GetActionServers.srv
   GetParam.srv
   GetParamNames.srv
   GetTime.srv
