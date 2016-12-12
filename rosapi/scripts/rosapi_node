@@ -66,6 +66,7 @@ def register_services():
     rospy.Service('/rosapi/services_for_type', ServicesForType, get_services_for_type)
     rospy.Service('/rosapi/nodes', Nodes, get_nodes)
     rospy.Service('/rosapi/node_details', NodeDetails, get_node_details)
+    rospy.Service('/rosapi/action_servers', GetActionServers, get_action_servers)
     rospy.Service('/rosapi/topic_type', TopicType, get_topic_type)
     rospy.Service('/rosapi/service_type', ServiceType, get_service_type)
     rospy.Service('/rosapi/publishers', Publishers, get_publishers)
@@ -112,6 +113,11 @@ def get_node_details(request):
     node = request.node
     return NodeDetailsResponse(proxy.get_node_subscriptions(node), proxy.get_node_publications(node), proxy.get_node_services(node))
     
+def get_action_servers(request):
+    """ Called by the rosapi/GetActionServers service. Returns a list of action servers based on actions standard topics """
+    topics = proxy.get_topics(topics_glob)
+    action_servers = proxy.filter_action_servers(topics)
+    return GetActionServersResponse(action_servers)
 def get_topic_type(request):
     """ Called by the rosapi/TopicType service.  Given the name of a topic, returns the name of the type of that topic.
     Request class has one field, 'topic', which is a string value (the name of the topic)
