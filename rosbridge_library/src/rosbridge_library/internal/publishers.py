@@ -33,7 +33,7 @@
 
 from time import time
 from copy import copy
-from threading import Lock
+from threading import Lock, Timer
 from rospy import Publisher, SubscribeListener
 from rospy import logwarn
 from rostopic import get_topic_type
@@ -253,6 +253,7 @@ class PublisherManager():
 
     def __init__(self):
         self._publishers = {}
+        self.unregister_timers = {}
 
     def register(self, client_id, topic, msg_type=None, latch=False, queue_size=100):
         """ Register a publisher on the specified topic.
@@ -294,6 +295,8 @@ class PublisherManager():
 
     def unregister(self, client_id, topic):
         """ Unregister a client from the publisher for the given topic.
+            Will wait some time before actually unregistering, it is done in
+            _unregister_impl
 
         If there are no clients remaining for that publisher, then the
         publisher is unregistered from the ROS Master
@@ -307,10 +310,19 @@ class PublisherManager():
             return
 
         self._publishers[topic].unregister_client(client_id)
+        UNREGISTER_TIMEOUT=10.0
+        if self.unregister_timers.has_key(topic):
+            self.unregister_timers[topic].cancel()
+            del self.unregister_timers[topic]
+        self.unregister_timers[topic] = Timer(UNREGISTER_TIMEOUT, self._unregister_impl,
+                                              [topic])
+        self.unregister_timers[topic].start()
 
+    def _unregister_impl(self, topic):
         if not self._publishers[topic].has_clients():
             self._publishers[topic].unregister()
             del self._publishers[topic]
+        del self.unregister_timers[topic]
 
     def unregister_all(self, client_id):
         """ Unregisters a client from all publishers that they are registered
