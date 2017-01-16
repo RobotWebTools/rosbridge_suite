@@ -13,9 +13,9 @@
 
   <arg name="authenticate" default="false" />
 
-  <arg name="topics_glob" default="[]" />
-  <arg name="services_glob" default="[]" />
-  <arg name="params_glob" default="[]" />
+  <arg name="topics_glob" default="[*]" />
+  <arg name="services_glob" default="[*]" />
+  <arg name="params_glob" default="[*]" />
 
   <group if="$(arg ssl)">
     <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket" output="screen">
