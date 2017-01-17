@@ -8,9 +8,9 @@
 
   <arg name="authenticate" default="false" />
 
-  <arg name="topics_glob" default="[]" />
-  <arg name="services_glob" default="[]" />
-  <arg name="params_glob" default="[]" />
+  <arg name="topics_glob" default="[*]" />
+  <arg name="services_glob" default="[*]" />
+  <arg name="params_glob" default="[*]" />
 
   <node name="rosbridge_udp" pkg="rosbridge_server" type="rosbridge_udp" output="screen">
     <param name="authenticate" value="$(arg authenticate)" />
