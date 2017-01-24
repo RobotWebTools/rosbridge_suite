@@ -47,15 +47,15 @@ def get_globs():
     global params_glob
     topics_glob = [
         element.strip().strip("'")
-        for element in rospy.get_param('~topics_glob', [])[1:-1].split(',')
+        for element in rospy.get_param('~topics_glob', '')[1:-1].split(',')
         if len(element.strip().strip("'")) > 0]
     services_glob = [
         element.strip().strip("'")
-        for element in rospy.get_param('~services_glob', [])[1:-1].split(',')
+        for element in rospy.get_param('~services_glob', '')[1:-1].split(',')
         if len(element.strip().strip("'")) > 0]
     params_glob = [
         element.strip().strip("'")
-        for element in rospy.get_param('~params_glob', [])[1:-1].split(',')
+        for element in rospy.get_param('~params_glob', '')[1:-1].split(',')
         if len(element.strip().strip("'")) > 0]
 
 # Initialises the ROS node
