@@ -2,6 +2,26 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added bug fix in rosapi
+* no rospy needed, just for debug logging
+* new service: get actionlib servers
+* adjust log level for security globs
+  Normal operation (i.e. no globs or successful verification of requests) is now silent, with illegal requests producing a warning.
+* correct default values for security globs
+  also accept empty list as the default "do not check globs" value in addition to None.
+  Finally, append rosapi service glob after processing command line input so it's not overwritten
+* Added services_glob to CallServices, added globs to rosbridge_tcp and rosbridge_udp, and other miscellanous fixes.
+* As per the suggestions of @T045T, fixed several typos, improved logging, and made some style fixes.
+* Fixed time object field definitions to match documentation.
+* Two minor fixes.
+* Added new parameters for topic and service security.
+  Added 3 new parameters to rosapi and rosbridge_server which filter the
+  topics, services, and parameters broadcast by the server to match an
+  array of glob strings.
+* Contributors: Devon Ash, Eric, Marco Arruda, Nils Berg
+
 0.7.16 (2016-08-15)
 -------------------
 * new srv: topics types and details

@@ -2,6 +2,25 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed the launch files for the tcp and udp service. Without these modifications, the rosapi node fails because some rosparams are not defined properly before. Now the launchfiles comply to the websocket version.
+* Added default topics to all launch files, and fixed bug where it would crash if nothing was put into the lists as values
+* Fix: Set default to publish all topics
+  Without better doc, one does not understand why no topics are published. I thought, something is broken.
+  With this defaults, everything is working out of the box. And for a more secure setup, one can change it.
+* correct default values for security globs
+  also accept empty list as the default "do not check globs" value in addition to None.
+  Finally, append rosapi service glob after processing command line input so it's not overwritten
+* add missing imports and correct default values for glob parameters
+* Added services_glob to CallServices, added globs to rosbridge_tcp and rosbridge_udp, and other miscellanous fixes.
+* Two minor fixes.
+* Added new parameters for topic and service security.
+  Added 3 new parameters to rosapi and rosbridge_server which filter the
+  topics, services, and parameters broadcast by the server to match an
+  array of glob strings.
+* Contributors: Devon Ash, Eric, Nils Berg, Patrick Mania, plieningerweb
+
 0.7.16 (2016-08-15)
 -------------------
 
