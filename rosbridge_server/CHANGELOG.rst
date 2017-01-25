@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.17 (2017-01-25)
+-------------------
 * Fixed the launch files for the tcp and udp service. Without these modifications, the rosapi node fails because some rosparams are not defined properly before. Now the launchfiles comply to the websocket version.
 * Added default topics to all launch files, and fixed bug where it would crash if nothing was put into the lists as values
 * Fix: Set default to publish all topics

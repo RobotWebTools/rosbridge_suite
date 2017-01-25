@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.17 (2017-01-25)
+-------------------
 * adjust log level for security globs
   Normal operation (i.e. no globs or successful verification of requests) is now silent, with illegal requests producing a warning.
 * add missing import

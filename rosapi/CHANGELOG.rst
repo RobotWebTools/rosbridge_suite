@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.17 (2017-01-25)
+-------------------
 * Added bug fix in rosapi
 * no rospy needed, just for debug logging
 * new service: get actionlib servers
