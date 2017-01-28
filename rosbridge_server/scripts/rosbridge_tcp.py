@@ -56,6 +56,8 @@ if __name__ == "__main__":
             fragment_timeout = get_param('~fragment_timeout', RosbridgeTcpSocket.fragment_timeout)
             delay_between_messages = get_param('~delay_between_messages', RosbridgeTcpSocket.delay_between_messages)
             max_message_size = get_param('~max_message_size', RosbridgeTcpSocket.max_message_size)
+            bson_only_mode = get_param('~bson_only_mode', "false")
+
             if max_message_size == "None":
                 max_message_size = None
 
@@ -149,6 +151,7 @@ if __name__ == "__main__":
             RosbridgeTcpSocket.fragment_timeout = fragment_timeout
             RosbridgeTcpSocket.delay_between_messages = delay_between_messages
             RosbridgeTcpSocket.max_message_size = max_message_size
+            RosbridgeTcpSocket.bson_only_mode = bson_only_mode
 
 
             if "--topics_glob" in sys.argv:
@@ -186,6 +189,9 @@ if __name__ == "__main__":
                 else:
                     print "--params_glob argument provided without a value. (can be None or a list)"
                     sys.exit(-1)
+
+            if "--bson_only_mode" in sys.argv:
+                bson_only_mode = True
 
             # To be able to access the list of topics and services, you must be able to access the rosapi services.
             if RosbridgeTcpSocket.services_glob:
