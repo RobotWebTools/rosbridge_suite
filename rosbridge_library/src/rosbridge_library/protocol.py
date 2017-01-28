@@ -248,7 +248,7 @@ class Protocol:
             # fragment list not empty -> send fragments
             if fragment_list != None:
                 for fragment in fragment_list:
-                    if bson_only_mode:
+                    if self.bson_only_mode:
                         self.outgoing(bson.BSON.encode(fragment))
                     else:
                         self.outgoing(json.dumps(fragment))
