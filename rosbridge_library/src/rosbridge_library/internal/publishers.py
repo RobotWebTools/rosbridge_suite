@@ -254,6 +254,7 @@ class PublisherManager():
     def __init__(self):
         self._publishers = {}
         self.unregister_timers = {}
+        self.UNREGISTER_TIMEOUT = 10.0
 
     def register(self, client_id, topic, msg_type=None, latch=False, queue_size=100):
         """ Register a publisher on the specified topic.
@@ -310,11 +311,10 @@ class PublisherManager():
             return
 
         self._publishers[topic].unregister_client(client_id)
-        UNREGISTER_TIMEOUT=10.0
         if self.unregister_timers.has_key(topic):
             self.unregister_timers[topic].cancel()
             del self.unregister_timers[topic]
-        self.unregister_timers[topic] = Timer(UNREGISTER_TIMEOUT, self._unregister_impl,
+        self.unregister_timers[topic] = Timer(self.UNREGISTER_TIMEOUT, self._unregister_impl,
                                               [topic])
         self.unregister_timers[topic].start()
 
