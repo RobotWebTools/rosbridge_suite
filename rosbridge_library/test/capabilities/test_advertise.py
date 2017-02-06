@@ -20,6 +20,7 @@ class TestAdvertise(unittest.TestCase):
 
     def setUp(self):
         rospy.init_node("test_advertise")
+        manager.unregister_timeout = 1.0
 
     def is_topic_published(self, topicname):
         return topicname in dict(rospy.get_published_topics()).keys()
@@ -130,7 +131,7 @@ class TestAdvertise(unittest.TestCase):
         self.assertTrue(self.is_topic_published(topic))
         adv.unadvertise(loads(dumps(msg)))
         self.assertTrue(self.is_topic_published(topic))
-        sleep(manager.UNREGISTER_TIMEOUT)
+        sleep(manager.unregister_timeout*1.1)
         self.assertFalse(self.is_topic_published(topic))
 
 
