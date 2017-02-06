@@ -33,8 +33,13 @@ class TestPublisherManager(unittest.TestCase):
         self.assertTrue(self.is_topic_published(topic))
 
         manager.unregister(client, topic)
+        self.assertTrue(topic in manager.unregister_timers)
+        self.assertTrue(topic in manager._publishers)
+        self.assertTrue(self.is_topic_published(topic))
+        sleep(manager.UNREGISTER_TIMEOUT)
         self.assertFalse(topic in manager._publishers)
         self.assertFalse(self.is_topic_published(topic))
+        self.assertFalse(topic in manager.unregister_timers)
 
     def test_register_publisher_multiclient(self):
         topic = "/test_register_publisher_multiclient"
@@ -54,8 +59,13 @@ class TestPublisherManager(unittest.TestCase):
         self.assertTrue(topic in manager._publishers)
         self.assertTrue(self.is_topic_published(topic))
         manager.unregister(client2, topic)
+        self.assertTrue(topic in manager.unregister_timers)
+        self.assertTrue(topic in manager._publishers)
+        self.assertTrue(self.is_topic_published(topic))
+        sleep(manager.UNREGISTER_TIMEOUT)
         self.assertFalse(topic in manager._publishers)
         self.assertFalse(self.is_topic_published(topic))
+        self.assertFalse(topic in manager.unregister_timers)
 
     def test_register_publisher_conflicting_types(self):
         topic = "/test_register_publisher_conflicting_types"
@@ -93,16 +103,21 @@ class TestPublisherManager(unittest.TestCase):
         self.assertTrue(self.is_topic_published(topic2))
 
         manager.unregister(client, topic1)
-        self.assertFalse(topic1 in manager._publishers)
-        self.assertFalse(self.is_topic_published(topic1))
+        self.assertTrue(self.is_topic_published(topic1))
+        self.assertTrue(topic1 in manager.unregister_timers)
         self.assertTrue(topic2 in manager._publishers)
         self.assertTrue(self.is_topic_published(topic2))
 
         manager.unregister(client, topic2)
+        self.assertTrue(topic2 in manager.unregister_timers)
+        self.assertTrue(self.is_topic_published(topic2))
+        sleep(manager.UNREGISTER_TIMEOUT)
         self.assertFalse(topic1 in manager._publishers)
         self.assertFalse(self.is_topic_published(topic1))
         self.assertFalse(topic2 in manager._publishers)
         self.assertFalse(self.is_topic_published(topic2))
+        self.assertFalse(topic1 in manager.unregister_timers)
+        self.assertFalse(topic2 in manager.unregister_timers)
 
     def test_register_no_msgtype(self):
         topic = "/test_register_no_msgtype"
@@ -127,7 +142,7 @@ class TestPublisherManager(unittest.TestCase):
         self.assertTrue(self.is_topic_published(topic))
 
         manager.unregister(client, topic)
-        self.assertFalse(topic in manager._publishers)
+        self.assertTrue(topic in manager.unregister_timers)
         self.assertTrue(self.is_topic_published(topic))
 
     def test_register_multiple_notopictype(self):
@@ -137,6 +152,7 @@ class TestPublisherManager(unittest.TestCase):
         client2 = "client_test_register_multiple_notopictype_2"
 
         self.assertFalse(topic in manager._publishers)
+        self.assertFalse(topic in manager.unregister_timers)
         self.assertFalse(self.is_topic_published(topic))
         manager.register(client1, topic, msg_type)
         self.assertTrue(topic in manager._publishers)
@@ -146,9 +162,14 @@ class TestPublisherManager(unittest.TestCase):
         self.assertTrue(self.is_topic_published(topic))
         manager.unregister(client1, topic)
         self.assertTrue(topic in manager._publishers)
+        self.assertTrue(topic in manager.unregister_timers)
         self.assertTrue(self.is_topic_published(topic))
         manager.unregister(client2, topic)
+        self.assertTrue(topic in manager.unregister_timers)
+        self.assertTrue(topic in manager._publishers)
+        sleep(manager.UNREGISTER_TIMEOUT)
         self.assertFalse(topic in manager._publishers)
+        self.assertFalse(topic in manager.unregister_timers)
         self.assertFalse(self.is_topic_published(topic))
 
     def test_publish_not_registered(self):
