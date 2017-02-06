@@ -3,6 +3,7 @@ import sys
 import rospy
 import rostest
 import unittest
+from time import sleep
 
 from std_msgs.msg import *
 
@@ -128,6 +129,8 @@ class TestAdvertise(unittest.TestCase):
         adv.advertise(loads(dumps(msg)))
         self.assertTrue(self.is_topic_published(topic))
         adv.unadvertise(loads(dumps(msg)))
+        self.assertTrue(self.is_topic_published(topic))
+        sleep(manager.UNREGISTER_TIMEOUT)
         self.assertFalse(self.is_topic_published(topic))
 
 
