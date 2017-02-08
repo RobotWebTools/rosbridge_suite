@@ -3,13 +3,14 @@ import sys
 import rospy
 import rostest
 import unittest
+from time import sleep
 
 from std_msgs.msg import *
 
 from rosbridge_library.protocol import Protocol
 from rosbridge_library.protocol import InvalidArgumentException, MissingArgumentException
 from rosbridge_library.capabilities.advertise import Registration, Advertise
-from rosbridge_library.internal.publishers import manager
+from rosbridge_library.internal.publishers import manager, UNREGISTER_TIMEOUT
 from rosbridge_library.internal import ros_loader
 
 from json import loads, dumps
@@ -19,6 +20,7 @@ class TestAdvertise(unittest.TestCase):
 
     def setUp(self):
         rospy.init_node("test_advertise")
+        UNREGISTER_TIMEOUT = 1.0
 
     def is_topic_published(self, topicname):
         return topicname in dict(rospy.get_published_topics()).keys()
@@ -128,6 +130,8 @@ class TestAdvertise(unittest.TestCase):
         adv.advertise(loads(dumps(msg)))
         self.assertTrue(self.is_topic_published(topic))
         adv.unadvertise(loads(dumps(msg)))
+        self.assertTrue(self.is_topic_published(topic))
+        sleep(UNREGISTER_TIMEOUT*1.1)
         self.assertFalse(self.is_topic_published(topic))
 
 
