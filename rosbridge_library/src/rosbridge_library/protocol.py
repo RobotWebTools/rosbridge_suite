@@ -269,10 +269,11 @@ class Protocol:
         Returns a JSON string representing the dictionary
         """
         try:
-            if has_binary(msg):
-                return bson.BSON.encode(msg)
-            else:    
-                return json.dumps(msg)
+            # if has_binary(msg):
+            #     return bson.BSON.encode(msg)
+            # else:    
+            #     return json.dumps(msg)
+            return bson.BSON.encode(msg)
         except:
             if cid is not None:
                 # Only bother sending the log message if there's an id
@@ -294,7 +295,8 @@ class Protocol:
 
         """
         try:
-            return json.loads(msg)
+            return bson.BSON.decode(bson.BSON(msg))
+            #return json.loads(msg)
         except Exception, e:
             # if we did try to deserialize whole buffer .. first try to let self.incoming check for multiple/partial json-decodes before logging error
             # .. this means, if buffer is not == msg --> we tried to decode part of buffer
