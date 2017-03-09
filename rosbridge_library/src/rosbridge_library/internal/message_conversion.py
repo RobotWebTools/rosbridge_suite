@@ -70,11 +70,13 @@ binary_encoder = None
 def get_encoder():
     global binary_encoder
     if binary_encoder is None:
-        binary_encoder_type = rospy.get_param('~binary_encoder', 'b64')
-        if binary_encoder_type == 'b64':
-            binary_encoder = standard_b64encode
-        elif binary_encoder_type == 'bson':
-            binary_encoder = bson.Binary   
+        binary_encoder_type = rospy.get_param('~binary_encoder', 'default')
+        bson_only_mode = rospy.get_param('~bson_only_mode', False)
+
+        if binary_encoder_type == 'bson' or bson_only_mode:
+            binary_encoder = bson.Binary
+        elif binary_encoder_type == 'default' or binary_encoder_type == 'b64':
+             binary_encoder = standard_b64encode
         else:
             print "Unknown encoder type '%s'"%binary_encoder_type
             exit(0)
