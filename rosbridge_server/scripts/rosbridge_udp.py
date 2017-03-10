@@ -45,6 +45,7 @@ from rosbridge_library.capabilities.subscribe import Subscribe
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from rosbridge_library.capabilities.call_service import CallService
+from rosbridge_library.util import appropriate_bson_installed
 
 def shutdown_hook():
     reactor.stop()
@@ -52,6 +53,13 @@ def shutdown_hook():
 if __name__ == "__main__":
     rospy.init_node("rosbridge_websocket")
     rospy.on_shutdown(shutdown_hook)    # register shutdown hook to stop the server
+
+    # Check whether appropriate bson module is installed or not
+    # See: https://github.com/RobotWebTools/rosbridge_suite/issues/198
+    if not appropriate_bson_installed():
+        rospy.logerr("BSON installation does not support all necessary features. "
+                     "Please use the MongoDB BSON implementation.")
+        rospy.signal_shutdown("shutdown")
 
     ##################################################
     # Parameter handling                             #

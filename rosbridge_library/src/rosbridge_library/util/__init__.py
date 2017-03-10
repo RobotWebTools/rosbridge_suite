@@ -13,3 +13,18 @@ if sys.version_info >= (3, 0):
     string_types = (str,)
 else:
     string_types = (str, unicode)
+
+def appropriate_bson_installed():
+    """ Check whether appropriate bson module is installed or not
+
+    pymongo oriented bson module should be installed. See following issue for
+    detail.
+
+    * https://github.com/RobotWebTools/rosbridge_suite/issues/198
+    """
+    import bson
+    try:
+        bson.BSON
+    except AttributeError:
+        return False
+    return True
