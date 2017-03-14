@@ -102,7 +102,7 @@ class Protocol:
         if self.parameters:
             self.fragment_size = self.parameters["max_message_size"]
             self.delay_between_messages = self.parameters["delay_between_messages"]
-            self.bson_only_mode = self.parameters["bson_only_mode"]
+            self.bson_only_mode = self.parameters.get('bson_only_mode', False)
 
     # added default message_string="" to allow recalling incoming until buffer is empty without giving a parameter
     # --> allows to get rid of (..or minimize) delay between client-side sends
