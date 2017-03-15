@@ -68,6 +68,8 @@ if __name__ == "__main__":
                                                                 RosbridgeWebSocket.delay_between_messages)
     RosbridgeWebSocket.max_message_size = rospy.get_param('~max_message_size',
                                                           RosbridgeWebSocket.max_message_size)
+    bson_only_mode = rospy.get_param('~bson_only_mode', False)
+
     if RosbridgeWebSocket.max_message_size == "None":
         RosbridgeWebSocket.max_message_size = None
 
@@ -180,6 +182,9 @@ if __name__ == "__main__":
         else:
             print "--params_glob argument provided without a value. (can be None or a list)"
             sys.exit(-1)
+
+    if ("--bson_only_mode" in sys.argv) or bson_only_mode:
+        print "bson_only_mode is only supported in the TCP Version of Rosbridge currently. Ignoring bson_only_mode argument..."
 
     # To be able to access the list of topics and services, you must be able to access the rosapi services.
     if RosbridgeWebSocket.services_glob:

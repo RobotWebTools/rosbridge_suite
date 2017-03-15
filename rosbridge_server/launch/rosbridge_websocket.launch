@@ -16,6 +16,7 @@
   <arg name="topics_glob" default="[*]" />
   <arg name="services_glob" default="[*]" />
   <arg name="params_glob" default="[*]" />
+  <arg name="bson_only_mode" default="false" />
 
   <group if="$(arg ssl)">
     <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket" output="screen">
@@ -47,6 +48,8 @@
       <param name="topics_glob" value="$(arg topics_glob)"/>
       <param name="services_glob" value="$(arg services_glob)"/>
       <param name="params_glob" value="$(arg params_glob)"/>
+
+      <param name="bson_only_mode" value="$(arg bson_only_mode)"/>
     </node>
   </group>
 

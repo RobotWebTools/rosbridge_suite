@@ -56,7 +56,7 @@ if __name__ == "__main__":
             fragment_timeout = get_param('~fragment_timeout', RosbridgeTcpSocket.fragment_timeout)
             delay_between_messages = get_param('~delay_between_messages', RosbridgeTcpSocket.delay_between_messages)
             max_message_size = get_param('~max_message_size', RosbridgeTcpSocket.max_message_size)
-            bson_only_mode = get_param('~bson_only_mode', "false")
+            bson_only_mode = get_param('~bson_only_mode', False)
 
             if max_message_size == "None":
                 max_message_size = None

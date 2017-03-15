@@ -54,13 +54,15 @@ class RosbridgeWebSocket(WebSocketHandler):
     # protocol.py:
     delay_between_messages = 0              # seconds
     max_message_size = None                 # bytes
+    bson_only_mode = False
 
     def open(self):
         cls = self.__class__
         parameters = {
             "fragment_timeout": cls.fragment_timeout,
             "delay_between_messages": cls.delay_between_messages,
-            "max_message_size": cls.max_message_size
+            "max_message_size": cls.max_message_size,
+            "bson_only_mode": cls.bson_only_mode
         }
         try:
             self.protocol = RosbridgeProtocol(cls.client_id_seed, parameters=parameters)
