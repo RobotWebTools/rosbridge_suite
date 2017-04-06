@@ -44,7 +44,6 @@ class RosbridgeUdpSocket:
         try:
             self.protocol = RosbridgeProtocol(cls.client_id_seed, parameters=parameters)
             self.protocol.outgoing = self.send_message
-            self.set_nodelay(True)
             self.authenticated = False
             cls.client_id_seed += 1
             cls.clients_connected += 1
