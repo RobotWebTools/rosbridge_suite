@@ -93,7 +93,7 @@ class MultiSubscriber():
         self.subscriber = Subscriber(topic, msg_class, self.callback)
 
     def unregister(self):
-        self.subscriber.unregister()
+        del self.subscriber
         with self.lock:
             self.subscriptions.clear()
 
