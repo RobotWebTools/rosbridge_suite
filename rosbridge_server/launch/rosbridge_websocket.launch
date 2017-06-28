@@ -17,7 +17,7 @@
   <arg name="services_glob" default="[*]" />
   <arg name="params_glob" default="[*]" />
   <arg name="bson_only_mode" default="false" />
-  <arg unless="$(arg bson_only_mode)" name="binary_encoder" default="default"/> <!-- default, b64 -->
+  <arg unless="$(arg bson_only_mode)" name="binary_encoder" default="default"/> <!-- b64, bson -->
 
   <group if="$(arg ssl)">
     <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket" output="screen">
