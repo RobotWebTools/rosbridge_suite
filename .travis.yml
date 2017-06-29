@@ -1,7 +1,7 @@
 # This config file for Travis CI utilizes ros-industrial/industrial_ci package.
 # For more info for the package, see https://github.com/ros-industrial/industrial_ci/blob/master/README.rst
 
-dist: trusty
+dist: xenial
 services:
   - docker
 language: generic
@@ -34,6 +34,7 @@ branches:
 
 install:
   - sudo apt install python-pip
+  - sudo apt install ros-${ROS_DISTRO}-rostest
   - sudo pip install ujson
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 
@@ -42,7 +43,6 @@ before_script:
 #  - source /opt/ros/${ROS_DISTRO}/setup.bash
 #  - catkin_make
 #  - catkin_make install
-#  - sudo apt-get install ros-${ROS_DISTRO}-rostest
 #  - source devel/setup.bash
 #  - export ROS_MASTER_URI=http://localhost:11311
 #  - export ROS_HOSTNAME=localhost
