@@ -34,7 +34,6 @@ branches:
 
 install:
   - sudo apt install python-pip
-  - sudo apt install ros-${ROS_DISTRO}-rostest
   - sudo pip install ujson
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 
@@ -47,6 +46,7 @@ before_script:
 #  - export ROS_MASTER_URI=http://localhost:11311
 #  - export ROS_HOSTNAME=localhost
 script:
+  - sudo apt install ros-${ROS_DISTRO}-rostest
   - rostest rosbridge_library test_all.test
   - sudo pip uninstall ujson -y -q
   - rostest rosbridge_library test_all.test
