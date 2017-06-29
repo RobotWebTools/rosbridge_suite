@@ -44,4 +44,3 @@ before_script:
 #  - export ROS_HOSTNAME=localhost
 script:
   - source .ci_config/travis.sh
-  - rostest rosbridge_library test_all.test
