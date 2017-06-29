@@ -14,8 +14,6 @@ notifications:
   email:
     on_success: always
     on_failure: always
-    recipients:
-      - jihoonlee.in@gmail.com
 
 env:
   matrix:
@@ -30,17 +28,9 @@ branches:
   only:
     - master
     - develop
-    - travis
 
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 
-before_script:
-#  - source /opt/ros/${ROS_DISTRO}/setup.bash
-#  - catkin_make
-#  - catkin_make install
-#  - source devel/setup.bash
-#  - export ROS_MASTER_URI=http://localhost:11311
-#  - export ROS_HOSTNAME=localhost
 script:
   - source .ci_config/travis.sh
