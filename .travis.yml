@@ -23,7 +23,7 @@ env:
     - ROS_DISTRO="kinetic"   PRERELEASE=true PRERELEASE_DOWNSTREAM_DEPTH=0
 
 matrix:
-	allow_failures:
+  allow_failures:
     - env: ROS_DISTRO="kinetic"   PRERELEASE=true PRERELEASE_DOWNSTREAM_DEPTH=0
 
 branches:
@@ -33,9 +33,10 @@ branches:
     - travis
 
 install:
-	- sudo apt install python-pip
+  - sudo apt install python-pip
   - sudo pip install ujson
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
+
 before_script:
   - source /opt/ros/${ROS_DISTRO}/setup.bash
   - catkin_make
