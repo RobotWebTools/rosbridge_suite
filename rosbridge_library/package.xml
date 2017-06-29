@@ -38,6 +38,7 @@
   <run_depend>message_runtime</run_depend>
   <run_depend>python-bson</run_depend>
 
+  <test_depend>rostest</test_depend>
   <test_depend>actionlib_msgs</test_depend>
   <test_depend>diagnostic_msgs</test_depend>
   <test_depend>nav_msgs</test_depend>
