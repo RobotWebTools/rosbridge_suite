@@ -93,11 +93,10 @@ def delete_param(name, params_glob):
         return
     # If the glob list is empty (i.e. false) or the parameter matches
     # one of the glob strings, continue to delete the parameter.
-    with param_server_lock:
-        if has_param(name):
+    if has_param(name, params_glob):
+        with param_server_lock:
             rospy.delete_param(name)
-        
-        
+
 def search_param(name, params_glob):
     if params_glob and not any(fnmatch.fnmatch(str(v), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
