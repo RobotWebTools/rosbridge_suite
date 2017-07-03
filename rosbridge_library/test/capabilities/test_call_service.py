@@ -36,6 +36,7 @@ class TestCallService(unittest.TestCase):
     def test_call_service_works(self):
         # First, call the service the 'proper' way
         p = rospy.ServiceProxy("/rosout/get_loggers", GetLoggers)
+        p.wait_for_service()
         ret = p()
 
 

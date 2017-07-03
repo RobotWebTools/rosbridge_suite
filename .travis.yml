@@ -1,10 +1,28 @@
-language:
-  - cpp
-  - python
+# This config file for Travis CI utilizes ros-industrial/industrial_ci package.
+# For more info for the package, see https://github.com/ros-industrial/industrial_ci/blob/master/README.rst
+
+dist: xenial
+services:
+  - docker
+language: generic
 python:
   - "2.7"
 compiler:
   - gcc
+
+notifications:
+  email:
+    on_success: always
+    on_failure: always
+
+env:
+  matrix:
+    - ROS_DISTRO="kinetic"   ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu  USE_DEB=true
+    - ROS_DISTRO="kinetic"   PRERELEASE=true PRERELEASE_DOWNSTREAM_DEPTH=0
+
+matrix:
+  allow_failures:
+    - env: ROS_DISTRO="kinetic"   PRERELEASE=true PRERELEASE_DOWNSTREAM_DEPTH=0
 
 branches:
   only:
@@ -12,26 +30,7 @@ branches:
     - develop
 
 install:
-  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
-  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
-  - sudo apt-get update -qq
-  - sudo apt-get install python-catkin-pkg python-rosdep ros-hydro-catkin -qq
-  - sudo rosdep init
-  - rosdep update
-  - mkdir -p /tmp/ws/src
-  - ln -s `pwd` /tmp/ws/src/package
-  - cd /tmp/ws
-  - rosdep install --from-paths src --ignore-src --rosdistro hydro -y
-  - sudo pip install ujson
-before_script:
-  - source /opt/ros/hydro/setup.bash
-  - catkin_make
-  - catkin_make install
-  - sudo apt-get install ros-hydro-rostest
-  - source devel/setup.bash
-  - export ROS_MASTER_URI=http://localhost:11311
-  - export ROS_HOSTNAME=localhost
+  - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
+
 script:
-  - rostest rosbridge_library test_all.test
-  - sudo pip uninstall ujson -y -q
-  - rostest rosbridge_library test_all.test
+  - source .ci_config/travis.sh
