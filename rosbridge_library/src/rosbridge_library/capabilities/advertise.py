@@ -108,7 +108,7 @@ class Advertise(Capability):
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for topic, cancelling advertisement...")
+                self.protocol.log("warn", "No match found for topic, cancelling advertisement of: " + topic)
                 return
         else:
             self.protocol.log("debug", "No topic security glob, not checking advertisement.")
@@ -137,7 +137,7 @@ class Advertise(Capability):
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for topic, cancelling unadvertisement...")
+                self.protocol.log("warn", "No match found for topic, cancelling unadvertisement of: " + topic)
                 return
         else:
             self.protocol.log("debug", "No topic security glob, not checking unadvertisement.")

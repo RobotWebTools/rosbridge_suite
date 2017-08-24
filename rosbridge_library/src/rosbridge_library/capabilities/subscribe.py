@@ -181,8 +181,8 @@ class Subscription():
 class Subscribe(Capability):
 
     subscribe_msg_fields = [(True, "topic", (str, unicode)), (False, "type", (str, unicode)),
-        (False, "throttle_rate", int), (False, "fragment_size", int),
-        (False, "queue_length", int), (False, "compression", (str, unicode))]
+                            (False, "throttle_rate", int), (False, "fragment_size", int),
+                            (False, "queue_length", int), (False, "compression", (str, unicode))]
     unsubscribe_msg_fields = [(True, "topic", (str, unicode))]
 
     topics_glob = None
@@ -200,7 +200,7 @@ class Subscribe(Capability):
     def subscribe(self, msg):
         # Pull out the ID
         sid = msg.get("id", None)
-        
+
         # Check the args
         self.basic_type_check(msg, self.subscribe_msg_fields)
 
@@ -216,7 +216,7 @@ class Subscribe(Capability):
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for topic, cancelling subscription...")
+                self.protocol.log("warn", "No match found for topic, cancelling subscription to: " + topic)
                 return
         else:
             self.protocol.log("debug", "No topic security glob, not checking subscription.")
@@ -242,7 +242,7 @@ class Subscribe(Capability):
     def unsubscribe(self, msg):
         # Pull out the ID
         sid = msg.get("id", None)
-        
+ 
         self.basic_type_check(msg, self.unsubscribe_msg_fields)
 
         topic = msg["topic"]
@@ -255,7 +255,7 @@ class Subscribe(Capability):
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for topic, cancelling unsubscription...")
+                self.protocol.log("warn", "No match found for topic, cancelling unsubscription from: " + topic)
                 return
         else:
             self.protocol.log("debug", "No topic security glob, not checking unsubscription.")
@@ -293,13 +293,13 @@ class Subscribe(Capability):
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for topic, cancelling topic publish...")
+                self.protocol.log("warn", "No match found for topic, cancelling topic publish to: " + topic)
                 return
         else:
             self.protocol.log("debug", "No topic security glob, not checking topic publish.")
 
         outgoing_msg = {"op": "publish", "topic": topic, "msg": message}
-        if compression=="png":
+        if compression == "png":
             outgoing_msg_dumped = dumps(outgoing_msg)
             outgoing_msg = {"op": "png", "data": encode(outgoing_msg_dumped)}
         self.protocol.send(outgoing_msg)

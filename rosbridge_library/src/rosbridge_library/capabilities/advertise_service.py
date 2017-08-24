@@ -71,7 +71,7 @@ class AdvertiseService(Capability):
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for service, cancelling service advertisement...")
+                self.protocol.log("warn", "No match found for service, cancelling service advertisement for: " + service_name)
                 return
         else:
             self.protocol.log("debug", "No service security glob, not checking service advertisement.")
