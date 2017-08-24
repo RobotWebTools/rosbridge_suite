@@ -39,21 +39,26 @@ class TestCallService(unittest.TestCase):
         p.wait_for_service()
         ret = p()
 
-
         proto = Protocol("test_call_service_works")
         s = CallService(proto)
         msg = loads(dumps({"op": "call_service", "service": "/rosout/get_loggers"}))
 
-        received = {"msg": None}
+        received = {"msg": None, "arrived": False}
 
         def cb(msg, cid=None):
             received["msg"] = msg
+            received["arrived"] = True
 
         proto.send = cb
 
         s.call_service(msg)
 
-        time.sleep(0.5)
+        timeout = 5.0
+        start = rospy.Time.now()
+        while rospy.Time.now() - start < rospy.Duration(timeout):
+            if received["arrived"]:
+                break
+            time.sleep(0.1)
 
         self.assertTrue(received["msg"]["result"])
         for x, y in zip(ret.loggers, received["msg"]["values"]["loggers"]):
@@ -65,16 +70,21 @@ class TestCallService(unittest.TestCase):
         s = CallService(proto)
         send_msg = loads(dumps({"op": "call_service", "service": "/rosout/set_logger_level", "args": '["ros", "invalid"]'}))
 
-        received = {"msg": None}
-
-        def cb(msg, cid=None): 
+        received = {"msg": None, "arrived": False}
+        def cb(msg, cid=None):
             received["msg"] = msg
+            received["arrived"] = True
 
         proto.send = cb
 
         s.call_service(send_msg)
 
-        time.sleep(0.5)
+        timeout = 5.0
+        start = rospy.Time.now()
+        while rospy.Time.now() - start < rospy.Duration(timeout):
+            if received["arrived"]:
+                break
+            time.sleep(0.1)
 
         self.assertFalse(received["msg"]["result"])
 
