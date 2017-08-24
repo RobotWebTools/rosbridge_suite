@@ -37,6 +37,7 @@ class TestCallService(unittest.TestCase):
         # First, call the service the 'proper' way
         p = rospy.ServiceProxy("/rosout/get_loggers", GetLoggers)
         p.wait_for_service()
+        time.sleep(1.0)
         ret = p()
 
         proto = Protocol("test_call_service_works")
