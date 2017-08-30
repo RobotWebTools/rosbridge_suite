@@ -2,6 +2,30 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Cleaning up travis configuration (`#283 <https://github.com/RobotWebTools/rosbridge_suite/issues/283>`_)
+  configure travis to use industial ci configuration. Now it uses xenial and kinetic
+* Merge pull request `#272 <https://github.com/RobotWebTools/rosbridge_suite/issues/272>`_ from ablakey/patch-1
+  Prevent a KeyError when bson_only_mode is unset.
+* Update protocol.py
+  Prevent a KeyError when bson_only_mode is unset.
+* Merge pull request `#257 <https://github.com/RobotWebTools/rosbridge_suite/issues/257>`_ from Sanic/bson-only-mode
+  Implemented a bson_only_mode flag for the TCP version of rosbridge
+* Merge pull request `#247 <https://github.com/RobotWebTools/rosbridge_suite/issues/247>`_ from v-lopez/develop
+  Delay unregister to mitigate `#138 <https://github.com/RobotWebTools/rosbridge_suite/issues/138>`_
+* Change class constant to module constant
+* Reduce timeout for tests
+  Tests will sleep for 10% extra of the timeout to prevent some situations
+  were the test sleep ended right before the unregister timer fired
+* Fix test advertise errors after delayed unregister changes
+* Fix missing tests due to delayed unregistration
+* Move UNREGISTER_TIMEOUT to member class so it's accessible from outside
+* minor change in variable usage
+* Implemented a bson_only_mode flag for the TCP version of rosbridge; This allows you to switch to a full-duplex transmission of BSON messages and therefore eliminates the need for a base64 encoding of binary data; Use the new mode by starting:'roslaunch rosbridge_server rosbridge_tcp.launch bson_only_mode:=True' or passing '--bson_only_mode' to the rosbridge_tcp.py script
+* Delay unregister to mitigate !138
+* Contributors: Andrew Blakey, Jihoon Lee, Nils Berg, Patrick Mania, Victor Lopez
+
 0.7.17 (2017-01-25)
 -------------------
 * adjust log level for security globs
