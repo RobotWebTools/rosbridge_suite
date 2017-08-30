@@ -2,6 +2,11 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove ujson from dependency to build in trusty (`#290 <https://github.com/RobotWebTools/rosbridge_suite/issues/290>`_)
+* Contributors: Jihoon Lee
+
 0.8.0 (2017-08-30)
 ------------------
 * Cleaning up travis configuration (`#283 <https://github.com/RobotWebTools/rosbridge_suite/issues/283>`_)

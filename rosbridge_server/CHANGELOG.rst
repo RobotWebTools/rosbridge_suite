@@ -2,6 +2,9 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.8.0 (2017-08-30)
 ------------------
 * Merge pull request `#281 <https://github.com/RobotWebTools/rosbridge_suite/issues/281>`_ from RobotWebTools/expose_b64

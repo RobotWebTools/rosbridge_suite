@@ -2,6 +2,9 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.8.0 (2017-08-30)
 ------------------
 * fix delete_param in rosapi (`#284 <https://github.com/RobotWebTools/rosbridge_suite/issues/284>`_)
