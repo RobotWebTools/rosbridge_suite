@@ -26,7 +26,6 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>python-bson</build_depend>
-  <build_depend>python-ujson</build_depend>
 
   <run_depend>rospy</run_depend>
   <run_depend>roscpp</run_depend>
@@ -38,7 +37,6 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>python-bson</run_depend>
-  <run_depend>python-ujson</run_depend>
 
   <test_depend>rostest</test_depend>
   <test_depend>actionlib_msgs</test_depend>
