@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.8.0 (2017-08-30)
+------------------
 * Cleaning up travis configuration (`#283 <https://github.com/RobotWebTools/rosbridge_suite/issues/283>`_)
   configure travis to use industial ci configuration. Now it uses xenial and kinetic
 * Merge pull request `#272 <https://github.com/RobotWebTools/rosbridge_suite/issues/272>`_ from ablakey/patch-1
