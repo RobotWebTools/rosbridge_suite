@@ -4,7 +4,7 @@ from rosbridge_library.capability import Capability
 
 class UnadvertiseService(Capability):
 
-    #unadvertise_service_msg_fields = [(True, "service", (str, unicode))]
+    # unadvertise_service_msg_fields = [(True, "service", (str, unicode))]
 
     services_glob = None
 
@@ -28,7 +28,7 @@ class UnadvertiseService(Capability):
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for service, cancelling service unadvertisement...")
+                self.protocol.log("warn", "No match found for service, cancelling service unadvertisement for: " + service_name)
                 return
         else:
             self.protocol.log("debug", "No service security glob, not checking service unadvertisement...")

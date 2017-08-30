@@ -68,7 +68,7 @@ class Publish(Capability):
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for topic, cancelling publish...")
+                self.protocol.log("warn", "No match found for topic, cancelling publish to: " + topic)
                 return
         else:
             self.protocol.log("debug", "No topic security glob, not checking publish.")
@@ -83,7 +83,7 @@ class Publish(Capability):
 
         # Publish the message
         manager.publish(client_id, topic, msg, latch=latch, queue_size=queue_size)
-        
+ 
     def finish(self):
         client_id = self.protocol.client_id
         for topic in self._published:

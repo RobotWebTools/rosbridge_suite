@@ -39,7 +39,8 @@ from rosbridge_library.internal.services import ServiceCaller
 class CallService(Capability):
 
     call_service_msg_fields = [(True, "service", (str, unicode)),
-           (False, "fragment_size", (int, type(None))), (False, "compression", (str, unicode))]
+                               (False, "fragment_size", (int, type(None))),
+                               (False, "compression", (str, unicode))]
 
     services_glob = None
 
@@ -53,7 +54,7 @@ class CallService(Capability):
     def call_service(self, message):
         # Pull out the ID
         cid = message.get("id", None)
-        
+
         # Typecheck the args
         self.basic_type_check(message, self.call_service_msg_fields)
 
@@ -72,11 +73,11 @@ class CallService(Capability):
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for service, cancelling service call...")
+                self.protocol.log("warn", "No match found for service, cancelling service call for: " + service)
                 return
         else:
             self.protocol.log("debug", "No service security glob, not checking service call.")
-        
+ 
         # Check for deprecated service ID, eg. /rosbridge/topics#33
         cid = extract_id(service, cid)
 
@@ -101,7 +102,7 @@ class CallService(Capability):
 
     def _failure(self, cid, service, exc):
         self.protocol.log("error", "call_service %s: %s" %
-            (type(exc).__name__, str(exc)), cid)
+                          (type(exc).__name__, str(exc)), cid)
         # send response with result: false
         outgoing_message = {
             "op": "service_response",
