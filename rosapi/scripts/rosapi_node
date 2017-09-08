@@ -45,18 +45,18 @@ def get_globs():
     global topics_glob
     global services_glob
     global params_glob
-    topics_glob = [
-        element.strip().strip("'")
-        for element in rospy.get_param('~topics_glob', '')[1:-1].split(',')
-        if len(element.strip().strip("'")) > 0]
-    services_glob = [
-        element.strip().strip("'")
-        for element in rospy.get_param('~services_glob', '')[1:-1].split(',')
-        if len(element.strip().strip("'")) > 0]
-    params_glob = [
-        element.strip().strip("'")
-        for element in rospy.get_param('~params_glob', '')[1:-1].split(',')
-        if len(element.strip().strip("'")) > 0]
+
+    def get_param(param_name):
+        param = rospy.get_param(param_name, '')
+        # strips array delimiters in case of an array style value
+        return [
+            element.strip().strip("'")
+            for element in param.strip('[').strip(']').split(',')
+            if len(element.strip().strip("'")) > 0]
+
+    topics_glob = get_param('~topics_glob')
+    services_glob = get_param('~services_glob')
+    params_glob = get_param('~params_glob')
 
 # Initialises the ROS node
 def register_services():
