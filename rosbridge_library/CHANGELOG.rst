@@ -2,6 +2,11 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Type conversion convention correction, correcting issue `#240 <https://github.com/RobotWebTools/rosbridge_suite/issues/240>`_
+* Contributors: Alexis Paques
+
 0.8.2 (2017-09-11)
 ------------------
 

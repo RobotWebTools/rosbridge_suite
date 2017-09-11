@@ -2,6 +2,9 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.8.2 (2017-09-11)
 ------------------
 * Removes array delimiters while parsing parameters (`#292 <https://github.com/RobotWebTools/rosbridge_suite/issues/292>`_)
