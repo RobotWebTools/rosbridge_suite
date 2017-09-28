@@ -136,7 +136,9 @@ def get_node_services(node):
 def get_topic_type(topic, topics_glob):
     """ Returns the type of the specified ROS topic """
     # Check if the topic is hidden or public.
-    if any(fnmatch.fnmatch(str(topic), glob) for glob in topics_glob):
+    # If all topics are public then the type is returned
+    if any(fnmatch.fnmatch(str(topic), glob) for glob in topics_glob) or\
+            topics_glob is None or len(topics_glob) == 0:
         # If the topic is published, return its type
         topic_type, _, _ = rosservice_get_topic_type(topic)
         if topic_type is None:
