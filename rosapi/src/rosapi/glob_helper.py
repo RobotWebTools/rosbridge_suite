@@ -1,5 +1,7 @@
+#!/usr/bin/env python
 
 import rospy
+import fnmatch
 
 topics_glob = []
 services_glob = []
@@ -23,3 +25,11 @@ def get_globs():
     topics_glob = get_param('~topics_glob')
     services_glob = get_param('~services_glob')
     params_glob = get_param('~params_glob')
+
+
+def filter_globs(globs, full_list):
+    # If the globs are empty (weren't defined in the params), return the full list
+    if globs is not None and len(globs) > 0:
+        return filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in globs), full_list)
+    else:
+        return full_list

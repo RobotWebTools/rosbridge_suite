@@ -34,7 +34,7 @@
 import rospy
 
 from rosapi import proxy, objectutils, params
-from glob_helper import get_globs, topics_glob, services_glob, params_glob
+from rosapi.glob_helper import get_globs, topics_glob, services_glob, params_glob
 from rosapi.srv import *
 from rosapi.msg import *
 

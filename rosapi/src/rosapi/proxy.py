@@ -45,15 +45,19 @@ from rosgraph.masterapi import Master
 
 from rosapi.msg import TypeDef
 
+from glob_helper import filter_globs
+
 
 def get_topics(topics_glob):
     """ Returns a list of all the active topics in the ROS system """
     try:
         publishers, subscribers, services = Master('/rosbridge').getSystemState()
         # Filter the list of topics by whether they are public before returning.
-        return filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in topics_glob), list(set([x for x, _ in publishers] + [x for x, _, in subscribers])))
+        return filter_globs(topics_glob,
+                            list(set([x for x, _ in publishers] + [x for x, _, in subscribers])))
     except:
         return []
+
 
 def get_topics_types(topics, topics_glob):
     try:
@@ -67,19 +71,19 @@ def get_topics_types(topics, topics_glob):
 
 def get_topics_for_type(type, topics_glob):
     # Filter the list of topics by whether they are public before returning.
-    return filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in topics_glob), find_by_type(type))
+    return filter_globs(topics_glob, find_by_type(type))
 
 
 def get_services(services_glob):
     """ Returns a list of all the services advertised in the ROS system """
     # Filter the list of services by whether they are public before returning.
-    return filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in services_glob), get_service_list())
+    return filter_globs(services_glob, get_service_list())
 
 
 def get_services_for_type(service_type, services_glob):
     """ Returns a list of services as specific service type """
     # Filter the list of services by whether they are public before returning.
-    return filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in services_glob), rosservice_find(service_type))
+    return filter_globs(services_glob, rosservice_find(service_type))
 
 
 def get_nodes():
