@@ -45,7 +45,7 @@ from rosgraph.masterapi import Master
 
 from rosapi.msg import TypeDef
 
-from glob_helper import filter_globs
+from glob_helper import filter_globs, any_match
 
 
 def get_topics(topics_glob):
@@ -137,8 +137,7 @@ def get_topic_type(topic, topics_glob):
     """ Returns the type of the specified ROS topic """
     # Check if the topic is hidden or public.
     # If all topics are public then the type is returned
-    if any(fnmatch.fnmatch(str(topic), glob) for glob in topics_glob) or\
-            topics_glob is None or len(topics_glob) == 0:
+    if any_match(str(topic), topics_glob):
         # If the topic is published, return its type
         topic_type, _, _ = rosservice_get_topic_type(topic)
         if topic_type is None:
@@ -184,7 +183,7 @@ def filter_action_servers(topics):
 def get_service_type(service, services_glob):
     """ Returns the type of the specified ROS service, """
     # Check if the service is hidden or public.
-    if any(fnmatch.fnmatch(str(service), glob) for glob in services_glob):
+    if any_match(str(service), services_glob):
         try:
             return rosservice_get_service_type(service)
         except:
@@ -197,7 +196,7 @@ def get_service_type(service, services_glob):
 def get_publishers(topic, topics_glob):
     """ Returns a list of node names that are publishing the specified topic """
     try:
-        if any(fnmatch.fnmatch(str(topic), glob) for glob in topics_glob):
+        if any_match(str(topic), topics_glob):
             publishers, subscribers, services = Master('/rosbridge').getSystemState()
             pubdict = dict(publishers)
             if topic in pubdict:
@@ -213,7 +212,7 @@ def get_publishers(topic, topics_glob):
 def get_subscribers(topic, topics_glob):
     """ Returns a list of node names that are subscribing to the specified topic """
     try:
-        if any(fnmatch.fnmatch(str(topic), glob) for glob in topics_glob):
+        if any_match(str(topic), topics_glob):
             publishers, subscribers, services = Master('/rosbridge').getSystemState()
             subdict = dict(subscribers)
             if topic in subdict:
@@ -229,7 +228,7 @@ def get_subscribers(topic, topics_glob):
 def get_service_providers(servicetype, services_glob):
     """ Returns a list of node names that are advertising a service with the specified type """
     try:
-        if any(fnmatch.fnmatch(str(topic), glob) for glob in services_glob):
+        if any_match(str(topic), services_glob):
             publishers, subscribers, services = Master('/rosbridge').getSystemState()
             servdict = dict(services)
             if servicetype in servdict:
