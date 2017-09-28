@@ -36,4 +36,5 @@ def filter_globs(globs, full_list):
 
 
 def any_match(query, globs):
-    return (globs is None and len(globs) == 0) or (any(fnmatch.fnmatch(str(query), glob) for glob in globs))
+    return globs is None or len(globs) == 0 or any(fnmatch.fnmatch(str(query), glob) for glob in globs)
+
