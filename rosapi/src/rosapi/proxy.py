@@ -90,44 +90,48 @@ def get_nodes():
     """ Returns a list of all the nodes registered in the ROS system """
     return rosnode.get_node_names()
 
+
 def get_node_publications(node):
     """ Returns a list of topic names that are been published by the specified node """
     try:
-      publishers, subscribers, services = Master('/rosbridge').getSystemState()
-      toReturn = []
-      for i,v in publishers:
-        if node in v:
-          toReturn.append(i)
-      toReturn.sort()
-      return toReturn
+        publishers, subscribers, services = Master('/rosbridge').getSystemState()
+        toReturn = []
+        for i, v in publishers:
+            if node in v:
+                toReturn.append(i)
+        toReturn.sort()
+        return toReturn
     except socket.error:
-      return []
-    
+        return []
+
+
 def get_node_subscriptions(node):
     """ Returns a list of topic names that are been subscribed by the specified node """
     try:
-      publishers, subscribers, services = Master('/rosbridge').getSystemState()
-      toReturn = []
-      for i,v in subscribers:
-        if node in v:
-          toReturn.append(i)
-      toReturn.sort()
-      return toReturn
+        publishers, subscribers, services = Master('/rosbridge').getSystemState()
+        toReturn = []
+        for i, v in subscribers:
+            if node in v:
+                toReturn.append(i)
+        toReturn.sort()
+        return toReturn
     except socket.error:
-      return []
-    
+        return []
+
+
 def get_node_services(node):
     """ Returns a list of service names that are been hosted by the specified node """
     try:
-      publishers, subscribers, services = Master('/rosbridge').getSystemState()
-      toReturn = []
-      for i,v in services:
-        if node in v:
-          toReturn.append(i)
-      toReturn.sort()
-      return toReturn
+        publishers, subscribers, services = Master('/rosbridge').getSystemState()
+        toReturn = []
+        for i, v in services:
+            if node in v:
+                toReturn.append(i)
+        toReturn.sort()
+        return toReturn
     except socket.error:
-      return []
+        return []
+
 
 def get_topic_type(topic, topics_glob):
     """ Returns the type of the specified ROS topic """
@@ -154,16 +158,26 @@ def filter_action_servers(topics):
             [empty, namespace, topic] = topic.split('/')
             if(possible_action_server != namespace):
                 possible_action_server = namespace
-                possibility[0]=0; possibility[1]=0; possibility[2]=0; possibility[3]=0; possibility[4]=0
-            if(possible_action_server == namespace and topic == "cancel"):  possibility[0] = 1
-            if(possible_action_server == namespace and topic == "feedback"):possibility[1] = 1
-            if(possible_action_server == namespace and topic == "goal"):    possibility[2] = 1
-            if(possible_action_server == namespace and topic == "result"):  possibility[3] = 1
-            if(possible_action_server == namespace and topic == "status"):  possibility[4] = 1
+                possibility[0] = 0
+                possibility[1] = 0
+                possibility[2] = 0
+                possibility[3] = 0
+                possibility[4] = 0
+            if(possible_action_server == namespace and topic == "cancel"):
+                possibility[0] = 1
+            if(possible_action_server == namespace and topic == "feedback"):
+                possibility[1] = 1
+            if(possible_action_server == namespace and topic == "goal"):
+                possibility[2] = 1
+            if(possible_action_server == namespace and topic == "result"):
+                possibility[3] = 1
+            if(possible_action_server == namespace and topic == "status"):
+                possibility[4] = 1
         if(possibility[0] == 1 and possibility[1] == 1 and possibility[2] == 1 and possibility[3] == 1 and possibility[4] == 1):
             action_servers.append(possible_action_server)
 
     return action_servers
+
 
 def get_service_type(service, services_glob):
     """ Returns the type of the specified ROS service, """
