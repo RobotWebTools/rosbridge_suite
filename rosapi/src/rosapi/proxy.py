@@ -46,7 +46,7 @@ from rosgraph.masterapi import Master
 
 from rosapi.msg import TypeDef
 
-from glob_helper import filter_globs, any_match
+from .glob_helper import filter_globs, any_match
 
 
 def get_topics(topics_glob):
