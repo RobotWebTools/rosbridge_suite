@@ -32,6 +32,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import fnmatch
+import socket
 from rosservice import get_service_list
 from rosservice import get_service_type as rosservice_get_service_type
 from rosservice import get_service_node as rosservice_get_service_node
