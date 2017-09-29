@@ -154,27 +154,17 @@ def filter_action_servers(topics):
     action_servers = []
     possible_action_server = ''
     possibility = [0, 0, 0, 0, 0]
+
+    action_topics = ['cancel', 'feedback', 'goal', 'result', 'status']
     for topic in sorted(topics):
         if (len(topic.split('/')) == 3):
             [empty, namespace, topic] = topic.split('/')
             if(possible_action_server != namespace):
                 possible_action_server = namespace
-                possibility[0] = 0
-                possibility[1] = 0
-                possibility[2] = 0
-                possibility[3] = 0
-                possibility[4] = 0
-            if(possible_action_server == namespace and topic == "cancel"):
-                possibility[0] = 1
-            if(possible_action_server == namespace and topic == "feedback"):
-                possibility[1] = 1
-            if(possible_action_server == namespace and topic == "goal"):
-                possibility[2] = 1
-            if(possible_action_server == namespace and topic == "result"):
-                possibility[3] = 1
-            if(possible_action_server == namespace and topic == "status"):
-                possibility[4] = 1
-        if(possibility[0] == 1 and possibility[1] == 1 and possibility[2] == 1 and possibility[3] == 1 and possibility[4] == 1):
+                possibility = [0, 0, 0, 0, 0]
+            if possible_action_server == namespace and topic in action_topics:
+                possibility[action_topics.index(topic)] = 1
+        if all(p == 1 for p in possibility):
             action_servers.append(possible_action_server)
 
     return action_servers
