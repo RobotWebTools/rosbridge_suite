@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.8.4 (2017-10-16)
+------------------
 * Handles empty globes properly (`#297 <https://github.com/RobotWebTools/rosbridge_suite/issues/297>`_)
   * Refactors get_globs function to a separate module
   * Refactors the filtering that uses the globs
