@@ -8,7 +8,8 @@ from twisted.internet.protocol import DatagramProtocol,Factory
 class RosbridgeUdpFactory(DatagramProtocol):
     def startProtocol(self):
         self.socks = dict()
-    def datagramReceived(self, message, (host, port)):
+    def datagramReceived(self, message, source_addr):
+        (host, port) = source_addr
         endpoint = host.__str__() + port.__str__()
         if endpoint in self.socks:
             self.socks[endpoint].datagramReceived(message)

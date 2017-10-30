@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import print_function
 import roslib
 import rospy
 
@@ -42,18 +43,31 @@ import string
 from base64 import standard_b64encode, standard_b64decode
 import bson
 
-type_map = {
-   "bool":    ["bool"],
-   "int":     ["int8", "byte", "uint8", "char",
-               "int16", "uint16", "int32", "uint32",
-               "int64", "uint64", "float32", "float64"],
-   "float":   ["float32", "float64"],
-   "str":     ["string"],
-   "unicode": ["string"],
-   "long":    ["int64", "uint64"]
-}
-primitive_types = [bool, int, long, float]
-string_types = [str, unicode]
+import sys
+if sys.version_info >= (3, 0):
+    type_map = {
+    "bool":    ["bool"],
+    "int":     ["int8", "byte", "uint8", "char",
+                "int16", "uint16", "int32", "uint32",
+                "int64", "uint64", "float32", "float64"],
+    "float":   ["float32", "float64"],
+    "str":     ["string"]
+    }
+    primitive_types = [bool, int, float]
+    string_types = [str]
+else:
+    type_map = {
+    "bool":    ["bool"],
+    "int":     ["int8", "byte", "uint8", "char",
+                "int16", "uint16", "int32", "uint32",
+                "int64", "uint64", "float32", "float64"],
+    "float":   ["float32", "float64"],
+    "str":     ["string"],
+    "unicode": ["string"],
+    "long":    ["int64", "uint64"]
+    }
+    primitive_types = [bool, int, long, float]
+    string_types = [str, unicode]
 list_types = [list, tuple]
 ros_time_types = ["time", "duration"]
 ros_primitive_types = ["bool", "byte", "char", "int8", "uint8", "int16",
@@ -78,9 +92,9 @@ def get_encoder():
         elif binary_encoder_type == 'default' or binary_encoder_type == 'b64':
              binary_encoder = standard_b64encode
         else:
-            print "Unknown encoder type '%s'"%binary_encoder_type
+            print("Unknown encoder type '%s'"%binary_encoder_type)
             exit(0)
-    return binary_encoder        
+    return binary_encoder
 
 class InvalidMessageException(Exception):
     def __init__(self, inst):

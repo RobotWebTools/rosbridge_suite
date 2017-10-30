@@ -1,12 +1,18 @@
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import ros_loader, message_conversion
 
+import sys
+if sys.version_info >= (3, 0):
+    string_types = str
+else:
+    string_types = (str, unicode)
+
 
 class ServiceResponse(Capability):
 
     service_response_msg_fields = [
-        (True, "service", (str, unicode)), (False, "id", (str, unicode)),
-        (False, "values", (str, unicode)), (True, "result", bool)
+        (True, "service", string_types), (False, "id", string_types),
+        (False, "values", string_types), (True, "result", bool)
     ]
 
     def __init__(self, protocol):

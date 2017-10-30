@@ -5,6 +5,12 @@ import fnmatch
 import rospy
 import time
 
+import sys
+if sys.version_info >= (3, 0):
+    string_types = str
+else:
+    string_types = (str, unicode)
+
 
 class AdvertisedServiceHandler():
 
@@ -49,7 +55,7 @@ class AdvertisedServiceHandler():
 
 class AdvertiseService(Capability):
 
-    advertise_service_msg_fields = [(True, "service", (str, unicode)), (True, "type", (str, unicode))]
+    advertise_service_msg_fields = [(True, "service", string_types), (True, "type", string_types)]
 
     def __init__(self, protocol):
         # Call superclass constructor

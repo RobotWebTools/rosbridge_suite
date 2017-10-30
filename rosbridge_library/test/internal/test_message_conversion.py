@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import sys
 import rospy
 import rostest
@@ -189,7 +190,7 @@ class TestMessageConversion(unittest.TestCase):
         currenttime = rospy.get_rostime()
         self.validate_instance(inst)
         extracted = c.extract_values(inst)
-        print extracted
+        print(extracted)
         self.assertIn("data", extracted)
         self.assertIn("secs", extracted["data"])
         self.assertIn("nsecs", extracted["data"])

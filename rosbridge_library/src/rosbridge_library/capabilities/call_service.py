@@ -35,12 +35,17 @@ from functools import partial
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.services import ServiceCaller
 
+import sys
+if sys.version_info >= (3, 0):
+    string_types = str
+else:
+    string_types = (str, unicode)
 
 class CallService(Capability):
 
-    call_service_msg_fields = [(True, "service", (str, unicode)),
+    call_service_msg_fields = [(True, "service", string_types),
                                (False, "fragment_size", (int, type(None))),
-                               (False, "compression", (str, unicode))]
+                               (False, "compression", string_types)]
 
     services_glob = None
 

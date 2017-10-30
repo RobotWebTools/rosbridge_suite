@@ -2,7 +2,10 @@ import rospy
 import struct
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 
-import SocketServer
+try:
+    import SocketServer
+except ImportError:
+    import socketserver as SocketServer
 
 class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     """
@@ -98,7 +101,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
                   self.protocol.incoming(data.strip(''))
               else:
                   pass
-            except Exception, e:
+            except Exception as e:
                 pass
                 self.protocol.log("debug", "socket connection timed out! (ignore warning if client is only listening..)")
 

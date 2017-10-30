@@ -35,6 +35,12 @@ import fnmatch
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
 
+import sys
+if sys.version_info >= (3, 0):
+    string_types = str
+else:
+    string_types = (str, unicode)
+
 
 class Registration():
     """ Keeps track of how many times a client has requested to advertise
@@ -73,8 +79,8 @@ class Registration():
 
 class Advertise(Capability):
 
-    advertise_msg_fields = [(True, "topic", (str, unicode)), (True, "type", (str, unicode))]
-    unadvertise_msg_fields = [(True, "topic", (str, unicode))]
+    advertise_msg_fields = [(True, "topic", string_types), (True, "type", string_types)]
+    unadvertise_msg_fields = [(True, "topic", string_types)]
 
     topics_glob = None
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import sys
 import rospy
 import rostest
@@ -56,10 +57,10 @@ class ServiceTester:
         try:
             rsp = c.populate_instance(gen, rsp)
         except:
-            print "populating instance"
-            print rsp
-            print "populating with"
-            print gen
+            print("populating instance")
+            print(rsp)
+            print("populating with")
+            print(gen)
             raise
         self.output = gen
         return rsp
@@ -72,8 +73,8 @@ class ServiceTester:
 
     def validate(self, equality_function):
         if hasattr(self, "exc"):
-            print self.exc
-            print self.exc.message
+            print(self.exc)
+            print(self.exc.message)
             raise self.exc
         equality_function(self.input, c.extract_values(self.req))
         equality_function(self.output, self.rsp)

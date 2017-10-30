@@ -35,10 +35,15 @@ import fnmatch
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
 
+import sys
+if sys.version_info >= (3, 0):
+    string_types = str
+else:
+    string_types = (str, unicode)
 
 class Publish(Capability):
 
-    publish_msg_fields = [(True, "topic", (str, unicode))]
+    publish_msg_fields = [(True, "topic", string_types)]
 
     topics_glob = None
 
@@ -83,7 +88,7 @@ class Publish(Capability):
 
         # Publish the message
         manager.publish(client_id, topic, msg, latch=latch, queue_size=queue_size)
- 
+
     def finish(self):
         client_id = self.protocol.client_id
         for topic in self._published:
