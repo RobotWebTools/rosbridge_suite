@@ -246,7 +246,7 @@ def _to_primitive_inst(msg, rostype, roottype, stack):
     if msgtype in primitive_types and rostype in type_map[msgtype.__name__]:
         return msg
     elif msgtype in string_types and rostype in type_map[msgtype.__name__]:
-        return msg.encode("utf-8", "ignore")
+        return msg.encode("utf-8", "ignore") if msgtype is bytes else msg
     raise FieldTypeMismatchException(roottype, stack, rostype, msgtype)
 
 
