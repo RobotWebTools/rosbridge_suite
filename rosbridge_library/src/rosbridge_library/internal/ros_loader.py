@@ -61,7 +61,7 @@ class InvalidPackageException(Exception):
     def __init__(self, package, original_exception):
         Exception.__init__(self,
            "Unable to load the manifest for package %s. Caused by: %s"
-           % (package, original_exception.message)
+           % (package, str(original_exception))
        )
 
 

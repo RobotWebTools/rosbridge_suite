@@ -55,6 +55,7 @@ if sys.version_info >= (3, 0):
     }
     primitive_types = [bool, int, float]
     string_types = [str]
+    python2 = False
 else:
     type_map = {
     "bool":    ["bool"],
@@ -68,6 +69,8 @@ else:
     }
     primitive_types = [bool, int, long, float]
     string_types = [str, unicode]
+    python2 = True
+
 list_types = [list, tuple]
 ros_time_types = ["time", "duration"]
 ros_primitive_types = ["bool", "byte", "char", "int8", "uint8", "int16",
@@ -131,7 +134,8 @@ def _from_inst(inst, rostype):
     # Special case for uint8[], we encode the string
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
-            return get_encoder()(inst)
+            encoded = get_encoder()(inst)
+            return encoded if python2 else encoded.decode('ascii')
 
     # Check for time or duration
     if rostype in ros_time_types:
@@ -207,11 +211,11 @@ def _to_binary_inst(msg):
     if type(msg) in string_types:
         try:
             return standard_b64decode(msg)
-        except:
+        except :
             return msg
     else:
         try:
-            return str(bytearray(msg))
+            return bytes(bytearray(msg))
         except:
             return msg
 
@@ -246,7 +250,7 @@ def _to_primitive_inst(msg, rostype, roottype, stack):
     if msgtype in primitive_types and rostype in type_map[msgtype.__name__]:
         return msg
     elif msgtype in string_types and rostype in type_map[msgtype.__name__]:
-        return msg.encode("utf-8", "ignore") if msgtype is bytes else msg
+        return msg.encode("utf-8", "ignore") if python2 else msg
     raise FieldTypeMismatchException(roottype, stack, rostype, msgtype)
 
 

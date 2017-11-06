@@ -13,6 +13,11 @@ from rosbridge_library.internal.message_conversion import FieldTypeMismatchExcep
 
 from roscpp.srv import GetLoggers
 
+if sys.version_info >= (3, 0):
+    string_types = (str,)
+else:
+    string_types = (str, unicode)
+
 
 def populate_random_args(d):
     # Given a dictionary d, replaces primitives with random values
@@ -22,7 +27,7 @@ def populate_random_args(d):
         return d
     elif isinstance(d, str):
         return str(random.random())
-    elif isinstance(d, unicode):
+    elif sys.version_info < (3,0) and isinstance(d, unicode):
         return unicode(random.random())
     elif isinstance(d, bool):
         return True
@@ -86,7 +91,7 @@ class TestServices(unittest.TestCase):
         rospy.init_node("test_services")
 
     def msgs_equal(self, msg1, msg2):
-        if type(msg1) in [str, unicode] and type(msg2) in [str, unicode]:
+        if type(msg1) in string_types and type(msg2) in string_types:
             pass
         else:
             self.assertEqual(type(msg1), type(msg2))
