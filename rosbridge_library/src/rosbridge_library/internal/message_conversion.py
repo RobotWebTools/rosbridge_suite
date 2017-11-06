@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import print_function
 import roslib
 import rospy
 
@@ -42,18 +43,34 @@ import string
 from base64 import standard_b64encode, standard_b64decode
 import bson
 
-type_map = {
-   "bool":    ["bool"],
-   "int":     ["int8", "byte", "uint8", "char",
-               "int16", "uint16", "int32", "uint32",
-               "int64", "uint64", "float32", "float64"],
-   "float":   ["float32", "float64"],
-   "str":     ["string"],
-   "unicode": ["string"],
-   "long":    ["int64", "uint64"]
-}
-primitive_types = [bool, int, long, float]
-string_types = [str, unicode]
+from rosbridge_library.util import string_types
+
+import sys
+if sys.version_info >= (3, 0):
+    type_map = {
+    "bool":    ["bool"],
+    "int":     ["int8", "byte", "uint8", "char",
+                "int16", "uint16", "int32", "uint32",
+                "int64", "uint64", "float32", "float64"],
+    "float":   ["float32", "float64"],
+    "str":     ["string"]
+    }
+    primitive_types = [bool, int, float]
+    python2 = False
+else:
+    type_map = {
+    "bool":    ["bool"],
+    "int":     ["int8", "byte", "uint8", "char",
+                "int16", "uint16", "int32", "uint32",
+                "int64", "uint64", "float32", "float64"],
+    "float":   ["float32", "float64"],
+    "str":     ["string"],
+    "unicode": ["string"],
+    "long":    ["int64", "uint64"]
+    }
+    primitive_types = [bool, int, long, float]
+    python2 = True
+
 list_types = [list, tuple]
 ros_time_types = ["time", "duration"]
 ros_primitive_types = ["bool", "byte", "char", "int8", "uint8", "int16",
@@ -78,9 +95,9 @@ def get_encoder():
         elif binary_encoder_type == 'default' or binary_encoder_type == 'b64':
              binary_encoder = standard_b64encode
         else:
-            print "Unknown encoder type '%s'"%binary_encoder_type
+            print("Unknown encoder type '%s'"%binary_encoder_type)
             exit(0)
-    return binary_encoder        
+    return binary_encoder
 
 class InvalidMessageException(Exception):
     def __init__(self, inst):
@@ -117,7 +134,8 @@ def _from_inst(inst, rostype):
     # Special case for uint8[], we encode the string
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
-            return get_encoder()(inst)
+            encoded = get_encoder()(inst)
+            return encoded if python2 else encoded.decode('ascii')
 
     # Check for time or duration
     if rostype in ros_time_types:
@@ -193,11 +211,11 @@ def _to_binary_inst(msg):
     if type(msg) in string_types:
         try:
             return standard_b64decode(msg)
-        except:
+        except :
             return msg
     else:
         try:
-            return str(bytearray(msg))
+            return bytes(bytearray(msg))
         except:
             return msg
 
@@ -232,7 +250,7 @@ def _to_primitive_inst(msg, rostype, roottype, stack):
     if msgtype in primitive_types and rostype in type_map[msgtype.__name__]:
         return msg
     elif msgtype in string_types and rostype in type_map[msgtype.__name__]:
-        return msg.encode("utf-8", "ignore")
+        return msg.encode("utf-8", "ignore") if python2 else msg
     raise FieldTypeMismatchException(roottype, stack, rostype, msgtype)
 
 

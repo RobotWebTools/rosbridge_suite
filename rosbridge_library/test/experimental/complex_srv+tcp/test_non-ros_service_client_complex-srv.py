@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import print_function
 import socket
 from rosbridge_library.util import json
 
@@ -33,7 +34,7 @@ def request_service():
                                         #"count" : request_byte_count           # count is the parameter for send_bytes as defined in srv-file (always put into args field!)
                               }
     service_request = json.dumps(service_request_object)
-    print "sending JSON-message to rosbridge:", service_request
+    print("sending JSON-message to rosbridge:", service_request)
     sock.send(service_request)
 
 ################################################################################
@@ -60,7 +61,7 @@ try:
             if buffer == "":
                 buffer = incoming
                 if incoming == "":
-                    print "closing socket"
+                    print("closing socket")
                     sock.close()
                     break
             else:
@@ -71,7 +72,7 @@ try:
                 if data_object["op"] == "service_response":
                     reconstructed = buffer
                     done = True
-            except Exception, e:
+            except Exception as e:
                 #print "direct access to JSON failed.."
                 #print e
                 pass
@@ -86,13 +87,13 @@ try:
                         fragment = fragment + "}"
                     try:
                         result.append(json.loads(fragment))                     # try to parse json from string, and append if successful
-                    except Exception, e:
+                    except Exception as e:
                         #print e
                         #print result_string
                         raise                                                   # re-raise the last exception, allows to see and continue with processing of exception
 
                 fragment_count = len(result)
-                print "fragment_count:", fragment_count
+                print("fragment_count:", fragment_count)
                 announced = int(result[0]["total"])
                 if fragment_count == announced:                                 # if all fragments received --> sort and defragment
                     # sort fragments
@@ -105,23 +106,23 @@ try:
                     for fragment in sorted_result:
                         reconstructed = reconstructed + fragment["data"]
                     done = True
-            except Exception, e:
+            except Exception as e:
                 #print e
                 pass
-        except Exception, e:
+        except Exception as e:
 #            print e
             pass
 
 
     returned_data = json.loads(reconstructed)                                   # when service response is received --> access it (as defined in srv-file)
     if returned_data["values"] == None:
-        print "response was None -> service was not available"
+        print("response was None -> service was not available")
     else:
-        print "received:"
-        print returned_data#["values"]#["data"].decode('base64','strict')         # decode values-field
+        print("received:")
+        print(returned_data)#["values"]#["data"].decode('base64','strict')         # decode values-field
     
-except Exception, e:
-    print "ERROR - could not receive service_response"
-    print e
+except Exception as e:
+    print("ERROR - could not receive service_response")
+    print(e)
 
 sock.close()                                                                    # close socket

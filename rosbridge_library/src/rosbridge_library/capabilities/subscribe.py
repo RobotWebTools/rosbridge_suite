@@ -47,6 +47,8 @@ except ImportError:
     except ImportError:
         from json import dumps
 
+from rosbridge_library.util import string_types
+
 
 class Subscription():
     """ Keeps track of the clients multiple calls to subscribe.
@@ -180,10 +182,10 @@ class Subscription():
 
 class Subscribe(Capability):
 
-    subscribe_msg_fields = [(True, "topic", (str, unicode)), (False, "type", (str, unicode)),
+    subscribe_msg_fields = [(True, "topic", string_types), (False, "type", string_types),
                             (False, "throttle_rate", int), (False, "fragment_size", int),
-                            (False, "queue_length", int), (False, "compression", (str, unicode))]
-    unsubscribe_msg_fields = [(True, "topic", (str, unicode))]
+                            (False, "queue_length", int), (False, "compression", string_types)]
+    unsubscribe_msg_fields = [(True, "topic", string_types)]
 
     topics_glob = None
 
@@ -242,7 +244,7 @@ class Subscribe(Capability):
     def unsubscribe(self, msg):
         # Pull out the ID
         sid = msg.get("id", None)
- 
+
         self.basic_type_check(msg, self.unsubscribe_msg_fields)
 
         topic = msg["topic"]

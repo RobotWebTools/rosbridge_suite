@@ -1,6 +1,7 @@
 from rosbridge_library.internal.ros_loader import get_service_class
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.capability import Capability
+from rosbridge_library.util import string_types
 import fnmatch
 import rospy
 import time
@@ -49,7 +50,7 @@ class AdvertisedServiceHandler():
 
 class AdvertiseService(Capability):
 
-    advertise_service_msg_fields = [(True, "service", (str, unicode)), (True, "type", (str, unicode))]
+    advertise_service_msg_fields = [(True, "service", string_types), (True, "type", string_types)]
 
     def __init__(self, protocol):
         # Call superclass constructor

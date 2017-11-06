@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import print_function
 import rospy
 import sys
 
@@ -89,7 +90,7 @@ if __name__ == "__main__":
         if idx < len(sys.argv):
             port = int(sys.argv[idx])
         else:
-            print "--port argument provided without a value."
+            print("--port argument provided without a value.")
             sys.exit(-1)
 
     if "--interface" in sys.argv:
@@ -97,7 +98,7 @@ if __name__ == "__main__":
         if idx < len(sys.argv):
             interface = int(sys.argv[idx])
         else:
-            print "--interface argument provided without a value."
+            print("--interface argument provided without a value.")
             sys.exit(-1)
 
     if "--fragment_timeout" in sys.argv:
@@ -105,7 +106,7 @@ if __name__ == "__main__":
         if idx < len(sys.argv):
             RosbridgeUdpSocket.fragment_timeout = int(sys.argv[idx])
         else:
-            print "--fragment_timeout argument provided without a value."
+            print("--fragment_timeout argument provided without a value.")
             sys.exit(-1)
 
     if "--delay_between_messages" in sys.argv:
@@ -113,7 +114,7 @@ if __name__ == "__main__":
         if idx < len(sys.argv):
             RosbridgeUdpSocket.delay_between_messages = float(sys.argv[idx])
         else:
-            print "--delay_between_messages argument provided without a value."
+            print("--delay_between_messages argument provided without a value.")
             sys.exit(-1)
 
     if "--max_message_size" in sys.argv:
@@ -125,7 +126,7 @@ if __name__ == "__main__":
             else:
                 RosbridgeUdpSocket.max_message_size = int(value)
         else:
-            print "--max_message_size argument provided without a value. (can be None or <Integer>)"
+            print("--max_message_size argument provided without a value. (can be None or <Integer>)")
             sys.exit(-1)
 
     if "--topics_glob" in sys.argv:
@@ -137,7 +138,7 @@ if __name__ == "__main__":
             else:
                 RosbridgeUdpSocket.topics_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
         else:
-            print "--topics_glob argument provided without a value. (can be None or a list)"
+            print("--topics_glob argument provided without a value. (can be None or a list)")
             sys.exit(-1)
 
     if "--services_glob" in sys.argv:
@@ -149,7 +150,7 @@ if __name__ == "__main__":
             else:
                 RosbridgeUdpSocket.services_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
         else:
-            print "--services_glob argument provided without a value. (can be None or a list)"
+            print("--services_glob argument provided without a value. (can be None or a list)")
             sys.exit(-1)
 
     if "--params_glob" in sys.argv:
@@ -161,7 +162,7 @@ if __name__ == "__main__":
             else:
                 RosbridgeUdpSocket.params_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
         else:
-            print "--params_glob argument provided without a value. (can be None or a list)"
+            print("--params_glob argument provided without a value. (can be None or a list)")
             sys.exit(-1)
 
     # To be able to access the list of topics and services, you must be able to access the rosapi services.

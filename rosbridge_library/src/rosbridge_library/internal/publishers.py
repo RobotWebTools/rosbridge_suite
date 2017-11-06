@@ -311,7 +311,7 @@ class PublisherManager():
             return
 
         self._publishers[topic].unregister_client(client_id)
-        if self.unregister_timers.has_key(topic):
+        if topic in self.unregister_timers:
             self.unregister_timers[topic].cancel()
             del self.unregister_timers[topic]
         self.unregister_timers[topic] = Timer(UNREGISTER_TIMEOUT, self._unregister_impl,
