@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import print_function
 import sys
 import socket
 import time
@@ -103,7 +104,7 @@ def wait_for_service_request():                                                 
         while not done:
             incoming = tcp_socket.recv(max_msg_length)                          # get data from socket
             if incoming == '':
-                print "connection closed by peer"
+                print("connection closed by peer")
                 sys.exit(1)
             buffer = buffer + incoming                                          # append data to buffer
             try:                                                                # try to parse JSON from buffer
@@ -112,7 +113,7 @@ def wait_for_service_request():                                                 
                     data = buffer
                     done = True
                     return data                                                 # if parsing was successful --> return data string
-            except Exception, e:
+            except Exception as e:
                 #print "direct_access error:"
                 #print e
                 pass
@@ -146,17 +147,17 @@ def wait_for_service_request():                                                 
                         #print "reconstructed", reconstructed
                         buffer = ""                                             # empty buffer
                         done = True
-                        print "reconstructed message from", len(result), "fragments"
+                        print("reconstructed message from", len(result), "fragments")
                         #print reconstructed
                         return reconstructed
-                except Exception, e:
-                    print "not possible to defragment:", buffer
-                    print e
-            except Exception, e:
-                print "defrag_error:", buffer
-                print e
+                except Exception as e:
+                    print("not possible to defragment:", buffer)
+                    print(e)
+            except Exception as e:
+                print("defrag_error:", buffer)
+                print(e)
                 pass
-    except Exception, e:
+    except Exception as e:
         #print "network-error(?):", e
         pass
     return data
@@ -203,7 +204,7 @@ def list_of_fragments(full_message, fragment_size):                             
 
 tcp_socket = connect_tcp_socket()                                               # open tcp_socket
 advertise_service()                                                             # advertise service in ROS (via rosbridge)
-print "service provider started and waiting for requests"
+print("service provider started and waiting for requests")
 
 try:                                                                            # allows to catch KeyboardInterrupt
     while True:                                                                 # loop forever (or until ctrl-c is pressed)
@@ -215,21 +216,21 @@ try:                                                                            
           elif data != None and len(data) > 0:                                  # received service_request (or at least some data..)
             response = calculate_service_response(data)                         # generate service_response
 
-            print "response calculated, now splitting into fragments.."
+            print("response calculated, now splitting into fragments..")
             fragment_list = list_of_fragments(response, send_fragment_size)     # generate fragments to send to rosbridge
 
-            print "sending", len(fragment_list), "messages as response"
+            print("sending", len(fragment_list), "messages as response")
             for fragment in fragment_list:
                 #print "sending:" ,fragment
                 send_service_response(fragment)                                 # send service_response to rosbridge (or fragments; just send any list entry)
                 time.sleep(send_fragment_delay)                                 # (not needed if using patched rosbridge protocol.py)
-        except Exception, e:
-          print e
+        except Exception as e:
+          print(e)
           pass
 except KeyboardInterrupt:
     try:
         unadvertise_service()                                                   # unadvertise service
         tcp_socket.close()                                                      # close tcp_socket
-    except Exception, e:
-        print e
-    print "non-ros_service_server stopped because user pressed \"Ctrl-C\""
+    except Exception as e:
+        print(e)
+    print("non-ros_service_server stopped because user pressed \"Ctrl-C\"")

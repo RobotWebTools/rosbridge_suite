@@ -91,7 +91,7 @@ class TestMultiSubscriber(unittest.TestCase):
         multi = MultiSubscriber(topic, msg_type)
 
         received = {"msg": None}
-        
+
         def cb(msg):
             received["msg"] = msg
 
@@ -106,7 +106,7 @@ class TestMultiSubscriber(unittest.TestCase):
         msg_type = "std_msgs/Int32"
         client = "client_test_subscribe_receive_json_multiple"
 
-        numbers = range(100)
+        numbers = list(range(100))
 
         pub = rospy.Publisher(topic, Int32)
         multi = MultiSubscriber(topic, msg_type)

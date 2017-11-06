@@ -1,15 +1,24 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import sys
 import rospy
 import rostest
 import unittest
 from json import loads, dumps
 
-from StringIO import StringIO
+try:
+    from cStringIO import StringIO  # Python 2.x
+except ImportError:
+    from io import BytesIO as StringIO  # Python 3.x
 
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader
 from base64 import standard_b64encode, standard_b64decode
+
+if sys.version_info >= (3, 0):
+    string_types = (str,)
+else:
+    string_types = (str, unicode)
 
 
 class TestMessageConversion(unittest.TestCase):
@@ -29,7 +38,7 @@ class TestMessageConversion(unittest.TestCase):
         inst2._check_types()
 
     def msgs_equal(self, msg1, msg2):
-        if type(msg1) in [str, unicode] and type(msg2) in [str, unicode]:
+        if type(msg1) in string_types and type(msg2) in string_types:
             pass
         else:
             self.assertEqual(type(msg1), type(msg2))
@@ -189,7 +198,7 @@ class TestMessageConversion(unittest.TestCase):
         currenttime = rospy.get_rostime()
         self.validate_instance(inst)
         extracted = c.extract_values(inst)
-        print extracted
+        print(extracted)
         self.assertIn("data", extracted)
         self.assertIn("secs", extracted["data"])
         self.assertIn("nsecs", extracted["data"])
@@ -244,26 +253,26 @@ class TestMessageConversion(unittest.TestCase):
         for msgtype in ["TestChar", "TestUInt8"]:
             rostype = "rosbridge_library/" + msgtype
 
-            int8s = range(0, 256)
+            int8s = list(range(0, 256))
             ret = test_int8_msg(rostype, int8s)
-            self.assertEqual(ret, str(bytearray(int8s)))
+            self.assertEqual(ret, bytes(bytearray(int8s)))
 
-            str_int8s = str(bytearray(int8s))
+            str_int8s = bytes(bytearray(int8s))
 
-            b64str_int8s = standard_b64encode(str_int8s)
+            b64str_int8s = standard_b64encode(str_int8s).decode('ascii')
             ret = test_int8_msg(rostype, b64str_int8s)
             self.assertEqual(ret, str_int8s)
 
         for msgtype in ["TestUInt8FixedSizeArray16"]:
             rostype = "rosbridge_library/" + msgtype
 
-            int8s = range(0, 16)
+            int8s = list(range(0, 16))
             ret = test_int8_msg(rostype, int8s)
-            self.assertEqual(ret, str(bytearray(int8s)))
+            self.assertEqual(ret, bytes(bytearray(int8s)))
 
-            str_int8s = str(bytearray(int8s))
+            str_int8s = bytes(bytearray(int8s))
 
-            b64str_int8s = standard_b64encode(str_int8s)
+            b64str_int8s = standard_b64encode(str_int8s).decode('ascii')
             ret = test_int8_msg(rostype, b64str_int8s)
             self.assertEqual(ret, str_int8s)
 

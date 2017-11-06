@@ -64,7 +64,7 @@ class TestMessageHandlers(unittest.TestCase):
         # no messages will be handled in the next 10 seconds
 
         # these will fill up the queue, with newer values displacing old ones
-        # nothing gets sent because the throttle rate 
+        # nothing gets sent because the throttle rate
         for x in msgs:
             handler.handle_message(x)
 
@@ -73,7 +73,7 @@ class TestMessageHandlers(unittest.TestCase):
         time.sleep(0.1)
 
         try:
-            self.assertEqual(["hello"] + range(990, 1000), received["msgs"])
+            self.assertEqual(["hello"] + list(range(990, 1000)), received["msgs"])
         except:
             handler.finish()
             raise
@@ -113,7 +113,7 @@ class TestMessageHandlers(unittest.TestCase):
         def cb(msg):
             received["msgs"].append(msg)
         handler.publish = cb
-        xs = range(10000)
+        xs = list(range(10000))
         for x in xs:
             handler.handle_message(x)
 
@@ -124,22 +124,22 @@ class TestMessageHandlers(unittest.TestCase):
         handler = handler.set_queue_length(0)
         handler = handler.set_throttle_rate(throttle_rate)
         self.assertIsInstance(handler, subscribe.ThrottleMessageHandler)
-        
+
         msg = "test_throttle_message_handler"
-        
+
         # First, try with a single message
         received = {"msg": None}
-            
+
         def cb(msg):
             received["msg"] = msg
-                
+
         handler.publish = cb
 
         # ensure the handler doesn't swallow this message
         time.sleep(2.0 * handler.throttle_rate)
         handler.handle_message(msg)
         self.assertEqual(received["msg"], msg)
-        
+
         # sleep to make sure the handler sends right away for the second part
         time.sleep(2.0 * handler.throttle_rate)
 
@@ -166,7 +166,7 @@ class TestMessageHandlers(unittest.TestCase):
     def help_test_queue(self, handler, queue_length):
         handler = handler.set_queue_length(queue_length)
         self.assertIsInstance(handler, subscribe.QueueMessageHandler)
-        
+
         received = {"msgs": []}
 
         def cb(msg):
@@ -174,7 +174,7 @@ class TestMessageHandlers(unittest.TestCase):
 
         handler.publish = cb
 
-        msgs = range(queue_length)
+        msgs = list(range(queue_length))
         for x in msgs:
             handler.handle_message(x)
 
@@ -196,7 +196,7 @@ class TestMessageHandlers(unittest.TestCase):
         handler.publish = cb
 
         throttle_rate_sec = throttle_rate / 1000.0
-        
+
         # ensure previous tests' last sent time is long enough ago
         time.sleep(throttle_rate_sec)
         for x in range(queue_length):

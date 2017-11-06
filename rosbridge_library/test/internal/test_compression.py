@@ -13,13 +13,13 @@ class TestCompression(unittest.TestCase):
         rospy.init_node("test_compression")
 
     def test_compress(self):
-        bytes = range(128) * 10000
+        bytes = list(range(128)) * 10000
         string = str(bytearray(bytes))
         encoded = pngcompression.encode(string)
         self.assertNotEqual(string, encoded)
 
     def test_compress_decompress(self):
-        bytes = range(128) * 10000
+        bytes = list(range(128)) * 10000
         string = str(bytearray(bytes))
         encoded = pngcompression.encode(string)
         self.assertNotEqual(string, encoded)

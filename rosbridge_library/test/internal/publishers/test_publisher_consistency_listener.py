@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import sys
 import rospy
 import rostest
@@ -96,14 +97,14 @@ class TestPublisherConsistencyListener(unittest.TestCase):
 
         received = {"msg": None}
         def callback(msg):
-            print "Received a msg! ", msg
+            print("Received a msg! ", msg)
             received["msg"] = msg
 
         rospy.Subscriber(topic, msg_class, callback)
 
         class temp_listener(rospy.SubscribeListener):
             def peer_subscribe(self, topic_name, topic_publish, peer_publish):
-                print "peer subscribe in temp listener"
+                print("peer subscribe in temp listener")
 
         listener = PublisherConsistencyListener()
         publisher = rospy.Publisher(topic, msg_class, temp_listener())
