@@ -1,15 +1,10 @@
 from rosbridge_library.internal.ros_loader import get_service_class
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.capability import Capability
+from rosbridge_library.util import string_types
 import fnmatch
 import rospy
 import time
-
-import sys
-if sys.version_info >= (3, 0):
-    string_types = str
-else:
-    string_types = (str, unicode)
 
 
 class AdvertisedServiceHandler():

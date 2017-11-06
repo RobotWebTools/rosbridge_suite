@@ -34,12 +34,8 @@
 import fnmatch
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
+from rosbridge_library.util import string_types
 
-import sys
-if sys.version_info >= (3, 0):
-    string_types = str
-else:
-    string_types = (str, unicode)
 
 class Publish(Capability):
 

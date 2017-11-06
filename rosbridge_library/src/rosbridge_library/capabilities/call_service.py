@@ -34,12 +34,8 @@ import fnmatch
 from functools import partial
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.services import ServiceCaller
+from rosbridge_library.util import string_types
 
-import sys
-if sys.version_info >= (3, 0):
-    string_types = str
-else:
-    string_types = (str, unicode)
 
 class CallService(Capability):
 
@@ -82,7 +78,7 @@ class CallService(Capability):
                 return
         else:
             self.protocol.log("debug", "No service security glob, not checking service call.")
- 
+
         # Check for deprecated service ID, eg. /rosbridge/topics#33
         cid = extract_id(service, cid)
 

@@ -43,6 +43,8 @@ import string
 from base64 import standard_b64encode, standard_b64decode
 import bson
 
+from rosbridge_library.util import string_types
+
 import sys
 if sys.version_info >= (3, 0):
     type_map = {
@@ -54,7 +56,6 @@ if sys.version_info >= (3, 0):
     "str":     ["string"]
     }
     primitive_types = [bool, int, float]
-    string_types = [str]
     python2 = False
 else:
     type_map = {
@@ -68,7 +69,6 @@ else:
     "long":    ["int64", "uint64"]
     }
     primitive_types = [bool, int, long, float]
-    string_types = [str, unicode]
     python2 = True
 
 list_types = [list, tuple]
