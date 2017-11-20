@@ -366,7 +366,7 @@ which to send messages.
  * **throttle_rate** – the minimum amount of time (in ms) that must elapse
     between messages being sent. Defaults to 0
  * **queue_length** – the size of the queue to buffer messages. Messages are
-    buffered as a result of the throttle_rate. Defaults to 1.
+    buffered as a result of the throttle_rate. Defaults to 0 (no queueing).
  * **id** – if specified, then this specific subscription can be unsubscribed
     by referencing the ID.
  * **fragment_size** – the maximum size that a message can take before it is to
