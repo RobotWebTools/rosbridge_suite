@@ -32,13 +32,12 @@
 
 import rospy
 import time
-import bson
 from rosbridge_library.internal.exceptions import InvalidArgumentException
 from rosbridge_library.internal.exceptions import MissingArgumentException
 
 #from rosbridge_library.internal.pngcompression import encode
 from rosbridge_library.capabilities.fragmentation import Fragmentation
-from rosbridge_library.util import json
+from rosbridge_library.util import json, bson
 
 
 def is_number(s):
