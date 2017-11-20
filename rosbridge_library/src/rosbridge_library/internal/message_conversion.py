@@ -41,9 +41,8 @@ import math
 import re
 import string
 from base64 import standard_b64encode, standard_b64decode
-import bson
 
-from rosbridge_library.util import string_types
+from rosbridge_library.util import string_types, bson
 
 import sys
 if sys.version_info >= (3, 0):

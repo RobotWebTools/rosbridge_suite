@@ -40,8 +40,7 @@ from tornado.ioloop import IOLoop
 from tornado.websocket import WebSocketHandler
 
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-from rosbridge_library.util import json
-import bson
+from rosbridge_library.util import json, bson
 
 class RosbridgeWebSocket(WebSocketHandler):
     client_id_seed = 0
