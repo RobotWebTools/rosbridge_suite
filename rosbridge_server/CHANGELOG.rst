@@ -2,6 +2,18 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Raise if inappropriate bson module is installed (Appease `#198 <https://github.com/RobotWebTools/rosbridge_suite/issues/198>`_) (`#270 <https://github.com/RobotWebTools/rosbridge_suite/issues/270>`_)
+  * Raise Exception if inappropriate bson module is installed (Related to `#198 <https://github.com/RobotWebTools/rosbridge_suite/issues/198>`_)
+* Add Python3 compatibility (`#300 <https://github.com/RobotWebTools/rosbridge_suite/issues/300>`_)
+  * First pass at Python 3 compatibility
+  * message_conversion: Only call encode on a Python2 str or bytes type
+  * protocol.py: Changes for dict in Python3. Compatible with Python 2 too.
+  * More Python 3 fixes, all tests pass
+  * Move definition of string_types to rosbridge_library.util
+* Contributors: Junya Hayashi, Kartik Mohta
+
 0.8.4 (2017-10-16)
 ------------------
 
@@ -299,7 +311,7 @@ Changelog for package rosbridge_server
 * add rosbridge_server with tcp socket support
 * Param bug fixed
 * SSL options added
-* Contributors: Brandon Alexander, Jihoon Lee, Russell Toris, Steffel Fénix, dave, fxm-db, ipa-fxm, root
+* Contributors: Brandon Alexander, Jihoon Lee, Russell Toris, Steffel Fenix, dave, fxm-db, ipa-fxm, root
 
 0.5.1 (2013-10-31)
 ------------------

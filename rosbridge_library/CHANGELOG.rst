@@ -2,6 +2,18 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Raise if inappropriate bson module is installed (Appease `#198 <https://github.com/RobotWebTools/rosbridge_suite/issues/198>`_) (`#270 <https://github.com/RobotWebTools/rosbridge_suite/issues/270>`_)
+  * Raise Exception if inappropriate bson module is installed (Related to `#198 <https://github.com/RobotWebTools/rosbridge_suite/issues/198>`_)
+* Add Python3 compatibility (`#300 <https://github.com/RobotWebTools/rosbridge_suite/issues/300>`_)
+  * First pass at Python 3 compatibility
+  * message_conversion: Only call encode on a Python2 str or bytes type
+  * protocol.py: Changes for dict in Python3. Compatible with Python 2 too.
+  * More Python 3 fixes, all tests pass
+  * Move definition of string_types to rosbridge_library.util
+* Contributors: Junya Hayashi, Kartik Mohta
+
 0.8.4 (2017-10-16)
 ------------------
 
@@ -237,7 +249,7 @@ Changelog for package rosbridge_library
 * Remove extra whitespace
 * Make the test more deterministic
 * Remove circular dependency.
-* Contributors: Achim Königs, Alex Sorokin, Alexander Sorokin, Jonathan Wade, jon-weisz
+* Contributors: Achim Konigs, Alex Sorokin, Alexander Sorokin, Jonathan Wade, jon-weisz
 
 0.6.0 (2014-05-23)
 ------------------
