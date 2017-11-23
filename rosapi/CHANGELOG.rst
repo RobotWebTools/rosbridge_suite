@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.8.5 (2017-11-23)
+------------------
 * Add Python3 compatibility (`#300 <https://github.com/RobotWebTools/rosbridge_suite/issues/300>`_)
   * First pass at Python 3 compatibility
   * message_conversion: Only call encode on a Python2 str or bytes type
