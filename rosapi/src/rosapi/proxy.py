@@ -160,7 +160,8 @@ def filter_action_servers(topics):
     for topic in sorted(topics):
         split = topic.split('/')
         if(len(split) >= 3):
-            [empty, namespace, topic] = split[-3:]
+            topic = split.pop()
+            namespace = '/'.join(split)
             if(possible_action_server != namespace):
                 possible_action_server = namespace
                 possibility = [0, 0, 0, 0, 0]
