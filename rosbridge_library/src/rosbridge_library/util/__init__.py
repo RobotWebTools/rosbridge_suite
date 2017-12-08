@@ -11,8 +11,10 @@ except ImportError:
 import sys
 if sys.version_info >= (3, 0):
     string_types = (str,)
+    from io import StringIO
 else:
     string_types = (str, unicode)
+    from StringIO import StringIO
 
 import bson
 try:
