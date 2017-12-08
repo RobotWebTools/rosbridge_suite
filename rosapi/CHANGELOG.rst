@@ -2,6 +2,13 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed action_servers filter to allow more than one namespace (`#305 <https://github.com/RobotWebTools/rosbridge_suite/issues/305>`_)
+  * Modified action_servers filter to detect topics with more than one namespace
+  * Fixed to return the full namespace
+* Contributors: milesial
+
 0.8.5 (2017-11-23)
 ------------------
 * Add Python3 compatibility (`#300 <https://github.com/RobotWebTools/rosbridge_suite/issues/300>`_)
