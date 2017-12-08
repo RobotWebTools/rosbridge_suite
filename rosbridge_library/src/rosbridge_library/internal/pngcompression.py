@@ -32,7 +32,7 @@
 
 from PIL import Image
 from base64 import standard_b64encode, standard_b64decode
-from io import StringIO
+from rosbridge_library.util import StringIO
 from math import floor, ceil, sqrt
 
 
