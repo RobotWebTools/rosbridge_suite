@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.8.6 (2017-12-08)
+------------------
 * Import StringIO from StringIO if python2 and from io if python3 fixes `#306 <https://github.com/RobotWebTools/rosbridge_suite/issues/306>`_ (`#307 <https://github.com/RobotWebTools/rosbridge_suite/issues/307>`_)
 * Contributors: Jihoon Lee
 
