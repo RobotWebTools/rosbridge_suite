@@ -158,8 +158,10 @@ def filter_action_servers(topics):
 
     action_topics = ['cancel', 'feedback', 'goal', 'result', 'status']
     for topic in sorted(topics):
-        if (len(topic.split('/')) == 3):
-            [empty, namespace, topic] = topic.split('/')
+        split = topic.split('/')
+        if(len(split) >= 3):
+            topic = split.pop()
+            namespace = '/'.join(split)
             if(possible_action_server != namespace):
                 possible_action_server = namespace
                 possibility = [0, 0, 0, 0, 0]
