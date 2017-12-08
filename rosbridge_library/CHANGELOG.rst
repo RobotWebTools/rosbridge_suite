@@ -2,6 +2,11 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Import StringIO from StringIO if python2 and from io if python3 fixes `#306 <https://github.com/RobotWebTools/rosbridge_suite/issues/306>`_ (`#307 <https://github.com/RobotWebTools/rosbridge_suite/issues/307>`_)
+* Contributors: Jihoon Lee
+
 0.8.5 (2017-11-23)
 ------------------
 * Raise if inappropriate bson module is installed (Appease `#198 <https://github.com/RobotWebTools/rosbridge_suite/issues/198>`_) (`#270 <https://github.com/RobotWebTools/rosbridge_suite/issues/270>`_)
