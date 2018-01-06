@@ -118,4 +118,4 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Callback from rosbridge
         """
-        self.request.send(message)
+        self.request.sendall(message)
