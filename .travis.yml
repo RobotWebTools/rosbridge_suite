@@ -6,7 +6,7 @@ services:
   - docker
 language: generic
 python:
-  - "2.7"
+  - "3.5"
 compiler:
   - gcc
 
@@ -33,4 +33,4 @@ install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 
 script:
-  - source .ci_config/travis.sh
+  - source .ci_config/travis.sh 
