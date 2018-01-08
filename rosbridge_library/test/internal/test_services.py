@@ -133,11 +133,12 @@ class TestServices(unittest.TestCase):
     def test_service_call(self):
         """ Test a simple getloggers service call """
         # First, call the service the 'proper' way
-        p = rospy.ServiceProxy("/rosout/get_loggers", GetLoggers)
+        p = rospy.ServiceProxy(rospy.get_name() + "/get_loggers", GetLoggers)
+        p.wait_for_service(0.5)
         ret = p()
 
         # Now, call using the services
-        json_ret = services.call_service("/rosout/get_loggers")
+        json_ret = services.call_service(rospy.get_name() + "/get_loggers")
         for x, y in zip(ret.loggers, json_ret["loggers"]):
             self.assertEqual(x.name, y["name"])
             self.assertEqual(x.level, y["level"])
@@ -145,7 +146,8 @@ class TestServices(unittest.TestCase):
     def test_service_caller(self):
         """ Same as test_service_call but via the thread caller """
         # First, call the service the 'proper' way
-        p = rospy.ServiceProxy("/rosout/get_loggers", GetLoggers)
+        p = rospy.ServiceProxy(rospy.get_name() + "/get_loggers", GetLoggers)
+        p.wait_for_service(0.5)
         ret = p()
 
         rcvd = {"json": None}
@@ -157,7 +159,7 @@ class TestServices(unittest.TestCase):
             raise Exception()
 
         # Now, call using the services
-        services.ServiceCaller("/rosout/get_loggers", None, success, error).start()
+        services.ServiceCaller(rospy.get_name() + "/get_loggers", None, success, error).start()
 
         time.sleep(0.5)
 
