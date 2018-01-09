@@ -128,6 +128,54 @@ class TestServiceCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["op"], "service_response")
         self.assertTrue(self.received_message["result"])
 
+    def test_unadvertise_with_live_request(self):
+        service_path = "/set_bool_3"
+        advertise_msg = loads(dumps({"op": "advertise_service",
+                                     "type": "std_srvs/SetBool",
+                                     "service": service_path}))
+        self.advertise.advertise_service(advertise_msg)
+
+        # Call the service via rosbridge because rospy.ServiceProxy.call() is
+        # blocking
+        call_service = CallService(self.proto)
+        call_service.call_service(loads(dumps({"op": "call_service",
+                                               "id": "foo",
+                                               "service": service_path,
+                                               "args": [True]})))
+
+        loop_iterations = 0
+        while self.received_message is None:
+            rospy.sleep(rospy.Duration(0.5))
+            loop_iterations += 1
+            if loop_iterations > 3:
+                self.fail("did not receive service call rosbridge message "
+                          "after waiting 2 seconds")
+
+        self.assertFalse(self.received_message is None)
+        self.assertTrue("op" in self.received_message)
+        self.assertTrue(self.received_message["op"] == "call_service")
+        self.assertTrue("id" in self.received_message)
+
+        # Now send the response
+        response_msg = loads(dumps({"op": "unadvertise_service",
+                                    "service": service_path}))
+        self.received_message = None
+        self.unadvertise.unadvertise_service(response_msg)
+
+        loop_iterations = 0
+        while self.received_message is None:
+            rospy.sleep(rospy.Duration(0.5))
+            loop_iterations += 1
+            if loop_iterations > 3:
+                self.fail("did not receive service response rosbridge message "
+                          "after waiting 2 seconds")
+
+        self.assertFalse(self.received_message is None)
+        # Rosbridge should abort the existing service call with an error
+        # (i.e. "result" should be False)
+        self.assertEqual(self.received_message["op"], "service_response")
+        self.assertFalse(self.received_message["result"])
+
 
 PKG = 'rosbridge_library'
 NAME = 'test_service_capabilities'
