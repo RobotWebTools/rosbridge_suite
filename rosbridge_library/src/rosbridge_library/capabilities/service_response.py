@@ -7,7 +7,7 @@ class ServiceResponse(Capability):
 
     service_response_msg_fields = [
         (True, "service", string_types), (False, "id", string_types),
-        (False, "values", string_types), (True, "result", bool)
+        (False, "values", dict), (True, "result", bool)
     ]
 
     def __init__(self, protocol):
@@ -18,6 +18,9 @@ class ServiceResponse(Capability):
         protocol.register_operation("service_response", self.service_response)
 
     def service_response(self, message):
+        # Typecheck the args
+        self.basic_type_check(message, self.service_response_msg_fields)
+
         # check for the service
         service_name = message["service"]
         if service_name in self.protocol.external_service_list:
@@ -31,4 +34,4 @@ class ServiceResponse(Capability):
             # pass along the response
             service_handler.responses[request_id] = resp
         else:
-            self.protocol.log("error", "Service %s has no been advertised externally." % service_name)
+            self.protocol.log("error", "Service %s has not been advertised via rosbridge." % service_name)

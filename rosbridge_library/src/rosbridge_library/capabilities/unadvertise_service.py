@@ -39,4 +39,4 @@ class UnadvertiseService(Capability):
             del self.protocol.external_service_list[service_name]
             self.protocol.log("info", "Unadvertised service %s." % service_name)
         else:
-            self.protocol.log("error", "Service %s has no been advertised externally." % service_name)
+            self.protocol.log("error", "Service %s has not been advertised via rosbridge, can't unadvertise." % service_name)
