@@ -3,4 +3,5 @@
   <test test-name="test_publish" pkg="rosbridge_library" type="test_publish.py" />
   <test test-name="test_subscribe" pkg="rosbridge_library" type="test_subscribe.py" />
   <test test-name="test_call_service" pkg="rosbridge_library" type="test_call_service.py" />
+  <test test-name="test_service_capabilities" pkg="rosbridge_library" type="test_service_capabilities.py" />
 </launch>

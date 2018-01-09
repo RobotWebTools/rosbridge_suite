@@ -12,8 +12,6 @@ class AdvertisedServiceHandler():
     id_counter = 1
     responses = {}
 
-    services_glob = None
-
     def __init__(self, service_name, service_type, protocol):
         self.service_name = service_name
         self.service_type = service_type
@@ -49,6 +47,7 @@ class AdvertisedServiceHandler():
 
 
 class AdvertiseService(Capability):
+    services_glob = None
 
     advertise_service_msg_fields = [(True, "service", string_types), (True, "type", string_types)]
 
@@ -60,6 +59,9 @@ class AdvertiseService(Capability):
         protocol.register_operation("advertise_service", self.advertise_service)
 
     def advertise_service(self, message):
+        # Typecheck the args
+        self.basic_type_check(message, self.advertise_service_msg_fields)
+
         # parse the incoming message
         service_name = message["service"]
 
