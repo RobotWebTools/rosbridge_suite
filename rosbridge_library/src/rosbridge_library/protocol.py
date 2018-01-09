@@ -47,14 +47,23 @@ def is_number(s):
     except ValueError:
         return False
         
-def has_binary(d):
-    if type(d)==bson.Binary:
+def has_binary(obj):
+    """ Returns True if obj is a binary or contains a binary attribute
+    """
+
+    if type(obj) is bson.binary.Binary:
         return True
-    if type(d)==dict:
-        for k,v in d.items():
+
+    if type(obj) is list:
+        for item in obj:
+            if has_binary(item):
+                return True
+
+    if type(obj) is dict:
+        for k, v in obj.iteritems():
             if has_binary(v):
                 return True
-    return False                
+    return False
 
 class Protocol:
     """ The interface for a single client to interact with ROS.
