@@ -35,8 +35,9 @@ class UnadvertiseService(Capability):
 
         # unregister service in ROS
         if service_name in self.protocol.external_service_list.keys():
+            self.protocol.external_service_list[service_name].graceful_shutdown(timeout=1.0)
             self.protocol.external_service_list[service_name].service_handle.shutdown("Unadvertise request.")
             del self.protocol.external_service_list[service_name]
             self.protocol.log("info", "Unadvertised service %s." % service_name)
         else:
-            self.protocol.log("error", "Service %s has no been advertised externally." % service_name)
+            self.protocol.log("error", "Service %s has not been advertised via rosbridge, can't unadvertise." % service_name)
