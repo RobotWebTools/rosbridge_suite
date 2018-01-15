@@ -32,10 +32,10 @@
 
 import rospy
 import time
+
 from rosbridge_library.internal.exceptions import InvalidArgumentException
 from rosbridge_library.internal.exceptions import MissingArgumentException
 
-#from rosbridge_library.internal.pngcompression import encode
 from rosbridge_library.capabilities.fragmentation import Fragmentation
 from rosbridge_library.util import json, bson
 
@@ -52,19 +52,13 @@ def has_binary(obj):
     """ Returns True if obj is a binary or contains a binary attribute
     """
 
-    if type(obj) is bson.binary.Binary:
-        return True
+    if isinstance(obj, list):
+        return any(has_binary(item) for item in obj)
 
-    if type(obj) is list:
-        for item in obj:
-            if has_binary(item):
-                return True
+    if isinstance(obj, dict):
+        return any(as_binary(item) for item in obj.itervalues())
 
-    if type(obj) is dict:
-        for k, v in obj.iteritems():
-            if has_binary(v):
-                return True
-    return False
+    return isinstance(obj, bson.binary.Binary)
 
 
 class Protocol:
