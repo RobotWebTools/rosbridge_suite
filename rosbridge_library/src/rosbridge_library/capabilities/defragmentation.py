@@ -169,7 +169,8 @@ class Defragment(Capability, threading.Thread):
             self.protocol.log("debug", log_msg)
 
             # Reconstruct the message
-            reconstructed_msg = ''.join(self.received_fragments[msg_id]["fragment_list"][0:message["total"]])
+            reconstructed_msg = ''.join(self.received_fragments[msg_id]["fragment_list"].values())
+
             log_msg = ["reconstructed original message:\n"]
             log_msg.append(reconstructed_msg)
             log_msg = ''.join(log_msg)
