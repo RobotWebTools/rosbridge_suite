@@ -275,8 +275,11 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
         raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))
 
     # Substitute the correct time if we're an std_msgs/Header
-    if rostype in ros_header_types:
-        inst.stamp = rospy.get_rostime()
+    try:
+        if rostype in ros_header_types:
+            inst.stamp = rospy.get_rostime()
+    except rospy.exceptions.ROSInitException as e:
+        rospy.logdebug("Not substituting the correct header time: %s" % e)
 
     inst_fields = dict(zip(inst.__slots__, inst._slot_types))
 
