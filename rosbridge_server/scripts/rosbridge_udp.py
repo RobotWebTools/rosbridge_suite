@@ -63,6 +63,8 @@ if __name__ == "__main__":
                                                                 RosbridgeUdpSocket.delay_between_messages)
     RosbridgeUdpSocket.max_message_size = rospy.get_param('~max_message_size',
                                                           RosbridgeUdpSocket.max_message_size)
+    RosbridgeUdpSocket.unregister_timeout = rospy.get_param('~unregister_timeout',
+                                                          RosbridgeUdpSocket.unregister_timeout)
     if RosbridgeUdpSocket.max_message_size == "None":
         RosbridgeUdpSocket.max_message_size = None
 
@@ -127,6 +129,14 @@ if __name__ == "__main__":
                 RosbridgeUdpSocket.max_message_size = int(value)
         else:
             print("--max_message_size argument provided without a value. (can be None or <Integer>)")
+            sys.exit(-1)
+
+    if "--unregister_timeout" in sys.argv:
+        idx = sys.argv.index("--unregister_timeout") + 1
+        if idx < len(sys.argv):
+            unregister_timeout = float(sys.argv[idx])
+        else:
+            print("--unregister_timeout argument provided without a value.")
             sys.exit(-1)
 
     if "--topics_glob" in sys.argv:

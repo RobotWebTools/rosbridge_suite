@@ -5,6 +5,7 @@
   <arg name="fragment_timeout" default="600" />
   <arg name="delay_between_messages" default="0" />
   <arg name="max_message_size" default="None" />
+  <arg name="unregister_timeout" default="10" />
 
   <arg name="authenticate" default="false" />
 
@@ -20,7 +21,8 @@
     <param name="fragment_timeout" value="$(arg fragment_timeout)"/>
     <param name="delay_between_messages" value="$(arg delay_between_messages)"/>
     <param name="max_message_size" value="$(arg max_message_size)"/>
-    
+    <param name="unregister_timeout" value="$(arg unregister_timeout)"/>
+
     <param name="topics_glob" value="$(arg topics_glob)"/>
     <param name="services_glob" value="$(arg services_glob)"/>
     <param name="params_glob" value="$(arg params_glob)"/>
