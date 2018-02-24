@@ -16,7 +16,7 @@ class TestPublisherManager(unittest.TestCase):
 
     def setUp(self):
         rospy.init_node("test_publisher_manager")
-        UNREGISTER_TIMEOUT = 1.0
+        manager.unregister_timeout = 1.0
 
     def is_topic_published(self, topicname):
         return topicname in dict(rospy.get_published_topics()).keys()
@@ -37,7 +37,7 @@ class TestPublisherManager(unittest.TestCase):
         self.assertTrue(topic in manager.unregister_timers)
         self.assertTrue(topic in manager._publishers)
         self.assertTrue(self.is_topic_published(topic))
-        sleep(UNREGISTER_TIMEOUT*1.1)
+        sleep(manager.unregister_timeout*1.1)
         self.assertFalse(topic in manager._publishers)
         self.assertFalse(self.is_topic_published(topic))
         self.assertFalse(topic in manager.unregister_timers)
@@ -63,7 +63,7 @@ class TestPublisherManager(unittest.TestCase):
         self.assertTrue(topic in manager.unregister_timers)
         self.assertTrue(topic in manager._publishers)
         self.assertTrue(self.is_topic_published(topic))
-        sleep(UNREGISTER_TIMEOUT*1.1)
+        sleep(manager.unregister_timeout*1.1)
         self.assertFalse(topic in manager._publishers)
         self.assertFalse(self.is_topic_published(topic))
         self.assertFalse(topic in manager.unregister_timers)
@@ -112,7 +112,7 @@ class TestPublisherManager(unittest.TestCase):
         manager.unregister(client, topic2)
         self.assertTrue(topic2 in manager.unregister_timers)
         self.assertTrue(self.is_topic_published(topic2))
-        sleep(UNREGISTER_TIMEOUT*1.1)
+        sleep(manager.unregister_timeout*1.1)
         self.assertFalse(topic1 in manager._publishers)
         self.assertFalse(self.is_topic_published(topic1))
         self.assertFalse(topic2 in manager._publishers)
@@ -168,7 +168,7 @@ class TestPublisherManager(unittest.TestCase):
         manager.unregister(client2, topic)
         self.assertTrue(topic in manager.unregister_timers)
         self.assertTrue(topic in manager._publishers)
-        sleep(UNREGISTER_TIMEOUT*1.1)
+        sleep(manager.unregister_timeout*1.1)
         self.assertFalse(topic in manager._publishers)
         self.assertFalse(topic in manager.unregister_timers)
         self.assertFalse(self.is_topic_published(topic))

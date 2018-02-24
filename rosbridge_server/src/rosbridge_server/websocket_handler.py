@@ -53,6 +53,7 @@ class RosbridgeWebSocket(WebSocketHandler):
     # protocol.py:
     delay_between_messages = 0              # seconds
     max_message_size = None                 # bytes
+    unregister_timeout = 10.0               # seconds
     bson_only_mode = False
 
     def open(self):
@@ -61,6 +62,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             "fragment_timeout": cls.fragment_timeout,
             "delay_between_messages": cls.delay_between_messages,
             "max_message_size": cls.max_message_size,
+            "unregister_timeout": cls.unregister_timeout,
             "bson_only_mode": cls.bson_only_mode
         }
         try:
