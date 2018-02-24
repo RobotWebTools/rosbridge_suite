@@ -90,6 +90,9 @@ class Advertise(Capability):
         # Initialize class variables
         self._registrations = {}
 
+        if protocol.parameters and protocol.parameters.has_key("unregister_timeout"):
+            manager.unregister_timeout = protocol.parameters.get("unregister_timeout")
+
     def advertise(self, message):
         # Pull out the ID
         aid = message.get("id", None)

@@ -61,6 +61,7 @@ if __name__ == "__main__":
             fragment_timeout = get_param('~fragment_timeout', RosbridgeTcpSocket.fragment_timeout)
             delay_between_messages = get_param('~delay_between_messages', RosbridgeTcpSocket.delay_between_messages)
             max_message_size = get_param('~max_message_size', RosbridgeTcpSocket.max_message_size)
+            unregister_timeout = get_param('~unregister_timeout', RosbridgeTcpSocket.unregister_timeout)
             bson_only_mode = get_param('~bson_only_mode', False)
 
             if max_message_size == "None":
@@ -150,12 +151,21 @@ if __name__ == "__main__":
                     print("--max_message_size argument provided without a value. (can be None or <Integer>)")
                     sys.exit(-1)
 
+            if "--unregister_timeout" in sys.argv:
+                idx = sys.argv.index("--unregister_timeout") + 1
+                if idx < len(sys.argv):
+                    unregister_timeout = float(sys.argv[idx])
+                else:
+                    print("--unregister_timeout argument provided without a value.")
+                    sys.exit(-1)
+
             # export parameters to handler class
             RosbridgeTcpSocket.incoming_buffer = incoming_buffer
             RosbridgeTcpSocket.socket_timeout = socket_timeout
             RosbridgeTcpSocket.fragment_timeout = fragment_timeout
             RosbridgeTcpSocket.delay_between_messages = delay_between_messages
             RosbridgeTcpSocket.max_message_size = max_message_size
+            RosbridgeTcpSocket.unregister_timeout = unregister_timeout
             RosbridgeTcpSocket.bson_only_mode = bson_only_mode
 
 
