@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosbridge_server)
 
-find_package(catkin REQUIRED COMPONENTS rosbridge_library rosapi rospy)
+find_package(catkin REQUIRED)
 
 catkin_python_setup()
 
