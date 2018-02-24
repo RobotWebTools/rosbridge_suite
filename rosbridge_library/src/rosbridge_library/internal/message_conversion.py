@@ -119,7 +119,7 @@ class FieldTypeMismatchException(Exception):
 def extract_values(inst):
     rostype = getattr(inst, "_type", None)
     if rostype is None:
-        raise InvalidMessageException()
+        raise InvalidMessageException(inst=inst)
     return _from_inst(inst, rostype)
 
 
