@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>rosbridge_library</name>
-  <version>0.8.6</version>
+  <version>0.9.0</version>
   <description>
     The core rosbridge package, repsonsible for interpreting JSON andperforming
     the appropriate ROS action, like subscribe, publish, call service, and

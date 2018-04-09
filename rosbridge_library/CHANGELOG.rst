@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.0 (2018-04-09)
+------------------
 * Fix typo in function call
 * Add missing argument to InvalidMessageException (`#323 <https://github.com/RobotWebTools/rosbridge_suite/issues/323>`_)
   Add missing argument to InvalidMessageException constructor
