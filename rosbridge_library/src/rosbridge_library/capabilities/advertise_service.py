@@ -1,20 +1,23 @@
+import fnmatch
+from threading import Lock
+import time
+
 from rosbridge_library.internal.ros_loader import get_service_class
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.capability import Capability
 from rosbridge_library.util import string_types
-import fnmatch
-import rospy
-import time
 
+import rospy
 
 class AdvertisedServiceHandler():
 
     id_counter = 1
     responses = {}
 
-    services_glob = None
-
     def __init__(self, service_name, service_type, protocol):
+        self.active_requests = 0
+        self.shutdown_requested = False
+        self.lock = Lock()
         self.service_name = service_name
         self.service_type = service_type
         self.protocol = protocol
@@ -27,6 +30,8 @@ class AdvertisedServiceHandler():
         return id
 
     def handle_request(self, req):
+        with self.lock:
+            self.active_requests += 1
         # generate a unique ID
         request_id = "service_request:" + self.service_name + ":" + str(self.next_id())
 
@@ -41,14 +46,41 @@ class AdvertisedServiceHandler():
 
         # wait for a response
         while request_id not in self.responses.keys():
+            with self.lock:
+                if self.shutdown_requested:
+                    break
             time.sleep(0)
+
+        with self.lock:
+            self.active_requests -= 1
+
+            if self.shutdown_requested:
+                self.protocol.log(
+                    "warning",
+                    "Service %s was unadvertised with a service call in progress, "
+                    "aborting service call with request ID %s" % (self.service_name, request_id))
+                return None
 
         resp = self.responses[request_id]
         del self.responses[request_id]
         return resp
 
+    def graceful_shutdown(self, timeout):
+        """
+        Signal the AdvertisedServiceHandler to shutdown
+
+        Using this, rather than just rospy.Service.shutdown(), allows us
+        time to stop any active service requests, ending their busy wait
+        loops.
+        """
+        with self.lock:
+            self.shutdown_requested = True
+        start_time = time.clock()
+        while time.clock() - start_time < timeout:
+            time.sleep(0)
 
 class AdvertiseService(Capability):
+    services_glob = None
 
     advertise_service_msg_fields = [(True, "service", string_types), (True, "type", string_types)]
 
@@ -60,6 +92,9 @@ class AdvertiseService(Capability):
         protocol.register_operation("advertise_service", self.advertise_service)
 
     def advertise_service(self, message):
+        # Typecheck the args
+        self.basic_type_check(message, self.advertise_service_msg_fields)
+
         # parse the incoming message
         service_name = message["service"]
 

@@ -32,10 +32,10 @@
 
 import rospy
 import time
+
 from rosbridge_library.internal.exceptions import InvalidArgumentException
 from rosbridge_library.internal.exceptions import MissingArgumentException
 
-#from rosbridge_library.internal.pngcompression import encode
 from rosbridge_library.capabilities.fragmentation import Fragmentation
 from rosbridge_library.util import json, bson
 
@@ -46,15 +46,20 @@ def is_number(s):
         return True
     except ValueError:
         return False
-        
-def has_binary(d):
-    if type(d)==bson.Binary:
-        return True
-    if type(d)==dict:
-        for k,v in d.items():
-            if has_binary(v):
-                return True
-    return False                
+
+
+def has_binary(obj):
+    """ Returns True if obj is a binary or contains a binary attribute
+    """
+
+    if isinstance(obj, list):
+        return any(has_binary(item) for item in obj)
+
+    if isinstance(obj, dict):
+        return any(has_binary(item) for item in obj.itervalues())
+
+    return isinstance(obj, bson.binary.Binary)
+
 
 class Protocol:
     """ The interface for a single client to interact with ROS.

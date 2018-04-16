@@ -69,6 +69,8 @@ if __name__ == "__main__":
                                                                 RosbridgeWebSocket.delay_between_messages)
     RosbridgeWebSocket.max_message_size = rospy.get_param('~max_message_size',
                                                           RosbridgeWebSocket.max_message_size)
+    RosbridgeWebSocket.unregister_timeout = rospy.get_param('~unregister_timeout',
+                                                          RosbridgeWebSocket.unregister_timeout)
     bson_only_mode = rospy.get_param('~bson_only_mode', False)
 
     if RosbridgeWebSocket.max_message_size == "None":
@@ -146,6 +148,14 @@ if __name__ == "__main__":
                 RosbridgeWebSocket.max_message_size = int(value)
         else:
             print("--max_message_size argument provided without a value. (can be None or <Integer>)")
+            sys.exit(-1)
+
+    if "--unregister_timeout" in sys.argv:
+        idx = sys.argv.index("--unregister_timeout") + 1
+        if idx < len(sys.argv):
+            unregister_timeout = float(sys.argv[idx])
+        else:
+            print("--unregister_timeout argument provided without a value.")
             sys.exit(-1)
 
     if "--topics_glob" in sys.argv:

@@ -2,6 +2,27 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.0 (2018-04-09)
+------------------
+* Make unregister_timeout configurable (`#322 <https://github.com/RobotWebTools/rosbridge_suite/issues/322>`_)
+  Pull request `#247 <https://github.com/RobotWebTools/rosbridge_suite/issues/247>`_ introduces a 10 second delay to mitigate issue `#138 <https://github.com/RobotWebTools/rosbridge_suite/issues/138>`_.
+  This change makes this delay configurable by passing an argument either
+  on the command line or when including a launch file.
+  Usage example:
+  ```xml
+  <launch>
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+  <arg name="unregister_timeout" value="5.0"/>
+  </include>
+  </launch>
+  ```
+  Closes `#320 <https://github.com/RobotWebTools/rosbridge_suite/issues/320>`_
+* Remove tornado fork from source code and add python-tornado as run dependency (`#317 <https://github.com/RobotWebTools/rosbridge_suite/issues/317>`_)
+  Release only for kinetic+
+* Fix bug that lost data while sending large packets (`#310 <https://github.com/RobotWebTools/rosbridge_suite/issues/310>`_)
+  * fix bug that lost data while sending large packets
+* Contributors: Jørgen Borgesen, MBlistein, WH-0501
+
 0.8.6 (2017-12-08)
 ------------------
 

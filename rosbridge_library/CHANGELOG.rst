@@ -2,6 +2,55 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.0 (2018-04-09)
+------------------
+* Fix typo in function call
+* Add missing argument to InvalidMessageException (`#323 <https://github.com/RobotWebTools/rosbridge_suite/issues/323>`_)
+  Add missing argument to InvalidMessageException constructor
+* Make unregister_timeout configurable (`#322 <https://github.com/RobotWebTools/rosbridge_suite/issues/322>`_)
+  Pull request `#247 <https://github.com/RobotWebTools/rosbridge_suite/issues/247>`_ introduces a 10 second delay to mitigate issue `#138 <https://github.com/RobotWebTools/rosbridge_suite/issues/138>`_.
+  This change makes this delay configurable by passing an argument either
+  on the command line or when including a launch file.
+  Usage example:
+  ```xml
+  <launch>
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+  <arg name="unregister_timeout" value="5.0"/>
+  </include>
+  </launch>
+  ```
+  Closes `#320 <https://github.com/RobotWebTools/rosbridge_suite/issues/320>`_
+* message_conversion: create stand-alone object inst (`#319 <https://github.com/RobotWebTools/rosbridge_suite/issues/319>`_)
+  Catching the ROSInitException allows to create object
+  instances without an initialized ROS state
+* Fixes `#313 <https://github.com/RobotWebTools/rosbridge_suite/issues/313>`_ by fixing has_binary in protocol.py (`#315 <https://github.com/RobotWebTools/rosbridge_suite/issues/315>`_)
+  * Fixes `#313 <https://github.com/RobotWebTools/rosbridge_suite/issues/313>`_ by fixing has_binary in protocol.py
+  Checks for lists that have binary content as well as dicts
+  * Minor refactoring for protocol.py
+* fix fragment bug (`#316 <https://github.com/RobotWebTools/rosbridge_suite/issues/316>`_)
+  * fix bug that lost data while sending large packets
+  * fixed travis ci failed by @T045T
+  * fixed travis ci failed by @T045T
+  * travis ci failed
+  * fix rosbridge_library/test/experimental/fragmentation+srv+tcp test bug
+  * sync .travis.yaml
+  * fix the service_response message bug
+  * fix the fragment paring error
+  * fix indentation of "service" line
+* add graceful_shutdown() method to advertise_service capability
+  This gives the service a bit of time to cancel any in-flight service requests (which should fix `#265 <https://github.com/RobotWebTools/rosbridge_suite/issues/265>`_).
+  This is important because we busy-wait for a rosbridge response for service calls and those threads do not get stopped otherwise.
+  Also, rospy service clients do not currently support timeouts, so any clients would be stuck too.
+  A new test case in test_service_capabilities.py verifies the fix works
+* Add rostest for service capabilities and fix bugs
+  also fixed some typos
+* Fix Travis config (`#311 <https://github.com/RobotWebTools/rosbridge_suite/issues/311>`_)
+  * fix Travis config
+  dist: kinetic is currently unsupported
+  * fix rostests
+  for some reason, rostest seems to hide the rosout node - changed tests to use other services
+* Contributors: Anwar, Johannes Rothe, Jørgen Borgesen, Nils Berg, Phil, WH-0501, elgarlepp
+
 0.8.6 (2017-12-08)
 ------------------
 * Import StringIO from StringIO if python2 and from io if python3 fixes `#306 <https://github.com/RobotWebTools/rosbridge_suite/issues/306>`_ (`#307 <https://github.com/RobotWebTools/rosbridge_suite/issues/307>`_)

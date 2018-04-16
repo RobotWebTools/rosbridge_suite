@@ -2,6 +2,9 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.0 (2018-04-09)
+------------------
+
 0.8.6 (2017-12-08)
 ------------------
 * Fixed action_servers filter to allow more than one namespace (`#305 <https://github.com/RobotWebTools/rosbridge_suite/issues/305>`_)

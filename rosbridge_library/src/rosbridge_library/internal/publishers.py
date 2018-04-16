@@ -40,7 +40,6 @@ from rostopic import get_topic_type
 from rosbridge_library.internal import ros_loader, message_conversion
 from rosbridge_library.internal.topics import TopicNotEstablishedException, TypeConflictException
 
-UNREGISTER_TIMEOUT = 10.0
 
 class PublisherConsistencyListener(SubscribeListener):
     """ This class is used to solve the problem that sometimes we create a
@@ -255,6 +254,7 @@ class PublisherManager():
     def __init__(self):
         self._publishers = {}
         self.unregister_timers = {}
+        self.unregister_timeout = 10.0
 
     def register(self, client_id, topic, msg_type=None, latch=False, queue_size=100):
         """ Register a publisher on the specified topic.
@@ -314,7 +314,7 @@ class PublisherManager():
         if topic in self.unregister_timers:
             self.unregister_timers[topic].cancel()
             del self.unregister_timers[topic]
-        self.unregister_timers[topic] = Timer(UNREGISTER_TIMEOUT, self._unregister_impl,
+        self.unregister_timers[topic] = Timer(self.unregister_timeout, self._unregister_impl,
                                               [topic])
         self.unregister_timers[topic].start()
 
