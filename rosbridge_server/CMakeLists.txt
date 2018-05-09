@@ -9,10 +9,7 @@ catkin_package()
 
 install(PROGRAMS
   scripts/rosbridge_websocket.py
-  scripts/rosbridge_websocket
   scripts/rosbridge_tcp.py
-  scripts/rosbridge_tcp
-  scripts/rosbridge_udp
   scripts/rosbridge_udp.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
