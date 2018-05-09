@@ -23,7 +23,7 @@
   <arg unless="$(arg bson_only_mode)" name="binary_encoder" default="default"/>
 
   <group if="$(arg ssl)">
-    <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket" output="screen">
+    <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket.py" output="screen">
       <param name="certfile" value="$(arg certfile)" />
       <param name="keyfile" value="$(arg keyfile)" />
       <param name="authenticate" value="$(arg authenticate)" />
@@ -41,7 +41,7 @@
     </node>
   </group>
   <group unless="$(arg ssl)">
-    <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket" output="screen">
+    <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket.py" output="screen">
       <param name="authenticate" value="$(arg authenticate)" />
       <param name="port" value="$(arg port)"/>
       <param name="address" value="$(arg address)"/>

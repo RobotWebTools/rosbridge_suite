@@ -18,7 +18,7 @@
   <arg name="params_glob" default="[*]" />
   <arg name="bson_only_mode" default="false" />
 
-  <node name="rosbridge_tcp" pkg="rosbridge_server" type="rosbridge_tcp" output="screen">
+  <node name="rosbridge_tcp" pkg="rosbridge_server" type="rosbridge_tcp.py" output="screen">
     <param name="authenticate" value="$(arg authenticate)" />
 
     <param name="port" value="$(arg port)"/>
