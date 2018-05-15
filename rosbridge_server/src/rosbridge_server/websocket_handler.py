@@ -83,7 +83,11 @@ class RosbridgeWebSocket(WebSocketHandler):
         # check if we need to authenticate
         if cls.authenticate and not self.authenticated:
             try:
-                msg = json.loads(message)
+                if cls.bson_only_mode:
+                    msg = bson.BSON(message).decode()
+                else:
+                    msg = json.loads(message)
+
                 if msg['op'] == 'auth':
                     # check the authorization information
                     auth_srv = rospy.ServiceProxy('authenticate', Authentication)
