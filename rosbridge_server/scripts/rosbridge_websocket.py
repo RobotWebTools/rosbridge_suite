@@ -195,7 +195,7 @@ if __name__ == "__main__":
             sys.exit(-1)
 
     if ("--bson_only_mode" in sys.argv) or bson_only_mode:
-        print("bson_only_mode is only supported in the TCP Version of Rosbridge currently. Ignoring bson_only_mode argument...")
+        RosbridgeWebSocket.bson_only_mode = bson_only_mode
 
     # To be able to access the list of topics and services, you must be able to access the rosapi services.
     if RosbridgeWebSocket.services_glob:
