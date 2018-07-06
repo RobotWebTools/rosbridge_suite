@@ -53,7 +53,7 @@ class Publish(Capability):
         # Save the topics that are published on for the purposes of unregistering
         self._published = {}
 
-        if protocol.parameters and protocol.parameters.has_key("unregister_timeout"):
+        if protocol.parameters and "unregister_timeout" in protocol.parameters:
             manager.unregister_timeout = protocol.parameters.get("unregister_timeout")
 
     def publish(self, message):
