@@ -56,7 +56,7 @@ def has_binary(obj):
         return any(has_binary(item) for item in obj)
 
     if isinstance(obj, dict):
-        return any(has_binary(item) for item in obj.itervalues())
+        return any(has_binary(obj[item]) for item in obj)
 
     return isinstance(obj, bson.binary.Binary)
 
