@@ -25,6 +25,7 @@ A rosbridge client is a program that communicates with rosbridge using its JSON 
 
  * [roslibjs](https://github.com/RobotWebTools/roslibjs) - A JavaScript API, which communicates with rosbridge over WebSockets.
  * [jrosbridge](https://github.com/WPI-RAIL/jrosbridge) - A Java API, which communicates with rosbridge over WebSockets.
+ * [roslibpy](https://github.com/gramaziokohler/roslibpy) - A Python API, which communicates with rosbridge over WebSockets.
 
 ### License
 rosbridge_suite is released with a BSD license. For full terms and conditions, see the [LICENSE](LICENSE) file.
