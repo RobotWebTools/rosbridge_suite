@@ -102,7 +102,7 @@ def _get_typedef(instance):
     fieldtypes = []
     fieldarraylen = []
     examples = []
-    for i in xrange(len(instance.__slots__)):
+    for i in range(len(instance.__slots__)):
         # Pull out the name
         name = instance.__slots__[i]
         fieldnames.append(name)

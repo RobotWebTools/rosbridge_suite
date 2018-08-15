@@ -98,7 +98,7 @@ def delete_param(name, params_glob):
             rospy.delete_param(name)
 
 def search_param(name, params_glob):
-    if params_glob and not any(fnmatch.fnmatch(str(v), glob) for glob in params_glob):
+    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to find the parameter.
         return None
