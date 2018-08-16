@@ -1,55 +1,47 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(rosbridge_library)
 
-find_package(catkin REQUIRED COMPONENTS message_generation std_msgs geometry_msgs)
+find_package(ament_cmake_core REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(std_msgs REQUIRED)
 
-# Generate messages for testing (NOINSTALL)
-add_message_files(
-  FILES
-  Num.msg
-  TestChar.msg
-  TestDurationArray.msg
-  TestHeaderArray.msg
-  TestHeader.msg
-  TestHeaderTwo.msg
-  TestTimeArray.msg
-  TestUInt8.msg
-  TestUInt8FixedSizeArray16.msg
-  NOINSTALL
+ament_python_install_package(
+  ${PROJECT_NAME} PACKAGE_DIR "src/${PROJECT_NAME}")
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  msg/Num.msg
+  msg/TestChar.msg
+  msg/TestDurationArray.msg
+  msg/TestHeaderArray.msg
+  msg/TestHeader.msg
+  msg/TestHeaderTwo.msg
+  msg/TestTimeArray.msg
+  msg/TestUInt8.msg
+  msg/TestUInt8FixedSizeArray16.msg
+  srv/AddTwoInts.srv
+  srv/SendBytes.srv
+  srv/TestArrayRequest.srv
+  srv/TestEmpty.srv
+  srv/TestMultipleRequestFields.srv
+  srv/TestMultipleResponseFields.srv
+  srv/TestNestedService.srv
+  srv/TestRequestAndResponse.srv
+  srv/TestRequestOnly.srv
+  srv/TestResponseOnly.srv
+  DEPENDENCIES builtin_interfaces geometry_msgs std_msgs
+  SKIP_INSTALL
 )
 
-# Generate services for testing (NOINSTALL)
-add_service_files(
-  FILES
-  AddTwoInts.srv
-  SendBytes.srv
-  TestArrayRequest.srv
-  TestEmpty.srv
-  TestMultipleRequestFields.srv
-  TestMultipleResponseFields.srv
-  TestNestedService.srv
-  TestRequestAndResponse.srv
-  TestRequestOnly.srv
-  TestResponseOnly.srv
-  NOINSTALL
-)
+ament_export_dependencies(rosidl_default_runtime)
 
-catkin_python_setup()
+ament_package()
 
-# Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
-)
-
-catkin_package(
-  CATKIN_DEPENDS message_runtime std_msgs geometry_msgs
-)
-
-# Test launch files
-if (CATKIN_ENABLE_TESTING)
-  find_package(rostest REQUIRED)
-  add_rostest(test/capabilities/test_capabilities.test)
-  add_rostest(test/internal/test_internal.test)
+if (BUILD_TESTING)
+  # TODO reenable rostests
+  # find_package(rostest REQUIRED)
+  # add_rostest(test/capabilities/test_capabilities.test)
+  # add_rostest(test/internal/test_internal.test)
 endif()

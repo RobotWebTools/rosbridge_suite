@@ -1,50 +1,47 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(rosapi)
 
-find_package(catkin REQUIRED COMPONENTS message_generation)
-catkin_python_setup()
+find_package(ament_cmake_core REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 
-add_message_files(
-  FILES
-  TypeDef.msg
+ament_python_install_package(
+  ${PROJECT_NAME} PACKAGE_DIR "src/${PROJECT_NAME}")
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  msg/TypeDef.msg
+  srv/DeleteParam.srv
+  srv/GetActionServers.srv
+  srv/GetParam.srv
+  srv/GetParamNames.srv
+  srv/GetTime.srv
+  srv/HasParam.srv
+  srv/MessageDetails.srv
+  srv/Nodes.srv
+  srv/NodeDetails.srv
+  srv/Publishers.srv
+  srv/SearchParam.srv
+  srv/ServiceHost.srv
+  srv/ServiceNode.srv
+  srv/ServiceProviders.srv
+  srv/ServiceRequestDetails.srv
+  srv/ServiceResponseDetails.srv
+  srv/Services.srv
+  srv/ServicesForType.srv
+  srv/ServiceType.srv
+  srv/SetParam.srv
+  srv/Subscribers.srv
+  srv/Topics.srv
+  srv/TopicsForType.srv
+  srv/TopicType.srv
+  DEPENDENCIES builtin_interfaces
 )
 
-add_service_files(
-  FILES
-  DeleteParam.srv
-  GetActionServers.srv
-  GetParam.srv
-  GetParamNames.srv
-  GetTime.srv
-  HasParam.srv
-  MessageDetails.srv
-  Nodes.srv
-  NodeDetails.srv
-  Publishers.srv
-  SearchParam.srv
-  ServiceHost.srv
-  ServiceNode.srv
-  ServiceProviders.srv
-  ServiceRequestDetails.srv
-  ServiceResponseDetails.srv
-  Services.srv
-  ServicesForType.srv
-  ServiceType.srv
-  SetParam.srv
-  Subscribers.srv
-  Topics.srv
-  TopicsForType.srv
-  TopicType.srv
-)
+ament_export_dependencies(rosidl_default_runtime)
 
-generate_messages(
-  DEPENDENCIES
-)
-
-catkin_package(
-  CATKIN_DEPENDS message_runtime
-)
+ament_package()
 
 install(PROGRAMS scripts/rosapi_node
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  DESTINATION lib/${PROJECT_NAME}
 )

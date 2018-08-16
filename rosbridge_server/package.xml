@@ -22,4 +22,8 @@
   <exec_depend>rosapi</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>rosauth</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>
