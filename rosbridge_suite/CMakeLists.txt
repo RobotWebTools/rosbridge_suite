@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(rosbridge_suite)
-find_package(catkin REQUIRED)
-catkin_metapackage()
+cmake_minimum_required(VERSION 3.5)
+project(rosbridge_suite NONE)
+find_package(ament_cmake_core REQUIRED)
+ament_package()

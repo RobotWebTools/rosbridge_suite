@@ -21,13 +21,13 @@
   <maintainer email="rctoris@wpi.edu">Russell Toris</maintainer>
   <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake_core</buildtool_depend>
 
   <exec_depend>rosbridge_library</exec_depend>
   <exec_depend>rosbridge_server</exec_depend>
   <exec_depend>rosapi</exec_depend>
 
   <export>
-    <metapackage/>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
