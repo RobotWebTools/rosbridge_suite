@@ -1,1 +1,1 @@
-duration[] durations
+builtin_interfaces/Duration[] durations
