@@ -1,5 +1,5 @@
 ---
-int32 int
-float32 float
+int32 int_value
+float32 float_value
 string string
-bool bool
+bool bool_value

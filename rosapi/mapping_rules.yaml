@@ -1,0 +1,8 @@
+-
+  ros1_package_name: 'rosapi'
+  ros1_service_name: 'GetParam'
+  ros2_package_name: 'rosapi'
+  ros2_service_name: 'GetParam'
+  request_fields_1_to_2:
+    name: 'name'
+    default: 'default_value'
