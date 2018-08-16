@@ -45,3 +45,8 @@ ament_package()
 install(PROGRAMS scripts/rosapi_node
   DESTINATION lib/${PROJECT_NAME}
 )
+
+install(
+  FILES mapping_rules.yaml
+  DESTINATION share/${PROJECT_NAME}
+)
