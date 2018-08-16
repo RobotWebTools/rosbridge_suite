@@ -1,4 +1,5 @@
 import rospy
+from rosauth.srv import Authentication
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import json, bson
 
