@@ -5,6 +5,10 @@ find_package(ament_cmake_ros REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
 ament_python_install_package(
   ${PROJECT_NAME} PACKAGE_DIR "src/${PROJECT_NAME}")
 
