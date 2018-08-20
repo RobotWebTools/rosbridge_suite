@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(rosapi)
 
-find_package(ament_cmake_core REQUIRED)
-find_package(ament_cmake_python REQUIRED)
+find_package(ament_cmake_ros REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
