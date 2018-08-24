@@ -218,20 +218,17 @@ def get_subscribers(topic, topics_glob):
         return []
 
 
-def get_service_providers(servicetype, services_glob):
+def get_service_providers(queried_type, services_glob):
     """ Returns a list of node names that are advertising a service with the specified type """
-    try:
-        if any_match(str(topic), services_glob):
-            publishers, subscribers, services = Master('/rosbridge').getSystemState()
-            servdict = dict(services)
-            if servicetype in servdict:
-                return servdict[servicetype]
-            else:
-                return []
-        else:
-            return []
-    except socket.error:
-        return []
+    _, _, services = Master('/rosbridge').getSystemState()
+
+    service_type_providers = []
+    for service, providers in services:
+        service_type = get_service_type(service, services_glob)
+
+        if service_type == queried_type:
+            service_type_providers += providers
+    return service_type_providers
 
 
 def get_service_node(service):
