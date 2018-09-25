@@ -46,6 +46,8 @@ from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from rosbridge_library.capabilities.call_service import CallService
 
+from std_msgs.msg import Int32
+
 def shutdown_hook():
     reactor.stop()
 
@@ -86,6 +88,9 @@ if __name__ == "__main__":
     RosbridgeUdpSocket.authenticate = rospy.get_param('~authenticate', False)
     port = rospy.get_param('~port', 9090)
     interface = rospy.get_param('~interface', "")
+    # Publisher for number of connected clients
+    RosbridgeUdpSocket.client_count_pub = rospy.Publisher('client_count', Int32, queue_size=10, latch=True)
+    RosbridgeUdpSocket.client_count_pub.publish(0)
 
     if "--port" in sys.argv:
         idx = sys.argv.index("--port")+1

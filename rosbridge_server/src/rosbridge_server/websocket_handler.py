@@ -45,6 +45,7 @@ from rosbridge_library.util import json, bson
 class RosbridgeWebSocket(WebSocketHandler):
     client_id_seed = 0
     clients_connected = 0
+    client_count_pub = None
     authenticate = False
 
     # The following are passed on to RosbridgeProtocol
@@ -72,6 +73,8 @@ class RosbridgeWebSocket(WebSocketHandler):
             self.authenticated = False
             cls.client_id_seed += 1
             cls.clients_connected += 1
+            if cls.client_count_pub:
+                cls.client_count_pub.publish(cls.clients_connected)
         except Exception as exc:
             rospy.logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
         rospy.loginfo("Client connected.  %d clients total.", cls.clients_connected)
@@ -113,6 +116,8 @@ class RosbridgeWebSocket(WebSocketHandler):
         cls = self.__class__
         cls.clients_connected -= 1
         self.protocol.finish()
+        if cls.client_count_pub:
+            cls.client_count_pub.publish(cls.clients_connected)
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
 
     def send_message(self, message):
