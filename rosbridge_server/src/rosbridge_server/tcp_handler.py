@@ -16,6 +16,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     queue = []
     client_id_seed = 0
     clients_connected = 0
+    client_count_pub = None
 
     # list of parameters
     incoming_buffer = 65536                 # bytes
@@ -44,6 +45,8 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
             self.protocol.outgoing = self.send_message
             cls.client_id_seed += 1
             cls.clients_connected += 1
+            if cls.client_count_pub:
+                cls.client_count_pub.publish(cls.clients_connected)
             self.protocol.log("info", "connected. " + str(cls.clients_connected) + " client total.")
         except Exception as exc:
             rospy.logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
@@ -114,6 +117,8 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         cls = self.__class__
         cls.clients_connected -= 1
         self.protocol.finish()
+        if cls.client_count_pub:
+            cls.client_count_pub.publish(cls.clients_connected)
         self.protocol.log("info", "disconnected. " + str(cls.clients_connected) + " client total." )
 
     def send_message(self, message=None):

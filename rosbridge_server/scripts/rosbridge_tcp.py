@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-from rospy import init_node, get_param, loginfo, logerr, on_shutdown
+from rospy import init_node, get_param, loginfo, logerr, on_shutdown, Publisher
 from rosbridge_server import RosbridgeTcpSocket
 
 from rosbridge_library.capabilities.advertise import Advertise
@@ -13,6 +13,7 @@ from rosbridge_library.capabilities.call_service import CallService
 
 from functools import partial
 from signal import signal, SIGINT, SIG_DFL
+from std_msgs.msg import Int32
 
 try:
     import SocketServer
@@ -80,6 +81,10 @@ if __name__ == "__main__":
                     element.strip().strip("'")
                     for element in get_param('~params_glob', '')[1:-1].split(',')
                     if len(element.strip().strip("'")) > 0]
+            
+            # Publisher for number of connected clients
+            RosbridgeTcpSocket.client_count_pub = Publisher('client_count', Int32, queue_size=10, latch=True)
+            RosbridgeTcpSocket.client_count_pub.publish(0)
 
             # update parameters if provided via commandline
             # .. could implemented 'better' (value/type checking, etc.. )
