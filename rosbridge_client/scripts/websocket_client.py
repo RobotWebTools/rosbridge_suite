@@ -106,5 +106,6 @@ def main():
     rospy.loginfo('Bye Bye')
     ws.close()
 
+
 if __name__ == '__main__':
     main()
