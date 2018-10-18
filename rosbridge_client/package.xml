@@ -16,4 +16,6 @@
   <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>rosbridge_library</exec_depend>
   <exec_depend>rospy</exec_depend>
+  <exec_depend>python-ws4py</exec_depend>
+  <exec_depend>python-tornado</exec_depend>
 </package>

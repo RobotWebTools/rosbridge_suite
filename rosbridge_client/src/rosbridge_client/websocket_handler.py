@@ -1,10 +1,11 @@
-#import rospy
+
+import rospy
 import thread
 import time
-from ws4py.client.threadclient import WebSocketClient
+from ws4py.client.threadedclient import WebSocketClient
 
-#from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-#from rosbridge_library.util import json, bson
+from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
+from rosbridge_library.util import json, bson
 
 
 class RosbridgeWebSocketClient(WebSocketClient):
@@ -28,6 +29,7 @@ class RosbridgeWebSocketClient(WebSocketClient):
         """
         Called by the server when the handshake is successful
         """
+        cls = self.__class__
         parameters = {
             "fragment_timeout": cls.fragment_timeout,
             "delay_between_messages": cls.delay_between_messages,
@@ -38,31 +40,27 @@ class RosbridgeWebSocketClient(WebSocketClient):
         try:
             self.protocol = RosbridgeProtocol(cls.seed, parameters=parameters)
             self.protocol.outgoing = self.send_message
-            self.set_nodelay(True)
             self.authenticated = False
         except Exception as exc:
             pass
             rospy.logerr("Unable to accept incoming connection.  Reason: %s",
                          str(exc))
-        # rospy.loginfo("connected.")
-        print("Conected")
+        rospy.loginfo("connected.")
 
-    def closed(self):
+    def closed(self, code, reason):
         """
         Called by the server when the websocket stream and connection are
         finally closed
         """
         # rospy.loginfo("Closed")
-        print("Closed")
-        pass
         self.protocol.finish()
+        print("Closed. (%s, %s)" %( code, reason))
 
     def received_message(self, message):
         """
         Process incoming from server
         """
-        pass
-        self.protocol.incoming(message)
+        self.protocol.incoming(str(message))
 
     def send_message(self, message):
         """
