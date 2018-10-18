@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+"""
+
+Super simple test server to test client api.
+It advertises, publishes and subscribes topic when it starts
+"""
 
 from __future__ import print_function
 
@@ -33,7 +38,7 @@ class Handler(WebSocketHandler):
         time.sleep(1.0)
         self._publish()
         time.sleep(1.0)
-        # self._subscribe()
+        self._subscribe()
 
     def on_message(self, message):
         print("Received %s" % message)
@@ -69,6 +74,12 @@ class Handler(WebSocketHandler):
             }
         self.send_message(json.dumps(msg))
         print("Publish %s" % msg)
+
+    def _subscribe(self):
+        msg = { "op": "subscribe",
+          "topic": "/chatter",
+        }
+        self.send_message(json.dumps(msg))
 
 
 def main():
