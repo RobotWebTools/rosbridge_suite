@@ -93,7 +93,7 @@ class TestMultiSubscriber(unittest.TestCase):
         received = {"msg": None}
 
         def cb(msg):
-            received["msg"] = msg
+            received["msg"] = extract_values(msg)
 
         multi.subscribe(client, cb)
         sleep(0.5)
@@ -114,7 +114,7 @@ class TestMultiSubscriber(unittest.TestCase):
         received = {"msgs": []}
 
         def cb(msg):
-            received["msgs"].append(msg["data"])
+            received["msgs"].append(extract_values(msg)["data"])
 
         multi.subscribe(client, cb)
         sleep(0.5)
@@ -167,10 +167,10 @@ class TestMultiSubscriber(unittest.TestCase):
         received = {"msg1": None, "msg2": None}
 
         def cb1(msg):
-            received["msg1"] = msg
+            received["msg1"] = extract_values(msg)
 
         def cb2(msg):
-            received["msg2"] = msg
+            received["msg2"] = extract_values(msg)
 
         multi.subscribe(client1, cb1)
         multi.subscribe(client2, cb2)

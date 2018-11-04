@@ -141,7 +141,7 @@ concatenated, resulting in the JSON string of the original message.
 
 #### 3.1.2 PNG compression ( _png_ ) [experimental]
 
-Some messages (such as point clouds) can be extremely large, and for efficiency
+Some messages (such as images and maps) can be extremely large, and for efficiency
 reasons we may wish to transfer them as PNG-encoded bytes. The PNG opcode
 duplicates the fragmentation logic of the FRG opcode (and it is possible and
 reasonable to only have a single fragment), except that the data field consists
@@ -167,6 +167,20 @@ message and read the bytes of the string into a PNG image. Then, ASCII-encode
 the image. This string is now used as the data field. If fragmentation is
 necessary, then fragment the data and set the ID, num and total fields to the
 appropriate values in the fragments. Otherwise these fields can be left out.
+
+#### 3.1.3 CBOR encoding ( _cbor_ )
+
+For large messages where PNG compression is inappropriate, CBOR encoding can be
+used.
+
+PNG uses the "deflate" algorithm (zlib) and is more efficient when there is
+redundancy in the data, for example an image which is mostly a solid color.
+
+CBOR is more efficient when the data is more stochastic, like a point cloud.
+
+When CBOR compression is requested by a subscriber, a binary message will be
+produced instead of a JSON string.  Once decoded, the message will contain
+a normal protocol message.
 
 ### 3.2 Status messages
 
@@ -372,7 +386,7 @@ which to send messages.
  * **fragment_size** – the maximum size that a message can take before it is to
     be fragmented.
  * **compression** – an optional string to specify the compression scheme to be
-    used on messages. Valid values are "none" and "png"
+    used on messages. Valid values are "none", "png" and "cbor"
 
 If queue_length is specified, then messages are placed into the queue before
 being sent. Messages are sent from the head of the queue. If the queue gets

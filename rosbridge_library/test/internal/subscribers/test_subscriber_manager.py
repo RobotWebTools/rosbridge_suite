@@ -9,7 +9,7 @@ from time import sleep
 
 from rosbridge_library.internal.subscribers import *
 from rosbridge_library.internal.topics import *
-from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
+from rosbridge_library.internal.message_conversion import FieldTypeMismatchException, extract_values
 from std_msgs.msg import String, Int32
 
 
@@ -175,7 +175,7 @@ class TestSubscriberManager(unittest.TestCase):
         received = {"msg": None}
 
         def cb(msg):
-            received["msg"] = msg
+            received["msg"] = extract_values(msg)
 
         manager.subscribe(client, topic, cb, msg_type)
         sleep(0.5)
