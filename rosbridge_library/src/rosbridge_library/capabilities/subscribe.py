@@ -40,9 +40,7 @@ from rospy import loginfo
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
-from rosbridge_library.internal.message_conversion import extract_values as extract_json_values
 from rosbridge_library.internal.pngcompression import encode as encode_png
-from rosbridge_library.internal.cbor_conversion import extract_cbor_values
 from cbor import dumps as encode_cbor
 
 try:
@@ -288,7 +286,7 @@ class Subscribe(Capability):
 
         Keyword arguments:
         topic   -- the topic to publish the message on
-        message -- a ROS message
+        message -- a ROS message wrapped by OutgoingMessage
         fragment_size -- (optional) fragment the serialized message into msgs
         with payloads not greater than this value
         compression   -- (optional) compress the message. valid values are
@@ -315,14 +313,14 @@ class Subscribe(Capability):
 
         outgoing_msg = {u"op": u"publish", u"topic": topic}
         if compression=="png":
-            outgoing_msg["msg"] = extract_json_values(message)
+            outgoing_msg["msg"] = message.get_json_values()
             outgoing_msg_dumped = encode_json(outgoing_msg)
             outgoing_msg = {"op": "png", "data": encode_png(outgoing_msg_dumped)}
         elif compression=="cbor":
-            outgoing_msg[u"msg"] = extract_cbor_values(message)
+            outgoing_msg[u"msg"] = message.get_cbor_values()
             outgoing_msg = bytearray(encode_cbor(outgoing_msg))
         else:
-            outgoing_msg["msg"] = extract_json_values(message)
+            outgoing_msg["msg"] = message.get_json_values()
 
         self.protocol.send(outgoing_msg)
 
