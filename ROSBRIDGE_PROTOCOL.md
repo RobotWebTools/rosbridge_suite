@@ -170,17 +170,18 @@ appropriate values in the fragments. Otherwise these fields can be left out.
 
 #### 3.1.3 CBOR encoding ( _cbor_ )
 
-For large messages where PNG compression is inappropriate, CBOR encoding can be
-used.
-
-PNG uses the "deflate" algorithm (zlib) and is more efficient when there is
-redundancy in the data, for example an image which is mostly a solid color.
-
-CBOR is more efficient when the data is more stochastic, like a point cloud.
+[CBOR](https://tools.ietf.org/html/rfc7049) encoding is the fastest
+compression method for messages containing large blobs of data, such as
+byte arrays and numeric typed arrays.
 
 When CBOR compression is requested by a subscriber, a binary message will be
 produced instead of a JSON string.  Once decoded, the message will contain
 a normal protocol message.
+
+The implementation uses [draft typed array tags] for efficient packing of
+homogeneous arrays.  At the moment, only little-endian packing is supported.
+
+[draft typed array tags]: https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00
 
 ### 3.2 Status messages
 
