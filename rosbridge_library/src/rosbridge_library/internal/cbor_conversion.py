@@ -15,17 +15,19 @@ TIME_TYPES = ['time', 'duration']
 BOOL_ARRAY_TYPES = ['bool[]']
 BYTESTREAM_TYPES = ['uint8[]', 'char[]']
 
+# Typed array tags according to <https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00>
+# Always encode to little-endian variant, for now.
 TAGGED_ARRAY_FORMATS = {
+    'uint16[]': (69, '<{}H'),
+    'uint32[]': (70, '<{}I'),
+    'uint64[]': (71, '<{}L'),
     'byte[]': (72, '{}b'),
     'int8[]': (72, '{}b'),
-    'int16[]': (73, '<{}h'),
-    'int32[]': (74, '<{}i'),
-    'int64[]': (75, '<{}l'),
-    'uint16[]': (65, '<{}H'),
-    'uint32[]': (66, '<{}I'),
-    'uint64[]': (67, '<{}L'),
-    'float32[]': (81, '{}f'),
-    'float64[]': (82, '{}d'),
+    'int16[]': (77, '<{}h'),
+    'int32[]': (78, '<{}i'),
+    'int64[]': (79, '<{}l'),
+    'float32[]': (85, '<{}f'),
+    'float64[]': (86, '<{}d'),
 }
 
 
