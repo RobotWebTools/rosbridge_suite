@@ -64,6 +64,8 @@ if __name__ == "__main__":
     ##################################################
     retry_startup_delay = rospy.get_param('~retry_startup_delay', 2.0)  # seconds
 
+    RosbridgeWebSocket.use_compression = rospy.get_param('~use_compression', False)
+
     # get RosbridgeProtocol parameters
     RosbridgeWebSocket.fragment_timeout = rospy.get_param('~fragment_timeout',
                                                           RosbridgeWebSocket.fragment_timeout)

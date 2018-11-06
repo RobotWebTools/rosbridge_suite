@@ -47,6 +47,7 @@ class RosbridgeWebSocket(WebSocketHandler):
     clients_connected = 0
     client_count_pub = None
     authenticate = False
+    use_compression = False
 
     # The following are passed on to RosbridgeProtocol
     # defragmentation.py:
@@ -126,3 +127,11 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     def check_origin(self, origin):
         return True
+
+    def get_compression_options(self):
+        cls = self.__class__
+
+        if not cls.use_compression:
+            return None
+
+        return {}

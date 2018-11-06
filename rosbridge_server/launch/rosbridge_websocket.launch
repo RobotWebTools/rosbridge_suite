@@ -12,6 +12,8 @@
   <arg name="max_message_size" default="None" />
   <arg name="unregister_timeout" default="10" />
 
+  <arg name="use_compression" default="false" />
+
   <arg name="authenticate" default="false" />
 
   <arg name="topics_glob" default="[*]" />
@@ -34,6 +36,7 @@
       <param name="delay_between_messages" value="$(arg delay_between_messages)"/>
       <param name="max_message_size" value="$(arg max_message_size)"/>
       <param name="unregister_timeout" value="$(arg unregister_timeout)"/>
+      <param name="use_compression" value="$(arg use_compression)"/>
 
       <param name="topics_glob" value="$(arg topics_glob)"/>
       <param name="services_glob" value="$(arg services_glob)"/>
@@ -50,6 +53,7 @@
       <param name="delay_between_messages" value="$(arg delay_between_messages)"/>
       <param name="max_message_size" value="$(arg max_message_size)"/>
       <param name="unregister_timeout" value="$(arg unregister_timeout)"/>
+      <param name="use_compression" value="$(arg use_compression)"/>
 
       <param name="topics_glob" value="$(arg topics_glob)"/>
       <param name="services_glob" value="$(arg services_glob)"/>
