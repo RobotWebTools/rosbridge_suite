@@ -129,6 +129,8 @@ class RosbridgeWebSocket(WebSocketHandler):
         return True
 
     def get_compression_options(self):
+        # If this method returns None (the default), compression will be disabled.
+        # If it returns a dict (even an empty one), it will be enabled.
         cls = self.__class__
 
         if not cls.use_compression:
