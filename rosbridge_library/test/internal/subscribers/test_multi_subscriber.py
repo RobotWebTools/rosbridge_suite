@@ -93,7 +93,7 @@ class TestMultiSubscriber(unittest.TestCase):
         received = {"msg": None}
 
         def cb(msg):
-            received["msg"] = msg
+            received["msg"] = msg.get_json_values()
 
         multi.subscribe(client, cb)
         sleep(0.5)
@@ -114,7 +114,7 @@ class TestMultiSubscriber(unittest.TestCase):
         received = {"msgs": []}
 
         def cb(msg):
-            received["msgs"].append(msg["data"])
+            received["msgs"].append(msg.get_json_values()["data"])
 
         multi.subscribe(client, cb)
         sleep(0.5)
@@ -167,10 +167,10 @@ class TestMultiSubscriber(unittest.TestCase):
         received = {"msg1": None, "msg2": None}
 
         def cb1(msg):
-            received["msg1"] = msg
+            received["msg1"] = msg.get_json_values()
 
         def cb2(msg):
-            received["msg2"] = msg
+            received["msg2"] = msg.get_json_values()
 
         multi.subscribe(client1, cb1)
         multi.subscribe(client2, cb2)
