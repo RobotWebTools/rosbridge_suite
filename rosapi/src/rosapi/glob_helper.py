@@ -22,9 +22,9 @@ def get_globs():
             for element in param.strip('[').strip(']').split(',')
             if len(element.strip().strip("'")) > 0]
 
-    topics_glob = get_param('~topics_glob')
-    services_glob = get_param('~services_glob')
-    params_glob = get_param('~params_glob')
+    topics_glob[:] = get_param('~topics_glob')
+    services_glob[:] = get_param('~services_glob')
+    params_glob[:] = get_param('~params_glob')
 
 
 def filter_globs(globs, full_list):
