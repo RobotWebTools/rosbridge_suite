@@ -40,7 +40,6 @@ from rosservice import get_service_uri
 from rosservice import rosservice_find
 from rostopic import find_by_type
 from rostopic import get_topic_type as rosservice_get_topic_type
-from ros import rosnode, rosgraph
 from rosnode import get_node_names
 from rosgraph.masterapi import Master
 
@@ -89,7 +88,7 @@ def get_services_for_type(service_type, services_glob):
 
 def get_nodes():
     """ Returns a list of all the nodes registered in the ROS system """
-    return rosnode.get_node_names()
+    return get_node_names()
 
 
 def get_node_publications(node):
