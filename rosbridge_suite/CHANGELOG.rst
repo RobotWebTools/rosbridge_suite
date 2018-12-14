@@ -2,6 +2,11 @@
 Changelog for package rosbridge_suite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use package format 2, remove unnecessary dependencies (`#348 <https://github.com/RobotWebTools/rosbridge_suite/issues/348>`_)
+* Contributors: Dirk Thomas
+
 0.9.0 (2018-04-09)
 ------------------
 

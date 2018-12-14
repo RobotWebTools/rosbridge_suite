@@ -2,6 +2,40 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* CBOR encoding (`#364 <https://github.com/RobotWebTools/rosbridge_suite/issues/364>`_)
+  * Add CBOR encoding
+  * Fix value extraction performance regression
+  Extract message values once per message.
+  * Fix typed array tags
+  Was using big-endian tags and encoding little-endian.
+  Always use little-endian for now since Intel is prevalent for desktop.
+  Add some comments to this effect.
+  * Update CBOR protocol documentation
+  More information about draft typed arrays and when to use CBOR.
+  * Fix 64-bit integer CBOR packing
+  Use an actual 64-bit format.
+* Add param to enable ws per-message deflate (`#365 <https://github.com/RobotWebTools/rosbridge_suite/issues/365>`_)
+  * Add param to enable ws per-message deflate
+  Tornado has its own per-message deflate compression option, which
+  compresses each WebSocket message.  The compression level should be
+  roughly equivalent to PNG compression, depending on whether the message is
+  JSON or binary (CBOR).  The encoding/decoding time will be much faster
+  than protocol PNG compression.
+  This param should be enabled when wire size is important, e.g. not
+  connecting to localhost.
+* rosbridge_server: Publish number of connected clients on latched topic. (`#359 <https://github.com/RobotWebTools/rosbridge_suite/issues/359>`_)
+* Fix a few problems (`#350 <https://github.com/RobotWebTools/rosbridge_suite/issues/350>`_)
+  * xrange is not available in Python3, range works for both Python versions
+  * the variable v is undefined in search_param, comparing the implementation with the sibling functions I expect name to be the intended variable
+  * The module udp_handler is using the Authentication service but wasn't importing the module
+* use package format 2, remove unnecessary dependencies (`#348 <https://github.com/RobotWebTools/rosbridge_suite/issues/348>`_)
+* Adding bson support for websockets (`#327 <https://github.com/RobotWebTools/rosbridge_suite/issues/327>`_)
+  * removed message that bson isn't supported. setting the bson only mode class attribute
+  * added auth package inspection for bson only mode
+* Contributors: Dirk Thomas, Hans-Joachim Krauch, Matt Vollrath, Sanic
+
 0.9.0 (2018-04-09)
 ------------------
 * Make unregister_timeout configurable (`#322 <https://github.com/RobotWebTools/rosbridge_suite/issues/322>`_)

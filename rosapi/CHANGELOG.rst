@@ -2,6 +2,19 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Drop use of ros Python module (`#374 <https://github.com/RobotWebTools/rosbridge_suite/issues/374>`_)
+* Fixes passing of globs to proxy (`#355 <https://github.com/RobotWebTools/rosbridge_suite/issues/355>`_)
+  * Fixes handling and passing of globs to proxy
+  * Removes some confusing imports
+* Fix a few problems (`#350 <https://github.com/RobotWebTools/rosbridge_suite/issues/350>`_)
+  * xrange is not available in Python3, range works for both Python versions
+  * the variable v is undefined in search_param, comparing the implementation with the sibling functions I expect name to be the intended variable
+  * The module udp_handler is using the Authentication service but wasn't importing the module
+* use package format 2, remove unnecessary dependencies (`#348 <https://github.com/RobotWebTools/rosbridge_suite/issues/348>`_)
+* Contributors: Anwar, Dirk Thomas, Jochen Sprickerhof
+
 0.9.0 (2018-04-09)
 ------------------
 

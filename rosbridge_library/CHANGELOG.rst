@@ -2,6 +2,26 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* CBOR encoding (`#364 <https://github.com/RobotWebTools/rosbridge_suite/issues/364>`_)
+  * Add CBOR encoding
+  * Fix value extraction performance regression
+  Extract message values once per message.
+  * Fix typed array tags
+  Was using big-endian tags and encoding little-endian.
+  Always use little-endian for now since Intel is prevalent for desktop.
+  Add some comments to this effect.
+  * Update CBOR protocol documentation
+  More information about draft typed arrays and when to use CBOR.
+  * Fix 64-bit integer CBOR packing
+  Use an actual 64-bit format.
+* use package format 2, remove unnecessary dependencies (`#348 <https://github.com/RobotWebTools/rosbridge_suite/issues/348>`_)
+* removing has_key for python3, keeping backwards compatibility (`#337 <https://github.com/RobotWebTools/rosbridge_suite/issues/337>`_)
+  * removing has_key for python3, keeping backwards compatibility
+  * py3 change for itervalues, keeping py2 compatibility
+* Contributors: Andreas Klintberg, Dirk Thomas, Matt Vollrath
+
 0.9.0 (2018-04-09)
 ------------------
 * Fix typo in function call
