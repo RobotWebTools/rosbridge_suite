@@ -41,7 +41,11 @@ from rosbridge_library.capability import Capability
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
 from rosbridge_library.internal.pngcompression import encode as encode_png
-from cbor import dumps as encode_cbor
+
+try:
+    from cbor import dumps as encode_cbor
+except ImportError:
+    from rosbridge_library.util.cbor import dumps as encode_cbor
 
 try:
     from ujson import dumps as encode_json
