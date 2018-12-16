@@ -3,7 +3,10 @@ import sys
 
 PYTHON2 = sys.version_info < (3, 0)
 
-from cbor import Tag
+try:
+    from cbor import Tag
+except ImportError:
+    from rosbridge_library.util.cbor import Tag
 
 
 LIST_TYPES = [list, tuple]

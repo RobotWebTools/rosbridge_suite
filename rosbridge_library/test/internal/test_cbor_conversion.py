@@ -7,7 +7,11 @@ PYTHON2 = sys.version_info < (3, 0)
 
 import struct
 from rosbridge_library.internal.cbor_conversion import extract_cbor_values, TAGGED_ARRAY_FORMATS
-from cbor import Tag
+
+try:
+    from cbor import Tag
+except ImportError:
+    from rosbridge_library.util.cbor import Tag
 
 from std_msgs.msg import (
     Bool, String,
