@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.10.1 (2018-12-16)
+-------------------
 * Inline cbor library (`#377 <https://github.com/RobotWebTools/rosbridge_suite/issues/377>`_)
   Prefer system version with C speedups, but include pure Python implementation.
 * Contributors: Matt Vollrath
