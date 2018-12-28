@@ -68,8 +68,7 @@ def register_services():
 
 def get_topics(request):
     """ Called by the rosapi/Topics service. Returns a list of all the topics being published. """
-    topics = proxy.get_topics(rosapi.glob_helper.topics_glob)
-    types = proxy.get_topics_types(topics, rosapi.glob_helper.topics_glob)
+    topics, types = proxy.get_topics_and_types(rosapi.glob_helper.topics_glob)
     return TopicsResponse(topics, types)
 
 def get_topics_for_type(request):
