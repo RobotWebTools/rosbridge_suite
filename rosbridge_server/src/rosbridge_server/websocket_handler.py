@@ -34,10 +34,12 @@ import rospy
 
 from rosauth.srv import Authentication
 
+import threading
 from functools import partial
 
 from tornado.ioloop import IOLoop
 from tornado.websocket import WebSocketHandler
+from tornado.gen import coroutine
 
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import json, bson
@@ -72,6 +74,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             self.protocol.outgoing = self.send_message
             self.set_nodelay(True)
             self.authenticated = False
+            self._write_lock = threading.RLock()
             cls.client_id_seed += 1
             cls.clients_connected += 1
             if cls.client_count_pub:
@@ -130,7 +133,13 @@ class RosbridgeWebSocket(WebSocketHandler):
         else:
             binary = False
 
-        IOLoop.instance().add_callback(partial(self.write_message, message, binary))
+        with self._write_lock:
+            IOLoop.instance().add_callback(partial(self.prewrite_message, message, binary))
+
+    @coroutine
+    def prewrite_message(self, message, binary):
+        with self._write_lock:
+            yield self.write_message(message, binary)
 
     def check_origin(self, origin):
         return True
