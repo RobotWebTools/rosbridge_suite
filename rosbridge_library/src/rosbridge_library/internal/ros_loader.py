@@ -1,4 +1,3 @@
-import time
 #!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
@@ -32,9 +31,11 @@ import time
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import roslib
-import rospy
+from ros2pkg.api import get_prefix_path
 
+import importlib
+import os
+import sys
 from threading import Lock
 
 """ ros_loader contains methods for dynamically loading ROS message classes at
@@ -45,6 +46,7 @@ Methods typically return the requested class or instance, or None if not found
 """
 
 # Variable containing the loaded classes
+_loaded_modules = []
 _loaded_msgs = {}
 _loaded_srvs = {}
 _msgs_lock = Lock()
@@ -111,12 +113,12 @@ def get_service_instance(typestring):
 
 def get_service_request_instance(typestring):
     cls = get_service_class(typestring)
-    return cls._request_class()
+    return cls.Request()
 
 
 def get_service_response_instance(typestring):
     cls = get_service_class(typestring)
-    return cls._response_class()
+    return cls.Response()
 
 
 def _get_msg_class(typestring):
@@ -177,24 +179,44 @@ def _load_class(modname, subname, classname):
     more expressive exceptions.
 
     Returns the loaded module, or None on failure """
-    global loaded_modules
 
     try:
         with _manifest_lock:
             # roslib maintains a cache of loaded manifests, so no need to duplicate
-            roslib.launcher.load_manifest(modname)
+            _load_manifest(modname)
     except Exception as exc:
         raise InvalidPackageException(modname, exc)
 
     try:
-        pypkg = __import__('%s.%s' % (modname, subname))
+        pypkg = importlib.import_module('%s.%s' % (modname, subname))
     except Exception as exc:
         raise InvalidModuleException(modname, subname, exc)
 
     try:
-        return getattr(getattr(pypkg, subname), classname)
+        return getattr(pypkg, classname)
     except Exception as exc:
         raise InvalidClassException(modname, subname, classname, exc)
+
+
+def _load_manifest(modname):
+    """
+    Simplified version of roslib's load_manifest.
+
+    Updates system path to include the path of a given package.
+    """
+    global _loaded_modules
+
+    if modname in _loaded_modules:
+        return
+
+    prefix_path = get_prefix_path(modname)
+    package_path = os.path.join(prefix_path, 'lib', 'python3.{}'.format(sys.version_info.minor), 'site-packages')
+    if package_path not in sys.path:
+        sys.path = package_path + sys.path
+
+    # Update cache for the next time.
+    _loaded_modules.append(modname)
+    return
 
 
 def _splittype(typestring):
