@@ -34,15 +34,36 @@ import rospy
 
 from rosauth.srv import Authentication
 
+import sys
 import threading
-from functools import partial
+import traceback
+from functools import partial, wraps
 
 from tornado.ioloop import IOLoop
-from tornado.websocket import WebSocketHandler
+from tornado.websocket import WebSocketHandler, WebSocketClosedError
 from tornado.gen import coroutine
 
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import json, bson
+
+
+def _log_exception():
+    """Log the most recent exception to ROS."""
+    exc = traceback.format_exception(*sys.exc_info())
+    rospy.logerr(''.join(exc))
+
+
+def log_exceptions(f):
+    """Decorator for logging exceptions to ROS."""
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except:
+            _log_exception()
+            raise
+    return wrapper
+
 
 class RosbridgeWebSocket(WebSocketHandler):
     client_id_seed = 0
@@ -60,6 +81,7 @@ class RosbridgeWebSocket(WebSocketHandler):
     unregister_timeout = 10.0               # seconds
     bson_only_mode = False
 
+    @log_exceptions
     def open(self):
         cls = self.__class__
         parameters = {
@@ -85,6 +107,7 @@ class RosbridgeWebSocket(WebSocketHandler):
         if cls.authenticate:
             rospy.loginfo("Awaiting proper authentication...")
 
+    @log_exceptions
     def on_message(self, message):
         cls = self.__class__
         # check if we need to authenticate
@@ -116,6 +139,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             # no authentication required
             self.protocol.incoming(message)
 
+    @log_exceptions
     def on_close(self):
         cls = self.__class__
         cls.clients_connected -= 1
@@ -138,12 +162,22 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     @coroutine
     def prewrite_message(self, message, binary):
-        with self._write_lock:
-            yield self.write_message(message, binary)
+        # Use a try block because the log decorator doesn't cooperate with @coroutine.
+        try:
+            with self._write_lock:
+                yield self.write_message(message, binary)
+        except WebSocketClosedError:
+            rospy.logwarn('WebSocketClosedError: Tried to write to a closed websocket')
+            raise
+        except:
+            _log_exception()
+            raise
 
+    @log_exceptions
     def check_origin(self, origin):
         return True
 
+    @log_exceptions
     def get_compression_options(self):
         # If this method returns None (the default), compression will be disabled.
         # If it returns a dict (even an empty one), it will be enabled.
