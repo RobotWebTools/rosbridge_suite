@@ -44,6 +44,7 @@ from .glob_helper import filter_globs, any_match
 
 _node = None
 
+
 def init(node):
     """
     Initializes proxy module with a rclpy.node.Node for further use.
@@ -51,6 +52,7 @@ def init(node):
     """
     global _node
     _node = node
+
 
 def get_topics(topics_glob, include_hidden=False):
     """ Returns a list of all the active topics in the ROS system """
@@ -112,6 +114,7 @@ def get_services_for_type(service_type, services_glob, include_hidden=False):
 
 
 def get_publications_and_types(glob, getter_function, **include_hidden_publications):
+    """ Generic getter function for both services and topics """
     try:
         publication_names_and_types = getter_function(node=_node, **include_hidden_publications)
         # publication[0] has the publication name and publication[1] has the type wrapped in a list.
@@ -147,7 +150,7 @@ def get_node_info(node_name, include_hidden=False):
 
 
 def get_node_publications(node_name):
-    """ Returns a list of topic names that are been published by the specified node """
+    """ Returns a list of topic names that are being published by the specified node """
     try:
         publishers = get_publisher_info(node=_node, remote_node_name=node_name)
         return [publisher.name for publisher in publishers]
@@ -156,7 +159,7 @@ def get_node_publications(node_name):
 
 
 def get_node_subscriptions(node_name):
-    """ Returns a list of topic names that are been subscribed by the specified node """
+    """ Returns a list of topic names that are being subscribed by the specified node """
     try:
         subscribers = get_subscriber_info(node=_node, remote_node_name=node_name)
         return [subscriber.name for subscriber in subscribers]
@@ -165,7 +168,7 @@ def get_node_subscriptions(node_name):
 
 
 def get_node_services(node_name):
-    """ Returns a list of service names that are been hosted by the specified node """
+    """ Returns a list of service names that are being hosted by the specified node """
     try:
         services = get_service_info(node=_node, remote_node_name=node_name)
         return [service.name for service in services]
@@ -174,7 +177,7 @@ def get_node_services(node_name):
 
 
 def get_node_service_types(node_name):
-    """ Returns a list of service types that are been hosted by the specified node """
+    """ Returns a list of service types that are being hosted by the specified node """
     try:
         services = get_service_info(node=_node, remote_node_name=node_name)
         return [service.types[0] for service in services]

@@ -43,7 +43,7 @@ from ros2param.api import call_get_parameters, call_set_parameters, get_paramete
 """ Methods to interact with the param server.  Values have to be passed
 as JSON in order to facilitate dynamically typed SRV messages """
 
-# rospy parameter server isn't thread-safe
+# Ensure thread safety for setting / getting parameters.
 param_server_lock = threading.RLock()
 _node = None
 
@@ -63,6 +63,8 @@ def init():
 
 
 def set_param(node_name, name, value, params_glob):
+    """ Sets a parameter in a given node """
+
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to set the parameter.
@@ -105,6 +107,8 @@ def _set_param(node_name, name, value, parameter_type=None):
 
 
 def get_param(node_name, name, default, params_glob):
+    """ Gets a parameter from a given node """
+
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to get the parameter.
@@ -136,6 +140,8 @@ def get_param(node_name, name, default, params_glob):
 
 
 def has_param(node_name, name, params_glob):
+    """ Checks whether a given node has a parameter or not """
+
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to set the parameter.
@@ -155,6 +161,8 @@ def has_param(node_name, name, params_glob):
 
 
 def delete_param(node_name, name, params_glob):
+    """ Deletes a parameter in a given node """
+
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to delete the parameter.
@@ -168,6 +176,8 @@ def delete_param(node_name, name, params_glob):
 
 
 def get_param_names(node_name, params_glob):
+    """ Gets list of parameter names for a given node """
+
     node_name = get_absolute_node_name(node_name)
 
     with param_server_lock:
