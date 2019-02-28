@@ -34,6 +34,7 @@
 import sys
 
 import rclpy
+from rclpy.clock import Clock, ClockType
 from rclpy.node import Node
 
 from rosapi import glob_helper, proxy, objectutils, params
@@ -70,13 +71,13 @@ class Rosapi(Node):
         self.create_service(SetParam, '/rosapi/set_param', self.set_param)
         self.create_service(GetParam, '/rosapi/get_param', self.get_param)
         self.create_service(HasParam, '/rosapi/has_param', self.has_param)
+        self.create_service(DeleteParam, '/rosapi/delete_param', self.delete_param)
+        self.create_service(GetParamNames, '/rosapi/get_param_names', self.get_param_names)
+        self.create_service(GetTime, '/rosapi/get_time', self.get_time)
 
         # Services to be implemented:
         # rospy.Service('/rosapi/service_host', ServiceHost, get_service_host)
         # rospy.Service('/rosapi/search_param', SearchParam, search_param)
-        # rospy.Service('/rosapi/delete_param', DeleteParam, delete_param)
-        # rospy.Service('/rosapi/get_param_names', GetParamNames, get_param_names)
-        # rospy.Service('/rosapi/get_time', GetTime, get_time)
 
     def get_globs(self):
         return glob_helper.get_globs()
@@ -189,6 +190,18 @@ class Rosapi(Node):
         response.exists = params.has_param(request.node_name, request.name, self.globs.get('params_glob'))
         return response
 
+    def delete_param(self, request, response):
+        params.delete_param(request.node_name, request.name, self.globs.get('params_glob'))
+        return response
+
+    def get_param_names(self, request, response):
+        response.names = params.get_param_names(request.node_name, self.globs.get('params_glob'))
+        return response
+
+    def get_time(self, request, response):
+        response.time = Clock(clock_type=ClockType.ROS_TIME).now().to_msg()
+        return response
+
 
 # TODO(@jubeira): make all of these methods of the node and port them.
 
@@ -198,18 +211,9 @@ def get_service_host(request):
     that is hosting that service. """
     return ServiceHostResponse(proxy.get_service_host(request.service))
 
+# Note(@jubeira): rclpy does not have an equivalent for this. To be checked if this service is necessary or not.
 def search_param(request):
     return SearchParamResponse(rosapi.params.search_param(request.name, rosapi.glob_helper.params_glob))
-
-def delete_param(request):
-    rosapi.params.delete_param(request.name, rosapi.glob_helper.params_glob)
-    return DeleteParamResponse()
-
-def get_param_names(request):
-    return GetParamNamesResponse(rosapi.params.get_param_names(rosapi.glob_helper.params_glob))
-
-def get_time(request):
-    return GetTimeResponse(rospy.get_rostime())
 
 def dict_to_typedef(typedefdict):
     typedef = TypeDef()

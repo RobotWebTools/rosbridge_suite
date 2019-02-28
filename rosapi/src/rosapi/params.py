@@ -34,8 +34,10 @@ import fnmatch
 from json import loads, dumps
 import threading
 
-from rcl_interfaces.msg import Parameter
+from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
+from rcl_interfaces.srv import ListParameters
 import rclpy
+from ros2node.api import get_absolute_node_name
 from ros2param.api import call_get_parameters, call_set_parameters, get_parameter_value
 
 """ Methods to interact with the param server.  Values have to be passed
@@ -72,16 +74,34 @@ def set_param(node_name, name, value, params_glob):
         d = loads(value)
     except ValueError:
         raise Exception("Due to the type flexibility of the ROS parameter server, the value argument to set_param must be a JSON-formatted string.")
+
+    node_name = get_absolute_node_name(node_name)
     with param_server_lock:
-        parameter = Parameter()
-        parameter.name = name
+        _set_param(node_name, name, value)
+
+
+def _set_param(node_name, name, value, parameter_type=None):
+    """
+    Internal helper function for set_param.
+    Attempts to set the given parameter in the target node with the desired value,
+    deducing the parameter type if it's not specified.
+    parameter_type allows forcing a type for the given value; this is useful to delete parameters.
+    """
+    parameter = Parameter()
+    parameter.name = name
+    if parameter_type is None:
         parameter.value = get_parameter_value(string_value=value)
-        try:
-            # call_get_parameters will fail if node does not exist.
-            call_set_parameters(node=_node, node_name=node_name, parameters=[parameter])
-        except Exception as e:
-            _node.get_logger().info('Exception: {}'.format(e))
-            pass
+    else:
+        parameter.value = ParameterValue()
+        parameter.value.type = parameter_type
+        if parameter_type != ParameterType.PARAMETER_NOT_SET:
+            setattr(parameter.value, _parameter_type_mapping[parameter_type])
+
+    try:
+        # call_get_parameters will fail if node does not exist.
+        call_set_parameters(node=_node, node_name=node_name, parameters=[parameter])
+    except:
+        pass
 
 
 def get_param(node_name, name, default, params_glob):
@@ -91,12 +111,13 @@ def get_param(node_name, name, default, params_glob):
         return
     # If the glob list is empty (i.e. false) or the parameter matches
     # one of the glob strings, continue to get the parameter.
-    d = None
     if default is not "":
         try:
-            d = loads(default)
+            default = loads(default)
         except ValueError:
-            d = default
+            pass    # Keep default without modifications.
+
+    node_name = get_absolute_node_name(node_name)
     with param_server_lock:
         try:
             # call_get_parameters will fail if node does not exist.
@@ -121,6 +142,7 @@ def has_param(node_name, name, params_glob):
         return False
     # If the glob list is empty (i.e. false) or the parameter matches
     # one of the glob strings, check whether the parameter exists.
+    node_name = get_absolute_node_name(node_name)
     with param_server_lock:
         try:
             response = call_get_parameters(
@@ -132,7 +154,6 @@ def has_param(node_name, name, params_glob):
     return response.values[0].type > 0 and response.values[0].type < len(_parameter_type_mapping)
 
 
-# TODO(@jubeira): functions to be ported below.
 def delete_param(node_name, name, params_glob):
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
@@ -140,11 +161,45 @@ def delete_param(node_name, name, params_glob):
         return
     # If the glob list is empty (i.e. false) or the parameter matches
     # one of the glob strings, continue to delete the parameter.
-    if has_param(name, params_glob):
+    node_name = get_absolute_node_name(node_name)
+    if has_param(node_name, name, params_glob):
         with param_server_lock:
-            rospy.delete_param(name)
+            _set_param(node_name, name, None, ParameterType.PARAMETER_NOT_SET)
 
 
+def get_param_names(node_name, params_glob):
+    node_name = get_absolute_node_name(node_name)
+
+    with param_server_lock:
+        if params_glob:
+            # If there is a parameter glob, filter by it.
+            return list(
+                   filter(
+                   lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob),
+                   _get_param_names(node_name)))
+        else:
+            # If there is no parameter glob, don't filter.
+            return _get_param_names(node_name)
+
+
+def _get_param_names(node_name):
+    client = _node.create_client(ListParameters, '{}/list_parameters'.format(node_name))
+
+    ready = client.wait_for_service(timeout_sec=5.0)
+    if not ready:
+        raise RuntimeError('Wait for list_parameters service timed out')
+
+    request = ListParameters.Request()
+    future = client.call_async(request)
+    rclpy.spin_until_future_complete(_node, future)
+    response = future.result()
+    if response is not None:
+        return response.result.names
+    else:
+        return []
+
+
+# TODO(@jubeira): functions to be ported below.
 def search_param(name, params_glob):
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
@@ -153,14 +208,3 @@ def search_param(name, params_glob):
     # If the glob list is empty (i.e. false) or the parameter matches
     # one of the glob strings, continue to find the parameter.
     return rospy.search_param(name)
-
-
-def get_param_names(params_glob):
-    with param_server_lock:
-        if params_glob:
-            # If there is a parameter glob, filter by it.
-            return filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob), rospy.get_param_names())
-        else:
-            # If there is no parameter glob, don't filter.
-            return rospy.get_param_names()
-
