@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.10.2 (2019-03-04)
+-------------------
 * Fix typo (`#379 <https://github.com/RobotWebTools/rosbridge_suite/issues/379>`_)
 * Contributors: David Weis
 

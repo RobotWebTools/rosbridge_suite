@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.10.2 (2019-03-04)
+-------------------
 * Log Tornado handler exceptions (`#386 <https://github.com/RobotWebTools/rosbridge_suite/issues/386>`_)
   * Decorate most handlers which were previously failing silently.
   * Use a try block in the @coroutine, it refused double decoration.
