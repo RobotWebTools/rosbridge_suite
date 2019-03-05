@@ -2,6 +2,11 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.2 (2019-03-04)
+-------------------
+* Fix typo (`#379 <https://github.com/RobotWebTools/rosbridge_suite/issues/379>`_)
+* Contributors: David Weis
+
 0.10.1 (2018-12-16)
 -------------------
 * Inline cbor library (`#377 <https://github.com/RobotWebTools/rosbridge_suite/issues/377>`_)
