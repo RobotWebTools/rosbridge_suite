@@ -2,6 +2,17 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.2 (2019-03-04)
+-------------------
+* Log Tornado handler exceptions (`#386 <https://github.com/RobotWebTools/rosbridge_suite/issues/386>`_)
+  * Decorate most handlers which were previously failing silently.
+  * Use a try block in the @coroutine, it refused double decoration.
+  * Always raise after logging, so Tornado sees the Exception too.
+  * Only warn when racing to write to a closed WebSocket.
+* Synchronous websocket write (`#385 <https://github.com/RobotWebTools/rosbridge_suite/issues/385>`_)
+  Fixes `#212 <https://github.com/RobotWebTools/rosbridge_suite/issues/212>`_
+* Contributors: Matt Vollrath
+
 0.10.1 (2018-12-16)
 -------------------
 
