@@ -175,7 +175,7 @@ class TestSubscriberManager(unittest.TestCase):
         received = {"msg": None}
 
         def cb(msg):
-            received["msg"] = msg
+            received["msg"] = msg.get_json_values()
 
         manager.subscribe(client, topic, cb, msg_type)
         sleep(0.5)

@@ -9,4 +9,6 @@
   <test test-name="test_multi_subscriber" pkg="rosbridge_library" type="test_multi_subscriber.py" />
   <test test-name="test_subscriber_manager" pkg="rosbridge_library" type="test_subscriber_manager.py" />
   <test test-name="test_subscription_modifiers" pkg="rosbridge_library" type="test_subscription_modifiers.py" />
+  <test test-name="test_cbor_conversion" pkg="rosbridge_library" type="test_cbor_conversion.py" />
+  <test test-name="test_outgoing_message" pkg="rosbridge_library" type="test_outgoing_message.py" />
 </launch>

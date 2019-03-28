@@ -40,7 +40,6 @@ from rosservice import get_service_uri
 from rosservice import rosservice_find
 from rostopic import find_by_type
 from rostopic import get_topic_type as rosservice_get_topic_type
-from ros import rosnode, rosgraph
 from rosnode import get_node_names
 from rosgraph.masterapi import Master
 
@@ -49,25 +48,26 @@ from rosapi.msg import TypeDef
 from .glob_helper import filter_globs, any_match
 
 
-def get_topics(topics_glob):
+def get_topics_and_types(topics_glob):
     """ Returns a list of all the active topics in the ROS system """
     try:
-        publishers, subscribers, services = Master('/rosbridge').getSystemState()
-        # Filter the list of topics by whether they are public before returning.
-        return filter_globs(topics_glob,
-                            list(set([x for x, _ in publishers] + [x for x, _, in subscribers])))
+        # Function getTopicTypes also returns inactive topics and does not
+        # return topics with unknown message types, so it must be compared
+        # to results from getSystemState.
+        master = Master('/rosbridge')
+        topic_types = master.getTopicTypes()
+        publishers, subscribers, services = master.getSystemState()
+        topics = set([x for x, _ in publishers] + [x for x, _ in subscribers])
+
+        # Filter the list of topics by whether they are public.
+        topics = set(filter_globs(topics_glob, topics))
+        topic_types = [x for x in topic_types if x[0] in topics]
+
+        # Add topics with unknown type messages.
+        unknown_type = topics.difference([x for x, _ in topic_types])
+        return zip(* topic_types + [[x,''] for x in unknown_type])
     except:
         return []
-
-
-def get_topics_types(topics, topics_glob):
-    try:
-        types = []
-        for i in topics:
-            types.append(get_topic_type(i, topics_glob))
-        return types
-    except:
-        return[]
 
 
 def get_topics_for_type(type, topics_glob):
@@ -89,7 +89,7 @@ def get_services_for_type(service_type, services_glob):
 
 def get_nodes():
     """ Returns a list of all the nodes registered in the ROS system """
-    return rosnode.get_node_names()
+    return get_node_names()
 
 
 def get_node_publications(node):

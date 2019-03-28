@@ -2,6 +2,17 @@
 Changelog for package rosbridge_suite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.2 (2019-03-04)
+-------------------
+
+0.10.1 (2018-12-16)
+-------------------
+
+0.10.0 (2018-12-14)
+-------------------
+* use package format 2, remove unnecessary dependencies (`#348 <https://github.com/RobotWebTools/rosbridge_suite/issues/348>`_)
+* Contributors: Dirk Thomas
+
 0.9.0 (2018-04-09)
 ------------------
 

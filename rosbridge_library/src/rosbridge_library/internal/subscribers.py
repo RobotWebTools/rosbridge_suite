@@ -37,6 +37,7 @@ from rostopic import get_topic_type
 from rosbridge_library.internal import ros_loader, message_conversion
 from rosbridge_library.internal.topics import TopicNotEstablishedException
 from rosbridge_library.internal.topics import TypeConflictException
+from rosbridge_library.internal.outgoing_message import OutgoingMessage
 
 """ Manages and interfaces with ROS Subscriber objects.  A single subscriber
 is shared between multiple clients
@@ -149,22 +150,15 @@ class MultiSubscriber():
     def callback(self, msg, callbacks=None):
         """ Callback for incoming messages on the rospy.Subscriber
 
-        Converts the incoming msg to JSON, then passes the JSON to the
-        registered subscriber callbacks.
+        Passes the message to registered subscriber callbacks.
 
         Keyword Arguments:
         msg - the ROS message coming from the subscriber
         callbacks - subscriber callbacks to invoke
 
         """
-        # Try to convert the msg to JSON
-        json = None
-        try:
-            json = message_conversion.extract_values(msg)
-        except Exception as exc:
-            logerr("Exception while converting messages in subscriber callback : %s", exc)
-            return
-        
+        outgoing = OutgoingMessage(msg)
+
         # Get the callbacks to call
         if not callbacks:
             with self.lock:
@@ -173,7 +167,7 @@ class MultiSubscriber():
         # Pass the JSON to each of the callbacks
         for callback in callbacks:
             try:
-                callback(json)
+                callback(outgoing)
             except Exception as exc:
                 # Do nothing if one particular callback fails except log it
                 logerr("Exception calling subscribe callback: %s", exc)

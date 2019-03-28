@@ -286,6 +286,8 @@ class Protocol:
         Returns a JSON string representing the dictionary
         """
         try:
+            if type(msg) == bytearray:
+                return msg
             if has_binary(msg) or self.bson_only_mode:
                 return bson.BSON.encode(msg)
             else:    

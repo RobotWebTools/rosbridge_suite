@@ -30,6 +30,9 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import sys
+PYTHON2 = sys.version_info < (3, 0)
+
 import fnmatch
 from threading import Lock
 from functools import partial
@@ -37,15 +40,20 @@ from rospy import loginfo
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
-from rosbridge_library.internal.pngcompression import encode
+from rosbridge_library.internal.pngcompression import encode as encode_png
 
 try:
-    from ujson import dumps
+    from cbor import dumps as encode_cbor
+except ImportError:
+    from rosbridge_library.util.cbor import dumps as encode_cbor
+
+try:
+    from ujson import dumps as encode_json
 except ImportError:
     try:
-        from simplejson import dumps
+        from simplejson import dumps as encode_json
     except ImportError:
-        from json import dumps
+        from json import dumps as encode_json
 
 from rosbridge_library.util import string_types
 
@@ -173,7 +181,12 @@ class Subscription():
             self.fragment_size = None
         else:
             self.fragment_size = min(frags)
-        self.compression = "png" if "png" in f("compression") else "none"
+
+        self.compression = "none"
+        if "png" in f("compression"):
+            self.compression = "png"
+        if "cbor" in f("compression"):
+            self.compression = "cbor"
 
         with self.handler_lock:
             self.handler = self.handler.set_throttle_rate(self.throttle_rate)
@@ -277,8 +290,7 @@ class Subscribe(Capability):
 
         Keyword arguments:
         topic   -- the topic to publish the message on
-        message -- a dict of key-value pairs. Will be wrapped in a message with
-        opcode publish
+        message -- a ROS message wrapped by OutgoingMessage
         fragment_size -- (optional) fragment the serialized message into msgs
         with payloads not greater than this value
         compression   -- (optional) compress the message. valid values are
@@ -300,10 +312,20 @@ class Subscribe(Capability):
         else:
             self.protocol.log("debug", "No topic security glob, not checking topic publish.")
 
-        outgoing_msg = {"op": "publish", "topic": topic, "msg": message}
-        if compression == "png":
-            outgoing_msg_dumped = dumps(outgoing_msg)
-            outgoing_msg = {"op": "png", "data": encode(outgoing_msg_dumped)}
+        if PYTHON2:
+            topic = unicode(topic)
+
+        outgoing_msg = {u"op": u"publish", u"topic": topic}
+        if compression=="png":
+            outgoing_msg["msg"] = message.get_json_values()
+            outgoing_msg_dumped = encode_json(outgoing_msg)
+            outgoing_msg = {"op": "png", "data": encode_png(outgoing_msg_dumped)}
+        elif compression=="cbor":
+            outgoing_msg[u"msg"] = message.get_cbor_values()
+            outgoing_msg = bytearray(encode_cbor(outgoing_msg))
+        else:
+            outgoing_msg["msg"] = message.get_json_values()
+
         self.protocol.send(outgoing_msg)
 
     def finish(self):
