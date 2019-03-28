@@ -39,9 +39,10 @@ import threading
 import traceback
 from functools import partial, wraps
 
+from tornado import version_info as tornado_version_info
 from tornado.ioloop import IOLoop
 from tornado.websocket import WebSocketHandler, WebSocketClosedError
-from tornado.gen import coroutine
+from tornado.gen import coroutine, BadYieldError
 
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import json, bson
@@ -169,6 +170,14 @@ class RosbridgeWebSocket(WebSocketHandler):
         except WebSocketClosedError:
             rospy.logwarn('WebSocketClosedError: Tried to write to a closed websocket')
             raise
+        except BadYieldError:
+            # Tornado <4.5.0 doesn't like its own yield and raises BadYieldError.
+            # This does not affect functionality, so pass silently only in this case.
+            if tornado_version_info < (4, 5, 0, 0):
+                pass
+            else:
+                _log_exception()
+                raise
         except:
             _log_exception()
             raise
