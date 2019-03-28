@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 import rospy
+import threading
 from rosbridge_msgs.msg import ConnectedClient, ConnectedClients
 from std_msgs.msg import Int32
 
@@ -44,6 +45,7 @@ class ClientManager:
         # Publisher for connected clients
         self._conn_clients_pub = rospy.Publisher(
           'connected_clients', ConnectedClients, queue_size=10, latch=True)
+        self._lock = threading.Lock()
         self._client_count = 0
         self._clients = {}
         self.__publish()
@@ -55,12 +57,14 @@ class ClientManager:
         self._client_count_pub.publish(len(msg.clients))
 
     def add_client(self, client_id, ip_address):
-        client = ConnectedClient()
-        client.ip_address = ip_address
-        client.connection_time = rospy.Time.now()
-        self._clients[client_id] = client
-        self.__publish()
+        with self._lock:
+          client = ConnectedClient()
+          client.ip_address = ip_address
+          client.connection_time = rospy.Time.now()
+          self._clients[client_id] = client
+          self.__publish()
 
     def remove_client(self, client_id, ip_address):
-        self._clients.pop(client_id, None)
-        self.__publish()
+        with self._lock:
+          self._clients.pop(client_id, None)
+          self.__publish()
