@@ -41,7 +41,6 @@ class ClientManager:
         # Publisher for number of connected clients
         self._client_count_pub = rospy.Publisher(
           'client_count', Int32, queue_size=10, latch=True)
-        self._client_count_pub.publish(0)
         # Publisher for connected clients
         self._conn_clients_pub = rospy.Publisher(
           'connected_clients', ConnectedClients, queue_size=10, latch=True)
@@ -53,7 +52,7 @@ class ClientManager:
     def __publish(self):
         msg = ConnectedClients()
         msg.clients = list(self._clients.values())
-        self._conn_clients_pub.publish(msg.clients)
+        self._conn_clients_pub.publish(msg)
         self._client_count_pub.publish(len(msg.clients))
 
     def add_client(self, client_id, ip_address):
