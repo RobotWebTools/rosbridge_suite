@@ -2,6 +2,9 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.10.2 (2019-03-04)
 -------------------
 * Use Master.getTopicTypes() in /rosapi/topics to increase performance (`#381 <https://github.com/RobotWebTools/rosbridge_suite/issues/381>`_)
