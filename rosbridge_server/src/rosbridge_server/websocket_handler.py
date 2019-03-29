@@ -31,6 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import rospy
+import uuid
 
 from rosauth.srv import Authentication
 
@@ -69,7 +70,6 @@ def log_exceptions(f):
 class RosbridgeWebSocket(WebSocketHandler):
     client_id_seed = 0
     clients_connected = 0
-    client_count_pub = None
     authenticate = False
     use_compression = False
 
@@ -100,8 +100,9 @@ class RosbridgeWebSocket(WebSocketHandler):
             self._write_lock = threading.RLock()
             cls.client_id_seed += 1
             cls.clients_connected += 1
-            if cls.client_count_pub:
-                cls.client_count_pub.publish(cls.clients_connected)
+            self.client_id = uuid.uuid4()
+            if cls.client_manager:
+                cls.client_manager.add_client(self.client_id, self.request.remote_ip)
         except Exception as exc:
             rospy.logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
         rospy.loginfo("Client connected.  %d clients total.", cls.clients_connected)
@@ -145,8 +146,8 @@ class RosbridgeWebSocket(WebSocketHandler):
         cls = self.__class__
         cls.clients_connected -= 1
         self.protocol.finish()
-        if cls.client_count_pub:
-            cls.client_count_pub.publish(cls.clients_connected)
+        if cls.client_manager:
+            cls.client_manager.remove_client(self.client_id, self.request.remote_ip)
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
 
     def send_message(self, message):

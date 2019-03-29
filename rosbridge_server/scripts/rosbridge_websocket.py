@@ -41,7 +41,7 @@ from tornado.ioloop import IOLoop
 from tornado.ioloop import PeriodicCallback
 from tornado.web import Application
 
-from rosbridge_server import RosbridgeWebSocket
+from rosbridge_server import RosbridgeWebSocket, ClientManager
 
 from rosbridge_library.capabilities.advertise import Advertise
 from rosbridge_library.capabilities.publish import Publish
@@ -50,7 +50,6 @@ from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from rosbridge_library.capabilities.call_service import CallService
 
-from std_msgs.msg import Int32
 
 def shutdown_hook():
     IOLoop.instance().stop()
@@ -87,9 +86,8 @@ if __name__ == "__main__":
     RosbridgeWebSocket.authenticate = rospy.get_param('~authenticate', False)
     port = rospy.get_param('~port', 9090)
     address = rospy.get_param('~address', "")
-    # Publisher for number of connected clients
-    RosbridgeWebSocket.client_count_pub = rospy.Publisher('client_count', Int32, queue_size=10, latch=True)
-    RosbridgeWebSocket.client_count_pub.publish(0)
+
+    RosbridgeWebSocket.client_manager = ClientManager()
 
     # Get the glob strings and parse them as arrays.
     RosbridgeWebSocket.topics_glob = [
