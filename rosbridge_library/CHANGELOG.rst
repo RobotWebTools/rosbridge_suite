@@ -2,6 +2,11 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.0 (2019-03-29)
+-------------------
+* BSON can send Nan and Inf (`#391 <https://github.com/RobotWebTools/rosbridge_suite/issues/391>`_)
+* Contributors: akira_you
+
 0.10.2 (2019-03-04)
 -------------------
 * Fix typo (`#379 <https://github.com/RobotWebTools/rosbridge_suite/issues/379>`_)

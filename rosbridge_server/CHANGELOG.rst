@@ -2,6 +2,17 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.0 (2019-03-29)
+-------------------
+* Additional client information websocket (`#393 <https://github.com/RobotWebTools/rosbridge_suite/issues/393>`_)
+  * Add package rosbridge_msgs.
+  * rosbridge_server: Publish additional information about connected clients.
+  * rosbridge_server: Make ClientManager's add_client/remove_client methods thread safe.
+  * rosbridge_server: Rm unnecessary publishing.
+  * rosbridge_msgs: Cleanup/fix dependencies.
+* Handle BadYieldError in Tornado <4.5.0 (`#395 <https://github.com/RobotWebTools/rosbridge_suite/issues/395>`_)
+* Contributors: Hans-Joachim Krauch, Matt Vollrath
+
 0.10.2 (2019-03-04)
 -------------------
 * Log Tornado handler exceptions (`#386 <https://github.com/RobotWebTools/rosbridge_suite/issues/386>`_)
