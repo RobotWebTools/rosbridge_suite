@@ -4,17 +4,17 @@ from collections import namedtuple
 import fnmatch
 from rcl_interfaces.msg import ParameterType
 
-Globs = namedtuple('Globs', ['topics_glob', 'services_glob', 'params_glob'])
+Globs = namedtuple('Globs', ['topics', 'services', 'params'])
 
 
 def get_globs(node):
 
     def get_param(parameter_name):
         parameter_value = node.get_parameter(parameter_name).get_parameter_value()
-        if parameter_value.type == ParameterType.PARAMETER_NOT_SET:
-            parameter_value = ''
-        else:
+        if parameter_value.type == ParameterType.PARAMETER_STRING:
             parameter_value = parameter_value.string_value
+        else:
+            parameter_value = ''
         # strips array delimiters in case of an array style value
         return [
             element.strip().strip("'")
