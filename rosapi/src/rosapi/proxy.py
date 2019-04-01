@@ -56,21 +56,8 @@ def init(node):
 
 def get_topics(topics_glob, include_hidden=False):
     """ Returns a list of all the active topics in the ROS system """
-    try:
-        topic_names = get_topic_names(node=_node, include_hidden_topics=include_hidden)
-        return filter_globs(topics_glob, topic_names)
-    except:
-        return []
-
-
-def get_topics_types(topics, topics_glob):
-    try:
-        types = []
-        for i in topics:
-            types.append(get_topic_type(i, topics_glob))
-        return types
-    except:
-        return[]
+    topic_names = get_topic_names(node=_node, include_hidden_topics=include_hidden)
+    return filter_globs(topics_glob, topic_names)
 
 
 def get_topics_and_types(topics_glob, include_hidden=False):
@@ -78,23 +65,17 @@ def get_topics_and_types(topics_glob, include_hidden=False):
 
 
 def get_topics_for_type(topic_type, topics_glob, include_hidden=False):
-    try:
-        topic_names_and_types = get_topic_names_and_types(node=_node, include_hidden_topics=include_hidden)
-        # topic[0] has the topic name and topic[1] has the type wrapped in a list.
-        topics_for_type = [topic[0] for topic in topic_names_and_types if topic[1][0] == topic_type]
-        return filter_globs(topics_glob, topics_for_type)
-    except:
-        return []
+    topic_names_and_types = get_topic_names_and_types(node=_node, include_hidden_topics=include_hidden)
+    # topic[0] has the topic name and topic[1] has the type wrapped in a list.
+    topics_for_type = [topic[0] for topic in topic_names_and_types if topic[1][0] == topic_type]
+    return filter_globs(topics_glob, topics_for_type)
 
 
 def get_services(services_glob, include_hidden=False):
     """ Returns a list of all the services advertised in the ROS system """
     # Filter the list of services by whether they are public before returning.
-    try:
-        service_names = get_service_names(node=_node, include_hidden_services=include_hidden)
-        return filter_globs(services_glob, service_names)
-    except:
-        return []
+    service_names = get_service_names(node=_node, include_hidden_services=include_hidden)
+    return filter_globs(services_glob, service_names)
 
 
 def get_services_and_types(services_glob, include_hidden=False):
@@ -104,38 +85,29 @@ def get_services_and_types(services_glob, include_hidden=False):
 def get_services_for_type(service_type, services_glob, include_hidden=False):
     """ Returns a list of services as specific service type """
     # Filter the list of services by whether they are public before returning.
-    try:
-        services_names_and_types = get_service_names_and_types(node=_node, include_hidden_services=include_hidden)
-        # service[0] has the topic name and service[1] has the type wrapped in a list.
-        services_for_type = [service[0] for service in services_names_and_types if service[1][0] == service_type]
-        return filter_globs(services_glob, services_for_type)
-    except:
-        return []
+    services_names_and_types = get_service_names_and_types(node=_node, include_hidden_services=include_hidden)
+    # service[0] has the topic name and service[1] has the type wrapped in a list.
+    services_for_type = [service[0] for service in services_names_and_types if service[1][0] == service_type]
+    return filter_globs(services_glob, services_for_type)
 
 
 def get_publications_and_types(glob, getter_function, **include_hidden_publications):
     """ Generic getter function for both services and topics """
-    try:
-        publication_names_and_types = getter_function(node=_node, **include_hidden_publications)
-        # publication[0] has the publication name and publication[1] has the type wrapped in a list.
-        all_publications = [publication[0] for publication in publication_names_and_types]
-        filtered_publications = filter_globs(glob, all_publications)
-        filtered_publication_types = [publication[1][0] for publication
-                                      in publication_names_and_types
-                                      if publication[0] in filtered_publications]
-        return filtered_publications, filtered_publication_types
-    except:
-        return [], []
+    publication_names_and_types = getter_function(node=_node, **include_hidden_publications)
+    # publication[0] has the publication name and publication[1] has the type wrapped in a list.
+    all_publications = [publication[0] for publication in publication_names_and_types]
+    filtered_publications = filter_globs(glob, all_publications)
+    filtered_publication_types = [publication[1][0] for publication
+                                  in publication_names_and_types
+                                  if publication[0] in filtered_publications]
+    return filtered_publications, filtered_publication_types
 
 
 def get_nodes(include_hidden=False):
     """ Returns a list of all the nodes registered in the ROS system """
-    try:
-        node_names = get_node_names(node=_node, include_hidden_nodes=include_hidden)
-        full_names = [node_name.full_name for node_name in node_names]
-        return full_names
-    except:
-        return []
+    node_names = get_node_names(node=_node, include_hidden_nodes=include_hidden)
+    full_names = [node_name.full_name for node_name in node_names]
+    return full_names
 
 
 def get_node_info(node_name, include_hidden=False):
@@ -151,38 +123,26 @@ def get_node_info(node_name, include_hidden=False):
 
 def get_node_publications(node_name):
     """ Returns a list of topic names that are being published by the specified node """
-    try:
-        publishers = get_publisher_info(node=_node, remote_node_name=node_name)
-        return [publisher.name for publisher in publishers]
-    except:
-        return []
+    publishers = get_publisher_info(node=_node, remote_node_name=node_name)
+    return [publisher.name for publisher in publishers]
 
 
 def get_node_subscriptions(node_name):
     """ Returns a list of topic names that are being subscribed by the specified node """
-    try:
-        subscribers = get_subscriber_info(node=_node, remote_node_name=node_name)
-        return [subscriber.name for subscriber in subscribers]
-    except:
-        return []
+    subscribers = get_subscriber_info(node=_node, remote_node_name=node_name)
+    return [subscriber.name for subscriber in subscribers]
 
 
 def get_node_services(node_name):
     """ Returns a list of service names that are being hosted by the specified node """
-    try:
-        services = get_service_info(node=_node, remote_node_name=node_name)
-        return [service.name for service in services]
-    except:
-        return []
+    services = get_service_info(node=_node, remote_node_name=node_name)
+    return [service.name for service in services]
 
 
 def get_node_service_types(node_name):
     """ Returns a list of service types that are being hosted by the specified node """
-    try:
-        services = get_service_info(node=_node, remote_node_name=node_name)
-        return [service.types[0] for service in services]
-    except:
-        return []
+    services = get_service_info(node=_node, remote_node_name=node_name)
+    return [service.types[0] for service in services]
 
 
 def get_topic_type(topic, topics_glob):
@@ -191,7 +151,7 @@ def get_topic_type(topic, topics_glob):
     topics, types = get_topics_and_types(topics_glob)
     try:
         return types[topics.index(topic)]
-    except:
+    except ValueError as e:
         # Return empty string if the topic is not present.
         return ""
 
@@ -231,7 +191,7 @@ def get_service_type(service, services_glob):
     services, types = get_services_and_types(services_glob)
     try:
         return types[services.index(service)]
-    except:
+    except ValueError as e:
         # Return empty string if the service is not present.
         return ""
 
@@ -239,18 +199,15 @@ def get_service_type(service, services_glob):
 def get_channel_info(channel, channels_glob, getter_function, include_hidden=False):
     """ Returns a list of node names that are publishing / subscribing to the specified topic,
         or advertising a given service. """
-    try:
-        if any_match(str(channel), channels_glob):
-            channel_info_list = []
-            node_list = get_nodes(include_hidden)
-            for node in node_list:
-                channel_info = getter_function(node)
-                if channel in channel_info:
-                    channel_info_list.append(node)
-            return channel_info_list
-        else:
-            return []
-    except:
+    if any_match(str(channel), channels_glob):
+        channel_info_list = []
+        node_list = get_nodes(include_hidden)
+        for node in node_list:
+            channel_info = getter_function(node)
+            if channel in channel_info:
+                channel_info_list.append(node)
+        return channel_info_list
+    else:
         return []
 
 
