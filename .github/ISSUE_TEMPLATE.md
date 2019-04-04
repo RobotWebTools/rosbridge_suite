@@ -1,4 +1,5 @@
 <!-- If you have a question about how to use rosbridge, please ask at https://answers.ros.org/ -->
+<!-- For solutions to common problems, see TROUBLESHOOTING.md -->
 
 
 ## Expected Behavior
