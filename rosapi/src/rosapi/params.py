@@ -119,7 +119,7 @@ def get_param(node_name, name, default, params_glob):
         try:
             default = loads(default)
         except ValueError:
-            pass    # Keep default without modifications.
+            pass  # Keep default without modifications.
 
     node_name = get_absolute_node_name(node_name)
     with param_server_lock:
@@ -183,10 +183,9 @@ def get_param_names(node_name, params_glob):
     with param_server_lock:
         if params_glob:
             # If there is a parameter glob, filter by it.
-            return list(
-                   filter(
-                   lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob),
-                   _get_param_names(node_name)))
+            return list(filter(
+                lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob),
+                _get_param_names(node_name)))
         else:
             # If there is no parameter glob, don't filter.
             return _get_param_names(node_name)
