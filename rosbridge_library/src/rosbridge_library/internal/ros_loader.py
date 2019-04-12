@@ -46,12 +46,10 @@ Methods typically return the requested class or instance, or None if not found
 """
 
 # Variable containing the loaded classes
-_loaded_modules = []
 _loaded_msgs = {}
 _loaded_srvs = {}
 _msgs_lock = Lock()
 _srvs_lock = Lock()
-_manifest_lock = Lock()
 
 
 class InvalidTypeStringException(Exception):
@@ -180,13 +178,7 @@ def _load_class(modname, subname, classname):
 
     Returns the loaded module, or None on failure """
 
-    try:
-        with _manifest_lock:
-            # roslib maintains a cache of loaded manifests, so no need to duplicate
-            _load_manifest(modname)
-    except Exception as exc:
-        raise InvalidPackageException(modname, exc)
-
+    # This assumes the module is already in the path.
     try:
         pypkg = importlib.import_module('%s.%s' % (modname, subname))
     except Exception as exc:
@@ -196,27 +188,6 @@ def _load_class(modname, subname, classname):
         return getattr(pypkg, classname)
     except Exception as exc:
         raise InvalidClassException(modname, subname, classname, exc)
-
-
-def _load_manifest(modname):
-    """
-    Simplified version of roslib's load_manifest.
-
-    Updates system path to include the path of a given package.
-    """
-    global _loaded_modules
-
-    if modname in _loaded_modules:
-        return
-
-    prefix_path = get_prefix_path(modname)
-    package_path = os.path.join(prefix_path, 'lib', 'python3.{}'.format(sys.version_info.minor), 'site-packages')
-    if package_path not in sys.path:
-        sys.path = package_path + sys.path
-
-    # Update cache for the next time.
-    _loaded_modules.append(modname)
-    return
 
 
 def _splittype(typestring):
