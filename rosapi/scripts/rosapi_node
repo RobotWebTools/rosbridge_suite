@@ -68,6 +68,7 @@ class Rosapi(Node):
         self.create_service(ServiceNode, '/rosapi/service_node', self.get_service_node)
         self.create_service(MessageDetails, '/rosapi/message_details', self.get_message_details)
         self.create_service(ServiceRequestDetails, '/rosapi/service_request_details', self.get_service_request_details)
+        self.create_service(ServiceResponseDetails, '/rosapi/service_response_details', self.get_service_response_details)
         self.create_service(SetParam, '/rosapi/set_param', self.set_param)
         self.create_service(GetParam, '/rosapi/get_param', self.get_param)
         self.create_service(HasParam, '/rosapi/has_param', self.has_param)
