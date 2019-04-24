@@ -281,12 +281,12 @@ class PublisherManager():
              queue_size=queue_size)
         elif latch and self._publishers[topic].latched_client_id != client_id:
             logwarn("Client ID %s attempted to register topic [%s] as latched " +
-                    "but this topic was previously registered." % (client_id, topic))
+                    "but this topic was previously registered.", client_id, topic)
             logwarn("Only a single registered latched publisher is supported at the time")
         elif not latch and self._publishers[topic].latched_client_id:
             logwarn("New non-latched publisher registration for topic [%s] which is " +
                     "already registered as latched. but this topic was previously " +
-                    "registered." % topic)
+                    "registered.", topic)
             logwarn("Only a single registered latched publisher is supported at the time")
 
         if msg_type is not None:
