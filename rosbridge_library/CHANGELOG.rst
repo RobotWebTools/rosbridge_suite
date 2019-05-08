@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.1 (2019-05-08)
+-------------------
 * fixed logwarn msg formatting in publishers (`#398 <https://github.com/RobotWebTools/rosbridge_suite/issues/398>`_)
 * Contributors: Gautham P Das
 
