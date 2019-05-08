@@ -2,6 +2,11 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fixed logwarn msg formatting in publishers (`#398 <https://github.com/RobotWebTools/rosbridge_suite/issues/398>`_)
+* Contributors: Gautham P Das
+
 0.11.0 (2019-03-29)
 -------------------
 * BSON can send Nan and Inf (`#391 <https://github.com/RobotWebTools/rosbridge_suite/issues/391>`_)
