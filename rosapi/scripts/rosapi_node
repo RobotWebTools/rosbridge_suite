@@ -97,6 +97,7 @@ def get_action_servers(request):
     topics = proxy.get_topics(rosapi.glob_helper.topics_glob)
     action_servers = proxy.filter_action_servers(topics)
     return GetActionServersResponse(action_servers)
+    
 def get_topic_type(request):
     """ Called by the rosapi/TopicType service.  Given the name of a topic, returns the name of the type of that topic.
     Request class has one field, 'topic', which is a string value (the name of the topic)
@@ -182,6 +183,8 @@ def dict_to_typedef(typedefdict):
     typedef.fieldtypes = typedefdict["fieldtypes"]
     typedef.fieldarraylen = typedefdict["fieldarraylen"]
     typedef.examples = typedefdict["examples"]
+    typedef.constnames = typedefdict["constnames"]
+    typedef.constvalues = typedefdict["constvalues"]
     return typedef
 
 if __name__ == '__main__':
