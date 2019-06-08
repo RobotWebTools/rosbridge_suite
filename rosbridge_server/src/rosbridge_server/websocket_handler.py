@@ -167,7 +167,8 @@ class RosbridgeWebSocket(WebSocketHandler):
         # Use a try block because the log decorator doesn't cooperate with @coroutine.
         try:
             with self._write_lock:
-                yield self.write_message(message, binary)
+                future_handle = self.write_message(message, binary)
+            yield future_handle
         except WebSocketClosedError:
             rospy.logwarn('WebSocketClosedError: Tried to write to a closed websocket')
             raise
