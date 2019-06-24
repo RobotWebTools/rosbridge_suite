@@ -79,6 +79,11 @@ if __name__ == "__main__":
     if RosbridgeWebSocket.max_message_size == "None":
         RosbridgeWebSocket.max_message_size = None
 
+    # get tornado application parameters
+    tornado_settings = {}
+    tornado_settings['websocket_ping_interval'] = float(rospy.get_param('~websocket_ping_interval', 0))
+    tornado_settings['websocket_ping_timeout'] = float(rospy.get_param('~websocket_ping_timeout', 30))
+
     # SSL options
     certfile = rospy.get_param('~certfile', None)
     keyfile = rospy.get_param('~keyfile', None)
@@ -202,6 +207,22 @@ if __name__ == "__main__":
     if ("--bson_only_mode" in sys.argv) or bson_only_mode:
         RosbridgeWebSocket.bson_only_mode = bson_only_mode
 
+    if "--websocket_ping_interval" in sys.argv:
+        idx = sys.argv.index("--websocket_ping_interval") + 1
+        if idx < len(sys.argv):
+            tornado_settings['websocket_ping_interval'] = float(sys.argv[idx])
+        else:
+            print("--websocket_ping_interval argument provided without a value.")
+            sys.exit(-1)
+
+    if "--websocket_ping_timeout" in sys.argv:
+        idx = sys.argv.index("--websocket_ping_timeout") + 1
+        if idx < len(sys.argv):
+            tornado_settings['websocket_ping_timeout'] = float(sys.argv[idx])
+        else:
+            print("--websocket_ping_timeout argument provided without a value.")
+            sys.exit(-1)
+
     # To be able to access the list of topics and services, you must be able to access the rosapi services.
     if RosbridgeWebSocket.services_glob:
         RosbridgeWebSocket.services_glob.append("/rosapi/*")
@@ -217,7 +238,7 @@ if __name__ == "__main__":
     # Done with parameter handling                   #
     ##################################################
 
-    application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)])
+    application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)], **tornado_settings)
 
     connected = False
     while not connected and not rospy.is_shutdown():
