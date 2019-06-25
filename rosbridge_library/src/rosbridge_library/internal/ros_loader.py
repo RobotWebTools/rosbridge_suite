@@ -1,4 +1,3 @@
-import time
 #!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
@@ -32,9 +31,11 @@ import time
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import roslib
-import rospy
+from ros2pkg.api import get_prefix_path
 
+import importlib
+import os
+import sys
 from threading import Lock
 
 """ ros_loader contains methods for dynamically loading ROS message classes at
@@ -49,7 +50,6 @@ _loaded_msgs = {}
 _loaded_srvs = {}
 _msgs_lock = Lock()
 _srvs_lock = Lock()
-_manifest_lock = Lock()
 
 
 class InvalidTypeStringException(Exception):
@@ -111,12 +111,12 @@ def get_service_instance(typestring):
 
 def get_service_request_instance(typestring):
     cls = get_service_class(typestring)
-    return cls._request_class()
+    return cls.Request()
 
 
 def get_service_response_instance(typestring):
     cls = get_service_class(typestring)
-    return cls._response_class()
+    return cls.Response()
 
 
 def _get_msg_class(typestring):
@@ -177,22 +177,15 @@ def _load_class(modname, subname, classname):
     more expressive exceptions.
 
     Returns the loaded module, or None on failure """
-    global loaded_modules
 
+    # This assumes the module is already in the path.
     try:
-        with _manifest_lock:
-            # roslib maintains a cache of loaded manifests, so no need to duplicate
-            roslib.launcher.load_manifest(modname)
-    except Exception as exc:
-        raise InvalidPackageException(modname, exc)
-
-    try:
-        pypkg = __import__('%s.%s' % (modname, subname))
+        pypkg = importlib.import_module('%s.%s' % (modname, subname))
     except Exception as exc:
         raise InvalidModuleException(modname, subname, exc)
 
     try:
-        return getattr(getattr(pypkg, subname), classname)
+        return getattr(pypkg, classname)
     except Exception as exc:
         raise InvalidClassException(modname, subname, classname, exc)
 
