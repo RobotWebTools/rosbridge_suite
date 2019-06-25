@@ -1,2 +1,2 @@
 string ip_address
-time connection_time
+builtin_interfaces/Time connection_time

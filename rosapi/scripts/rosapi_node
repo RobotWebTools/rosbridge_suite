@@ -44,15 +44,20 @@ from rosapi.msg import *
 
 class Rosapi(Node):
 
+    NAME = 'rosapi'
+
     def __init__(self):
-        super().__init__('rosapi')
+        super().__init__(self.NAME)
+        self.declare_parameter('topics_glob', '[*]')
+        self.declare_parameter('services_glob', '[*]')
+        self.declare_parameter('params_glob', '[*]')
         self.globs = self.get_globs()
         self.register_services()
 
     # Initialises the ROS node
     def register_services(self):
         proxy.init(self)
-        params.init()
+        params.init(self.NAME)
         self.create_service(Topics, '/rosapi/topics', self.get_topics)
         self.create_service(TopicsForType, '/rosapi/topics_for_type', self.get_topics_for_type)
         self.create_service(Services, '/rosapi/services', self.get_services)
@@ -180,15 +185,27 @@ class Rosapi(Node):
         return response
 
     def set_param(self, request, response):
-        params.set_param(request.node_name, request.name, request.value, self.globs.params)
+        try:
+            node_name, param_name = self._get_node_and_param_name(request.name)
+            params.set_param(node_name, param_name, request.value, self.globs.params)
+        except ValueError:
+            self._print_malformed_param_name_warning(request.name)
         return response
 
     def get_param(self, request, response):
-        response.value = params.get_param(request.node_name, request.name, request.default_value, self.globs.params)
+        try:
+            node_name, param_name = self._get_node_and_param_name(request.name)
+            response.value = params.get_param(node_name, param_name, request.default_value, self.globs.params)
+        except ValueError:
+            self._print_malformed_param_name_warning(request.name)
         return response
 
     def has_param(self, request, response):
-        response.exists = params.has_param(request.node_name, request.name, self.globs.params)
+        try:
+            node_name, param_name = self._get_node_and_param_name(request.name)
+            response.exists = params.has_param(node_name, param_name, self.globs.params)
+        except ValueError:
+            self._print_malformed_param_name_warning(request.name)
         return response
 
     def delete_param(self, request, response):
@@ -196,13 +213,18 @@ class Rosapi(Node):
         return response
 
     def get_param_names(self, request, response):
-        response.names = params.get_param_names(request.node_name, self.globs.params)
+        response.names = params.get_param_names(self.globs.params)
         return response
 
     def get_time(self, request, response):
         response.time = Clock(clock_type=ClockType.ROS_TIME).now().to_msg()
         return response
 
+    def _get_node_and_param_name(self, param):
+        return tuple(param.split(':'))
+
+    def _print_malformed_param_name_warning(self, param_name):
+        self.get_logger().warn('Malformed parameter name: {}; expecting <node_name>:<param_name>'.format(param_name))
 
 # TODO(@jubeira): make all of these methods of the node and port them.
 

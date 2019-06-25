@@ -30,20 +30,27 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-import rospy
 import threading
+
+from rclpy.clock import ROSClock
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy
+
 from rosbridge_msgs.msg import ConnectedClient, ConnectedClients
 from std_msgs.msg import Int32
 
 
 class ClientManager:
-    def __init__(self):
+    def __init__(self, node_handle):
+        qos = QoSProfile(depth=10,
+            durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL)
+
         # Publisher for number of connected clients
-        self._client_count_pub = rospy.Publisher(
-          'client_count', Int32, queue_size=10, latch=True)
+        self._client_count_pub = node_handle.create_publisher(
+            Int32, 'client_count', qos_profile=qos)
         # Publisher for connected clients
-        self._conn_clients_pub = rospy.Publisher(
-          'connected_clients', ConnectedClients, queue_size=10, latch=True)
+        self._conn_clients_pub = node_handle.create_publisher(
+            ConnectedClients, 'connected_clients', qos_profile=qos)
+
         self._lock = threading.Lock()
         self._client_count = 0
         self._clients = {}
@@ -53,13 +60,13 @@ class ClientManager:
         msg = ConnectedClients()
         msg.clients = list(self._clients.values())
         self._conn_clients_pub.publish(msg)
-        self._client_count_pub.publish(len(msg.clients))
+        self._client_count_pub.publish(Int32(data=len(msg.clients)))
 
     def add_client(self, client_id, ip_address):
         with self._lock:
             client = ConnectedClient()
             client.ip_address = ip_address
-            client.connection_time = rospy.Time.now()
+            client.connection_time = ROSClock().now().to_msg()
             self._clients[client_id] = client
             self.__publish()
 

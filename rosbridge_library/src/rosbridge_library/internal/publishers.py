@@ -34,86 +34,11 @@
 from time import time
 from copy import copy
 from threading import Lock, Timer
-from rospy import Publisher, SubscribeListener
-from rospy import logwarn
-from rostopic import get_topic_type
+from rclpy.duration import Duration
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 from rosbridge_library.internal import ros_loader, message_conversion
+from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.topics import TopicNotEstablishedException, TypeConflictException
-
-
-class PublisherConsistencyListener(SubscribeListener):
-    """ This class is used to solve the problem that sometimes we create a
-    publisher and then immediately publish a message, before the subscribers
-    have set up their connections.
-
-    Call attach() to attach the listener to a publisher.  It sets up a buffer
-    of outgoing messages, then when a new connection occurs, sends the messages
-    in the buffer.
-
-    Call detach() to detach the listener from the publisher and restore the
-    original publish methods.
-
-    After some particular timeout (default to 1 second), the listener stops
-    buffering messages as it is assumed by this point all subscribers will have
-    successfully set up their connections."""
-
-    timeout = 1  # Timeout in seconds to wait for new subscribers
-    attached = False
-
-    def attach(self, publisher):
-        """ Overrides the publisher's publish method, and attaches a subscribe
-        listener to the publisher, effectively routing incoming connections
-        and outgoing publish requests through this class instance """
-        # Do the attaching
-        self.publisher = publisher
-        publisher.impl.add_subscriber_listener(self)
-        self.publish = publisher.publish
-        publisher.publish = self.publish_override
-
-        # Set state variables
-        self.lock = Lock()
-        self.established_time = time()
-        self.msg_buffer = []
-        self.attached = True
-
-    def detach(self):
-        """ Restores the publisher's original publish method and unhooks the
-        subscribe listeners, effectively finishing with this object """
-        self.publisher.publish = self.publish
-        if self in self.publisher.impl.subscriber_listeners:
-            self.publisher.impl.subscriber_listeners.remove(self)
-        self.attached = False
-
-    def peer_subscribe(self, topic_name, topic_publish, peer_publish):
-        """ Called whenever there's a new subscription.
-
-        If we're still inside the subscription setup window, then we publish
-        any buffered messages to the peer.
-
-        We also check if we're timed out, but if we are we don't detach (due
-        to threading complications), we just don't propagate buffered messages
-        """
-        if not self.timed_out():
-            self.lock.acquire()
-            msgs = copy(self.msg_buffer)
-            self.lock.release()
-            for msg in msgs:
-                peer_publish(msg)
-
-    def timed_out(self):
-        """ Checks to see how much time has elapsed since the publisher was
-        created """
-        return time() - self.established_time > self.timeout
-
-    def publish_override(self, message):
-        """ The publisher's publish method is replaced with this publish method
-        which checks for timeout and if we haven't timed out, buffers outgoing
-        messages in preparation for new subscriptions """
-        if not self.timed_out():
-            self.lock.acquire()
-            self.msg_buffer.append(message)
-            self.lock.release()
-        self.publish(message)
 
 
 class MultiPublisher():
@@ -122,11 +47,12 @@ class MultiPublisher():
     Provides an API to publish messages and register clients that are using
     this publisher """
 
-    def __init__(self, topic, msg_type=None, latched_client_id=None, queue_size=100):
+    def __init__(self, topic, node_handle, msg_type=None, latched_client_id=None, queue_size=100):
         """ Register a publisher on the specified topic.
 
         Keyword arguments:
         topic    -- the name of the topic to register the publisher to
+        node_handle -- Handle to a rclpy node to create the publisher.
         msg_type -- (optional) the type to register the publisher as.  If not
         provided, an attempt will be made to infer the topic type
         latch    -- (optional) if a client requested this publisher to be latched,
@@ -142,11 +68,18 @@ class MultiPublisher():
 
         """
         # First check to see if the topic is already established
-        topic_type = get_topic_type(topic)[0]
+        topics_names_and_types = dict(node_handle.get_topic_names_and_types())
+        topic_type = topics_names_and_types.get(topic)
 
         # If it's not established and no type was specified, exception
         if msg_type is None and topic_type is None:
             raise TopicNotEstablishedException(topic)
+
+        # topic_type is a list of types or None at this point; only one type is supported.
+        if topic_type is not None:
+            if len(topic_type) > 1:
+                node_handle.get_logger().warning('More than one topic type detected: {}'.format(topic_type))
+            topic_type = topic_type[0]
 
         # Use the established topic type if none was specified
         if msg_type is None:
@@ -156,21 +89,34 @@ class MultiPublisher():
         msg_class = ros_loader.get_message_class(msg_type)
 
         # Make sure the specified msg type and established msg type are same
-        if topic_type is not None and topic_type != msg_class._type:
-            raise TypeConflictException(topic, topic_type, msg_class._type)
+        msg_type_string = msg_class_type_repr(msg_class)
+        if topic_type is not None and topic_type != msg_type_string:
+            raise TypeConflictException(topic, topic_type, msg_type_string)
 
         # Create the publisher and associated member variables
         self.clients = {}
         self.latched_client_id = latched_client_id
         self.topic = topic
+        self.node_handle = node_handle
         self.msg_class = msg_class
-        self.publisher = Publisher(topic, msg_class, latch=(latched_client_id!=None), queue_size=queue_size)
-        self.listener = PublisherConsistencyListener()
-        self.listener.attach(self.publisher)
+        # Adding a lifespan solves the problem of late-joining subscribers
+        # without the need of a custom message publisher implementation.
+        publisher_qos = QoSProfile(
+            depth=queue_size, durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL)
+
+        # For latched clients, no lifespan has to be specified (i.e. latch forever).
+        # Otherwise we want to keep the messages for a second to prevent late-joining subscribers from
+        # missing messages.
+        if latched_client_id is None:
+            publisher_qos.lifespan=Duration(seconds=1)
+        else:
+            publisher_qos.depth = 1
+
+        self.publisher = node_handle.create_publisher(msg_class, topic, qos_profile=publisher_qos)
 
     def unregister(self):
         """ Unregisters the publisher and clears the clients """
-        self.publisher.unregister()
+        self.node_handle.destroy_publisher(self.publisher)
         self.clients.clear()
 
     def verify_type(self, msg_type):
@@ -187,7 +133,7 @@ class MultiPublisher():
         """
         if not ros_loader.get_message_class(msg_type) is self.msg_class:
             raise TypeConflictException(self.topic,
-                                        self.msg_class._type, msg_type)
+                                        msg_class_type_repr(self.msg_class), msg_type)
         return
 
     def publish(self, msg):
@@ -202,10 +148,6 @@ class MultiPublisher():
         publisher
 
         """
-        # First, check the publisher consistency listener to see if it's done
-        if self.listener.attached and self.listener.timed_out():
-            self.listener.detach()
-
         # Create a message instance
         inst = self.msg_class()
 
@@ -256,7 +198,7 @@ class PublisherManager():
         self.unregister_timers = {}
         self.unregister_timeout = 10.0
 
-    def register(self, client_id, topic, msg_type=None, latch=False, queue_size=100):
+    def register(self, client_id, topic, node_handle, msg_type=None, latch=False, queue_size=100):
         """ Register a publisher on the specified topic.
 
         Publishers are shared between clients, so a single MultiPublisher
@@ -265,6 +207,7 @@ class PublisherManager():
         Keyword arguments:
         client_id  -- the ID of the client making this request
         topic      -- the name of the topic to publish on
+        node_handle -- Handle to a rclpy node to create the publisher.
         msg_type   -- (optional) the type to publish
         latch      -- (optional) whether to make this publisher latched
         queue_size -- (optional) rospy publisher queue_size to use
@@ -277,17 +220,17 @@ class PublisherManager():
         """
         latched_client_id = client_id if latch else None
         if not topic in self._publishers:
-            self._publishers[topic] = MultiPublisher(topic, msg_type, latched_client_id,
-             queue_size=queue_size)
+            self._publishers[topic] = MultiPublisher(
+                topic, node_handle, msg_type=msg_type, latched_client_id=latched_client_id, queue_size=queue_size)
         elif latch and self._publishers[topic].latched_client_id != client_id:
-            logwarn("Client ID %s attempted to register topic [%s] as latched " +
-                    "but this topic was previously registered.", client_id, topic)
-            logwarn("Only a single registered latched publisher is supported at the time")
+            node_handle.get_logger().warn("Client ID %s attempted to register topic [%s] as latched " +
+                    "but this topic was previously registered." % (client_id, topic))
+            node_handle.get_logger().warn("Only a single registered latched publisher is supported at the time")
         elif not latch and self._publishers[topic].latched_client_id:
-            logwarn("New non-latched publisher registration for topic [%s] which is " +
+            node_handle.get_logger().warn("New non-latched publisher registration for topic [%s] which is " +
                     "already registered as latched. but this topic was previously " +
-                    "registered.", topic)
-            logwarn("Only a single registered latched publisher is supported at the time")
+                    "registered." % topic)
+            node_handle.get_logger().warn("Only a single registered latched publisher is supported at the time")
 
         if msg_type is not None:
             self._publishers[topic].verify_type(msg_type)
@@ -333,7 +276,7 @@ class PublisherManager():
         for topic in self._publishers.keys():
             self.unregister(client_id, topic)
 
-    def publish(self, client_id, topic, msg, latch=False, queue_size=100):
+    def publish(self, client_id, topic, msg, node_handle, latch=False, queue_size=100):
         """ Publish a message on the given topic.
 
         Tries to create a publisher on the topic if one does not already exist.
@@ -342,6 +285,7 @@ class PublisherManager():
         client_id -- the ID of the client making this request
         topic     -- the topic to publish the message on
         msg       -- a JSON-like dict of fields and values
+        node_handle -- Handle to a rclpy node to create the publisher.
         latch     -- (optional) whether to make this publisher latched
         queue_size -- (optional) rospy publisher queue_size to use
 
@@ -351,7 +295,7 @@ class PublisherManager():
         or if the provided msg does not map to the msg class of the publisher.
 
         """
-        self.register(client_id, topic, latch=latch, queue_size=queue_size)
+        self.register(client_id, topic, node_handle, latch=latch, queue_size=queue_size)
 
         self._publishers[topic].publish(msg)
 

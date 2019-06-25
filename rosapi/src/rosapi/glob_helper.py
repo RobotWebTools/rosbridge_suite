@@ -21,9 +21,9 @@ def get_globs(node):
             for element in parameter_value.strip('[').strip(']').split(',')
             if len(element.strip().strip("'")) > 0]
 
-    topics_glob = get_param('/topics_glob')
-    services_glob = get_param('/services_glob')
-    params_glob = get_param('/params_glob')
+    topics_glob = get_param('topics_glob')
+    services_glob = get_param('services_glob')
+    params_glob = get_param('params_glob')
     return Globs(topics_glob, services_glob, params_glob)
 
 

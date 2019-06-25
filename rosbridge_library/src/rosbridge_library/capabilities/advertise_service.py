@@ -7,7 +7,6 @@ from rosbridge_library.internal import message_conversion
 from rosbridge_library.capability import Capability
 from rosbridge_library.util import string_types
 
-import rospy
 
 class AdvertisedServiceHandler():
 
@@ -22,7 +21,7 @@ class AdvertisedServiceHandler():
         self.service_type = service_type
         self.protocol = protocol
         # setup the service
-        self.service_handle = rospy.Service(service_name, get_service_class(service_type), self.handle_request)
+        self.service_handle = protocol.node_handle.create_service(get_service_class(service_type), service_name, self.handle_request)
 
     def next_id(self):
         id = self.id_counter
@@ -69,7 +68,7 @@ class AdvertisedServiceHandler():
         """
         Signal the AdvertisedServiceHandler to shutdown
 
-        Using this, rather than just rospy.Service.shutdown(), allows us
+        Using this, rather than just node_handle.destroy_service, allows us
         time to stop any active service requests, ending their busy wait
         loops.
         """
@@ -78,6 +77,7 @@ class AdvertisedServiceHandler():
         start_time = time.clock()
         while time.clock() - start_time < timeout:
             time.sleep(0)
+        self.protocol.node_handle.destroy_service(self.service_handle)
 
 class AdvertiseService(Capability):
     services_glob = None
