@@ -2,6 +2,14 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* yield infinite lock (`#413 <https://github.com/RobotWebTools/rosbridge_suite/issues/413>`_)
+* Add settings for websocket timeout (`#410 <https://github.com/RobotWebTools/rosbridge_suite/issues/410>`_)
+  * Add settings for websocket timeout
+  * Error handling of StreamClosedError
+* Contributors: Aurélien Labate
+
 0.11.1 (2019-05-08)
 -------------------
 

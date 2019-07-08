@@ -2,6 +2,11 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* constnames and constvalues in typedef (`#412 <https://github.com/RobotWebTools/rosbridge_suite/issues/412>`_)
+* Contributors: Kad91
+
 0.11.1 (2019-05-08)
 -------------------
 
