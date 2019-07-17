@@ -33,7 +33,6 @@ matrix:
       dist: xenial
       install: pip install flake8
       script: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-      
   allow_failures:
     - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed UPSTREAM_WORKSPACE=debian OS_NAME=debian OS_CODE_NAME=stretch
     #- env: ROS_DISTRO="kinetic"   PRERELEASE=true PRERELEASE_DOWNSTREAM_DEPTH=0
