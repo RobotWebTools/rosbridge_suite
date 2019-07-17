@@ -67,7 +67,7 @@ def get_param(name, default, params_glob):
     # If the glob list is empty (i.e. false) or the parameter matches
     # one of the glob strings, continue to get the parameter.
     d = None
-    if default is not "":
+    if default != "":
         try:
             d = loads(default)
         except ValueError:
