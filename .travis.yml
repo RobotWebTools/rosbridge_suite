@@ -4,6 +4,8 @@
 services:
   - docker
 language: generic
+python:
+  - "2.7"
 compiler:
   - gcc
 
@@ -20,7 +22,6 @@ env:
 
 matrix:
   include:
-    - python: "2.7"
     - name: "Run flake8 tests on Python 2.7"
       language: python
       python: "2.7"
