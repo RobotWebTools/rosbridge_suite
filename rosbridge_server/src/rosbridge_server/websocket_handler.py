@@ -172,6 +172,7 @@ class RosbridgeWebSocket(WebSocketHandler):
 
                 # When closing, self.write_message() return None even if it's an undocument output.
                 # Consider it as WebSocketClosedError
+                # For tornado versions <4.3.0 self.write_message() does not have a return value
                 if future is None and tornado_version_info >= (4,3,0,0):
                     raise WebSocketClosedError
 
