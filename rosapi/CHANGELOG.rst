@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.3 (2019-08-07)
+-------------------
 * Travis CI: Look for Python syntax errors and undefined name (`#420 <https://github.com/RobotWebTools/rosbridge_suite/issues/420>`_)
   * Travis CI: Look for Python syntax errors and undefined name
   _It would be prudent to start running the tests in both 2 and 3._  https://github.com/RobotWebTools/rosbridge_suite/issues/401#issuecomment-512069249
