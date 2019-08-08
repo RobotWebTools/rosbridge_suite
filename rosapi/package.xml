@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>rosapi</name>
-  <version>0.11.2</version>
+  <version>0.11.3</version>
   <description>
     Provides service calls for getting ros meta-information, like list of
     topics, services, params, etc.

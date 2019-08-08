@@ -2,6 +2,17 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.3 (2019-08-07)
+-------------------
+* Travis CI: Look for Python syntax errors and undefined name (`#420 <https://github.com/RobotWebTools/rosbridge_suite/issues/420>`_)
+  * Travis CI: Look for Python syntax errors and undefined name
+  _It would be prudent to start running the tests in both 2 and 3._  https://github.com/RobotWebTools/rosbridge_suite/issues/401#issuecomment-512069249
+  * Add names to protect the guilty
+  * Five jobs, not six
+  * Identity is not the same thing as equality in Python
+  * Flake8 tests now pass on Python 2
+* Contributors: cclauss
+
 0.11.2 (2019-07-08)
 -------------------
 * constnames and constvalues in typedef (`#412 <https://github.com/RobotWebTools/rosbridge_suite/issues/412>`_)
