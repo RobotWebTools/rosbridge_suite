@@ -35,11 +35,13 @@ from __future__ import print_function
 import rospy
 import sys
 
-from socket import error
-
-from tornado.ioloop import IOLoop
-from tornado.ioloop import PeriodicCallback
-from tornado.web import Application
+from twisted.python import log
+from twisted.internet import reactor, ssl
+from twisted.internet.error import CannotListenError, ReactorNotRunning
+from autobahn.twisted.websocket import WebSocketServerFactory, listenWS
+from autobahn.websocket.compress import (PerMessageDeflateOffer,
+                                         PerMessageDeflateOfferAccept)
+log.startLogging(sys.stdout)
 
 from rosbridge_server import RosbridgeWebSocket, ClientManager
 
@@ -52,18 +54,21 @@ from rosbridge_library.capabilities.call_service import CallService
 
 
 def shutdown_hook():
-    IOLoop.instance().stop()
+    try:
+        reactor.stop()
+    except ReactorNotRunning:
+        pass
+
 
 if __name__ == "__main__":
     rospy.init_node("rosbridge_websocket")
-    rospy.on_shutdown(shutdown_hook)    # register shutdown hook to stop the server
 
     ##################################################
     # Parameter handling                             #
     ##################################################
     retry_startup_delay = rospy.get_param('~retry_startup_delay', 2.0)  # seconds
 
-    RosbridgeWebSocket.use_compression = rospy.get_param('~use_compression', False)
+    use_compression = rospy.get_param('~use_compression', False)
 
     # get RosbridgeProtocol parameters
     RosbridgeWebSocket.fragment_timeout = rospy.get_param('~fragment_timeout',
@@ -79,10 +84,8 @@ if __name__ == "__main__":
     if RosbridgeWebSocket.max_message_size == "None":
         RosbridgeWebSocket.max_message_size = None
 
-    # get tornado application parameters
-    tornado_settings = {}
-    tornado_settings['websocket_ping_interval'] = float(rospy.get_param('~websocket_ping_interval', 0))
-    tornado_settings['websocket_ping_timeout'] = float(rospy.get_param('~websocket_ping_timeout', 30))
+    ping_interval = float(rospy.get_param('~websocket_ping_interval', 0))
+    ping_timeout = float(rospy.get_param('~websocket_ping_timeout', 30))
 
     # SSL options
     certfile = rospy.get_param('~certfile', None)
@@ -90,7 +93,7 @@ if __name__ == "__main__":
     # if authentication should be used
     RosbridgeWebSocket.authenticate = rospy.get_param('~authenticate', False)
     port = rospy.get_param('~port', 9090)
-    address = rospy.get_param('~address', "")
+    address = rospy.get_param('~address', "0.0.0.0")
 
     RosbridgeWebSocket.client_manager = ClientManager()
 
@@ -210,7 +213,7 @@ if __name__ == "__main__":
     if "--websocket_ping_interval" in sys.argv:
         idx = sys.argv.index("--websocket_ping_interval") + 1
         if idx < len(sys.argv):
-            tornado_settings['websocket_ping_interval'] = float(sys.argv[idx])
+            ping_interval = float(sys.argv[idx])
         else:
             print("--websocket_ping_interval argument provided without a value.")
             sys.exit(-1)
@@ -218,7 +221,7 @@ if __name__ == "__main__":
     if "--websocket_ping_timeout" in sys.argv:
         idx = sys.argv.index("--websocket_ping_timeout") + 1
         if idx < len(sys.argv):
-            tornado_settings['websocket_ping_timeout'] = float(sys.argv[idx])
+            ping_timeout = float(sys.argv[idx])
         else:
             print("--websocket_ping_timeout argument provided without a value.")
             sys.exit(-1)
@@ -238,20 +241,39 @@ if __name__ == "__main__":
     # Done with parameter handling                   #
     ##################################################
 
-    application = Application([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)], **tornado_settings)
+    def handle_compression_offers(offers):
+        if not use_compression:
+            return
+        for offer in offers:
+            if isinstance(offer, PerMessageDeflateOffer):
+                return PerMessageDeflateOfferAccept(offer)
+
+    if certfile is not None and keyfile is not None:
+        protocol = 'wss'
+        context_factory = ssl.DefaultOpenSSLContextFactory(keyfile, certfile)
+    else:
+        protocol = 'ws'
+        context_factory = None
+
+    uri = '{}://{}:{}'.format(protocol, address, port)
+    factory = WebSocketServerFactory(uri)
+    factory.protocol = RosbridgeWebSocket
+    factory.setProtocolOptions(
+        perMessageCompressionAccept=handle_compression_offers,
+        autoPingInterval=ping_interval,
+        autoPingTimeout=ping_timeout,
+    )
 
     connected = False
     while not connected and not rospy.is_shutdown():
         try:
-            if certfile is not None and keyfile is not None:
-                application.listen(port, address, ssl_options={ "certfile": certfile, "keyfile": keyfile})
-            else:
-                application.listen(port, address)
-            rospy.loginfo("Rosbridge WebSocket server started on port %d", port)
+            listenWS(factory, context_factory)
+            rospy.loginfo('listening at {}'.format(uri))
             connected = True
-        except error as e:
+        except CannotListenError as e:
             rospy.logwarn("Unable to start server: " + str(e) +
                           " Retrying in " + str(retry_startup_delay) + "s.")
             rospy.sleep(retry_startup_delay)
 
-    IOLoop.instance().start()
+    rospy.on_shutdown(shutdown_hook)
+    reactor.run()
