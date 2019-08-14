@@ -34,7 +34,23 @@ import fnmatch
 from functools import partial
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.services import ServiceCaller
+from rosbridge_library.internal.pngcompression import encode as encode_png
+from rosbridge_library.internal.message_conversion import extract_values as extract_json_values
+from rosbridge_library.internal.cbor_conversion import extract_cbor_values
 from rosbridge_library.util import string_types
+
+try:
+    from cbor import dumps as encode_cbor
+except ImportError:
+    from rosbridge_library.util.cbor import dumps as encode_cbor
+
+try:
+    from ujson import dumps as encode_json
+except ImportError:
+    try:
+        from simplejson import dumps as encode_json
+    except ImportError:
+        from json import dumps as encode_json
 
 
 class CallService(Capability):
@@ -93,12 +109,21 @@ class CallService(Capability):
         outgoing_message = {
             "op": "service_response",
             "service": service,
-            "values": message,
             "result": True
         }
         if cid is not None:
             outgoing_message["id"] = cid
-        # TODO: fragmentation, compression
+
+        # TODO: fragmentation 
+        if compression=="png":
+            outgoing_message["values"] = message.get_json_values()
+            outgoing_message_dumped = encode_json(outgoing_message)
+            outgoing_message = {"op": "png", "data": encode_png(outgoing_message_dumped)}
+        elif compression=="cbor":
+            outgoing_message["values"] = message.get_cbor_values()
+            outgoing_message = bytearray(encode_cbor(outgoing_message))
+        else:
+            outgoing_message["values"] = message.get_json_values()
         self.protocol.send(outgoing_message)
 
     def _failure(self, cid, service, exc):

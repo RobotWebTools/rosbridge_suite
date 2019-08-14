@@ -37,6 +37,7 @@ from rosbridge_library.internal.ros_loader import get_service_class
 from rosbridge_library.internal.ros_loader import get_service_request_instance
 from rosbridge_library.internal.message_conversion import populate_instance
 from rosbridge_library.internal.message_conversion import extract_values
+from rosbridge_library.internal.outgoing_message import OutgoingMessage
 
 
 class InvalidServiceException(Exception):
@@ -113,7 +114,7 @@ def call_service(service, args=None):
     proxy = ServiceProxy(service, service_class)
     response = proxy.call(inst)
 
-    # Turn the response into JSON and pass to the callback
-    json_response = extract_values(response)
+    # Turn the response into OutgoingMessage wrapper and pass to the callback
+    outgoing = OutgoingMessage(response)
 
-    return json_response
+    return outgoing 
