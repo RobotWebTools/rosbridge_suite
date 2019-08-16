@@ -119,9 +119,6 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
     unregister_timeout = 10.0               # seconds
     bson_only_mode = False
 
-    def onConnect(self, request):
-        self.peer = request.peer
-
     def onOpen(self):
         cls = self.__class__
         parameters = {
@@ -141,6 +138,7 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
             cls.client_id_seed += 1
             cls.clients_connected += 1
             self.client_id = uuid.uuid4()
+            self.peer = self.transport.getPeer().host
             if cls.client_manager:
                 cls.client_manager.add_client(self.client_id, self.peer)
 
