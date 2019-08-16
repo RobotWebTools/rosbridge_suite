@@ -16,6 +16,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>python-autobahn</exec_depend>
+  <exec_depend>python-twisted-core</exec_depend>
   <exec_depend>rosbridge_library</exec_depend>
   <exec_depend>rosbridge_msgs</exec_depend>
   <exec_depend>rosapi</exec_depend>
