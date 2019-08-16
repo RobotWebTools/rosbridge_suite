@@ -88,7 +88,6 @@ class OutgoingValve:
         self._valve.set()
 
     def stopProducing(self):
-        rospy.loginfo('stop')
         self._finished = True
         self._valve.set()
 
