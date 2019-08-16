@@ -22,4 +22,5 @@
   <exec_depend>rosapi</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>rosauth</exec_depend>
+  <test_depend>rostest</test_depend>
 </package>

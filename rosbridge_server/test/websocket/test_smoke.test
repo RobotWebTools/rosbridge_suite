@@ -1,0 +1,8 @@
+<launch>
+  <arg name="port" value="22334" />
+  <env name="PORT" value="$(arg port)" />
+  <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket.py">
+    <param name="port" value="$(arg port)" />
+  </node>
+  <test test-name="test_smoke" pkg="rosbridge_server" type="test_smoke.py" />
+</launch>
