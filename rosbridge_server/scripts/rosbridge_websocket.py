@@ -57,7 +57,7 @@ def shutdown_hook():
     try:
         reactor.stop()
     except ReactorNotRunning:
-        pass
+        rospy.logwarn("Can't stop the reactor, it wasn't running")
 
 
 if __name__ == "__main__":
