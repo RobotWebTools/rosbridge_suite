@@ -68,7 +68,20 @@ def log_exceptions(f):
 
 @implementer(interfaces.IPushProducer)
 class OutgoingValve:
-    """Allows the Autobahn transport to pause outgoing messages from rosbridge."""
+    """Allows the Autobahn transport to pause outgoing messages from rosbridge.
+    
+    The purpose of this valve is to connect backpressure from the WebSocket client
+    back to the rosbridge protocol, which depends on backpressure for queueing.
+    Without this flow control, rosbridge will happily keep writing messages to
+    the WebSocket until the system runs out of memory.
+
+    This valve is closed and opened automatically by the Twisted TCP server.
+    In practice, Twisted should only close the valve when its userspace write buffer
+    is full and it should only open the valve when that buffer is empty.
+
+    When the valve is closed, the rosbridge protocol instance's outgoing writes
+    must block until the valve is opened.
+    """
     def __init__(self, proto):
         self._proto = proto
         self._valve = threading.Event()
