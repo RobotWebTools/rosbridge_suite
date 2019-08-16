@@ -122,7 +122,7 @@ if __name__ == "__main__":
     if "--address" in sys.argv:
         idx = sys.argv.index("--address")+1
         if idx < len(sys.argv):
-            address = int(sys.argv[idx])
+            address = str(sys.argv[idx])
         else:
             print("--address argument provided without a value.")
             sys.exit(-1)
