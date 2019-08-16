@@ -39,6 +39,7 @@ from twisted.python import log
 from twisted.internet import reactor, ssl
 from twisted.internet.error import CannotListenError, ReactorNotRunning
 from autobahn.twisted.websocket import WebSocketServerFactory, listenWS
+from autobahn.websocket.util import create_url
 from autobahn.websocket.compress import (PerMessageDeflateOffer,
                                          PerMessageDeflateOfferAccept)
 log.startLogging(sys.stdout)
@@ -249,13 +250,12 @@ if __name__ == "__main__":
                 return PerMessageDeflateOfferAccept(offer)
 
     if certfile is not None and keyfile is not None:
-        protocol = 'wss'
+        uri = create_url(address, port=port, isSecure=True)
         context_factory = ssl.DefaultOpenSSLContextFactory(keyfile, certfile)
     else:
-        protocol = 'ws'
+        uri = create_url(address, port=port, isSecure=False)
         context_factory = None
 
-    uri = '{}://{}:{}'.format(protocol, address, port)
     factory = WebSocketServerFactory(uri)
     factory.protocol = RosbridgeWebSocket
     factory.setProtocolOptions(
