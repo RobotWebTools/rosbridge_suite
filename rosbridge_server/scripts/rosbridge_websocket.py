@@ -238,6 +238,11 @@ if __name__ == "__main__":
     UnadvertiseService.services_glob = RosbridgeWebSocket.services_glob
     CallService.services_glob = RosbridgeWebSocket.services_glob
 
+    # Support the legacy "" address value.
+    # The socket library would interpret this as INADDR_ANY.
+    if not address:
+        address = '0.0.0.0'
+
     ##################################################
     # Done with parameter handling                   #
     ##################################################
