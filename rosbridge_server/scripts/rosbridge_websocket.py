@@ -268,7 +268,7 @@ if __name__ == "__main__":
     while not connected and not rospy.is_shutdown():
         try:
             listenWS(factory, context_factory)
-            rospy.loginfo('listening at {}'.format(uri))
+            rospy.loginfo('Rosbridge WebSocket server started at {}'.format(uri))
             connected = True
         except CannotListenError as e:
             rospy.logwarn("Unable to start server: " + str(e) +
