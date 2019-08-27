@@ -57,7 +57,11 @@ class Rosapi(Node):
     # Initialises the ROS node
     def register_services(self):
         proxy.init(self)
-        params.init(self.NAME)
+        if self.get_namespace() == '/':
+            full_name = self.get_namespace() + self.get_name()
+        else:
+            full_name = self.get_namespace() + '/' + self.get_name()
+        params.init(full_name)
         self.create_service(Topics, '/rosapi/topics', self.get_topics)
         self.create_service(TopicsForType, '/rosapi/topics_for_type', self.get_topics_for_type)
         self.create_service(Services, '/rosapi/services', self.get_services)
