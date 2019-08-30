@@ -10,7 +10,6 @@ import rospy
 from std_msgs.msg import String
 
 from twisted.internet import reactor
-from autobahn.websocket.util import create_url
 from autobahn.twisted.websocket import (WebSocketClientProtocol,
                                         WebSocketClientFactory)
 
