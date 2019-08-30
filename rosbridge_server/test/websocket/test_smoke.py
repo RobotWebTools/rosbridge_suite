@@ -52,8 +52,9 @@ class TestClientProtocol(WebSocketClientProtocol):
 
 class TestWebsocketSmoke(unittest.TestCase):
     def test_smoke(self):
-        port = int(os.environ.get('PORT'))
-        url = create_url('127.0.0.1', port=port, isSecure=False)
+        protocol = os.environ.get('PROTOCOL')
+        port = rospy.get_param('/rosbridge_websocket/actual_port')
+        url = protocol + '://127.0.0.1:' + str(port)
 
         factory = WebSocketClientFactory(url)
         factory.protocol = TestClientProtocol
@@ -95,6 +96,7 @@ NAME = 'test_websocket_smoke'
 if __name__ == '__main__':
     rospy.init_node(NAME)
 
-    rospy.sleep(3.0)  # server startup grace delay
+    while not rospy.is_shutdown() and not rospy.has_param('/rosbridge_websocket/actual_port'):
+        rospy.sleep(1.0)
 
     rostest.rosrun(PKG, NAME, TestWebsocketSmoke)

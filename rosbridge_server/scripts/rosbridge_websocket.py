@@ -45,6 +45,7 @@ log.startLogging(sys.stdout)
 
 from rosbridge_server import ClientManager
 from rosbridge_server.autobahn_websocket import RosbridgeWebSocket
+from rosbridge_server.util import get_ephemeral_port
 
 from rosbridge_library.capabilities.advertise import Advertise
 from rosbridge_library.capabilities.publish import Publish
@@ -260,6 +261,13 @@ if __name__ == "__main__":
     else:
         protocol = 'ws'
         context_factory = None
+
+    # For testing purposes, use an ephemeral port if port == 0.
+    if port == 0:
+        rospy.loginfo('Rosbridge WebSocket Picking an ephemeral port')
+        port = get_ephemeral_port()
+    # Write the actual port as a param for tests to read.
+    rospy.set_param('~actual_port', port)
 
     uri = '{}://{}:{}'.format(protocol, address, port)
     factory = WebSocketServerFactory(uri)
