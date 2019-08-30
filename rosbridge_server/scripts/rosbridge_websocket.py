@@ -43,7 +43,8 @@ from autobahn.websocket.compress import (PerMessageDeflateOffer,
                                          PerMessageDeflateOfferAccept)
 log.startLogging(sys.stdout)
 
-from rosbridge_server import RosbridgeWebSocket, ClientManager
+from rosbridge_server import ClientManager
+from rosbridge_server.autobahn_websocket import RosbridgeWebSocket
 
 from rosbridge_library.capabilities.advertise import Advertise
 from rosbridge_library.capabilities.publish import Publish
