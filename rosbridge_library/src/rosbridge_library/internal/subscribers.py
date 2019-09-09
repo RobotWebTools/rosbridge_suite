@@ -32,9 +32,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from threading import Lock
-from rospy import Subscriber, logerr
-from rostopic import get_topic_type
-from rosbridge_library.internal import ros_loader, message_conversion
+
+from rosbridge_library.internal import ros_loader
+from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.topics import TopicNotEstablishedException
 from rosbridge_library.internal.topics import TypeConflictException
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
@@ -43,7 +43,6 @@ from rosbridge_library.internal.outgoing_message import OutgoingMessage
 is shared between multiple clients
 """
 
-
 class MultiSubscriber():
     """ Handles multiple clients for a single subscriber.
 
@@ -51,11 +50,15 @@ class MultiSubscriber():
     callbacks being called in separate threads, must lock whenever modifying
     or accessing the subscribed clients. """
 
-    def __init__(self, topic, msg_type=None):
+    def __init__(self, topic, client_id, callback, node_handle, msg_type=None):
         """ Register a subscriber on the specified topic.
 
         Keyword arguments:
         topic    -- the name of the topic to register the subscriber on
+        client_id -- the ID of the client subscribing
+        callback  -- this client's callback, that will be called for incoming
+        messages
+        node_handle -- Handle to a rclpy node to create the publisher.
         msg_type -- (optional) the type to register the subscriber as.  If not
         provided, an attempt will be made to infer the topic type
 
@@ -69,11 +72,18 @@ class MultiSubscriber():
 
         """
         # First check to see if the topic is already established
-        topic_type = get_topic_type(topic)[0]
+        topics_names_and_types = dict(node_handle.get_topic_names_and_types())
+        topic_type = topics_names_and_types.get(topic)
 
         # If it's not established and no type was specified, exception
         if msg_type is None and topic_type is None:
             raise TopicNotEstablishedException(topic)
+
+        # topic_type is a list of types or None at this point; only one type is supported.
+        if topic_type is not None:
+            if len(topic_type) > 1:
+                node_handle.get_logger().warning('More than one topic type detected: {}'.format(topic_type))
+            topic_type = topic_type[0]
 
         # Use the established topic type if none was specified
         if msg_type is None:
@@ -83,18 +93,24 @@ class MultiSubscriber():
         msg_class = ros_loader.get_message_class(msg_type)
 
         # Make sure the specified msg type and established msg type are same
-        if topic_type is not None and topic_type != msg_class._type:
-            raise TypeConflictException(topic, topic_type, msg_class._type)
+        msg_type_string = msg_class_type_repr(msg_class)
+        if topic_type is not None and topic_type != msg_type_string:
+            raise TypeConflictException(topic, topic_type, msg_type_string)
 
         # Create the subscriber and associated member variables
-        self.subscriptions = {}
+        # Subscriptions is initialized with the current client to start with.
+        self.subscriptions = {client_id: callback}
         self.lock = Lock()
         self.topic = topic
         self.msg_class = msg_class
-        self.subscriber = Subscriber(topic, msg_class, self.callback)
+        self.node_handle = node_handle
+        # TODO(@jubeira): add support for other QoS.
+        self.subscriber = node_handle.create_subscription(msg_class, topic, self.callback, 10)
+        self.new_subscriber = None
+        self.new_subscriptions = {}
 
     def unregister(self):
-        self.subscriber.unregister()
+        self.node_handle.destroy_subscription(self.subscriber)
         with self.lock:
             self.subscriptions.clear()
 
@@ -112,7 +128,7 @@ class MultiSubscriber():
         """
         if not ros_loader.get_message_class(msg_type) is self.msg_class:
             raise TypeConflictException(self.topic,
-                                        self.msg_class._type, msg_type)
+                                        msg_class_type_repr(self.msg_class), msg_type)
         return
 
     def subscribe(self, client_id, callback):
@@ -125,11 +141,14 @@ class MultiSubscriber():
 
         """
         with self.lock:
-            self.subscriptions[client_id] = callback
-            # If the topic is latched, add_callback will immediately invoke
+            # If the topic is latched, adding a new subscriber will immediately invoke
             # the given callback.
-            self.subscriber.impl.add_callback(self.callback, [callback])
-            self.subscriber.impl.remove_callback(self.callback, [callback])
+            # In any case, the first message is handled using new_sub_callback,
+            # which adds the new callback to the subscriptions dictionary.
+            self.new_subscriptions.update({client_id: callback})
+            if self.new_subscriber is None:
+                self.new_subscriber = self.node_handle.create_subscription(
+                    self.msg_class, self.topic, self._new_sub_callback, 10)
 
     def unsubscribe(self, client_id):
         """ Unsubscribe the specified client from this subscriber
@@ -148,7 +167,7 @@ class MultiSubscriber():
             return ret
 
     def callback(self, msg, callbacks=None):
-        """ Callback for incoming messages on the rospy.Subscriber
+        """ Callback for incoming messages on the rclpy subscription.
 
         Passes the message to registered subscriber callbacks.
 
@@ -170,8 +189,26 @@ class MultiSubscriber():
                 callback(outgoing)
             except Exception as exc:
                 # Do nothing if one particular callback fails except log it
-                logerr("Exception calling subscribe callback: %s", exc)
+                self.node_handle.get_logger().error("Exception calling subscribe callback: {}".format(exc))
                 pass
+
+    def _new_sub_callback(self, msg):
+        """
+        Callbacks for new subscribers.
+
+        If the topic was latched, a new subscriber has to be added to receive
+        a new message and route it to the new subscriptor.
+
+        After the first message is routed, the new subscriber is deleted and
+        the subscriptions dictionary is updated with the newly incorporated
+        subscriptors.
+        """
+        with self.lock:
+            self.callback(msg, [self.new_subscriptions.values()])
+            self.subscriptions.update(self.new_subscriptions)
+            self.new_subscriptions = {}
+            self.node_handle.destroy_subscription(self.new_subscriber)
+            self.new_subscriber = None
 
 
 class SubscriberManager():
@@ -182,7 +219,7 @@ class SubscriberManager():
     def __init__(self):
         self._subscribers = {}
 
-    def subscribe(self, client_id, topic, callback, msg_type=None):
+    def subscribe(self, client_id, topic, callback, node_handle, msg_type=None):
         """ Subscribe to a topic
 
         Keyword arguments:
@@ -193,12 +230,13 @@ class SubscriberManager():
 
         """
         if not topic in self._subscribers:
-            self._subscribers[topic] = MultiSubscriber(topic, msg_type)
+            self._subscribers[topic] = MultiSubscriber(
+                topic, client_id, callback, node_handle, msg_type=msg_type)
+        else:
+            self._subscribers[topic].subscribe(client_id, callback)
 
         if msg_type is not None:
             self._subscribers[topic].verify_type(msg_type)
-
-        self._subscribers[topic].subscribe(client_id, callback)
 
     def unsubscribe(self, client_id, topic):
         """ Unsubscribe from a topic

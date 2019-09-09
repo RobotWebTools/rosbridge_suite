@@ -30,10 +30,11 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import rospy
 import uuid
 
-from rosauth.srv import Authentication
+from rclpy.time import Time
+# TODO(@jubeira): Re-add once rosauth is ported to ROS2.
+# from rosauth.srv import Authentication
 
 import sys
 import threading
@@ -49,11 +50,13 @@ from tornado.gen import coroutine, BadYieldError
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import json, bson
 
+from std_msgs.msg import Int32
+
 
 def _log_exception():
     """Log the most recent exception to ROS."""
     exc = traceback.format_exception(*sys.exc_info())
-    rospy.logerr(''.join(exc))
+    RosbridgeWebSocket.node_handle.get_logger().error(''.join(exc))
 
 
 def log_exceptions(f):
@@ -62,7 +65,7 @@ def log_exceptions(f):
     def wrapper(*args, **kwargs):
         try:
             return f(*args, **kwargs)
-        except:
+        except Exception:
             _log_exception()
             raise
     return wrapper
@@ -79,9 +82,11 @@ class RosbridgeWebSocket(WebSocketHandler):
     fragment_timeout = 600                  # seconds
     # protocol.py:
     delay_between_messages = 0              # seconds
-    max_message_size = None                 # bytes
+    max_message_size = 10000000             # bytes
     unregister_timeout = 10.0               # seconds
     bson_only_mode = False
+    node_handle = None
+
 
     @log_exceptions
     def open(self):
@@ -94,7 +99,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             "bson_only_mode": cls.bson_only_mode
         }
         try:
-            self.protocol = RosbridgeProtocol(cls.client_id_seed, parameters=parameters)
+            self.protocol = RosbridgeProtocol(cls.client_id_seed, cls.node_handle, parameters=parameters)
             self.protocol.outgoing = self.send_message
             self.set_nodelay(True)
             self.authenticated = False
@@ -105,10 +110,11 @@ class RosbridgeWebSocket(WebSocketHandler):
             if cls.client_manager:
                 cls.client_manager.add_client(self.client_id, self.request.remote_ip)
         except Exception as exc:
-            rospy.logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
-        rospy.loginfo("Client connected.  %d clients total.", cls.clients_connected)
+            cls.node_handle.get_logger().error("Unable to accept incoming connection.  Reason: {}".format(exc))
+
+        cls.node_handle.get_logger().info("Client connected. {} clients total.".format(cls.clients_connected))
         if cls.authenticate:
-            rospy.loginfo("Awaiting proper authentication...")
+            cls.node_handle.get_logger().info("Awaiting proper authentication...")
 
     @log_exceptions
     def on_message(self, message):
@@ -123,17 +129,35 @@ class RosbridgeWebSocket(WebSocketHandler):
 
                 if msg['op'] == 'auth':
                     # check the authorization information
-                    auth_srv = rospy.ServiceProxy('authenticate', Authentication)
-                    resp = auth_srv(msg['mac'], msg['client'], msg['dest'],
-                                                  msg['rand'], rospy.Time(msg['t']), msg['level'],
-                                                  rospy.Time(msg['end']))
-                    self.authenticated = resp.authenticated
+                    auth_srv_client = cls.node_handle.create_client(Authentication, 'authenticate')
+                    auth_srv_req = Authentication.Request()
+                    auth_srv_req.mac = msg['mac']
+                    auth_srv_req.client = msg['client']
+                    auth_srv_req.dest = msg['dest']
+                    auth_srv_req.rand = msg['rand']
+                    auth_srv_req.t = Time(seconds=msg['t']).to_msg()
+                    auth_srv_req.level = msg['level']
+                    auth_srv_req.end = Time(seconds=msg['end']).to_msg()
+
+                    while not auth_srv_client.wait_for_service(timeout_sec=1.0):
+                        cls.node_handle.get_logger().info('Authenticate service not available, waiting again...')
+
+                    future = auth_srv_client.call_async(auth_srv_req)
+                    rclpy.spin_until_future_complete(cls.node_handle, future)
+
+                    # Log error if service could not be called.
+                    if future.result() is not None:
+                        self.authenticated = future.result().authenticated
+                    else:
+                        self.authenticated = False
+                        cls.node_handle.get_logger.error('Authenticate service call failed')
+
                     if self.authenticated:
-                        rospy.loginfo("Client %d has authenticated.", self.protocol.client_id)
+                        cls.node_handle.get_logger().info("Client {} has authenticated.".format(self.protocol.client_id))
                         return
                 # if we are here, no valid authentication was given
-                rospy.logwarn("Client %d did not authenticate. Closing connection.",
-                              self.protocol.client_id)
+                cls.node_handle.get_logger().warn(
+                    "Client {} did not authenticate. Closing connection.".format(self.protocol.client_id))
                 self.close()
             except:
                 # proper error will be handled in the protocol class
@@ -149,7 +173,7 @@ class RosbridgeWebSocket(WebSocketHandler):
         self.protocol.finish()
         if cls.client_manager:
             cls.client_manager.remove_client(self.client_id, self.request.remote_ip)
-        rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
+        cls.node_handle.get_logger().info("Client disconnected. {} clients total.".format(cls.clients_connected))
 
     def send_message(self, message):
         if type(message) == bson.BSON:
@@ -178,10 +202,12 @@ class RosbridgeWebSocket(WebSocketHandler):
 
                 yield future
         except WebSocketClosedError:
-            rospy.logwarn_throttle(1, 'WebSocketClosedError: Tried to write to a closed websocket')
+            cls.node_handle.get_logger().warn('WebSocketClosedError: Tried to write to a closed websocket',
+                throttle_duration_sec=1.0)
             raise
         except StreamClosedError:
-            rospy.logwarn_throttle(1, 'StreamClosedError: Tried to write to a closed stream')
+            cls.node_handle.get_logger().warn('StreamClosedError: Tried to write to a closed stream',
+                throttle_duration_sec=1.0)
             raise
         except BadYieldError:
             # Tornado <4.5.0 doesn't like its own yield and raises BadYieldError.

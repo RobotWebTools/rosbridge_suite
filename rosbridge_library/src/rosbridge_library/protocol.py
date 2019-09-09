@@ -30,7 +30,6 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import rospy
 import time
 
 from rosbridge_library.internal.exceptions import InvalidArgumentException
@@ -92,16 +91,18 @@ class Protocol:
 
     parameters = None
 
-    def __init__(self, client_id):
+    def __init__(self, client_id, node_handle):
         """ Keyword arguments:
         client_id -- a unique ID for this client to take.  Uniqueness is
         important otherwise there will be conflicts between multiple clients
         with shared resources
+        node_handle -- a ROS2 node handle.
 
         """
         self.client_id = client_id
         self.capabilities = []
         self.operations = {}
+        self.node_handle = node_handle
 
         if self.parameters:
             self.fragment_size = self.parameters["max_message_size"]
@@ -383,10 +384,10 @@ class Protocol:
             stdout_formatted_msg = "[Client %s] %s" % (self.client_id, message)
 
         if level == "error" or level == "err":
-            rospy.logerr(stdout_formatted_msg)
+            self.node_handle.get_logger().error(stdout_formatted_msg)
         elif level == "warning" or level == "warn":
-            rospy.logwarn(stdout_formatted_msg)
+            self.node_handle.get_logger().warn(stdout_formatted_msg)
         elif level == "info" or level == "information":
-            rospy.loginfo(stdout_formatted_msg)
+            self.node_handle.get_logger().info(stdout_formatted_msg)
         else:
-            rospy.logdebug(stdout_formatted_msg)
+            self.node_handle.get_logger().debug(stdout_formatted_msg)

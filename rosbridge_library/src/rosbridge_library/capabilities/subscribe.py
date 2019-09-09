@@ -36,7 +36,6 @@ PYTHON2 = sys.version_info < (3, 0)
 import fnmatch
 from threading import Lock
 from functools import partial
-from rospy import loginfo
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
@@ -63,7 +62,7 @@ class Subscription():
 
     Chooses the most appropriate settings to send messages """
 
-    def __init__(self, client_id, topic, publish):
+    def __init__(self, client_id, topic, publish, node_handle):
         """ Create a subscription for the specified client on the specified
         topic, with callback publish
 
@@ -71,11 +70,13 @@ class Subscription():
         client_id -- the ID of the client making this subscription
         topic     -- the name of the topic to subscribe to
         publish   -- the callback function for incoming messages
+        node_handle -- Handle to a rclpy node to create the publisher.
 
         """
         self.client_id = client_id
         self.topic = topic
         self.publish = publish
+        self.node_handle = node_handle
 
         self.clients = {}
 
@@ -124,7 +125,8 @@ class Subscription():
         self.update_params()
 
         # Subscribe with the manager. This will propagate any exceptions
-        manager.subscribe(self.client_id, self.topic, self.on_msg, msg_type)
+        manager.subscribe(
+            self.client_id, self.topic, self.on_msg, self.node_handle, msg_type=msg_type)
 
     def unsubscribe(self, sid=None):
         """ Unsubscribe this particular client's subscription
@@ -239,7 +241,7 @@ class Subscribe(Capability):
         if not topic in self._subscriptions:
             client_id = self.protocol.client_id
             cb = partial(self.publish, topic)
-            self._subscriptions[topic] = Subscription(client_id, topic, cb)
+            self._subscriptions[topic] = Subscription(client_id, topic, cb, self.protocol.node_handle)
 
         # Register the subscriber
         subscribe_args = {

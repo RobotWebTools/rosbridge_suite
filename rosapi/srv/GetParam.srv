@@ -1,4 +1,3 @@
-string node_name
 string name
 string default_value
 ---

@@ -40,26 +40,30 @@ import rclpy
 from ros2node.api import get_absolute_node_name
 from ros2param.api import call_get_parameters, call_set_parameters, get_parameter_value
 
+from rosapi.proxy import get_nodes
+
 """ Methods to interact with the param server.  Values have to be passed
 as JSON in order to facilitate dynamically typed SRV messages """
 
 # Ensure thread safety for setting / getting parameters.
 param_server_lock = threading.RLock()
 _node = None
+_parent_node_name = ''
 
 _parameter_type_mapping = ['', 'bool_value', 'integer_value', 'double_value', 'string_value', 'byte_array_value'
                            'bool_array_value', 'integer_array_value', 'double_array_value', 'string_array_value']
 
 
-def init():
+def init(parent_node_name):
     """
     Initializes params module with a rclpy.node.Node for further use.
     This function has to be called before any other for the module to work.
     """
-    global _node
+    global _node, _parent_node_name
     # TODO(@jubeira): remove this node; use rosapi node with MultiThreadedExecutor or
     # async / await to prevent the service calls from blocking.
     _node = rclpy.create_node('rosapi_params')
+    _parent_node_name = get_absolute_node_name(parent_node_name)
 
 
 def set_param(node_name, name, value, params_glob):
@@ -175,9 +179,17 @@ def delete_param(node_name, name, params_glob):
             _set_param(node_name, name, None, ParameterType.PARAMETER_NOT_SET)
 
 
-def get_param_names(node_name, params_glob):
-    """ Gets list of parameter names for a given node """
+def get_param_names(params_glob):
+    params = []
+    nodes = get_nodes()
 
+    for node in nodes:
+        params.extend(get_node_param_names(node, params_glob))
+
+    return params
+
+def get_node_param_names(node_name, params_glob):
+    """ Gets list of parameter names for a given node """
     node_name = get_absolute_node_name(node_name)
 
     with param_server_lock:
@@ -192,6 +204,12 @@ def get_param_names(node_name, params_glob):
 
 
 def _get_param_names(node_name):
+    # This method is called in a service callback; calling a service of the same node
+    # will cause a deadlock.
+    global _parent_node_name
+    if node_name == _parent_node_name:
+        return []
+
     client = _node.create_client(ListParameters, '{}/list_parameters'.format(node_name))
 
     ready = client.wait_for_service(timeout_sec=5.0)
@@ -202,8 +220,9 @@ def _get_param_names(node_name):
     future = client.call_async(request)
     rclpy.spin_until_future_complete(_node, future)
     response = future.result()
+
     if response is not None:
-        return response.result.names
+        return ['{}:{}'.format(node_name, param_name) for param_name in response.result.names]
     else:
         return []
 

@@ -197,8 +197,8 @@ def _splittype(typestring):
     more forgiving about excess slashes
     """
     splits = [x for x in typestring.split("/") if x]
-    if len(splits) == 2:
-        return splits
+    if len(splits) == 3:
+        return (splits[0], splits[2])
     raise InvalidTypeStringException(typestring)
 
 

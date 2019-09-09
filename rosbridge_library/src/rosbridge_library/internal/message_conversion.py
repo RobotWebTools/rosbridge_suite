@@ -32,8 +32,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from __future__ import print_function
-import roslib
-import rospy
+import rclpy
+from rclpy.clock import ROSClock
 
 from rosbridge_library.internal import ros_loader
 
@@ -51,7 +51,7 @@ if sys.version_info >= (3, 0):
     "int":     ["int8", "byte", "uint8", "char",
                 "int16", "uint16", "int32", "uint32",
                 "int64", "uint64", "float32", "float64"],
-    "float":   ["float32", "float64"],
+    "float":   ["float32", "float64", "double"],
     "str":     ["string"]
     }
     primitive_types = [bool, int, float]
@@ -71,25 +71,32 @@ else:
     python2 = True
 
 list_types = [list, tuple]
-ros_time_types = ["time", "duration"]
+ros_time_types = ["builtin_interfaces/Time", "builtin_interfaces/Duration"]
 ros_primitive_types = ["bool", "byte", "char", "int8", "uint8", "int16",
                        "uint16", "int32", "uint32", "int64", "uint64",
-                       "float32", "float64", "string"]
+                       "float32", "float64", "double", "string"]
 ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
 ros_binary_types = ["uint8[]", "char[]"]
-list_braces = re.compile(r'\[[^\]]*\]')
+list_tokens = re.compile('<(.+?)>')
 ros_binary_types_list_braces = [("uint8[]", re.compile(r'uint8\[[^\]]*\]')),
                                 ("char[]", re.compile(r'char\[[^\]]*\]'))]
 
 binary_encoder = None
-bson_only_mode = None
+binary_encoder_type = 'default'
+bson_only_mode = False
 
-def get_encoder():
-    global binary_encoder,bson_only_mode
+# TODO(@jubeira): configure module with a node handle.
+# The original code doesn't seem to actually use these parameters.
+def configure(node_handle=None):
+    global binary_encoder, binary_encoder_type, bson_only_mode
+
+    if node_handle is not None:
+        binary_encoder_type = node_handler.get_parameter_or('binary_encoder',
+            Parameter('', value='default')).value
+        bson_only_mode = node_handler.get_parameter_or('bson_only_mode',
+            Parameter('', value=False)).value
+
     if binary_encoder is None:
-        binary_encoder_type = rospy.get_param('~binary_encoder', 'default')
-        bson_only_mode = rospy.get_param('~bson_only_mode', False)
-
         if binary_encoder_type == 'bson' or bson_only_mode:
             binary_encoder = bson.Binary
         elif binary_encoder_type == 'default' or binary_encoder_type == 'b64':
@@ -97,6 +104,9 @@ def get_encoder():
         else:
             print("Unknown encoder type '%s'"%binary_encoder_type)
             exit(0)
+
+def get_encoder():
+    configure()
     return binary_encoder
 
 class InvalidMessageException(Exception):
@@ -118,7 +128,7 @@ class FieldTypeMismatchException(Exception):
 
 
 def extract_values(inst):
-    rostype = getattr(inst, "_type", None)
+    rostype = msg_instance_type_repr(inst)
     if rostype is None:
         raise InvalidMessageException(inst=inst)
     return _from_inst(inst, rostype)
@@ -127,7 +137,30 @@ def extract_values(inst):
 def populate_instance(msg, inst):
     """ Returns an instance of the provided class, with its fields populated
     according to the values in msg """
-    return _to_inst(msg, inst._type, inst._type, inst)
+    inst_type = msg_instance_type_repr(inst)
+
+    return _to_inst(msg, inst_type, inst_type, inst)
+
+
+def msg_instance_type_repr(msg_inst):
+    """Returns a string representation of a ROS2 message type from a message instance"""
+    # Message representation: '{package}.msg.{message_name}({fields})'.
+    # A representation like '_type' member in ROS1 messages is needed: '{package}/{message_name}'.
+    # E.g: 'std_msgs/Header'
+    msg_type = type(msg_inst)
+    if msg_type in primitive_types or msg_type in list_types:
+        return str(type(inst))
+    inst_repr = str(msg_inst).split('.')
+    return '{}/{}'.format(inst_repr[0], inst_repr[2].split('(')[0])
+
+
+def msg_class_type_repr(msg_class):
+    """Returns a string representation of a ROS2 message type from a class representation."""
+    # The string representation of the class is <class '{package}.msg._{message}.{Message}'>
+    # (e.g. <class 'std_msgs.msg._string.String'>).
+    # This has to be converted to {package}/msg/{Message} (e.g. std_msgs/msg/String).
+    class_repr = str(msg_class).split('\'')[1].split('.')
+    return '{}/{}/{}'.format(class_repr[0], class_repr[1], class_repr[3])
 
 
 def _from_inst(inst, rostype):
@@ -146,7 +179,7 @@ def _from_inst(inst, rostype):
     # Check for primitive types
     if rostype in ros_primitive_types:
         #JSON does not support Inf and NaN. They are mapped to None and encoded as null
-        if (not bson_only_mode) and (rostype in ["float32", "float64"]):
+        if (not bson_only_mode) and (rostype in type_map.get('float')):
             if math.isnan(inst) or math.isinf(inst):
                 return None
         return inst
@@ -165,10 +198,10 @@ def _from_list_inst(inst, rostype):
         return []
 
     # Remove the list indicators from the rostype
-    rostype = list_braces.sub("", rostype)
+    rostype = re.search(list_tokens, rostype).group(1)
 
     # Shortcut for primitives
-    if rostype in ros_primitive_types and not rostype in ["float32", "float64"]:
+    if rostype in ros_primitive_types and not rostype in type_map.get('float'):
         return list(inst)
 
     # Call to _to_inst for every element of the list
@@ -178,7 +211,8 @@ def _from_list_inst(inst, rostype):
 def _from_object_inst(inst, rostype):
     # Create an empty dict then populate with values from the inst
     msg = {}
-    for field_name, field_rostype in zip(inst.__slots__, inst._slot_types):
+    # Equivalent for zip(inst.__slots__, inst._slot_types) in ROS1:
+    for field_name, field_rostype in inst.get_fields_and_field_types().items():
         field_inst = getattr(inst, field_name)
         msg[field_name] = _from_inst(field_inst, field_rostype)
     return msg
@@ -224,14 +258,15 @@ def _to_binary_inst(msg):
 
 def _to_time_inst(msg, rostype, inst=None):
     # Create an instance if we haven't been provided with one
+
     if rostype == "time" and msg == "now":
-        return rospy.get_rostime()
+        return ROSClock().now().to_msg()
 
     if inst is None:
         if rostype == "time":
-            inst = rospy.rostime.Time()
+            inst = rclpy.time.Time().to_msg()
         elif rostype == "duration":
-            inst = rospy.rostime.Duration()
+            inst = rclpy.duration.Duration().to_msg()
         else:
             return None
 
@@ -266,7 +301,7 @@ def _to_list_inst(msg, rostype, roottype, inst, stack):
         return []
 
     # Remove the list indicators from the rostype
-    rostype = list_braces.sub("", rostype)
+    rostype = re.search(list_tokens, rostype).group(1)
 
     # Call to _to_inst for every element of the list
     return [_to_inst(x, rostype, roottype, None, stack) for x in msg]
@@ -278,13 +313,10 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
         raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))
 
     # Substitute the correct time if we're an std_msgs/Header
-    try:
-        if rostype in ros_header_types:
-            inst.stamp = rospy.get_rostime()
-    except rospy.exceptions.ROSInitException as e:
-        rospy.logdebug("Not substituting the correct header time: %s" % e)
+    if rostype in ros_header_types:
+        inst.stamp = ROSClock().now().to_msg()
 
-    inst_fields = dict(zip(inst.__slots__, inst._slot_types))
+    inst_fields = inst.get_fields_and_field_types()
 
     for field_name in msg:
         # Add this field to the field stack

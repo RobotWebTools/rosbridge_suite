@@ -79,14 +79,14 @@ class Publish(Capability):
 
         # Register as a publishing client, propagating any exceptions
         client_id = self.protocol.client_id
-        manager.register(client_id, topic, latch=latch, queue_size=queue_size)
+        manager.register(client_id, topic, self.protocol.node_handle, latch=latch, queue_size=queue_size)
         self._published[topic] = True
 
         # Get the message if one was provided
         msg = message.get("msg", {})
 
         # Publish the message
-        manager.publish(client_id, topic, msg, latch=latch, queue_size=queue_size)
+        manager.publish(client_id, topic, msg, self.protocol.node_handle, latch=latch, queue_size=queue_size)
 
     def finish(self):
         client_id = self.protocol.client_id

@@ -47,18 +47,20 @@ class Registration():
 
     """
 
-    def __init__(self, client_id, topic):
+    def __init__(self, client_id, topic, node_handle):
         # Initialise variables
         self.client_id = client_id
         self.topic = topic
         self.clients = {}
+        self.node_handle = node_handle
 
     def unregister(self):
         manager.unregister(self.client_id, self.topic)
 
     def register_advertisement(self, msg_type, adv_id=None, latch=False, queue_size=100):
         # Register with the publisher manager, propagating any exception
-        manager.register(self.client_id, self.topic, msg_type, latch=latch, queue_size=queue_size)
+        manager.register(
+            self.client_id, self.topic, self.node_handle, msg_type=msg_type, latch=latch, queue_size=queue_size)
 
         self.clients[adv_id] = True
 
@@ -120,7 +122,7 @@ class Advertise(Capability):
         # Create the Registration if one doesn't yet exist
         if not topic in self._registrations:
             client_id = self.protocol.client_id
-            self._registrations[topic] = Registration(client_id, topic)
+            self._registrations[topic] = Registration(client_id, topic, self.protocol.node_handle)
 
         # Register, propagating any exceptions
         self._registrations[topic].register_advertisement(msg_type, aid, latch, queue_size)
