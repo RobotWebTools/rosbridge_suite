@@ -16,10 +16,16 @@ from autobahn.twisted.websocket import (WebSocketClientProtocol,
 from twisted.python import log
 log.startLogging(sys.stderr)
 
+# For consistency, the number of messages must not exceed the the protocol
+# Subscriber queue_size.
+NUM_MSGS = 100
+MSG_SIZE = 10000
 A_TOPIC = '/a_topic'
 B_TOPIC = '/b_topic'
-A_STRING = '''i'm trapped!'''
-B_STRING = '''i'm free!'''
+A_STRING = 'A' * MSG_SIZE
+B_STRING = 'B' * MSG_SIZE
+WARMUP_DELAY = 1.0  # seconds
+TIME_LIMIT = 5.0  # seconds
 
 
 class TestClientProtocol(WebSocketClientProtocol):
@@ -28,6 +34,7 @@ class TestClientProtocol(WebSocketClientProtocol):
             'op': 'subscribe',
             'topic': B_TOPIC,
             'type': 'std_msgs/String',
+            'queue_length': 0,  # Test the roslib default.
         })
         self._sendDict({
             'op': 'advertise',
@@ -40,10 +47,12 @@ class TestClientProtocol(WebSocketClientProtocol):
             'msg': {
                 'data': A_STRING,
             },
-        })
+        }, NUM_MSGS)
 
-    def _sendDict(self, msg_dict):
-        self.sendMessage(json.dumps(msg_dict))
+    def _sendDict(self, msg_dict, times=1):
+        msg = json.dumps(msg_dict)
+        for _ in range(times):
+            self.sendMessage(msg)
 
     def onMessage(self, payload, binary):
         self.__class__.received.append(payload)
@@ -62,31 +71,32 @@ class TestWebsocketSmoke(unittest.TestCase):
         ros_received = []
         TestClientProtocol.received = []
         rospy.Subscriber(A_TOPIC, String, ros_received.append)
-        pub = rospy.Publisher(B_TOPIC, String, queue_size=10)
+        pub = rospy.Publisher(B_TOPIC, String, queue_size=NUM_MSGS)
 
         def publish_timer():
-            rospy.sleep(1.5)
-            pub.publish(String(B_STRING))
+            rospy.sleep(WARMUP_DELAY)
+            msg = String(B_STRING)
+            for _ in range(NUM_MSGS):
+                pub.publish(msg)
 
         def shutdown_timer():
-            rospy.sleep(2.0)
+            rospy.sleep(WARMUP_DELAY + TIME_LIMIT)
             reactor.stop()
-
-        rospy.sleep(1.0)  # wait for ROS subscriber connection
 
         reactor.callInThread(publish_timer)
         reactor.callInThread(shutdown_timer)
         reactor.run()
 
-        self.assertEqual(1, len(TestClientProtocol.received))
-        msg = json.loads(TestClientProtocol.received[0])
-        self.assertEqual('publish', msg['op'])
-        self.assertEqual(B_TOPIC, msg['topic'])
-        self.assertEqual(B_STRING, msg['msg']['data'])
+        for received in TestClientProtocol.received:
+            msg = json.loads(received)
+            self.assertEqual('publish', msg['op'])
+            self.assertEqual(B_TOPIC, msg['topic'])
+            self.assertEqual(B_STRING, msg['msg']['data'])
+        self.assertEqual(NUM_MSGS, len(TestClientProtocol.received))
 
-        self.assertEqual(1, len(ros_received))
-        msg = ros_received[0]
-        self.assertEqual(A_STRING, msg.data)
+        for msg in ros_received:
+            self.assertEqual(A_STRING, msg.data)
+        self.assertEqual(NUM_MSGS, len(ros_received))
 
 
 PKG = 'rosbridge_server'
