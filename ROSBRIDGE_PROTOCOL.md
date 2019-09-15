@@ -518,7 +518,7 @@ The meta-package will contain the following packages:
  * **rosbridge_server** – depends on the rosbridge library, and implements the
     WebSockets server, passing incoming messages to the API and outgoing
     messages back to the WebSockets connection. The default server uses
-    tornado, a python server implementation.
+    autobahn, a python server implementation.
  * **rosapi** – provides ROS services for various master API calls, such as
     listing all the topics, services, types currently in ROS
 ￼
