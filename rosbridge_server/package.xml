@@ -15,6 +15,7 @@
   <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>python-autobahn</exec_depend>
   <exec_depend>python-backports.ssl-match-hostname</exec_depend>
   <exec_depend>python-tornado</exec_depend>
   <exec_depend>python-twisted-core</exec_depend>
@@ -23,4 +24,5 @@
   <exec_depend>rosapi</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>rosauth</exec_depend>
+  <test_depend>rostest</test_depend>
 </package>
