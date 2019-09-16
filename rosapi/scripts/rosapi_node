@@ -94,7 +94,7 @@ def get_node_details(request):
     
 def get_action_servers(request):
     """ Called by the rosapi/GetActionServers service. Returns a list of action servers based on actions standard topics """
-    topics = proxy.get_topics(rosapi.glob_helper.topics_glob)
+    topics, types = proxy.get_topics_and_types(rosapi.glob_helper.topics_glob)
     action_servers = proxy.filter_action_servers(topics)
     return GetActionServersResponse(action_servers)
     
