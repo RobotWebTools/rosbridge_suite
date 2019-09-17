@@ -22,50 +22,50 @@
   <arg name="bson_only_mode" default="false" />
 
   <!-- Valid options for binary_encoder are "default", "b64" and "bson". -->
-  <arg unless="$(arg bson_only_mode)" name="binary_encoder" default="default"/>
+  <arg unless="$(var bson_only_mode)" name="binary_encoder" default="default"/>
 
-  <group if="$(arg ssl)">
-    <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket" output="screen">
-      <param name="certfile" value="$(arg certfile)" />
-      <param name="keyfile" value="$(arg keyfile)" />
-      <param name="authenticate" value="$(arg authenticate)" />
-      <param name="port" value="$(arg port)"/>
-      <param name="address" value="$(arg address)"/>
-      <param name="retry_startup_delay" value="$(arg retry_startup_delay)"/>
-      <param name="fragment_timeout" value="$(arg fragment_timeout)"/>
-      <param name="delay_between_messages" value="$(arg delay_between_messages)"/>
-      <param name="max_message_size" value="$(arg max_message_size)"/>
-      <param name="unregister_timeout" value="$(arg unregister_timeout)"/>
-      <param name="use_compression" value="$(arg use_compression)"/>
+  <group if="$(var ssl)">
+    <node name="rosbridge_websocket" pkg="rosbridge_server" exec="rosbridge_websocket" output="screen">
+      <param name="certfile" value="$(var certfile)" />
+      <param name="keyfile" value="$(var keyfile)" />
+      <param name="authenticate" value="$(var authenticate)" />
+      <param name="port" value="$(var port)"/>
+      <param name="address" value="$(var address)"/>
+      <param name="retry_startup_delay" value="$(var retry_startup_delay)"/>
+      <param name="fragment_timeout" value="$(var fragment_timeout)"/>
+      <param name="delay_between_messages" value="$(var delay_between_messages)"/>
+      <param name="max_message_size" value="$(var max_message_size)"/>
+      <param name="unregister_timeout" value="$(var unregister_timeout)"/>
+      <param name="use_compression" value="$(var use_compression)"/>
 
-      <param name="topics_glob" value="$(arg topics_glob)"/>
-      <param name="services_glob" value="$(arg services_glob)"/>
-      <param name="params_glob" value="$(arg params_glob)"/>
+      <param name="topics_glob" value="$(var topics_glob)"/>
+      <param name="services_glob" value="$(var services_glob)"/>
+      <param name="params_glob" value="$(var params_glob)"/>
     </node>
   </group>
-  <group unless="$(arg ssl)">
-    <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket" output="screen">
-      <param name="authenticate" value="$(arg authenticate)" />
-      <param name="port" value="$(arg port)"/>
-      <param name="address" value="$(arg address)"/>
-      <param name="retry_startup_delay" value="$(arg retry_startup_delay)"/>
-      <param name="fragment_timeout" value="$(arg fragment_timeout)"/>
-      <param name="delay_between_messages" value="$(arg delay_between_messages)"/>
-      <param name="max_message_size" value="$(arg max_message_size)"/>
-      <param name="unregister_timeout" value="$(arg unregister_timeout)"/>
-      <param name="use_compression" value="$(arg use_compression)"/>
+  <group unless="$(var ssl)">
+    <node name="rosbridge_websocket" pkg="rosbridge_server" exec="rosbridge_websocket" output="screen">
+      <param name="authenticate" value="$(var authenticate)" />
+      <param name="port" value="$(var port)"/>
+      <param name="address" value="$(var address)"/>
+      <param name="retry_startup_delay" value="$(var retry_startup_delay)"/>
+      <param name="fragment_timeout" value="$(var fragment_timeout)"/>
+      <param name="delay_between_messages" value="$(var delay_between_messages)"/>
+      <param name="max_message_size" value="$(var max_message_size)"/>
+      <param name="unregister_timeout" value="$(var unregister_timeout)"/>
+      <param name="use_compression" value="$(var use_compression)"/>
 
-      <param name="topics_glob" value="$(arg topics_glob)"/>
-      <param name="services_glob" value="$(arg services_glob)"/>
-      <param name="params_glob" value="$(arg params_glob)"/>
+      <param name="topics_glob" value="$(var topics_glob)"/>
+      <param name="services_glob" value="$(var services_glob)"/>
+      <param name="params_glob" value="$(var params_glob)"/>
 
-      <param name="bson_only_mode" value="$(arg bson_only_mode)"/>
+      <param name="bson_only_mode" value="$(var bson_only_mode)"/>
     </node>
   </group>
 
-  <node name="rosapi" pkg="rosapi" type="rosapi_node">
-    <param name="topics_glob" value="$(arg topics_glob)"/>
-    <param name="services_glob" value="$(arg services_glob)"/>
-    <param name="params_glob" value="$(arg params_glob)"/>
+  <node name="rosapi" pkg="rosapi" exec="rosapi_node">
+    <param name="topics_glob" value="$(var topics_glob)"/>
+    <param name="services_glob" value="$(var services_glob)"/>
+    <param name="params_glob" value="$(var params_glob)"/>
   </node>
 </launch>
