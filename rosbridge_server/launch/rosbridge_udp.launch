@@ -13,24 +13,24 @@
   <arg name="services_glob" default="[*]" />
   <arg name="params_glob" default="[*]" />
 
-  <node name="rosbridge_udp" pkg="rosbridge_server" type="rosbridge_udp" output="screen">
-    <param name="authenticate" value="$(arg authenticate)" />
+  <node name="rosbridge_udp" pkg="rosbridge_server" exec="rosbridge_udp" output="screen">
+    <param name="authenticate" value="$(var authenticate)" />
 
-    <param name="port" value="$(arg port)"/>
-    <param name="interface" value="$(arg interface)"/>
-    <param name="fragment_timeout" value="$(arg fragment_timeout)"/>
-    <param name="delay_between_messages" value="$(arg delay_between_messages)"/>
-    <param name="max_message_size" value="$(arg max_message_size)"/>
-    <param name="unregister_timeout" value="$(arg unregister_timeout)"/>
+    <param name="port" value="$(var port)"/>
+    <param name="interface" value="$(var interface)"/>
+    <param name="fragment_timeout" value="$(var fragment_timeout)"/>
+    <param name="delay_between_messages" value="$(var delay_between_messages)"/>
+    <param name="max_message_size" value="$(var max_message_size)"/>
+    <param name="unregister_timeout" value="$(var unregister_timeout)"/>
 
-    <param name="topics_glob" value="$(arg topics_glob)"/>
-    <param name="services_glob" value="$(arg services_glob)"/>
-    <param name="params_glob" value="$(arg params_glob)"/>
+    <param name="topics_glob" value="$(var topics_glob)"/>
+    <param name="services_glob" value="$(var services_glob)"/>
+    <param name="params_glob" value="$(var params_glob)"/>
   </node>
 
-  <node name="rosapi" pkg="rosapi" type="rosapi_node">
-    <param name="topics_glob" value="$(arg topics_glob)"/>
-    <param name="services_glob" value="$(arg services_glob)"/>
-    <param name="params_glob" value="$(arg params_glob)"/>
+  <node name="rosapi" pkg="rosapi" exec="rosapi_node">
+    <param name="topics_glob" value="$(var topics_glob)"/>
+    <param name="services_glob" value="$(var services_glob)"/>
+    <param name="params_glob" value="$(var params_glob)"/>
   </node>
 </launch>
