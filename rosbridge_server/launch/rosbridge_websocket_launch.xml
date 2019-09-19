@@ -16,12 +16,11 @@
 
   <arg name="authenticate" default="false" />
 
-  <arg name="topics_glob" default="[*]" />
-  <arg name="services_glob" default="[*]" />
-  <arg name="params_glob" default="[*]" />
+  <arg name="topics_glob" default="''[*]''" />
+  <arg name="services_glob" default="''[*]''" />
+  <arg name="params_glob" default="''[*]''" />
   <arg name="bson_only_mode" default="false" />
 
-  <!-- Valid options for binary_encoder are "default", "b64" and "bson". -->
   <arg unless="$(var bson_only_mode)" name="binary_encoder" default="default"/>
 
   <group if="$(var ssl)">
