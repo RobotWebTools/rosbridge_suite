@@ -2,6 +2,10 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming release
+-------------------
+* Port to ROS 2
+
 0.11.3 (2019-08-07)
 -------------------
 * Fixes `#418 <https://github.com/RobotWebTools/rosbridge_suite/issues/418>`_: WebSocketClosedError Spam (`#423 <https://github.com/RobotWebTools/rosbridge_suite/issues/423>`_)

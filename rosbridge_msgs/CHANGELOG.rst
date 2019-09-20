@@ -2,6 +2,10 @@
 Changelog for package rosbridge_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming release
+-------------------
+* Port to ROS 2
+
 0.11.3 (2019-08-07)
 -------------------
 

@@ -2,6 +2,10 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming release
+-------------------
+* Port to ROS 2
+
 0.11.3 (2019-08-07)
 -------------------
 * Travis CI: Look for Python syntax errors and undefined name (`#420 <https://github.com/RobotWebTools/rosbridge_suite/issues/420>`_)
