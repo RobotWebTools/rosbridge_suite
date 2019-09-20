@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming release
--------------------
+1.0.0 (2019-09-19)
+------------------
 * Port to ROS 2
 
 0.11.3 (2019-08-07)
