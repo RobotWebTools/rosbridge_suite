@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.2 (2019-09-24)
+------------------
 * use Python 3 dependency keys (`#436 <https://github.com/RobotWebTools/rosbridge_suite/issues/436>`_)
 
 1.0.1 (2019-09-20)
