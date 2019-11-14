@@ -182,6 +182,7 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
     def outgoing(self, message):
         if type(message) == bson.BSON:
             binary = True
+            message = bytes(message)
         elif type(message) == bytearray:
             binary = True
             message = bytes(message)
