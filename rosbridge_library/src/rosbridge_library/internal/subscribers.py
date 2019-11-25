@@ -162,7 +162,7 @@ class MultiSubscriber():
         # Get the callbacks to call
         if not callbacks:
             with self.lock:
-                callbacks = self.subscriptions.values()
+                callbacks = list(self.subscriptions.values())
 
         # Pass the JSON to each of the callbacks
         for callback in callbacks:
