@@ -135,13 +135,13 @@ def get_node_subscriptions(node_name):
 
 def get_node_services(node_name):
     """ Returns a list of service names that are being hosted by the specified node """
-    services = get_service_info(node=_node, remote_node_name=node_name)
+    services = get_service_server_info(node=_node, remote_node_name=node_name)
     return [service.name for service in services]
 
 
 def get_node_service_types(node_name):
     """ Returns a list of service types that are being hosted by the specified node """
-    services = get_service_info(node=_node, remote_node_name=node_name)
+    services = get_service_server_info(node=_node, remote_node_name=node_name)
     return [service.types[0] for service in services]
 
 
