@@ -7,7 +7,7 @@ catkin_python_setup()
 
 catkin_package()
 
-install(PROGRAMS
+catkin_install_python(PROGRAMS
   scripts/rosbridge_websocket.py
   scripts/rosbridge_websocket
   scripts/rosbridge_tcp.py
