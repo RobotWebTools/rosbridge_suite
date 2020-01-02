@@ -150,6 +150,8 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
 
     def onMessage(self, message, binary):
         cls = self.__class__
+        if not binary:
+            message = message.decode('utf-8')
         # check if we need to authenticate
         if cls.authenticate and not self.authenticated:
             try:
@@ -188,6 +190,7 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
             message = bytes(message)
         else:
             binary = False
+            message = message.encode('utf-8')
 
         self.sendMessage(message, binary)
 

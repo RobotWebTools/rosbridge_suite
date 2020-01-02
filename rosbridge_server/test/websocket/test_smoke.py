@@ -50,7 +50,7 @@ class TestClientProtocol(WebSocketClientProtocol):
         }, NUM_MSGS)
 
     def _sendDict(self, msg_dict, times=1):
-        msg = json.dumps(msg_dict)
+        msg = json.dumps(msg_dict).encode('utf-8')
         for _ in range(times):
             self.sendMessage(msg)
 
