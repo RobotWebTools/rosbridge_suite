@@ -1,0 +1,7 @@
+<launch>
+  <env name="PROTOCOL" value="ws" />
+  <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket.py">
+    <param name="port" value="0" />
+  </node>
+  <test test-name="test_cbor_raw" pkg="rosbridge_server" type="test_cbor_raw.py" />
+</launch>
