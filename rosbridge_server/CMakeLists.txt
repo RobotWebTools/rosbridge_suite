@@ -26,3 +26,8 @@ install(FILES
   DESTINATION share/${PROJECT_NAME}/launch
 )
 
+# if (CATKIN_ENABLE_TESTING)
+#   find_package(rostest REQUIRED)
+#   add_rostest(test/websocket/test_smoke.test)
+#   add_rostest(test/websocket/test_cbor_raw.test)
+# endif()

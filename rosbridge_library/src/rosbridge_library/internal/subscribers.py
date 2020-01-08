@@ -89,13 +89,16 @@ class MultiSubscriber():
         if msg_type is None:
             msg_type = topic_type
 
-        # Load the message class, propagating any exceptions from bad msg types
-        msg_class = ros_loader.get_message_class(msg_type)
+        if msg_type == "__AnyMsg":
+            msg_class = AnyMsg
+        else:
+            # Load the message class, propagating any exceptions from bad msg types
+            msg_class = ros_loader.get_message_class(msg_type)
 
-        # Make sure the specified msg type and established msg type are same
-        msg_type_string = msg_class_type_repr(msg_class)
-        if topic_type is not None and topic_type != msg_type_string:
-            raise TypeConflictException(topic, topic_type, msg_type_string)
+            # Make sure the specified msg type and established msg type are same
+            msg_type_string = msg_class_type_repr(msg_class)
+            if topic_type is not None and topic_type != msg_type_string:
+                raise TypeConflictException(topic, topic_type, msg_type_string)
 
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
@@ -126,6 +129,8 @@ class MultiSubscriber():
         this publisher
 
         """
+        if msg_type == "__AnyMsg":
+            return
         if not ros_loader.get_message_class(msg_type) is self.msg_class:
             raise TypeConflictException(self.topic,
                                         msg_class_type_repr(self.msg_class), msg_type)

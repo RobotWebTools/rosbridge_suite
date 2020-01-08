@@ -183,6 +183,35 @@ homogeneous arrays.  At the moment, only little-endian packing is supported.
 
 [draft typed array tags]: https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00
 
+#### 3.1.4 CBOR-RAW encoding ( _cbor-raw_ )
+
+While CBOR encodes the entire message as CBOR, sometimes it's desirable to get the raw binary message in the
+[ROS serialization format](https://wiki.ros.org/roscpp/Overview/MessagesSerializationAndAdaptingTypes),
+which is the same format as sent between ROS nodes and stored in [Bag files](http://wiki.ros.org/Bags/Format/2.0).
+
+This can be useful in several cases:
+- Your application already knows how to parse messages in bag files (e.g. using
+  [rosbag.js](https://github.com/cruise-automation/rosbag.js), which means that now you can use
+  consistent code paths for both bags and live messages.
+- You want to parse messages as late as possible, or in parallel, e.g. only in the thread
+  or WebWorker that cares about the message. Delaying the parsing of the message means that moving
+  or copying the message to the thread is cheaper when its in binary form, since no serialization
+  between threads is necessary.
+- You only care about part of the message, and don't need to parse the rest of it.
+- You really care about performance; no conversion between the ROS binary format and CBOR is done in
+  the rosbridge_sever.
+
+The format is similar to CBOR above, but instead of the "msg" field containing the message itself
+in CBOR format, instead it contains an object with a "bytes" field which is a byte array containing
+the raw message. The "msg" object also includes "secs" and "nsecs" of the `get_rostime()` upon
+receiving the message, which is especially useful when `use_sim_time` is set, since it will give you
+the simulated time the message was received.
+
+When using this encoding, a client application will need to know exactly how to parse the raw
+message. For this it's useful to use the `/rosapi/get_topics_and_raw_types` service, which will give
+you all topics and their raw message definitions, similar to `gendeps --cat`. This is the same
+format as used by bag files.
+
 ### 3.2 Status messages
 
 rosbridge sends status messages to the client relating to the successes and
@@ -387,7 +416,7 @@ which to send messages.
  * **fragment_size** – the maximum size that a message can take before it is to
     be fragmented.
  * **compression** – an optional string to specify the compression scheme to be
-    used on messages. Valid values are "none", "png" and "cbor"
+    used on messages. Valid values are "none", "png", "cbor", and "cbor-raw".
 
 If queue_length is specified, then messages are placed into the queue before
 being sent. Messages are sent from the head of the queue. If the queue gets
