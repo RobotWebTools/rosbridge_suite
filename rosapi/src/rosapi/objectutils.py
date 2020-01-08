@@ -95,6 +95,15 @@ def get_service_response_typedef_recursive(servicetype):
     # Return the list of sub-typedefs
     return _get_subtypedefs_recursive(typedef, [])
 
+def get_typedef_full_text(type):
+    """ Returns the full text (similar to `gendeps --cat`) for the specified message type """
+    # Get an instance of the service response class and get its typedef
+    try:
+        instance = ros_loader.get_message_instance(type)
+        return instance._full_text
+    except Exception:
+        return ""
+
 def _get_typedef(instance):
     """ Gets a typedef dict for the specified instance """
     if instance is None or not hasattr(instance, "__slots__") or not hasattr(instance, "_slot_types"):

@@ -38,6 +38,7 @@ from rosbridge_library.internal import ros_loader, message_conversion
 from rosbridge_library.internal.topics import TopicNotEstablishedException
 from rosbridge_library.internal.topics import TypeConflictException
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
+from rospy.msg import AnyMsg
 
 """ Manages and interfaces with ROS Subscriber objects.  A single subscriber
 is shared between multiple clients
@@ -79,12 +80,15 @@ class MultiSubscriber():
         if msg_type is None:
             msg_type = topic_type
 
-        # Load the message class, propagating any exceptions from bad msg types
-        msg_class = ros_loader.get_message_class(msg_type)
+        if msg_type == "__AnyMsg":
+            msg_class = AnyMsg
+        else:
+            # Load the message class, propagating any exceptions from bad msg types
+            msg_class = ros_loader.get_message_class(msg_type)
 
-        # Make sure the specified msg type and established msg type are same
-        if topic_type is not None and topic_type != msg_class._type:
-            raise TypeConflictException(topic, topic_type, msg_class._type)
+            # Make sure the specified msg type and established msg type are same
+            if topic_type is not None and topic_type != msg_class._type:
+                raise TypeConflictException(topic, topic_type, msg_class._type)
 
         # Create the subscriber and associated member variables
         self.subscriptions = {}
@@ -110,6 +114,8 @@ class MultiSubscriber():
         this publisher
 
         """
+        if msg_type == "__AnyMsg":
+            return
         if not ros_loader.get_message_class(msg_type) is self.msg_class:
             raise TypeConflictException(self.topic,
                                         self.msg_class._type, msg_type)

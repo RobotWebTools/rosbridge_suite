@@ -65,6 +65,7 @@ def register_services():
     rospy.Service('/rosapi/delete_param', DeleteParam, delete_param)
     rospy.Service('/rosapi/get_param_names', GetParamNames, get_param_names)
     rospy.Service('/rosapi/get_time', GetTime, get_time)
+    rospy.Service('/rosapi/topics_and_raw_types', TopicsAndRawTypes, get_topics_and_raw_types)
 
 def get_topics(request):
     """ Called by the rosapi/Topics service. Returns a list of all the topics being published. """
@@ -175,6 +176,12 @@ def get_param_names(request):
 
 def get_time(request):
     return GetTimeResponse(rospy.get_rostime())
+
+def get_topics_and_raw_types(request):
+    """ Called by the rosapi/topics_and_raw_types service. Returns a list of all the topics being published, and their
+    raw types, similar to `gendeps --cat`. """
+    topics, types = proxy.get_topics_and_types(rosapi.glob_helper.topics_glob)
+    return TopicsAndRawTypesResponse(topics, types, [objectutils.get_typedef_full_text(type) for type in types])
 
 def dict_to_typedef(typedefdict):
     typedef = TypeDef()

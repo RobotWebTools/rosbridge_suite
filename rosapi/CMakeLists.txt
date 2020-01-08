@@ -33,6 +33,7 @@ add_service_files(
   SetParam.srv
   Subscribers.srv
   Topics.srv
+  TopicsAndRawTypes.srv
   TopicsForType.srv
   TopicType.srv
 )
