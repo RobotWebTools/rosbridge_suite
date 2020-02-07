@@ -47,7 +47,7 @@ from rosbridge_library.util import string_types, bson
 import sys
 if sys.version_info >= (3, 0):
     type_map = {
-    "bool":    ["bool"],
+    "bool":    ["boolean"],
     "int":     ["int8", "byte", "uint8", "char",
                 "int16", "uint16", "int32", "uint32",
                 "int64", "uint64", "float32", "float64"],
@@ -72,7 +72,7 @@ else:
 
 list_types = [list, tuple]
 ros_time_types = ["time", "duration"]
-ros_primitive_types = ["bool", "byte", "char", "int8", "uint8", "int16",
+ros_primitive_types = ["bool", "boolean", "byte", "char", "int8", "uint8", "int16",
                        "uint16", "int32", "uint32", "int64", "uint64",
                        "float32", "float64", "string"]
 ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
