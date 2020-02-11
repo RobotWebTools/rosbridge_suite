@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>rosbridge_server</name>
+  <version>1.0.2</version>
+  <description>A WebSocket interface to rosbridge.</description>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/rosbridge_server</url>
+  <url type="bugtracker">https://github.com/RobotWebTools/rosbridge_suite/issues</url>
+  <url type="repository">https://github.com/RobotWebTools/rosbridge_suite</url>
+
+  <author email="jonathan.c.mace@gmail.com">Jonathan Mace</author>
+  <maintainer email="rctoris@wpi.edu">Russell Toris</maintainer>
+  <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>python3-tornado</exec_depend>
+  <exec_depend>python3-twisted</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>rosbridge_library</exec_depend>
+  <exec_depend>rosbridge_msgs</exec_depend>
+  <exec_depend>rosapi</exec_depend>
+  <exec_depend>rosauth</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

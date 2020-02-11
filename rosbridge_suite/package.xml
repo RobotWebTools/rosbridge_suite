@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>rosbridge_suite</name>
+  <version>1.0.2</version>
+  <description>
+    Rosbridge provides a JSON API to ROS functionality for non-ROS programs.
+    There are a variety of front ends that interface with rosbridge, including
+    a WebSocket server for web browsers to interact with.
+
+    Rosbridge_suite is a meta-package containing rosbridge, various front end
+    packages for rosbridge like a WebSocket package, and helper packages.
+  </description>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/rosbridge_suite</url>
+  <url type="bugtracker">https://github.com/RobotWebTools/rosbridge_suite/issues</url>
+  <url type="repository">https://github.com/RobotWebTools/rosbridge_suite</url>
+
+  <author email="jonathan.c.mace@gmail.com">Jonathan Mace</author>
+  <maintainer email="rctoris@wpi.edu">Russell Toris</maintainer>
+  <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
+
+  <buildtool_depend>ament_cmake_core</buildtool_depend>
+
+  <exec_depend>rosbridge_library</exec_depend>
+  <exec_depend>rosbridge_server</exec_depend>
+  <exec_depend>rosapi</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

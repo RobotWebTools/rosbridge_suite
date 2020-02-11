@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find rosbridge_library)/test/capabilities/test_capabilities.test" />
+  <include file="$(find rosbridge_library)/test/internal/test_internal.test" />
+</launch>
+

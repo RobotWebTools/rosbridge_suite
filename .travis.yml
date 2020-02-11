@@ -1,0 +1,51 @@
+# This config file for Travis CI utilizes ros-industrial/industrial_ci package.
+# For more info for the package, see https://github.com/ros-industrial/industrial_ci/blob/master/README.rst
+
+services:
+  - docker
+language: generic
+python:
+  - "2.7"
+compiler:
+  - gcc
+
+notifications:
+  email:
+    on_success: always
+    on_failure: always
+
+env:
+  matrix:
+    - ROS_DISTRO=kinetic ROS_REPO=ros-shadow-fixed UPSTREAM_WORKSPACE=debian OS_NAME=ubuntu OS_CODE_NAME=xenial
+    - ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed UPSTREAM_WORKSPACE=debian OS_NAME=ubuntu OS_CODE_NAME=bionic
+    - ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed UPSTREAM_WORKSPACE=debian OS_NAME=debian OS_CODE_NAME=stretch
+
+matrix:
+  include:
+    - name: "Run flake8 tests on Python 2.7"
+      language: python
+      python: "2.7"
+      install: pip install flake8
+      script: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    - name: "Run flake8 tests on Python 3.7"
+      language: python
+      python: "3.7"
+      dist: xenial
+      install: pip install flake8
+      script: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+  allow_failures:
+    - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed UPSTREAM_WORKSPACE=debian OS_NAME=debian OS_CODE_NAME=stretch
+    #- env: ROS_DISTRO="kinetic"   PRERELEASE=true PRERELEASE_DOWNSTREAM_DEPTH=0
+    #- env: ROS_DISTRO="melodic"   PRERELEASE=true PRERELEASE_DOWNSTREAM_DEPTH=0
+    - python: "3.7"
+
+branches:
+  only:
+    - master
+    - develop
+
+install:
+  - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
+
+script:
+  - source .industrial_ci/travis.sh

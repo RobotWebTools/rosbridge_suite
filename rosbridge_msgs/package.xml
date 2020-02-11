@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>rosbridge_msgs</name>
+  <version>1.0.2</version>
+  <description>Package containing message files</description>
+
+  <maintainer email="achim@intermodalics.eu">Hans-Joachim Krauch</maintainer>
+  <author email="achim@intermodalics.eu">Hans-Joachim Krauch</author>
+
+  <license>BSD</license>
+
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+
+  <build_depend>builtin_interfaces</build_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>rosapi</name>
+  <version>1.0.2</version>
+  <description>
+    Provides service calls for getting ros meta-information, like list of
+    topics, services, params, etc.
+  </description>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/rosapi</url>
+  <url type="bugtracker">https://github.com/RobotWebTools/rosbridge_suite/issues</url>
+  <url type="repository">https://github.com/RobotWebTools/rosbridge_suite</url>
+
+  <author email="jonathan.c.mace@gmail.com">Jonathan Mace</author>
+  <maintainer email="rctoris@wpi.edu">Russell Toris</maintainer>
+  <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
+
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+
+  <build_depend>builtin_interfaces</build_depend>
+
+  <exec_depend>builtin_interfaces</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>rcl_interfaces</exec_depend>
+  <exec_depend>rosbridge_library</exec_depend>
+  <exec_depend>ros2node</exec_depend>
+  <exec_depend>ros2param</exec_depend>
+  <exec_depend>ros2pkg</exec_depend>
+  <exec_depend>ros2service</exec_depend>
+  <exec_depend>ros2topic</exec_depend>
+  <!--
+  <exec_depend>rosnode</exec_depend>
+  <exec_depend>rosgraph</exec_depend>
+  -->
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+    <ros1_bridge mapping_rules="mapping_rules.yaml"/>
+  </export>
+</package>

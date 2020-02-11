@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>rosbridge_library</name>
+  <version>1.0.2</version>
+  <description>
+    The core rosbridge package, repsonsible for interpreting JSON andperforming
+    the appropriate ROS action, like subscribe, publish, call service, and
+    interact with params.
+  </description>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/rosbridge_library</url>
+  <url type="bugtracker">https://github.com/RobotWebTools/rosbridge_suite/issues</url>
+  <url type="repository">https://github.com/RobotWebTools/rosbridge_suite</url>
+
+  <author email="jonathan.c.mace@gmail.com">Jonathan Mace</author>
+  <maintainer email="rctoris@wpi.edu">Russell Toris</maintainer>
+  <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <build_depend>builtin_interfaces</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>python3-pil</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>rosidl_default_generators</build_depend>
+  <build_depend>python3-bson</build_depend>
+
+  <exec_depend>builtin_interfaces</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>python3-pil</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>python3-bson</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
