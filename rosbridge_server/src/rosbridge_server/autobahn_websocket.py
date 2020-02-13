@@ -95,7 +95,8 @@ class OutgoingValve:
         reactor.callFromThread(self._proto.outgoing, message)
 
     def pauseProducing(self):
-        self._valve.clear()
+        if not self._finished:
+            self._valve.clear()
 
     def resumeProducing(self):
         self._valve.set()
