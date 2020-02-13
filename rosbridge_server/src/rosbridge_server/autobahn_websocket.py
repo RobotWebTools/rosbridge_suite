@@ -131,8 +131,8 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
         try:
             self.protocol = RosbridgeProtocol(cls.client_id_seed, parameters=parameters)
             producer = OutgoingValve(self)
-            producer.resumeProducing()
             self.transport.registerProducer(producer, True)
+            producer.resumeProducing()
             self.protocol.outgoing = producer.relay
             self.authenticated = False
             cls.client_id_seed += 1
