@@ -32,6 +32,8 @@
 
 from threading import Thread, Condition
 from time import time
+import traceback
+import sys
 
 """ Sits between incoming messages from a subscription, and the outgoing
 publish method.  Provides throttling / buffering capabilities.
@@ -154,11 +156,11 @@ class QueueMessageHandler(MessageHandler, Thread):
                     try:
                         MessageHandler.handle_message(self, self.queue[0])
                     except:
-                        pass
+                        traceback.print_exc(file=sys.stderr)
                     del self.queue[0]
         while self.time_remaining() == 0 and len(self.queue) > 0:
             try:
                 MessageHandler.handle_message(self, self.queue[0])
             except:
-                pass
+                traceback.print_exc(file=sys.stderr)
             del self.queue[0]
