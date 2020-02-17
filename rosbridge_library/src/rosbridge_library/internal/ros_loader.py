@@ -210,17 +210,15 @@ def _splittype(typestring):
 
 
 def _add_to_cache(cache, lock, key, value):
-    lock.acquire()
-    cache[key] = value
-    lock.release()
+    with lock:
+        cache[key] = value
 
 
 def _get_from_cache(cache, lock, key):
     """ Returns the value for the specified key from the cache.
     Locks the lock before doing anything. Returns None if key not in cache """
-    lock.acquire()
     ret = None
-    if key in cache:
-        ret = cache[key]
-    lock.release()
+    with lock:
+        if key in cache:
+            ret = cache[key]
     return ret

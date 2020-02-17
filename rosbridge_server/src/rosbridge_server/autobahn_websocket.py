@@ -95,7 +95,8 @@ class OutgoingValve:
         reactor.callFromThread(self._proto.outgoing, message)
 
     def pauseProducing(self):
-        self._valve.clear()
+        if not self._finished:
+            self._valve.clear()
 
     def resumeProducing(self):
         self._valve.set()
@@ -131,8 +132,8 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
         try:
             self.protocol = RosbridgeProtocol(cls.client_id_seed, parameters=parameters)
             producer = OutgoingValve(self)
-            producer.resumeProducing()
             self.transport.registerProducer(producer, True)
+            producer.resumeProducing()
             self.protocol.outgoing = producer.relay
             self.authenticated = False
             cls.client_id_seed += 1
