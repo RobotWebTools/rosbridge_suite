@@ -94,9 +94,8 @@ class PublisherConsistencyListener(SubscribeListener):
         to threading complications), we just don't propagate buffered messages
         """
         if not self.timed_out():
-            self.lock.acquire()
-            msgs = copy(self.msg_buffer)
-            self.lock.release()
+            with self.lock:
+                msgs = copy(self.msg_buffer)
             for msg in msgs:
                 peer_publish(msg)
 
@@ -110,9 +109,8 @@ class PublisherConsistencyListener(SubscribeListener):
         which checks for timeout and if we haven't timed out, buffers outgoing
         messages in preparation for new subscriptions """
         if not self.timed_out():
-            self.lock.acquire()
-            self.msg_buffer.append(message)
-            self.lock.release()
+            with self.lock:
+                self.msg_buffer.append(message)
         self.publish(message)
 
 
