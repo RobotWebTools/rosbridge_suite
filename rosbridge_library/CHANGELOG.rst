@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.4 (2020-02-20)
+-------------------
 * Concurrency review (`#458 <https://github.com/RobotWebTools/rosbridge_suite/issues/458>`_)
   * Safer locking in PublisherConsistencyListener
   * Safer locking in ros_loader

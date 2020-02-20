@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.4 (2020-02-20)
+-------------------
 * Add cbor-raw compression (`#452 <https://github.com/RobotWebTools/rosbridge_suite/issues/452>`_)
   The CBOR compression is already a huge win over JSON or PNG encoding,
   but it’s still suboptimal in some situations. This PR adds support for
