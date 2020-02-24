@@ -88,6 +88,7 @@ if __name__ == "__main__":
 
     ping_interval = float(rospy.get_param('~websocket_ping_interval', 0))
     ping_timeout = float(rospy.get_param('~websocket_ping_timeout', 30))
+    allow_null_origin = rospy.get_param('~allow_null_origin', False)
 
     # SSL options
     certfile = rospy.get_param('~certfile', None)
@@ -276,6 +277,7 @@ if __name__ == "__main__":
         perMessageCompressionAccept=handle_compression_offers,
         autoPingInterval=ping_interval,
         autoPingTimeout=ping_timeout,
+        allowNullOrigin=allow_null_origin
     )
 
     connected = False
