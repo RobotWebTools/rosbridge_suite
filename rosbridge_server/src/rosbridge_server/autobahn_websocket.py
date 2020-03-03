@@ -99,9 +99,11 @@ class OutgoingValve:
             self._valve.clear()
 
     def resumeProducing(self):
+        rospy.loginfo("Autobahn resume producing")
         self._valve.set()
 
     def stopProducing(self):
+        rospy.loginfo("Autobahn stop producing call")
         self._finished = True
         self._valve.set()
 
@@ -197,6 +199,7 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
 
     def onClose(self, was_clean, code, reason):
         if not hasattr(self, 'protocol'):
+            rospy.loginfo("Closed before connection was opened")
             return  # Closed before connection was opened.
         cls = self.__class__
         cls.clients_connected -= 1

@@ -57,13 +57,17 @@ class ClientManager:
 
     def add_client(self, client_id, ip_address):
         with self._lock:
+            rospy.loginfo('Add client lock')
             client = ConnectedClient()
             client.ip_address = ip_address
             client.connection_time = rospy.Time.now()
             self._clients[client_id] = client
             self.__publish()
+        rospy.loginfo('Add client release')
 
     def remove_client(self, client_id, ip_address):
         with self._lock:
+            rospy.loginfo('Remove client lock')
             self._clients.pop(client_id, None)
             self.__publish()
+        rospy.loginfo('Remove client release')
