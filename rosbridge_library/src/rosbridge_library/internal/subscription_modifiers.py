@@ -155,7 +155,7 @@ class QueueMessageHandler(MessageHandler, Thread):
                     self.c.wait(self.time_remaining())
                 if self.alive and self.time_remaining() == 0 and len(self.queue) > 0:
                     msg = self.queue.popleft()
-            if msg:
+            if msg is not None:
                 try:
                     MessageHandler.handle_message(self, msg)
                 except:
