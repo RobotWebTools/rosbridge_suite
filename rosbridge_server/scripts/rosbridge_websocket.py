@@ -88,7 +88,6 @@ if __name__ == "__main__":
 
     ping_interval = float(rospy.get_param('~websocket_ping_interval', 0))
     ping_timeout = float(rospy.get_param('~websocket_ping_timeout', 30))
-    external_port = int(rospy.get_param('~websocket_external_port', 9090))
 
     # SSL options
     certfile = rospy.get_param('~certfile', None)
@@ -97,6 +96,8 @@ if __name__ == "__main__":
     RosbridgeWebSocket.authenticate = rospy.get_param('~authenticate', False)
     port = rospy.get_param('~port', 9090)
     address = rospy.get_param('~address', "0.0.0.0")
+
+    external_port = int(rospy.get_param('~websocket_external_port', port))
 
     RosbridgeWebSocket.client_manager = ClientManager()
 
