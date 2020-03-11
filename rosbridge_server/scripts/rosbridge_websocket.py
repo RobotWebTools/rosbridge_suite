@@ -88,6 +88,7 @@ if __name__ == "__main__":
 
     ping_interval = float(rospy.get_param('~websocket_ping_interval', 0))
     ping_timeout = float(rospy.get_param('~websocket_ping_timeout', 30))
+    external_port = int(rospy.get_param('~websocket_external_port', 9090))
 
     # SSL options
     certfile = rospy.get_param('~certfile', None)
@@ -228,6 +229,14 @@ if __name__ == "__main__":
             print("--websocket_ping_timeout argument provided without a value.")
             sys.exit(-1)
 
+    if "--websocket_external_port" in sys.argv:
+        idx = sys.argv.index("--websocket_external_port") + 1
+        if idx < len(sys.argv):
+            external_port = int(sys.argv[idx])
+        else:
+            print("--websocket_external_port argument provided without a value.")
+            sys.exit(-1)
+
     # To be able to access the list of topics and services, you must be able to access the rosapi services.
     if RosbridgeWebSocket.services_glob:
         RosbridgeWebSocket.services_glob.append("/rosapi/*")
@@ -270,7 +279,7 @@ if __name__ == "__main__":
     rospy.set_param('~actual_port', port)
 
     uri = '{}://{}:{}'.format(protocol, address, port)
-    factory = WebSocketServerFactory(uri)
+    factory = WebSocketServerFactory(uri, externalPort=external_port)
     factory.protocol = RosbridgeWebSocket
     factory.setProtocolOptions(
         perMessageCompressionAccept=handle_compression_offers,
