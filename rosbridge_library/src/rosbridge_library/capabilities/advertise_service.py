@@ -31,9 +31,7 @@ class AdvertisedServiceHandler():
 
     def handle_request(self, req):
         with self.lock:
-            rospy.loginfo("AdvertiseService lock")
             self.active_requests += 1
-        rospy.loginfo("AdvertiseService release")
         # generate a unique ID
         request_id = "service_request:" + self.service_name + ":" + str(self.next_id())
 
@@ -49,14 +47,11 @@ class AdvertisedServiceHandler():
         # wait for a response
         while request_id not in self.responses.keys():
             with self.lock:
-                rospy.loginfo("AdvertiseService handle_req request_id lock")
                 if self.shutdown_requested:
                     break
-            rospy.loginfo("AdvertiseService handle_req request_id release")
             time.sleep(0)
 
         with self.lock:
-            rospy.loginfo("AdvertiseService handle_req active_req lock")
             self.active_requests -= 1
 
             if self.shutdown_requested:
@@ -65,7 +60,6 @@ class AdvertisedServiceHandler():
                     "Service %s was unadvertised with a service call in progress, "
                     "aborting service call with request ID %s" % (self.service_name, request_id))
                 return None
-        rospy.loginfo("AdvertiseService handle_req active_req release")
 
         resp = self.responses[request_id]
         del self.responses[request_id]

@@ -139,7 +139,6 @@ class Subscription():
         if sid is None:
             self.clients.clear()
         elif sid in self.clients:
-            self.protocol.log("info", "Unsubscribed sid %s" % sid)
             del self.clients[sid]
 
         if not self.is_empty():

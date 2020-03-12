@@ -32,7 +32,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from threading import Lock
-from rospy import Subscriber, logerr, loginfo
+from rospy import Subscriber, logerr
 from rostopic import get_topic_type
 from rosbridge_library.internal import ros_loader, message_conversion
 from rosbridge_library.internal.topics import TopicNotEstablishedException
@@ -100,9 +100,7 @@ class MultiSubscriber():
     def unregister(self):
         self.subscriber.unregister()
         with self.lock:
-            loginfo("MultiSubscriber unregister lock")
             self.subscriptions.clear()
-        loginfo("MultiSubscriber unregister release")
 
     def verify_type(self, msg_type):
         """ Verify that the subscriber subscribes to messages of this type.
@@ -133,13 +131,11 @@ class MultiSubscriber():
 
         """
         with self.lock:
-            loginfo("MultiSubscriber subscribe lock")
             self.subscriptions[client_id] = callback
             # If the topic is latched, add_callback will immediately invoke
             # the given callback.
             self.subscriber.impl.add_callback(self.callback, [callback])
             self.subscriber.impl.remove_callback(self.callback, [callback])
-        loginfo("MultiSubscriber subscribe lock")
 
     def unsubscribe(self, client_id):
         """ Unsubscribe the specified client from this subscriber
@@ -149,17 +145,13 @@ class MultiSubscriber():
 
         """
         with self.lock:
-            loginfo("MultiSubscriber unsubscribe lock")
             del self.subscriptions[client_id]
-        loginfo("MultiSubscriber unsubscribe release")
 
     def has_subscribers(self):
         """ Return true if there are subscribers """
         with self.lock:
-            loginfo("MultiSubscriber has_subscribers lock")
             ret = len(self.subscriptions) != 0
             return ret
-        loginfo("MultiSubscriber has_subscribers release")
 
     def callback(self, msg, callbacks=None):
         """ Callback for incoming messages on the rospy.Subscriber
@@ -176,9 +168,8 @@ class MultiSubscriber():
         # Get the callbacks to call
         if not callbacks:
             with self.lock:
-                loginfo("MultiSubscriber callback lock")
                 callbacks = list(self.subscriptions.values())
-            loginfo("MultiSubscriber callback release")
+
         # Pass the JSON to each of the callbacks
         for callback in callbacks:
             try:

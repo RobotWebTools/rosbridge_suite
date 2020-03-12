@@ -35,7 +35,7 @@ from time import time
 from copy import copy
 from threading import Lock, Timer
 from rospy import Publisher, SubscribeListener
-from rospy import logwarn, loginfo
+from rospy import logwarn
 from rostopic import get_topic_type
 from rosbridge_library.internal import ros_loader, message_conversion
 from rosbridge_library.internal.topics import TopicNotEstablishedException, TypeConflictException
@@ -95,9 +95,7 @@ class PublisherConsistencyListener(SubscribeListener):
         """
         if not self.timed_out():
             with self.lock:
-                loginfo("peer_subscribe lock")
                 msgs = copy(self.msg_buffer)
-            loginfo("peer_subscribe release")
             for msg in msgs:
                 peer_publish(msg)
 
@@ -112,9 +110,7 @@ class PublisherConsistencyListener(SubscribeListener):
         messages in preparation for new subscriptions """
         if not self.timed_out():
             with self.lock:
-                loginfo("publish_override lock")
                 self.msg_buffer.append(message)
-            loginfo("publish_override release")
         self.publish(message)
 
 
