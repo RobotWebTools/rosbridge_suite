@@ -38,6 +38,7 @@ import sys
 from twisted.python import log
 from twisted.internet import reactor, ssl
 from twisted.internet.error import CannotListenError, ReactorNotRunning
+import autobahn #to check version
 from autobahn.twisted.websocket import WebSocketServerFactory, listenWS
 from autobahn.websocket.compress import (PerMessageDeflateOffer,
                                          PerMessageDeflateOfferAccept)
@@ -88,6 +89,7 @@ if __name__ == "__main__":
 
     ping_interval = float(rospy.get_param('~websocket_ping_interval', 0))
     ping_timeout = float(rospy.get_param('~websocket_ping_timeout', 30))
+    null_origin = rospy.get_param('~websocket_null_origin', True) #default to original behaviour
 
     # SSL options
     certfile = rospy.get_param('~certfile', None)
@@ -272,11 +274,19 @@ if __name__ == "__main__":
     uri = '{}://{}:{}'.format(protocol, address, port)
     factory = WebSocketServerFactory(uri)
     factory.protocol = RosbridgeWebSocket
-    factory.setProtocolOptions(
-        perMessageCompressionAccept=handle_compression_offers,
-        autoPingInterval=ping_interval,
-        autoPingTimeout=ping_timeout,
-    )
+    if autobahn.__version__ == '0.10.3':
+        factory.setProtocolOptions(
+            perMessageCompressionAccept=handle_compression_offers,
+            autoPingInterval=ping_interval,
+            autoPingTimeout=ping_timeout,
+        )
+    else:
+        factory.setProtocolOptions(
+            perMessageCompressionAccept=handle_compression_offers,
+            autoPingInterval=ping_interval,
+            autoPingTimeout=ping_timeout,
+            allowNullOrigin=null_origin,
+        )
 
     connected = False
     while not connected and not rospy.is_shutdown():
