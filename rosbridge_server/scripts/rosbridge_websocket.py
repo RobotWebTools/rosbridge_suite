@@ -100,6 +100,8 @@ if __name__ == "__main__":
     port = rospy.get_param('~port', 9090)
     address = rospy.get_param('~address', "0.0.0.0")
 
+    external_port = int(rospy.get_param('~websocket_external_port', port))
+
     RosbridgeWebSocket.client_manager = ClientManager()
 
     # Get the glob strings and parse them as arrays.
@@ -231,6 +233,14 @@ if __name__ == "__main__":
             print("--websocket_ping_timeout argument provided without a value.")
             sys.exit(-1)
 
+    if "--websocket_external_port" in sys.argv:
+        idx = sys.argv.index("--websocket_external_port") + 1
+        if idx < len(sys.argv):
+            external_port = int(sys.argv[idx])
+        else:
+            print("--websocket_external_port argument provided without a value.")
+            sys.exit(-1)
+
     # To be able to access the list of topics and services, you must be able to access the rosapi services.
     if RosbridgeWebSocket.services_glob:
         RosbridgeWebSocket.services_glob.append("/rosapi/*")
@@ -273,7 +283,7 @@ if __name__ == "__main__":
     rospy.set_param('~actual_port', port)
 
     uri = '{}://{}:{}'.format(protocol, address, port)
-    factory = WebSocketServerFactory(uri)
+    factory = WebSocketServerFactory(uri, externalPort=external_port)
     factory.protocol = RosbridgeWebSocket
     # https://github.com/crossbario/autobahn-python/commit/2ef13a6804054de74eb36455b58a64a3c701f889
     if LooseVersion(autobahn.__version__) < LooseVersion("0.15.0"):

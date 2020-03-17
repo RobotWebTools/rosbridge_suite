@@ -16,6 +16,10 @@
 
   <arg name="authenticate" default="false" />
 
+  <arg name="websocket_ping_interval" default="0" />
+  <arg name="websocket_ping_timeout" default="30" />
+  <arg name="websocket_external_port" default="None" />
+
   <arg name="topics_glob" default="[*]" />
   <arg name="services_glob" default="[*]" />
   <arg name="params_glob" default="[*]" />
@@ -38,6 +42,10 @@
       <param name="unregister_timeout" value="$(arg unregister_timeout)"/>
       <param name="use_compression" value="$(arg use_compression)"/>
 
+      <param name="websocket_ping_interval" value="$(arg websocket_ping_interval)" />
+      <param name="websocket_ping_timeout" value="$(arg websocket_ping_timeout)" />
+      <param name="websocket_external_port" value="$(arg websocket_external_port)" />
+
       <param name="topics_glob" value="$(arg topics_glob)"/>
       <param name="services_glob" value="$(arg services_glob)"/>
       <param name="params_glob" value="$(arg params_glob)"/>
@@ -54,6 +62,10 @@
       <param name="max_message_size" value="$(arg max_message_size)"/>
       <param name="unregister_timeout" value="$(arg unregister_timeout)"/>
       <param name="use_compression" value="$(arg use_compression)"/>
+
+      <param name="websocket_ping_interval" value="$(arg websocket_ping_interval)" />
+      <param name="websocket_ping_timeout" value="$(arg websocket_ping_timeout)" />
+      <param name="websocket_external_port" value="$(arg websocket_external_port)" />
 
       <param name="topics_glob" value="$(arg topics_glob)"/>
       <param name="services_glob" value="$(arg services_glob)"/>
