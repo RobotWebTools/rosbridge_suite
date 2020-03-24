@@ -18,7 +18,7 @@
 
   <arg name="websocket_ping_interval" default="0" />
   <arg name="websocket_ping_timeout" default="30" />
-  <arg name="websocket_external_port" default="None" />
+  <arg name="websocket_external_port" default="$(arg port)" />
 
   <arg name="topics_glob" default="[*]" />
   <arg name="services_glob" default="[*]" />
