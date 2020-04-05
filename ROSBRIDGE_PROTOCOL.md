@@ -208,7 +208,7 @@ receiving the message, which is especially useful when `use_sim_time` is set, si
 the simulated time the message was received.
 
 When using this encoding, a client application will need to know exactly how to parse the raw
-message. For this it's useful to use the `/rosapi/get_topics_and_raw_types` service, which will give
+message. For this it's useful to use the `/rosapi/topics_and_raw_types` service, which will give
 you all topics and their raw message definitions, similar to `gendeps --cat`. This is the same
 format as used by bag files.
 
