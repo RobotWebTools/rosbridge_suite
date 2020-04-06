@@ -280,7 +280,10 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
     # Substitute the correct time if we're an std_msgs/Header
     try:
         if rostype in ros_header_types:
-            inst.stamp = rospy.get_rostime()
+            cur_time = rospy.get_rostime()
+            # copy attributes of global Time obj to inst.stamp
+            inst.stamp.secs = cur_time.secs
+            inst.stamp.nsecs = cur_time.nsecs
     except rospy.exceptions.ROSInitException as e:
         rospy.logdebug("Not substituting the correct header time: %s" % e)
 

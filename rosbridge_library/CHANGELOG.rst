@@ -2,6 +2,37 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.4 (2020-02-20)
+-------------------
+* Concurrency review (`#458 <https://github.com/RobotWebTools/rosbridge_suite/issues/458>`_)
+  * Safer locking in PublisherConsistencyListener
+  * Safer locking in ros_loader
+  * Print QueueMessageHandler exceptions to stderr
+  * Register before resuming outgoing valve
+  * Don't pause a finished socket valve
+* Add cbor-raw compression (`#452 <https://github.com/RobotWebTools/rosbridge_suite/issues/452>`_)
+  The CBOR compression is already a huge win over JSON or PNG encoding,
+  but it’s still suboptimal in some situations. This PR adds support for
+  getting messages in their raw binary (ROS-serialized) format. This has
+  benefits in the following cases:
+  - Your application already knows how to parse messages in bag files
+  (e.g. using [rosbag.js](https://github.com/cruise-automation/rosbag.js),
+  which means that now you can use consistent code paths for both bags
+  and live messages.
+  - You want to parse messages as late as possible, or in parallel, e.g.
+  only in the thread or WebWorker that cares about the message. Delaying
+  the parsing of the message means that moving or copying the message to
+  the thread is cheaper when its in binary form, since no serialization
+  between threads is necessary.
+  - You only care about part of the message, and don't need to parse the
+  rest of it.
+  - You really care about performance; no conversion between the ROS
+  binary format and CBOR is done in the rosbridge_sever.
+* Fix typos in rosbridge_library's description (`#450 <https://github.com/RobotWebTools/rosbridge_suite/issues/450>`_)
+* Python 3 fix for dict::values (`#446 <https://github.com/RobotWebTools/rosbridge_suite/issues/446>`_)
+  Under Python 3, values() returns a view-like object, and because that object is used outside the mutex, we were getting `RuntimeError: dictionary changed size during iteration` under some circumstances. This creates a copy of the values, restoring the Python 2 behaviour and fixing the problem.
+* Contributors: Jan Paul Posma, Matt Vollrath, Mike Purvis, miller-alex
+
 0.11.3 (2019-08-07)
 -------------------
 
