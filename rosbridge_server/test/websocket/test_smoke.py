@@ -18,8 +18,8 @@ log.startLogging(sys.stderr)
 
 # For consistency, the number of messages must not exceed the the protocol
 # Subscriber queue_size.
-NUM_MSGS = 100
-MSG_SIZE = 10000
+NUM_MSGS = 10
+MSG_SIZE = 10
 A_TOPIC = '/a_topic'
 B_TOPIC = '/b_topic'
 A_STRING = 'A' * MSG_SIZE
