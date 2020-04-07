@@ -217,9 +217,6 @@ class SubscriberManager():
 
         """
         with self._lock:
-            if not topic in self._subscribers:
-                return
-
             self._subscribers[topic].unsubscribe(client_id)
 
             if not self._subscribers[topic].has_subscribers():
