@@ -119,7 +119,6 @@ class MultiSubscriber():
         if not ros_loader.get_message_class(msg_type) is self.msg_class:
             raise TypeConflictException(self.topic,
                                         self.msg_class._type, msg_type)
-        return
 
     def subscribe(self, client_id, callback):
         """ Subscribe the specified client to this subscriber.
@@ -150,8 +149,7 @@ class MultiSubscriber():
     def has_subscribers(self):
         """ Return true if there are subscribers """
         with self.lock:
-            ret = len(self.subscriptions) != 0
-            return ret
+            return len(self.subscriptions) != 0
 
     def callback(self, msg, callbacks=None):
         """ Callback for incoming messages on the rospy.Subscriber
@@ -177,7 +175,6 @@ class MultiSubscriber():
             except Exception as exc:
                 # Do nothing if one particular callback fails except log it
                 logerr("Exception calling subscribe callback: %s", exc)
-                pass
 
 
 class SubscriberManager():
