@@ -4,6 +4,8 @@
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
+CATKIN_DIR=/catkin_ws
+
 docker build -t rosbridge_dev .
 docker run -it --rm --net=host \
   -v "$(pwd)/rosbridge_suite:${CATKIN_DIR}/src/rosbridge_suite:ro" \
