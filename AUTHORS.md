@@ -11,3 +11,4 @@ Contributors
  * Brandon Alexander (baalexander@gmail.com)
  * David Bertram (davidbertram@gmx.de)
  * Matthias Gruhler (matthias.gruhler@ipa.fraunhofer.de)
+ * [Matt Vollrath](https://mvollrath.net) (matt@endpoint.com)
