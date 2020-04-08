@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.5 (2020-04-08)
+-------------------
 * default websocket_external_port to port to mimic behavior in node (`#470 <https://github.com/RobotWebTools/rosbridge_suite/issues/470>`_)
   fixes bug introduced in `#468 <https://github.com/RobotWebTools/rosbridge_suite/issues/468>`_
 * Default to supporting local files as we had before Autobahn. (`#469 <https://github.com/RobotWebTools/rosbridge_suite/issues/469>`_)

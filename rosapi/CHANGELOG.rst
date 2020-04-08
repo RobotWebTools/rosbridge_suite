@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.5 (2020-04-08)
+-------------------
 * Python 3 updates/fixes (`#460 <https://github.com/RobotWebTools/rosbridge_suite/issues/460>`_)
   * rosbridge_library, rosbridge_server: Update package format
   Add Python3 conditional dependencies where applicable.
