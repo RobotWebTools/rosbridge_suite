@@ -2,6 +2,32 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* default websocket_external_port to port to mimic behavior in node (`#470 <https://github.com/RobotWebTools/rosbridge_suite/issues/470>`_)
+  fixes bug introduced in `#468 <https://github.com/RobotWebTools/rosbridge_suite/issues/468>`_
+* Default to supporting local files as we had before Autobahn. (`#469 <https://github.com/RobotWebTools/rosbridge_suite/issues/469>`_)
+  For Kinetic 0.10.3 version don't add the allowNullOrigin option.
+  For everything else add it and default to True because that is
+  consistent with the original behaviour of this package.
+  Add websocket_null_origin to launch args
+* Python 3 updates/fixes (`#460 <https://github.com/RobotWebTools/rosbridge_suite/issues/460>`_)
+  * rosbridge_library, rosbridge_server: Update package format
+  Add Python3 conditional dependencies where applicable.
+  * rosbridge_library: Fix pngcompression for Python 3
+  * rosapi: Use catkin_install_python for scripts
+* Fix intermittent test smoke (`#473 <https://github.com/RobotWebTools/rosbridge_suite/issues/473>`_)
+  * Run rosbridge_server websocket tests serial
+  Running these tests in parallel may make them less reliable.
+  * Reduce websocket smoke test load
+  Appears to be failing intermittently due to a client issue.
+  Co-authored-by: Jihoon Lee <jihoonlee.in@gmail.com>
+* Expose autobahn externalPort parameter (`#468 <https://github.com/RobotWebTools/rosbridge_suite/issues/468>`_)
+  * Expose autobahn externalPort parameter
+  * Use ws port as default external port
+  * Include websocket params in launchfile
+* Contributors: Alexey Rogachevskiy, Eduardo Paez, El Jawad Alaa, Matt Vollrath, boilerbots
+
 0.11.4 (2020-02-20)
 -------------------
 * Concurrency review (`#458 <https://github.com/RobotWebTools/rosbridge_suite/issues/458>`_)

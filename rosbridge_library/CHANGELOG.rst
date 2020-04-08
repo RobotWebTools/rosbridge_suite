@@ -2,6 +2,32 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add script for dockerized development shell (`#479 <https://github.com/RobotWebTools/rosbridge_suite/issues/479>`_)
+  * Add script for dockerized development shell
+  * Fix queue dropping test
+* Subscriber concurrency review (`#478 <https://github.com/RobotWebTools/rosbridge_suite/issues/478>`_)
+  * Lock access to SubscriberManager public methods
+  Prevent subscribe during unsubscribe critical section.
+  * Unsubscribing an unsubscribed topic is an error
+  This branch must not be ignored.
+  * Cleanup some redundant syntax in subscribers impl
+* Fix queue blocking (`#464 <https://github.com/RobotWebTools/rosbridge_suite/issues/464>`_)
+  * Unblock QueueMessageHandler.handle_message
+  The thread was holding the lock while pushing to a potentially blocking
+  function.  Rewrite the logic and use a deque while we're at it.
+  * Add test for subscription queue behavior
+  Guarantee that the queue drops messages when blocked.
+* Python 3 updates/fixes (`#460 <https://github.com/RobotWebTools/rosbridge_suite/issues/460>`_)
+  * rosbridge_library, rosbridge_server: Update package format
+  Add Python3 conditional dependencies where applicable.
+  * rosbridge_library: Fix pngcompression for Python 3
+  * rosapi: Use catkin_install_python for scripts
+* Fixing wrong header/stamp in published ROS-messsages (`#472 <https://github.com/RobotWebTools/rosbridge_suite/issues/472>`_)
+  When publishing a message to ROS (i.e. incoming from rosbridge_server's perspective), timestamps in the Header attributes all point to the same Time object iff the message contains multiple Header attributes (typically the case if a ROS message contains other ROS messages, e.g. ...Array-types) and rosparam use_sim_time is true.
+* Contributors: Alexey Rogachevskiy, Matt Vollrath, danielmaier
+
 0.11.4 (2020-02-20)
 -------------------
 * Concurrency review (`#458 <https://github.com/RobotWebTools/rosbridge_suite/issues/458>`_)
