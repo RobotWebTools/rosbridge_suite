@@ -95,6 +95,9 @@ class TestMessageHandlers(unittest.TestCase):
         handler = handler.set_queue_length(queue_length)
         self.assertIsInstance(handler, subscribe.QueueMessageHandler)
 
+        # yield the thread to let QueueMessageHandler reach wait().
+        time.sleep(0.001)
+
         # send all messages at once.
         # only the first and the last queue_length should get through,
         # because the callbacks are blocked.
@@ -102,7 +105,7 @@ class TestMessageHandlers(unittest.TestCase):
             handler.handle_message(x)
             # yield the thread so the first callback can append,
             # otherwise the first handled value is non-deterministic.
-            time.sleep(0)
+            time.sleep(0.001)
 
         # wait long enough for all the callbacks, and then some.
         time.sleep(queue_length + 3)
