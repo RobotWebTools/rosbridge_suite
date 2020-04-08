@@ -119,7 +119,6 @@ class MultiSubscriber():
         if not ros_loader.get_message_class(msg_type) is self.msg_class:
             raise TypeConflictException(self.topic,
                                         self.msg_class._type, msg_type)
-        return
 
     def subscribe(self, client_id, callback):
         """ Subscribe the specified client to this subscriber.
@@ -150,8 +149,7 @@ class MultiSubscriber():
     def has_subscribers(self):
         """ Return true if there are subscribers """
         with self.lock:
-            ret = len(self.subscriptions) != 0
-            return ret
+            return len(self.subscriptions) != 0
 
     def callback(self, msg, callbacks=None):
         """ Callback for incoming messages on the rospy.Subscriber
@@ -177,7 +175,6 @@ class MultiSubscriber():
             except Exception as exc:
                 # Do nothing if one particular callback fails except log it
                 logerr("Exception calling subscribe callback: %s", exc)
-                pass
 
 
 class SubscriberManager():
@@ -186,6 +183,7 @@ class SubscriberManager():
     """
 
     def __init__(self):
+        self._lock = Lock()
         self._subscribers = {}
 
     def subscribe(self, client_id, topic, callback, msg_type=None):
@@ -198,13 +196,14 @@ class SubscriberManager():
         msg_type  -- (optional) the type of the topic
 
         """
-        if not topic in self._subscribers:
-            self._subscribers[topic] = MultiSubscriber(topic, msg_type)
+        with self._lock:
+            if not topic in self._subscribers:
+                self._subscribers[topic] = MultiSubscriber(topic, msg_type)
 
-        if msg_type is not None:
-            self._subscribers[topic].verify_type(msg_type)
+            if msg_type is not None:
+                self._subscribers[topic].verify_type(msg_type)
 
-        self._subscribers[topic].subscribe(client_id, callback)
+            self._subscribers[topic].subscribe(client_id, callback)
 
     def unsubscribe(self, client_id, topic):
         """ Unsubscribe from a topic
@@ -214,14 +213,12 @@ class SubscriberManager():
         topic     -- the topic to unsubscribe from
 
         """
-        if not topic in self._subscribers:
-            return
+        with self._lock:
+            self._subscribers[topic].unsubscribe(client_id)
 
-        self._subscribers[topic].unsubscribe(client_id)
-
-        if not self._subscribers[topic].has_subscribers():
-            self._subscribers[topic].unregister()
-            del self._subscribers[topic]
+            if not self._subscribers[topic].has_subscribers():
+                self._subscribers[topic].unregister()
+                del self._subscribers[topic]
 
 
 manager = SubscriberManager()
