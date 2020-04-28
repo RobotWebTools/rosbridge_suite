@@ -199,6 +199,8 @@ def _splittype(typestring):
     splits = [x for x in typestring.split("/") if x]
     if len(splits) == 3:
         return (splits[0], splits[2])
+    if len(splits) == 2:
+        return (splits[0], splits[1])
     raise InvalidTypeStringException(typestring)
 
 
