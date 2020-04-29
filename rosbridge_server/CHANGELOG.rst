@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.6 (2020-04-29)
+-------------------
 * Output node parameter (`#481 <https://github.com/RobotWebTools/rosbridge_suite/issues/481>`_)
 * Contributors: Raffaello Bonghi
 
