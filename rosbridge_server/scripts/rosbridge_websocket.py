@@ -100,7 +100,12 @@ if __name__ == "__main__":
     port = rospy.get_param('~port', 9090)
     address = rospy.get_param('~address', "0.0.0.0")
 
-    external_port = int(rospy.get_param('~websocket_external_port', port))
+    external_port = rospy.get_param('~websocket_external_port', None)
+    if external_port:
+        try:
+            external_port = int(external_port)
+        except ValueError:
+            external_port = None
 
     RosbridgeWebSocket.client_manager = ClientManager()
 
