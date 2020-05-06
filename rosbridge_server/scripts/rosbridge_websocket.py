@@ -104,7 +104,7 @@ if __name__ == "__main__":
     if external_port:
         try:
             external_port = int(external_port)
-        except:
+        except ValueError:
             external_port = None
 
     RosbridgeWebSocket.client_manager = ClientManager()
