@@ -2,6 +2,9 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.6 (2020-04-29)
+-------------------
+
 0.11.5 (2020-04-08)
 -------------------
 * Add script for dockerized development shell (`#479 <https://github.com/RobotWebTools/rosbridge_suite/issues/479>`_)

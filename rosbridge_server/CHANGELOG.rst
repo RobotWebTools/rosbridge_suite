@@ -2,6 +2,11 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.6 (2020-04-29)
+-------------------
+* Output node parameter (`#481 <https://github.com/RobotWebTools/rosbridge_suite/issues/481>`_)
+* Contributors: Raffaello Bonghi
+
 0.11.5 (2020-04-08)
 -------------------
 * default websocket_external_port to port to mimic behavior in node (`#470 <https://github.com/RobotWebTools/rosbridge_suite/issues/470>`_)
