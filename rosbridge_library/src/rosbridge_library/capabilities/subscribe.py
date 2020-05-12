@@ -87,7 +87,7 @@ class Subscription():
         """ Unsubscribes this subscription and cleans up resources """
         manager.unsubscribe(self.client_id, self.topic)
         with self.handler_lock:
-            self.handler.finish()
+            self.handler.finish(block=False)
         self.clients.clear()
 
     def subscribe(self, sid=None, msg_type=None, throttle_rate=0,
