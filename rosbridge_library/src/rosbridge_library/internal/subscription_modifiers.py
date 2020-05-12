@@ -115,6 +115,9 @@ class QueueMessageHandler(MessageHandler, Thread):
 
     def handle_message(self, msg):
         with self.c:
+            if not self.alive:
+                return
+
             should_notify = len(self.queue) == 0
             self.queue.append(msg)
             if should_notify:
