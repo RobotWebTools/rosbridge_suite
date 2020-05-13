@@ -98,7 +98,7 @@ class IncomingQueue(threading.Thread):
     def run(self):
         while True:
             with self.cond:
-                if len(self.queue) == 0:
+                if len(self.queue) == 0 and not self._finished:
                     self.cond.wait()
 
                 if self._finished:
