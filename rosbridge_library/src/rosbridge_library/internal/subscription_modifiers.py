@@ -80,7 +80,7 @@ class MessageHandler():
         else:
             return QueueMessageHandler(self)
 
-    def finish(self):
+    def finish(self, block=True):
         pass
 
 
@@ -98,7 +98,7 @@ class ThrottleMessageHandler(MessageHandler):
         else:
             return QueueMessageHandler(self)
 
-    def finish(self):
+    def finish(self, block=True):
         pass
 
 
@@ -115,6 +115,9 @@ class QueueMessageHandler(MessageHandler, Thread):
 
     def handle_message(self, msg):
         with self.c:
+            if not self.alive:
+                return
+
             should_notify = len(self.queue) == 0
             self.queue.append(msg)
             if should_notify:
@@ -136,14 +139,15 @@ class QueueMessageHandler(MessageHandler, Thread):
                 self.c.notify()
             return self
 
-    def finish(self):
+    def finish(self, block=True):
         """ If throttle was set to 0, this pushes all buffered messages """
         # Notify the thread to finish
         with self.c:
             self.alive = False
             self.c.notify()
 
-        self.join()
+        if block:
+            self.join()
 
     def run(self):
         while self.alive:

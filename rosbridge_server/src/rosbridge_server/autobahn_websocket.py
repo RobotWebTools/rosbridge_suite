@@ -39,6 +39,7 @@ import sys
 import threading
 import traceback
 from functools import wraps
+from collections import deque
 
 from autobahn.twisted.websocket import WebSocketServerProtocol
 from twisted.internet import interfaces, reactor
@@ -64,6 +65,48 @@ def log_exceptions(f):
             _log_exception()
             raise
     return wrapper
+
+
+class IncomingQueue(threading.Thread):
+    """Decouples incoming messages from the Autobahn thread.
+
+    This mitigates cases where outgoing messages are blocked by incoming,
+    and vice versa.
+    """
+    def __init__(self, protocol):
+        threading.Thread.__init__(self)
+        self.daemon = True
+        self.queue = deque()
+        self.protocol = protocol
+
+        self.cond = threading.Condition()
+        self._finished = False
+
+    def finish(self):
+        """Clear the queue and do not accept further messages."""
+        with self.cond:
+            self._finished = True
+            while len(self.queue) > 0:
+                self.queue.popleft()
+            self.cond.notify()
+
+    def push(self, msg):
+        with self.cond:
+            self.queue.append(msg)
+            self.cond.notify()
+
+    def run(self):
+        while True:
+            with self.cond:
+                if len(self.queue) == 0 and not self._finished:
+                    self.cond.wait()
+
+                if self._finished:
+                    break
+
+                msg = self.queue.popleft()
+
+            self.protocol.incoming(msg)
 
 
 @implementer(interfaces.IPushProducer)
@@ -131,6 +174,8 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
         }
         try:
             self.protocol = RosbridgeProtocol(cls.client_id_seed, parameters=parameters)
+            self.incoming_queue = IncomingQueue(self.protocol)
+            self.incoming_queue.start()
             producer = OutgoingValve(self)
             self.transport.registerProducer(producer, True)
             producer.resumeProducing()
@@ -177,10 +222,10 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
                 self.sendClose()
             except:
                 # proper error will be handled in the protocol class
-                self.protocol.incoming(message)
+                self.incoming_queue.push(message)
         else:
             # no authentication required
-            self.protocol.incoming(message)
+            self.incoming_queue.push(message)
 
     def outgoing(self, message):
         if type(message) == bson.BSON:
@@ -201,6 +246,7 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
         cls = self.__class__
         cls.clients_connected -= 1
         self.protocol.finish()
+        self.incoming_queue.finish()
         if cls.client_manager:
             cls.client_manager.remove_client(self.client_id, self.peer)
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
