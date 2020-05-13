@@ -2,6 +2,15 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix backpressure deadlock (`#496 <https://github.com/RobotWebTools/rosbridge_suite/issues/496>`_)
+  * Don't block Subscription.unregister()
+  * Don't add messages to finished queue handler
+  * Decouple incoming WS handling from server thread
+* Added support for None for websocket_external_port (`#494 <https://github.com/RobotWebTools/rosbridge_suite/issues/494>`_)
+* Contributors: Matt Vollrath, pramodhkp
+
 0.11.6 (2020-04-29)
 -------------------
 * Output node parameter (`#481 <https://github.com/RobotWebTools/rosbridge_suite/issues/481>`_)
