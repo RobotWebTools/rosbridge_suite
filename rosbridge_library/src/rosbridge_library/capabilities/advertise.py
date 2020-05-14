@@ -32,6 +32,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import fnmatch
+import threading
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
 from rosbridge_library.util import string_types
@@ -52,6 +53,7 @@ class Registration():
         self.client_id = client_id
         self.topic = topic
         self.clients = {}
+        self.clients_lock = threading.Lock()
 
     def unregister(self):
         manager.unregister(self.client_id, self.topic)
@@ -60,16 +62,19 @@ class Registration():
         # Register with the publisher manager, propagating any exception
         manager.register(self.client_id, self.topic, msg_type, latch=latch, queue_size=queue_size)
 
-        self.clients[adv_id] = True
+        with self.clients_lock:
+            self.clients[adv_id] = True
 
     def unregister_advertisement(self, adv_id=None):
-        if adv_id is None:
-            self.clients.clear()
-        elif adv_id in self.clients:
-            del self.clients[adv_id]
+        with self.clients_lock:
+            if adv_id is None:
+                self.clients.clear()
+            elif adv_id in self.clients:
+                del self.clients[adv_id]
 
     def is_empty(self):
-        return len(self.clients) == 0
+        with self.clients_lock:
+            return len(self.clients) == 0
 
 
 class Advertise(Capability):
@@ -89,6 +94,7 @@ class Advertise(Capability):
 
         # Initialize class variables
         self._registrations = {}
+        self._registrations_lock = threading.Lock()
 
         if protocol.parameters and "unregister_timeout" in protocol.parameters:
             manager.unregister_timeout = protocol.parameters.get("unregister_timeout")
@@ -117,13 +123,14 @@ class Advertise(Capability):
         else:
             self.protocol.log("debug", "No topic security glob, not checking advertisement.")
 
-        # Create the Registration if one doesn't yet exist
-        if not topic in self._registrations:
-            client_id = self.protocol.client_id
-            self._registrations[topic] = Registration(client_id, topic)
+        with self._registrations_lock:
+            # Create the Registration if one doesn't yet exist
+            if not topic in self._registrations:
+                client_id = self.protocol.client_id
+                self._registrations[topic] = Registration(client_id, topic)
 
-        # Register, propagating any exceptions
-        self._registrations[topic].register_advertisement(msg_type, aid, latch, queue_size)
+            # Register, propagating any exceptions
+            self._registrations[topic].register_advertisement(msg_type, aid, latch, queue_size)
 
     def unadvertise(self, message):
         # Pull out the ID
@@ -146,19 +153,22 @@ class Advertise(Capability):
         else:
             self.protocol.log("debug", "No topic security glob, not checking unadvertisement.")
 
-        # Now unadvertise the topic
-        if topic not in self._registrations:
-            return
-        self._registrations[topic].unregister_advertisement(aid)
+        with self._registrations_lock:
+            # Now unadvertise the topic
+            if topic not in self._registrations:
+                return
+            self._registrations[topic].unregister_advertisement(aid)
 
-        # Check if the registration is now finished with
-        if self._registrations[topic].is_empty():
-            self._registrations[topic].unregister()
-            del self._registrations[topic]
+            # Check if the registration is now finished with
+            if self._registrations[topic].is_empty():
+                self._registrations[topic].unregister()
+                del self._registrations[topic]
 
     def finish(self):
-        for registration in self._registrations.values():
-            registration.unregister()
-        self._registrations.clear()
+        with self._registrations_lock:
+            for registration in self._registrations.values():
+                registration.unregister()
+            self._registrations.clear()
+
         self.protocol.unregister_operation("advertise")
         self.protocol.unregister_operation("unadvertise")
