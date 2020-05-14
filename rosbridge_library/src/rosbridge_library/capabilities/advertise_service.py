@@ -24,16 +24,17 @@ class AdvertisedServiceHandler():
         # setup the service
         self.service_handle = rospy.Service(service_name, get_service_class(service_type), self.handle_request)
 
-    def next_id(self):
-        id = self.id_counter
+    def _next_id(self):
+        _id = self.id_counter
         self.id_counter += 1
-        return id
+        return _id
 
     def handle_request(self, req):
         with self.lock:
             self.active_requests += 1
+            next_id = self._next_id()
         # generate a unique ID
-        request_id = "service_request:" + self.service_name + ":" + str(self.next_id())
+        request_id = "service_request:" + self.service_name + ":" + str(next_id)
 
         # build a request to send to the external client
         request_message = {
@@ -91,6 +92,9 @@ class AdvertiseService(Capability):
         # Register the operations that this capability provides
         protocol.register_operation("advertise_service", self.advertise_service)
 
+        # The list of services belongs to protocol, but we lock it on this side.
+        self._services_lock = Lock()
+
     def advertise_service(self, message):
         # Typecheck the args
         self.basic_type_check(message, self.advertise_service_msg_fields)
@@ -112,14 +116,16 @@ class AdvertiseService(Capability):
         else:
             self.protocol.log("debug", "No service security glob, not checking service advertisement.")
 
-        # check for an existing entry
-        if service_name in self.protocol.external_service_list.keys():
-            self.protocol.log("warn", "Duplicate service advertised. Overwriting %s." % service_name)
-            self.protocol.external_service_list[service_name].service_handle.shutdown("Duplicate advertiser.")
-            del self.protocol.external_service_list[service_name]
+        with self._services_lock:
+            # check for an existing entry
+            if service_name in self.protocol.external_service_list.keys():
+                self.protocol.log("warn", "Duplicate service advertised. Overwriting %s." % service_name)
+                self.protocol.external_service_list[service_name].service_handle.shutdown("Duplicate advertiser.")
+                del self.protocol.external_service_list[service_name]
 
-        # setup and store the service information
-        service_type = message["type"]
-        service_handler = AdvertisedServiceHandler(service_name, service_type, self.protocol)
-        self.protocol.external_service_list[service_name] = service_handler
+            # setup and store the service information
+            service_type = message["type"]
+            service_handler = AdvertisedServiceHandler(service_name, service_type, self.protocol)
+            self.protocol.external_service_list[service_name] = service_handler
+
         self.protocol.log("info", "Advertised service %s." % service_name)
