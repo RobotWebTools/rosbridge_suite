@@ -118,9 +118,6 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
-        if type(message_string) is bytes:
-            message_string = message_string.decode('utf-8')
-        # print ("Incoming: ", message_string)
         self.buffer = self.buffer + message_string
         msg = None
 
@@ -167,7 +164,6 @@ class Protocol:
                                 break
                         except Exception as e:
                             # debug json-decode errors with this line
-                            #print e
                             pass
                     # if load was successfull --> break outer loop, too.. -> no need to check if json begins at a "later" opening bracket..
                     if msg != None:
@@ -205,9 +201,6 @@ class Protocol:
         try:
             self.operations[op](msg)
         except Exception as exc:
-            # import traceback as tb
-            # tb.print_exc(exc)
-            # print ("BAAA%")
             self.log("error", "%s: %s" % (op, str(exc)), mid)
 
         # if anything left in buffer .. re-call self.incoming

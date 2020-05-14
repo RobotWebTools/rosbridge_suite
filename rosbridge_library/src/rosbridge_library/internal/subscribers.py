@@ -107,7 +107,6 @@ class MultiSubscriber():
         self.msg_class = msg_class
         self.node_handle = node_handle
         # TODO(@jubeira): add support for other QoS.
-        print ("Subscriber in __init__: ", msg_class, "topic: ", topic, "cb: ", self.callback)
         self.subscriber = node_handle.create_subscription(msg_class, topic, self.callback, 10)
         self.new_subscriber = None
         self.new_subscriptions = {}
@@ -150,7 +149,6 @@ class MultiSubscriber():
             # which adds the new callback to the subscriptions dictionary.
             self.new_subscriptions.update({client_id: callback})
             if self.new_subscriber is None:
-                print ("Creating new subscriber to ", self.msg_class, "topic ", self.topic)
                 self.new_subscriber = self.node_handle.create_subscription(
                     self.msg_class, self.topic, self._new_sub_callback, 10)
 
@@ -188,7 +186,6 @@ class MultiSubscriber():
         if not callbacks:
             with self.lock:
                 callbacks = self.subscriptions.values()
-        print ("%.2f: " % time.time(), "Outgoing:", outgoing.get_json_values())
         # Pass the JSON to each of the callbacks
         for callback in callbacks:
             try:

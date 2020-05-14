@@ -36,8 +36,6 @@ import rclpy
 from rclpy.clock import ROSClock
 import numpy as np
 import array
-import time
-import random
 
 from rosbridge_library.internal import ros_loader
 
@@ -249,7 +247,6 @@ def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
         return _to_primitive_inst(msg, rostype, roottype, stack)
 
     # Check whether we're dealing with a list type
-    #print ("Inst: ", inst, type(inst))
     if inst is not None and type(inst) in list_types:
         return _to_list_inst(msg, rostype, roottype, inst, stack)
 
@@ -300,7 +297,6 @@ def _to_time_inst(msg, rostype, inst=None):
 
 def _to_primitive_inst(msg, rostype, roottype, stack):
     # Typecheck the msg
-    #print ("to prim", msg, rostype, roottype, stack)
     if type(msg) == int and rostype in type_map['float']:
         # propably wrong parsing,
         # fix that by casting the int to the expected float
@@ -315,11 +311,9 @@ def _to_primitive_inst(msg, rostype, roottype, stack):
 
 
 def _to_list_inst(msg, rostype, roottype, inst, stack):
-    #print ("To list", msg, type(msg), rostype, roottype, inst, stack)
     # Typecheck the msg
     if type(msg) not in list_types:
         raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))
-
 
     # Can duck out early if the list is empty
     if len(msg) == 0:
@@ -336,13 +330,9 @@ def _to_list_inst(msg, rostype, roottype, inst, stack):
 
 
 def _to_object_inst(msg, rostype, roottype, inst, stack):
-    #print ("to obj", msg, rostype, roottype, inst, stack)
 
     # Typecheck the msg
     if type(msg) is not dict:
-        # print ("Type msg:", type(msg))
-        # print ("Type inst:", type(inst))
-        # print (inst)
         raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))
 
     # Substitute the correct time if we're an std_msgs/Header
