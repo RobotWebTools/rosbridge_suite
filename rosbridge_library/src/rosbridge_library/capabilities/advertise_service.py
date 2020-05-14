@@ -92,9 +92,6 @@ class AdvertiseService(Capability):
         # Register the operations that this capability provides
         protocol.register_operation("advertise_service", self.advertise_service)
 
-        # The list of services belongs to protocol, but we lock it on this side.
-        self._services_lock = Lock()
-
     def advertise_service(self, message):
         # Typecheck the args
         self.basic_type_check(message, self.advertise_service_msg_fields)
@@ -116,7 +113,7 @@ class AdvertiseService(Capability):
         else:
             self.protocol.log("debug", "No service security glob, not checking service advertisement.")
 
-        with self._services_lock:
+        with self.protocol.external_service_lock:
             # check for an existing entry
             if service_name in self.protocol.external_service_list.keys():
                 self.protocol.log("warn", "Duplicate service advertised. Overwriting %s." % service_name)

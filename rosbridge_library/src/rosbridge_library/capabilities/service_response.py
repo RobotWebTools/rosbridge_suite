@@ -22,9 +22,13 @@ class ServiceResponse(Capability):
         self.basic_type_check(message, self.service_response_msg_fields)
 
         # check for the service
+        service_handler = None
         service_name = message["service"]
-        if service_name in self.protocol.external_service_list:
-            service_handler = self.protocol.external_service_list[service_name]
+        with self.protocol.external_service_lock:
+            if service_name in self.protocol.external_service_list:
+                service_handler = self.protocol.external_service_list[service_name]
+
+        if service_handler:
             # parse the message
             request_id = message["id"]
             values = message["values"]

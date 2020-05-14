@@ -31,6 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import rospy
+import threading
 import time
 
 from rosbridge_library.internal.exceptions import InvalidArgumentException
@@ -87,6 +88,7 @@ class Protocol:
     delay_between_messages = 0
     # global list of non-ros advertised services
     external_service_list = {}
+    external_service_lock = threading.Lock()
     # Use only BSON for the whole communication if the server has been started with bson_only_mode:=True
     bson_only_mode = False
 
