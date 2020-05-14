@@ -32,6 +32,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import fnmatch
+import threading
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
 from rosbridge_library.util import string_types
@@ -52,6 +53,7 @@ class Publish(Capability):
 
         # Save the topics that are published on for the purposes of unregistering
         self._published = {}
+        self._published_lock = threading.Lock()
 
         if protocol.parameters and "unregister_timeout" in protocol.parameters:
             manager.unregister_timeout = protocol.parameters.get("unregister_timeout")
@@ -79,8 +81,10 @@ class Publish(Capability):
 
         # Register as a publishing client, propagating any exceptions
         client_id = self.protocol.client_id
-        manager.register(client_id, topic, latch=latch, queue_size=queue_size)
-        self._published[topic] = True
+
+        with self._published_lock:
+            manager.register(client_id, topic, latch=latch, queue_size=queue_size)
+            self._published[topic] = True
 
         # Get the message if one was provided
         msg = message.get("msg", {})
@@ -90,6 +94,7 @@ class Publish(Capability):
 
     def finish(self):
         client_id = self.protocol.client_id
-        for topic in self._published:
-            manager.unregister(client_id, topic)
-        self._published.clear()
+        with self._published_lock:
+            for topic in self._published:
+                manager.unregister(client_id, topic)
+            self._published.clear()
