@@ -161,9 +161,13 @@ class RosbridgeWebSocket(WebSocketHandler):
                 self.close()
             except:
                 # proper error will be handled in the protocol class
+                if type(message) is bytes:
+                    message = message.decode('utf-8')
                 self.protocol.incoming(message)
         else:
             # no authentication required
+            if type(message) is bytes:
+                message = message.decode('utf-8')
             self.protocol.incoming(message)
 
     @log_exceptions
