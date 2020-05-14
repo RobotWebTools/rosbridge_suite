@@ -216,6 +216,7 @@ class Subscribe(Capability):
         protocol.register_operation("unsubscribe", self.unsubscribe)
 
         self._subscriptions = {}
+        self._subscriptions_lock = Lock()
 
     def subscribe(self, msg):
         # Pull out the ID
@@ -241,12 +242,6 @@ class Subscribe(Capability):
         else:
             self.protocol.log("debug", "No topic security glob, not checking subscription.")
 
-        if not topic in self._subscriptions:
-            client_id = self.protocol.client_id
-            cb = partial(self.publish, topic)
-            self._subscriptions[topic] = Subscription(client_id, topic, cb)
-
-        # Register the subscriber
         subscribe_args = {
           "sid": sid,
           "msg_type": msg.get("type", None),
@@ -255,7 +250,15 @@ class Subscribe(Capability):
           "queue_length": msg.get("queue_length", 0),
           "compression": msg.get("compression", "none")
         }
-        self._subscriptions[topic].subscribe(**subscribe_args)
+
+        with self._subscriptions_lock:
+            if not topic in self._subscriptions:
+                client_id = self.protocol.client_id
+                cb = partial(self.publish, topic)
+                self._subscriptions[topic] = Subscription(client_id, topic, cb)
+
+            # Register the subscriber
+            self._subscriptions[topic].subscribe(**subscribe_args)
 
         self.protocol.log("info", "Subscribed to %s" % topic)
 
@@ -280,13 +283,14 @@ class Subscribe(Capability):
         else:
             self.protocol.log("debug", "No topic security glob, not checking unsubscription.")
 
-        if topic not in self._subscriptions:
-            return
-        self._subscriptions[topic].unsubscribe(sid)
+        with self._subscriptions_lock:
+            if topic not in self._subscriptions:
+                return
+            self._subscriptions[topic].unsubscribe(sid)
 
-        if self._subscriptions[topic].is_empty():
-            self._subscriptions[topic].unregister()
-            del self._subscriptions[topic]
+            if self._subscriptions[topic].is_empty():
+                self._subscriptions[topic].unregister()
+                del self._subscriptions[topic]
 
         self.protocol.log("info", "Unsubscribed from %s" % topic)
 
@@ -342,8 +346,10 @@ class Subscribe(Capability):
         self.protocol.send(outgoing_msg)
 
     def finish(self):
-        for subscription in self._subscriptions.values():
-            subscription.unregister()
-        self._subscriptions.clear()
+        with self._subscriptions_lock:
+            for subscription in self._subscriptions.values():
+                subscription.unregister()
+            self._subscriptions.clear()
+
         self.protocol.unregister_operation("subscribe")
         self.protocol.unregister_operation("unsubscribe")
