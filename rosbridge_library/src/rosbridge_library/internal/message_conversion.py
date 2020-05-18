@@ -38,6 +38,7 @@ import numpy as np
 import array
 
 from rosbridge_library.internal import ros_loader
+from rosbridge_library.internal.object_decoders import shortcut_object_decoders
 
 import math
 import re
@@ -87,6 +88,8 @@ binary_encoder = None
 binary_encoder_type = 'default'
 bson_only_mode = False
 
+
+
 # TODO(@jubeira): configure module with a node handle.
 # The original code doesn't seem to actually use these parameters.
 def configure(node_handle=None):
@@ -135,20 +138,10 @@ def extract_values(inst):
         raise InvalidMessageException(inst=inst)
     return _from_inst(inst, rostype)
 
-def decode_compressed_image(msg, inst):
-    inst.header.frame_id = msg["header"]["frame_id"]
-    inst.header.stamp.sec = msg["header"]["stamp"]["sec"]
-    inst.header.stamp.nanosec = msg["header"]["stamp"]["nanosec"]
-    inst.format = msg["format"]
-    inst.data = array.array("B", msg["data"])
-    return inst
-
 def populate_instance(msg, inst):
     """ Returns an instance of the provided class, with its fields populated
     according to the values in msg """
     inst_type = msg_instance_type_repr(inst)
-    if inst_type == "sensor_msgs/CompressedImage":
-        return decode_compressed_image(msg, inst)
 
     return _to_inst(msg, inst_type, inst_type, inst)
 
@@ -230,7 +223,6 @@ def _from_object_inst(inst, rostype):
         field_inst = getattr(inst, field_name)
         msg[field_name] = _from_inst(field_inst, field_rostype)
     return msg
-
 
 def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
     # Check if it's uint8[], and if it's a string, try to b64decode
@@ -338,6 +330,10 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
     # Substitute the correct time if we're an std_msgs/Header
     if rostype in ros_header_types:
         inst.stamp = ROSClock().now().to_msg()
+
+    # Do we have a dedicated decoder for the object?
+    if rostype in shortcut_object_decoders:
+        return shortcut_object_decoders[rostype](msg, inst)
 
     inst_fields = inst.get_fields_and_field_types()
 
