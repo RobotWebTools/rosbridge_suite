@@ -45,6 +45,7 @@ def decode_compressed_image(msg, inst):
 
     # explicitely cast to array.array to overcome a costly runtime
     # check within inst.data instance.
+    # See also https://github.com/RobotWebTools/rosbridge_suite/pull/493#discussion_r425151919
     inst.data = array.array("B", msg["data"])
     return inst
 
