@@ -108,6 +108,8 @@ class IncomingQueue(threading.Thread):
 
             self.protocol.incoming(msg)
 
+        self.protocol.finish()
+
 
 @implementer(interfaces.IPushProducer)
 class OutgoingValve:
@@ -250,7 +252,4 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
             cls.client_manager.remove_client(self.client_id, self.peer)
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
 
-        try:
-            self.protocol.finish()
-        finally:
-            self.incoming_queue.finish()
+        self.incoming_queue.finish()
