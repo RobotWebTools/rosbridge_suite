@@ -245,8 +245,12 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
             return  # Closed before connection was opened.
         cls = self.__class__
         cls.clients_connected -= 1
-        self.protocol.finish()
-        self.incoming_queue.finish()
+
         if cls.client_manager:
             cls.client_manager.remove_client(self.client_id, self.peer)
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
+
+        try:
+            self.protocol.finish()
+        finally:
+            self.incoming_queue.finish()
