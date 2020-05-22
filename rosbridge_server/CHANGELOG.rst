@@ -2,6 +2,11 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Finish protocol in IncomingQueue thread (`#502 <https://github.com/RobotWebTools/rosbridge_suite/issues/502>`_)
+* Contributors: Matt Vollrath
+
 0.11.7 (2020-05-13)
 -------------------
 * Fix backpressure deadlock (`#496 <https://github.com/RobotWebTools/rosbridge_suite/issues/496>`_)
