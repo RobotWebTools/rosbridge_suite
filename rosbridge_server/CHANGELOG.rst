@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.8 (2020-05-21)
+-------------------
 * Finish protocol in IncomingQueue thread (`#502 <https://github.com/RobotWebTools/rosbridge_suite/issues/502>`_)
 * Contributors: Matt Vollrath
 
