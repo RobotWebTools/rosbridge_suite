@@ -16,7 +16,7 @@ from roscpp.srv import GetLoggers
 if sys.version_info >= (3, 0):
     string_types = (str,)
 else:
-    string_types = (str, unicode)
+    string_types = (str, unicode)  # noqa: F821
 
 
 def populate_random_args(d):
@@ -27,8 +27,8 @@ def populate_random_args(d):
         return d
     elif isinstance(d, str):
         return str(random.random())
-    elif sys.version_info < (3,0) and isinstance(d, unicode):
-        return unicode(random.random())
+    elif sys.version_info < (3,0) and isinstance(d, unicode):  # noqa: F821
+        return unicode(random.random())  # noqa: F821
     elif isinstance(d, bool):
         return True
     elif isinstance(d, int):

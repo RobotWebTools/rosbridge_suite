@@ -46,11 +46,11 @@ def extract_cbor_values(msg):
         val = getattr(msg, slot)
 
         if PYTHON2:
-            slot = unicode(slot)
+            slot = unicode(slot)  # noqa: F821
 
         # string
         if slot_type in STRING_TYPES:
-            out[slot] = unicode(val) if PYTHON2 else str(val)
+            out[slot] = unicode(val) if PYTHON2 else str(val)  # noqa: F821
 
         # bool
         elif slot_type in BOOL_TYPES:

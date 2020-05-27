@@ -67,7 +67,7 @@ else:
     "unicode": ["string"],
     "long":    ["int64", "uint64"]
     }
-    primitive_types = [bool, int, long, float]
+    primitive_types = [bool, int, long, float]  # noqa: F821
     python2 = True
 
 list_types = [list, tuple]

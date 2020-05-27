@@ -18,7 +18,7 @@ from base64 import standard_b64encode, standard_b64decode
 if sys.version_info >= (3, 0):
     string_types = (str,)
 else:
-    string_types = (str, unicode)
+    string_types = (str, unicode)  # noqa: F821
 
 
 class TestMessageConversion(unittest.TestCase):
@@ -29,13 +29,14 @@ class TestMessageConversion(unittest.TestCase):
     def validate_instance(self, inst1):
         """ Serializes and deserializes the inst to typecheck and ensure that
         instances are correct """
-        inst1._check_types()
+        # _check_types() skipped because: https://github.com/ros/genpy/issues/122
+        #inst1._check_types()
         buff = StringIO()
         inst1.serialize(buff)
         inst2 = type(inst1)()
         inst2.deserialize(buff.getvalue())
         self.assertEqual(inst1, inst2)
-        inst2._check_types()
+        #inst2._check_types()
 
     def msgs_equal(self, msg1, msg2):
         if type(msg1) in string_types and type(msg2) in string_types:

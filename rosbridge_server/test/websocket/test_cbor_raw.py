@@ -34,7 +34,7 @@ class TestWebsocketCborRaw(unittest.TestCase):
                     'op': 'subscribe',
                     'topic': TOPIC,
                     'compression': 'cbor-raw',
-                }))
+                }).encode('utf-8'))
 
             def onMessage(self, payload, binary):
                 test_client_received.append(payload)

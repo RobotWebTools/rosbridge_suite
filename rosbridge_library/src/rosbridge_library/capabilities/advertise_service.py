@@ -75,8 +75,8 @@ class AdvertisedServiceHandler():
         """
         with self.lock:
             self.shutdown_requested = True
-        start_time = time.clock()
-        while time.clock() - start_time < timeout:
+        start_time = time.time()
+        while time.time() - start_time < timeout:
             time.sleep(0)
 
 class AdvertiseService(Capability):
