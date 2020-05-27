@@ -36,7 +36,7 @@ class TestCBORConversion(unittest.TestCase):
 
         self.assertEqual(extracted['data'], msg.data)
         if PYTHON2:
-            self.assertEqual(type(extracted['data']), unicode)
+            self.assertEqual(type(extracted['data']), unicode)  # noqa: F821
         else:
             self.assertEqual(type(extracted['data']), str)
 
@@ -149,7 +149,7 @@ class TestCBORConversion(unittest.TestCase):
         keys = extracted.keys()
         for key in keys:
             if PYTHON2:
-                self.assertEqual(type(key), unicode)
+                self.assertEqual(type(key), unicode)  # noqa: F821
             else:
                 self.assertEqual(type(key), str)
 

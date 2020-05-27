@@ -18,7 +18,7 @@ from base64 import standard_b64encode, standard_b64decode
 if sys.version_info >= (3, 0):
     string_types = (str,)
 else:
-    string_types = (str, unicode)
+    string_types = (str, unicode)  # noqa: F821
 
 
 class TestMessageConversion(unittest.TestCase):

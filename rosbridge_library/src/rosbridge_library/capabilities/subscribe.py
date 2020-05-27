@@ -318,7 +318,7 @@ class Subscribe(Capability):
             self.protocol.log("debug", "No topic security glob, not checking topic publish.")
 
         if PYTHON2:
-            topic = unicode(topic)
+            topic = unicode(topic)  # noqa: F821
 
         outgoing_msg = {u"op": u"publish", u"topic": topic}
         if compression=="png":
