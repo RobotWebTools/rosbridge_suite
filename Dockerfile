@@ -1,4 +1,4 @@
-ARG DOCKER_ROS_DISTRO=melodic
+ARG DOCKER_ROS_DISTRO=noetic
 FROM ros:${DOCKER_ROS_DISTRO}
 
 # Booststrap workspace.
