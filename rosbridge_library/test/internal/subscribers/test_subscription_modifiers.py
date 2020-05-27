@@ -88,7 +88,7 @@ class TestMessageHandlers(unittest.TestCase):
             time.sleep(1)
 
         queue_length = 5
-        msgs = range(queue_length * 5)
+        msgs = list(range(queue_length * 5))
 
         handler = subscribe.MessageHandler(None, cb)
 
