@@ -2,6 +2,11 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* noetic tests and fixes (`#503 <https://github.com/RobotWebTools/rosbridge_suite/issues/503>`_)
+* Contributors: Matt Vollrath
+
 0.11.8 (2020-05-21)
 -------------------
 * Finish protocol in IncomingQueue thread (`#502 <https://github.com/RobotWebTools/rosbridge_suite/issues/502>`_)
