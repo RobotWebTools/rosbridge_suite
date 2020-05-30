@@ -30,11 +30,10 @@ def get_globs():
 def filter_globs(globs, full_list):
     # If the globs are empty (weren't defined in the params), return the full list
     if globs is not None and len(globs) > 0:
-        return filter(lambda x: any_match(x, globs), full_list)
+        return [i for i in filter(lambda x: any_match(x, globs), full_list)]
     else:
         return full_list
 
 
 def any_match(query, globs):
     return globs is None or len(globs) == 0 or any(fnmatch.fnmatch(str(query), glob) for glob in globs)
-
