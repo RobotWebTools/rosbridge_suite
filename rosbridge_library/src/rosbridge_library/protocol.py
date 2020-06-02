@@ -118,7 +118,10 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
-        self.buffer = self.buffer + message_string
+        if(len(self.buffer) > 0):
+            self.buffer = self.buffer + message_string
+        else:
+            self.buffer = message_string
         msg = None
 
         # take care of having multiple JSON-objects in receiving buffer
