@@ -119,7 +119,7 @@ def get_param(node_name, name, default, params_glob):
         return
     # If the glob list is empty (i.e. false) or the parameter matches
     # one of the glob strings, continue to get the parameter.
-    if default is not "":
+    if (default != ""):
         try:
             default = loads(default)
         except ValueError:
@@ -221,7 +221,7 @@ def _get_param_names(node_name):
     rclpy.spin_until_future_complete(_node, future)
     response = future.result()
 
-    if response is not None:
+    if (response != None):
         return ['{}:{}'.format(node_name, param_name) for param_name in response.result.names]
     else:
         return []
