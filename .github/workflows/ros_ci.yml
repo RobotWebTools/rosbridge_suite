@@ -1,6 +1,10 @@
 name: ROS 2 CI
 
-on: pull_request   # run on all pushes & PR's for every branch
+on:
+  pull_request:
+    branches:
+      - 'ros2' # TODO(flynneva): rename rosbrige_suite ros2 branch to ros2/main
+      - 'ros2/*' # run on all branches that start with ros2/
 
 jobs:
   test_environment: # Docker is not supported on OS X, and Windows.
