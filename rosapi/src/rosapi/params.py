@@ -221,7 +221,7 @@ def _get_param_names(node_name):
     rclpy.spin_until_future_complete(_node, future)
     response = future.result()
 
-    if response != None:
+    if response is not None:
         return ['{}:{}'.format(node_name, param_name) for param_name in response.result.names]
     else:
         return []
