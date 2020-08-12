@@ -11,6 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        package: [rosbridge_suite]
         os: [macOS-latest, windows-latest]
         ros_distribution: # Only include ROS 2 distributions for OS X, Windows
           - dashing
@@ -23,13 +24,15 @@ jobs:
       - name: build and test
         uses: ros-tooling/action-ros-ci@0.0.17
         with:
-          package-name: rosbridge_suite  # TODO: auto-set from repo name?
+          package-name: ${{ matrix.package }}
+          target-ros2-distro: ${{ matrix.ros_distribution }}
 
   test_environment_linux:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        package: [rosbridge_suite]
         ros_distribution:
           - dashing
           - eloquent
@@ -63,5 +66,5 @@ jobs:
       - name: build and test
         uses: ros-tooling/action-ros-ci@0.0.17
         with:
-          package-name: rosbridge_suite  # TODO: auto-set from repo name?
-          source-ros-binary-installation: ${{ matrix.ros_distribution }}
+          package-name: ${{ matrix.package }}
+          target-ros2-distro: ${{ matrix.ros_distribution }}
