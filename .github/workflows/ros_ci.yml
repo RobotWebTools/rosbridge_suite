@@ -21,9 +21,11 @@ jobs:
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
       - name: build and test
-        uses: ros-tooling/action-ros-ci@0.0.17
+        uses: ros-tooling/action-ros-ci@0.0.19
         with:
-          package-name: rosbridge_suite  # TODO: auto-set from repo name?
+          package-name: rosbridge_suite
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ""
 
   test_environment_linux:
     runs-on: ubuntu-latest
@@ -61,7 +63,8 @@ jobs:
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
       - name: build and test
-        uses: ros-tooling/action-ros-ci@0.0.17
+        uses: ros-tooling/action-ros-ci@0.0.19
         with:
-          package-name: rosbridge_suite  # TODO: auto-set from repo name?
-          source-ros-binary-installation: ${{ matrix.ros_distribution }}
+          package-name: rosbridge_suite
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ""
