@@ -66,3 +66,4 @@ jobs:
         with:
           package-name: rosbridge_suite
           target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ""
