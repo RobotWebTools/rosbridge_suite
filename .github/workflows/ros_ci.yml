@@ -25,7 +25,6 @@ jobs:
         with:
           package-name: rosbridge_suite
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: ""
 
   test_environment_linux:
     runs-on: ubuntu-latest
