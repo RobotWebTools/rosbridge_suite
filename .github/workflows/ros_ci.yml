@@ -7,24 +7,6 @@ on:
       - 'ros2/*' # run on all branches that start with ros2/
 
 jobs:
-  test_environment: # Docker is not supported on OS X, and Windows.
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macOS-latest, windows-latest]
-        ros_distribution: # Only include ROS 2 distributions for OS X, Windows
-          - dashing
-          - eloquent
-          - foxy
-    steps:
-      - uses: ros-tooling/setup-ros@0.0.25
-        with:
-          required-ros-distributions: ${{ matrix.ros_distribution }}
-      - name: build and test
-        uses: ros-tooling/action-ros-ci@0.0.17
-        with:
-          package-name: rosbridge_suite  # TODO: auto-set from repo name?
-
   test_environment_linux:
     runs-on: ubuntu-latest
     strategy:
@@ -61,7 +43,8 @@ jobs:
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
       - name: build and test
-        uses: ros-tooling/action-ros-ci@0.0.17
+        uses: ros-tooling/action-ros-ci@0.0.19
         with:
-          package-name: rosbridge_suite  # TODO: auto-set from repo name?
-          source-ros-binary-installation: ${{ matrix.ros_distribution }}
+          package-name: rosbridge_suite
+          source-ros-binary-installation: ${{ matrix.ros_distribution }}\
+          vcs-repo-file-url: ""
