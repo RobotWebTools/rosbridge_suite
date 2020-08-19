@@ -46,5 +46,5 @@ jobs:
         uses: ros-tooling/action-ros-ci@0.0.19
         with:
           package-name: rosbridge_suite
-          target-ros2-distro: ${{ matrix.ros_distribution }}\
+          target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: ""
