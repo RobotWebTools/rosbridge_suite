@@ -50,7 +50,7 @@ from rosbridge_library.util import string_types, bson
 import sys
 if sys.version_info >= (3, 0):
     type_map = {
-    "bool":    ["bool"],
+    "bool":    ["bool", "boolean"],
     "int":     ["int8", "byte", "uint8", "char",
                 "int16", "uint16", "int32", "uint32",
                 "int64", "uint64", "float32", "float64"],
@@ -75,7 +75,7 @@ else:
 
 list_types = [list, tuple, np.ndarray, array.array]
 ros_time_types = ["builtin_interfaces/Time", "builtin_interfaces/Duration"]
-ros_primitive_types = ["bool", "byte", "char", "int8", "uint8", "int16",
+ros_primitive_types = ["bool", "boolean", "byte", "char", "int8", "uint8", "int16",
                        "uint16", "int32", "uint32", "int64", "uint64",
                        "float32", "float64", "float", "double", "string"]
 ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
