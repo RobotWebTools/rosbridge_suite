@@ -81,6 +81,7 @@ ros_primitive_types = ["bool", "boolean", "byte", "char", "int8", "uint8", "int1
 ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
 ros_binary_types = ["uint8[]", "char[]"]
 list_tokens = re.compile('<(.+?)>')
+bounded_array_tokens = re.compile('(.+)\[.*\]')
 ros_binary_types_list_braces = [("uint8[]", re.compile(r'uint8\[[^\]]*\]')),
                                 ("char[]", re.compile(r'char\[[^\]]*\]'))]
 
@@ -205,7 +206,10 @@ def _from_list_inst(inst, rostype):
         return []
 
     # Remove the list indicators from the rostype
-    rostype = re.search(list_tokens, rostype).group(1)
+    try:
+        rostype = re.search(list_tokens, rostype).group(1)
+    except AttributeError:
+        rostype = re.search(bounded_array_tokens, rostype).group(1)
 
     # Shortcut for primitives
     if rostype in ros_primitive_types and not rostype in type_map.get('float'):
@@ -315,7 +319,10 @@ def _to_list_inst(msg, rostype, roottype, inst, stack):
         return list(inst.astype(float))
 
     # Remove the list indicators from the rostype
-    rostype = re.search(list_tokens, rostype).group(1)
+    try:
+        rostype = re.search(list_tokens, rostype).group(1)
+    except AttributeError:
+        rostype = re.search(bounded_array_tokens, rostype).group(1)
 
     # Call to _to_inst for every element of the list
     return [_to_inst(x, rostype, roottype, None, stack) for x in msg]
