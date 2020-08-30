@@ -33,8 +33,6 @@
 
 from threading import Lock
 
-import time
-
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.topics import TopicNotEstablishedException
@@ -180,12 +178,11 @@ class MultiSubscriber():
         """
         outgoing = OutgoingMessage(msg)
 
-
-
         # Get the callbacks to call
         if not callbacks:
             with self.lock:
                 callbacks = self.subscriptions.values()
+
         # Pass the JSON to each of the callbacks
         for callback in callbacks:
             try:
@@ -260,3 +257,4 @@ class SubscriberManager():
 
 
 manager = SubscriberManager()
+

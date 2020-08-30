@@ -193,6 +193,7 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     @coroutine
     def prewrite_message(self, message, binary):
+        cls = self.__class__
         # Use a try block because the log decorator doesn't cooperate with @coroutine.
         try:
             with self._write_lock:
