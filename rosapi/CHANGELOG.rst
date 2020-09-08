@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.10 (2020-09-08)
+--------------------
 * Fixed filter_globs for noetic (`#506 <https://github.com/RobotWebTools/rosbridge_suite/issues/506>`_)
   Service calls with non empty requests (e.g. /rosapi/topics_for_type) were crashing due to filter's return type in python 3.
 * Contributors: foreignrobot

@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.10 (2020-09-08)
+--------------------
 * Error initialization with tornado. (`#510 <https://github.com/RobotWebTools/rosbridge_suite/issues/510>`_)
   max_message_size has to be integer when initializating using tornado.
 * Contributors: Carlos Herrero
