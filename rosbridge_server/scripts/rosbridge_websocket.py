@@ -109,7 +109,7 @@ class RosbridgeWebsocketNode(Node):
         RosbridgeWebSocket.authenticate = self.declare_parameter('authenticate', False).value
 
         port = self.declare_parameter('port', 9090).value
-        
+
         address = self.declare_parameter('address', '').value
 
         RosbridgeWebSocket.client_manager = ClientManager(self)
@@ -292,15 +292,14 @@ class RosbridgeWebsocketNode(Node):
                     "Retrying in {}s.".format(e, retry_startup_delay))
                 time.sleep(retry_startup_delay)
 
-
 def main(args=None):
     if args is None:
         args = sys.argv
-    
+
     rclpy.init(args=args)
     rosbridge_websocket_node = RosbridgeWebsocketNode()
 
-    spin_callback = PeriodicCallback(lambda: rclpy.spin_once(rosbridge_websocket_node, timeout_sec=0.01), 100)
+    spin_callback = PeriodicCallback(lambda: rclpy.spin_once(rosbridge_websocket_node, timeout_sec=0.01), 1)
     spin_callback.start()
     start_hook()
 

@@ -167,7 +167,6 @@ class Protocol:
                                 break
                         except Exception as e:
                             # debug json-decode errors with this line
-                            #print e
                             pass
                     # if load was successfull --> break outer loop, too.. -> no need to check if json begins at a "later" opening bracket..
                     if msg != None:
@@ -294,7 +293,7 @@ class Protocol:
                 return msg
             if has_binary(msg) or self.bson_only_mode:
                 return bson.BSON.encode(msg)
-            else:    
+            else:
                 return json.dumps(msg)
         except:
             if cid is not None:
