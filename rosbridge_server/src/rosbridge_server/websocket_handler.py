@@ -161,9 +161,13 @@ class RosbridgeWebSocket(WebSocketHandler):
                 self.close()
             except:
                 # proper error will be handled in the protocol class
+                if type(message) is bytes:
+                    message = message.decode('utf-8')
                 self.protocol.incoming(message)
         else:
             # no authentication required
+            if type(message) is bytes:
+                message = message.decode('utf-8')
             self.protocol.incoming(message)
 
     @log_exceptions
@@ -189,6 +193,7 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     @coroutine
     def prewrite_message(self, message, binary):
+        cls = self.__class__
         # Use a try block because the log decorator doesn't cooperate with @coroutine.
         try:
             with self._write_lock:
