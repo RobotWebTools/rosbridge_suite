@@ -38,7 +38,6 @@ import numpy as np
 import array
 
 from rosbridge_library.internal import ros_loader
-from rosbridge_library.internal.object_decoders import shortcut_object_decoders
 
 import math
 import re
@@ -337,10 +336,6 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
     # Substitute the correct time if we're an std_msgs/Header
     if rostype in ros_header_types:
         inst.stamp = ROSClock().now().to_msg()
-
-    # Do we have a dedicated decoder for the object?
-    if rostype in shortcut_object_decoders:
-        return shortcut_object_decoders[rostype](msg, inst)
 
     inst_fields = inst.get_fields_and_field_types()
 
