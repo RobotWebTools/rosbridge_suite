@@ -118,7 +118,6 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
-
         if(len(self.buffer) > 0):
             self.buffer = self.buffer + message_string
         else:
