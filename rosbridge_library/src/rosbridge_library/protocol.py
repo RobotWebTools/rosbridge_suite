@@ -117,7 +117,12 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
-        self.buffer = self.buffer + str(message_string)
+        try:
+            self.buffer = self.buffer + str(message_string)
+        except UnicodeEncodeError:
+            # For python2 Unicode support
+            self.buffer = self.buffer + message_string
+            
         msg = None
 
         # take care of having multiple JSON-objects in receiving buffer
