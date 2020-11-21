@@ -110,7 +110,7 @@ def get_param_names(params_glob):
     with param_server_lock:
         if params_glob:
             # If there is a parameter glob, filter by it.
-            return filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob), rospy.get_param_names())
+            return list(filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob), rospy.get_param_names()))
         else:
             # If there is no parameter glob, don't filter.
             return rospy.get_param_names()
