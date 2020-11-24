@@ -2,6 +2,12 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.10 (2020-09-08)
+--------------------
+* possible fix for error when working with RosSharp, TypeError: can only concatenate str (not bytes) to str (`#514 <https://github.com/RobotWebTools/rosbridge_suite/issues/514>`_)
+  Co-authored-by: Dmitri <dmitri@dmitri.com>
+* Contributors: Dmitri
+
 0.11.9 (2020-05-27)
 -------------------
 * noetic tests and fixes (`#503 <https://github.com/RobotWebTools/rosbridge_suite/issues/503>`_)

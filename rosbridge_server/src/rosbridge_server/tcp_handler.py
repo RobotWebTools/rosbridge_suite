@@ -59,7 +59,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
             packet = self.request.recv(n - len(data))
             if not packet:
                 return None
-            data += packet
+            data += packet.decode()
         return data
 
     def recv_bson(self):
@@ -103,7 +103,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
               if data.strip() == '':
                   break
               elif len(data.strip()) > 0:
-                  self.protocol.incoming(data.strip(''))
+                  self.protocol.incoming(data.decode().strip(''))
               else:
                   pass
             except Exception as e:
@@ -125,4 +125,4 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Callback from rosbridge
         """
-        self.request.sendall(message)
+        self.request.sendall(message.encode())
