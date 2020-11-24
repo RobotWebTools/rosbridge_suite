@@ -2,6 +2,13 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use Python 3 str in incoming (`#541 <https://github.com/RobotWebTools/rosbridge_suite/issues/541>`_)
+  Fixes Python 2 unicode issues.
+  Supersedes `#539 <https://github.com/RobotWebTools/rosbridge_suite/issues/539>`_ to fix regression in `#514 <https://github.com/RobotWebTools/rosbridge_suite/issues/514>`_
+* Contributors: Matt Vollrath
+
 0.11.10 (2020-09-08)
 --------------------
 * possible fix for error when working with RosSharp, TypeError: can only concatenate str (not bytes) to str (`#514 <https://github.com/RobotWebTools/rosbridge_suite/issues/514>`_)

@@ -2,6 +2,11 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Evaluate filter() generator before returning in get_param_names() which is required when using python3. Fixes `#527 <https://github.com/RobotWebTools/rosbridge_suite/issues/527>`_. (`#540 <https://github.com/RobotWebTools/rosbridge_suite/issues/540>`_)
+* Contributors: Steve Golton
+
 0.11.10 (2020-09-08)
 --------------------
 * Fixed filter_globs for noetic (`#506 <https://github.com/RobotWebTools/rosbridge_suite/issues/506>`_)

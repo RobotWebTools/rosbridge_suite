@@ -2,6 +2,17 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* rosbridge_udp now encodes msg to bytes before send (`#537 <https://github.com/RobotWebTools/rosbridge_suite/issues/537>`_)
+  This is required to work with python3 socket library
+* Conversion between bytes and string (`#534 <https://github.com/RobotWebTools/rosbridge_suite/issues/534>`_)
+  As of python3 sockets will input and output byte strings instead of String objects.
+  This commits does the necessary coversions inside the tcp_handler, but it might
+  not be the most thoughtful solution but just what I did to make it work with
+  python3.
+* Contributors: Felix Exner, Karl Oskar Lember
+
 0.11.10 (2020-09-08)
 --------------------
 * Error initialization with tornado. (`#510 <https://github.com/RobotWebTools/rosbridge_suite/issues/510>`_)
