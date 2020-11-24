@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.11 (2020-11-24)
+--------------------
 * Use Python 3 str in incoming (`#541 <https://github.com/RobotWebTools/rosbridge_suite/issues/541>`_)
   Fixes Python 2 unicode issues.
   Supersedes `#539 <https://github.com/RobotWebTools/rosbridge_suite/issues/539>`_ to fix regression in `#514 <https://github.com/RobotWebTools/rosbridge_suite/issues/514>`_
