@@ -21,6 +21,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>std_msgs</build_depend>
+  <build_depend condition="$ROS_PYTHON_VERSION == 2">python-future</build_depend>
   <build_depend condition="$ROS_PYTHON_VERSION == 2">python-imaging</build_depend>
   <build_depend condition="$ROS_PYTHON_VERSION == 3">python3-pil</build_depend>
   <build_depend>geometry_msgs</build_depend>
