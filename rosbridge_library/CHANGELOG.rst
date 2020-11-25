@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.12 (2020-11-25)
+--------------------
 * Fix missing python-future python 2 dep
 * Contributors: Matt Vollrath
 
