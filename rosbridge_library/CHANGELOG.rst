@@ -2,6 +2,11 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix missing python-future python 2 dep
+* Contributors: Matt Vollrath
+
 0.11.11 (2020-11-24)
 --------------------
 * Use Python 3 str in incoming (`#541 <https://github.com/RobotWebTools/rosbridge_suite/issues/541>`_)

@@ -2,6 +2,9 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.11.11 (2020-11-24)
 --------------------
 * Evaluate filter() generator before returning in get_param_names() which is required when using python3. Fixes `#527 <https://github.com/RobotWebTools/rosbridge_suite/issues/527>`_. (`#540 <https://github.com/RobotWebTools/rosbridge_suite/issues/540>`_)

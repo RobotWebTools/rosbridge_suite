@@ -2,6 +2,9 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.11.11 (2020-11-24)
 --------------------
 * rosbridge_udp now encodes msg to bytes before send (`#537 <https://github.com/RobotWebTools/rosbridge_suite/issues/537>`_)
