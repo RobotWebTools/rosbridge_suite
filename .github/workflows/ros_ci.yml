@@ -39,11 +39,11 @@ jobs:
         with:
           path: ros_ws/src
       - name: setup ROS environment
-        uses: ros-tooling/setup-ros@0.0.25
+        uses: ros-tooling/setup-ros@0.1.0
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
       - name: build and test
-        uses: ros-tooling/action-ros-ci@0.0.19
+        uses: ros-tooling/action-ros-ci@0.1.0
         with:
          package-name: rosbridge_suite
          target-ros1-distro: ${{ matrix.ros_distribution }}
