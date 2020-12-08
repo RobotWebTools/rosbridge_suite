@@ -2,6 +2,26 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix python-future dependency (`#542 <https://github.com/RobotWebTools/rosbridge_suite/issues/542>`_)
+  * fix python-future dependency
+  This was not fixed with fadffa09b1b572e4dc11848c31bb6ebab4a3e95d
+  The dependency was added with `#541 <https://github.com/RobotWebTools/rosbridge_suite/issues/541>`_
+  Python doesn't have build dependencies, only exec dependencies
+  * update ros-tooling/action-ros-ci
+  See:
+  https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/
+  This was fixed upstream
+  - https://github.com/ros-tooling/action-ros-ci/issues/429
+  - https://github.com/ros-tooling/action-ros-ci/pull/430
+  * update ros-tooling/setup-ros
+  See:
+  https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/
+  This is needed for upstream fix
+  - https://github.com/ros-tooling/setup-ros/pull/303
+* Contributors: Alex Moriarty
+
 0.11.12 (2020-11-25)
 --------------------
 * Fix missing python-future python 2 dep
