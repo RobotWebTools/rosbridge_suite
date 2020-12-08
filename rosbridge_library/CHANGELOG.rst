@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.13 (2020-12-08)
+--------------------
 * fix python-future dependency (`#542 <https://github.com/RobotWebTools/rosbridge_suite/issues/542>`_)
   * fix python-future dependency
   This was not fixed with fadffa09b1b572e4dc11848c31bb6ebab4a3e95d
