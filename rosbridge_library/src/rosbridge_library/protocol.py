@@ -111,6 +111,10 @@ class Protocol:
             self.delay_between_messages = self.parameters["delay_between_messages"]
             self.bson_only_mode = self.parameters.get('bson_only_mode', False)
 
+        if self.bson_only_mode:
+            self.buffer = bytearray()
+            self.old_buffer = bytearray()
+
     # added default message_string="" to allow recalling incoming until buffer is empty without giving a parameter
     # --> allows to get rid of (..or minimize) delay between client-side sends
     def incoming(self, message_string=""):
@@ -120,14 +124,20 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
-        self.buffer = self.buffer + str(message_string)
+        if self.bson_only_mode:
+            self.buffer.extend(message_string)
+        else:
+            self.buffer = self.buffer + str(message_string)
         msg = None
 
         # take care of having multiple JSON-objects in receiving buffer
         # ..first, try to load the whole buffer as a JSON-object
         try:
             msg = self.deserialize(self.buffer)
-            self.buffer = ""
+            if self.bson_only_mode:
+                self.buffer = bytearray()
+            else:
+                self.buffer = ''
 
         # if loading whole object fails try to load part of it (from first opening bracket "{" to next closing bracket "}"
         # .. this causes Exceptions on "inner" closing brackets --> so I suppressed logging of deserialization errors
