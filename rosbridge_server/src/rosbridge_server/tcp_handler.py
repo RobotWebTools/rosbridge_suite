@@ -125,4 +125,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Callback from rosbridge
         """
-        self.request.sendall(message.encode())
+        if self.bson_only_mode:
+            self.request.sendall(message)
+        elif message is not None:
+            self.request.sendall(message.encode())
