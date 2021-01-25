@@ -129,3 +129,6 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
             self.request.sendall(message)
         elif message is not None:
             self.request.sendall(message.encode())
+        else:
+            rospy.logerr("send_message called with no message or message is None, not sending")
+
