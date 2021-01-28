@@ -167,8 +167,8 @@ def filter_action_servers(topics):
                 possibility = [0, 0, 0, 0, 0]
             if possible_action_server == namespace and topic in action_topics:
                 possibility[action_topics.index(topic)] = 1
-        if all(p == 1 for p in possibility):
-            action_servers.append(possible_action_server)
+            if all(p == 1 for p in possibility):
+                action_servers.append(possible_action_server)
 
     return action_servers
 
