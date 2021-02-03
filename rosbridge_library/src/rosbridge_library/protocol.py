@@ -34,6 +34,7 @@ from __future__ import unicode_literals
 from builtins import str
 
 import rospy
+import sys
 import time
 
 from rosbridge_library.internal.exceptions import InvalidArgumentException
@@ -42,6 +43,7 @@ from rosbridge_library.internal.exceptions import MissingArgumentException
 from rosbridge_library.capabilities.fragmentation import Fragmentation
 from rosbridge_library.util import json, bson
 
+EMPTY_UTF8_STR = "".encode("utf8")
 
 def is_number(s):
     try:
@@ -50,6 +52,16 @@ def is_number(s):
     except ValueError:
         return False
 
+
+if sys.version_info[0] < 3:
+
+    def incoming_buffer(buffer, message):
+        return buffer + message
+
+else:
+
+    def incoming_buffer(buffer, message):
+        return buffer + str(message)
 
 def has_binary(obj):
     """ Returns True if obj is a binary or contains a binary attribute
@@ -81,8 +93,8 @@ class Protocol:
     fragment_size = None
     png = None
     # buffer used to gather partial JSON-objects (could be caused by small tcp-buffers or similar..)
-    buffer = ""
-    old_buffer = ""
+    buffer = "".encode("utf8")
+    old_buffer = "".encode("utf8")
     busy = False
     # if this is too low, ("simple")clients network stacks will get flooded (when sending fragments of a huge message..)
     # .. depends on message_size/bandwidth/performance/client_limits/...
@@ -120,14 +132,14 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
-        self.buffer = self.buffer + str(message_string)
+        self.buffer = incoming_buffer(self.buffer, message_string)
         msg = None
 
         # take care of having multiple JSON-objects in receiving buffer
         # ..first, try to load the whole buffer as a JSON-object
         try:
             msg = self.deserialize(self.buffer)
-            self.buffer = ""
+            self.buffer = EMPTY_UTF8_STR
 
         # if loading whole object fails try to load part of it (from first opening bracket "{" to next closing bracket "}"
         # .. this causes Exceptions on "inner" closing brackets --> so I suppressed logging of deserialization errors
@@ -237,6 +249,10 @@ class Protocol:
         cid     -- (optional) an associated id
 
         """
+        try:
+            print(message["msg"]["header"])
+        except:
+            pass
         serialized = self.serialize(message, cid)
         if serialized is not None:
             if self.png == "png":
