@@ -38,6 +38,7 @@ from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.topics import TopicNotEstablishedException
 from rosbridge_library.internal.topics import TypeConflictException
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 
 """ Manages and interfaces with ROS Subscriber objects.  A single subscriber
 is shared between multiple clients
@@ -105,7 +106,11 @@ class MultiSubscriber():
         self.msg_class = msg_class
         self.node_handle = node_handle
         # TODO(@jubeira): add support for other QoS.
-        self.subscriber = node_handle.create_subscription(msg_class, topic, self.callback, 10)
+        node_qos = QoSProfile(
+            depth=10,
+            durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
+        )
+        self.subscriber = node_handle.create_subscription(msg_class, topic, self.callback, qos_profile=node_qos)
         self.new_subscriber = None
         self.new_subscriptions = {}
 
