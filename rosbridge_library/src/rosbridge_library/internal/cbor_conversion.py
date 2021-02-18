@@ -33,6 +33,12 @@ TAGGED_ARRAY_FORMATS = {
     'float64[]': (86, '<{}d'),
 }
 
+SECS_KEY = 'secs'
+NSECS_KEY = 'nsecs'
+if PYTHON2:
+    SECS_KEY = u'secs'
+    NSECS_KEY = u'nsecs'
+
 
 def extract_cbor_values(msg):
     """Extract a dictionary of CBOR-friendly values from a ROS message.
@@ -67,8 +73,8 @@ def extract_cbor_values(msg):
         # time/duration
         elif slot_type in TIME_TYPES:
             out[slot] = {
-                'secs': int(val.secs),
-                'nsecs': int(val.nsecs),
+                SECS_KEY: int(val.secs),
+                NSECS_KEY: int(val.nsecs),
             }
 
         # byte array

@@ -75,6 +75,9 @@ class TestCBORConversion(unittest.TestCase):
             msg = msg_type()
             extracted = extract_cbor_values(msg)
 
+            if PYTHON2:
+                for key in extracted['data'].keys():
+                    self.assertEqual(type(key), unicode, 'type={}'.format(msg_type))
             self.assertEqual(extracted['data']['secs'], msg.data.secs, 'type={}'.format(msg_type))
             self.assertEqual(extracted['data']['nsecs'], msg.data.nsecs, 'type={}'.format(msg_type))
             self.assertEqual(type(extracted['data']['secs']), int, 'type={}'.format(msg_type))
