@@ -127,6 +127,7 @@ class RosbridgeWebSocket(WebSocketHandler):
     unregister_timeout = 10.0  # seconds
     bson_only_mode = False
     node_handle = None
+    io_loop_instance = None
 
     @log_exceptions
     def open(self):

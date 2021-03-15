@@ -34,6 +34,7 @@
 
 import sys
 import time
+from threading import Thread
 
 import rclpy
 from rclpy.node import Node
@@ -46,7 +47,7 @@ from rosbridge_library.capabilities.subscribe import Subscribe
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from std_msgs.msg import Int32
 from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop, PeriodicCallback
+from tornado.ioloop import IOLoop
 from tornado.netutil import bind_sockets
 from tornado.web import Application
 
@@ -306,6 +307,12 @@ class RosbridgeWebsocketNode(Node):
                 time.sleep(retry_startup_delay)
 
 
+def spin(rosbridge_websocket_node):
+    while rclpy.ok():
+        rclpy.spin_once(rosbridge_websocket_node, timeout_sec=0.01)
+        time.sleep(0.001)
+
+
 def main(args=None):
     if args is None:
         args = sys.argv
@@ -313,8 +320,8 @@ def main(args=None):
     rclpy.init(args=args)
     node = RosbridgeWebsocketNode()
 
-    spin_callback = PeriodicCallback(lambda: rclpy.spin_once(node, timeout_sec=0.01), 1)
-    spin_callback.start()
+    spin_thread = Thread(target=lambda: spin(node), daemon=True)
+    spin_thread.start()
     start_hook()
 
     node.destroy_node()
