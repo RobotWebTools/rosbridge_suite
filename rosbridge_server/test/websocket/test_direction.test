@@ -1,0 +1,10 @@
+<launch>
+  <env name="PROTOCOL" value="ws" />
+  <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket.py">
+    <param name="port" value="0" />
+    <param name="topics_glob" value="[/a_topic,/b_topic,&gt;/outgoing_only,&lt;/ingoing_only]" />
+  </node>
+  <test test-name="test_smoke" pkg="rosbridge_server" type="test_smoke.py" />
+  <test test-name="test_cbor_raw" pkg="rosbridge_server" type="test_cbor_raw.py" />
+  <test test-name="test_direction" pkg="rosbridge_server" type="test_direction.py" />
+</launch>
