@@ -47,7 +47,7 @@ log.startLogging(sys.stdout)
 
 from rosbridge_server import ClientManager
 from rosbridge_server.autobahn_websocket import RosbridgeWebSocket
-from rosbridge_server.util import get_ephemeral_port
+from rosbridge_server.util import get_ephemeral_port, directional_topics_globs
 
 from rosbridge_library.capabilities.advertise import Advertise
 from rosbridge_library.capabilities.publish import Publish
@@ -250,9 +250,20 @@ if __name__ == "__main__":
     if RosbridgeWebSocket.services_glob:
         RosbridgeWebSocket.services_glob.append("/rosapi/*")
 
-    Subscribe.topics_glob = RosbridgeWebSocket.topics_glob
-    Advertise.topics_glob = RosbridgeWebSocket.topics_glob
-    Publish.topics_glob = RosbridgeWebSocket.topics_glob
+    # Filter topics based on their allowed direction, rosapi still knows about all the topic names, we merely block
+    # subscriptions or advertise on them.
+    directional_topics_glob = directional_topics_globs(RosbridgeWebSocket.topics_glob)
+
+    # Update the topics glob in the RosbridgeWebSocket.
+    RosbridgeWebSocket.topics_glob = directional_topics_glob.get("all", [])
+
+    # Only allow subscribe for topics going to the websocket
+    Subscribe.topics_glob = directional_topics_glob.get("outgoing", [])
+
+    # Only allow advertise & publish for topics from the websocket
+    Advertise.topics_glob = directional_topics_glob.get("incoming", [])
+    Publish.topics_glob = directional_topics_glob.get("incoming", [])
+
     AdvertiseService.services_glob = RosbridgeWebSocket.services_glob
     UnadvertiseService.services_glob = RosbridgeWebSocket.services_glob
     CallService.services_glob = RosbridgeWebSocket.services_glob

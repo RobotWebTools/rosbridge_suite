@@ -45,6 +45,7 @@ from rosbridge_library.capabilities.subscribe import Subscribe
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from rosbridge_library.capabilities.call_service import CallService
+from rosbridge_server.util import directional_topics_globs
 
 from std_msgs.msg import Int32
 
@@ -184,9 +185,20 @@ if __name__ == "__main__":
     if RosbridgeUdpSocket.services_glob:
         RosbridgeUdpSocket.services_glob.append("/rosapi/*")
 
-    Subscribe.topics_glob = RosbridgeUdpSocket.topics_glob
-    Advertise.topics_glob = RosbridgeUdpSocket.topics_glob
-    Publish.topics_glob = RosbridgeUdpSocket.topics_glob
+    # Filter topics based on their allowed direction, rosapi still knows about all the topic names, we merely
+    # block subscriptions or advertise on them.
+    directional_topics_glob = directional_topics_globs(RosbridgeUdpSocket.topics_glob)
+
+    # Update the topics glob in the RosbridgeWebSocket.
+    RosbridgeUdpSocket.topics_glob = directional_topics_glob.get("all", [])
+
+    # Only allow subscribe for topics going to the websocket
+    Subscribe.topics_glob = directional_topics_glob.get("outgoing", [])
+
+    # Only allow advertise & publish for topics from the websocket
+    Advertise.topics_glob = directional_topics_glob.get("incoming", [])
+    Publish.topics_glob = directional_topics_glob.get("incoming", [])
+
     AdvertiseService.services_glob = RosbridgeUdpSocket.services_glob
     UnadvertiseService.services_glob = RosbridgeUdpSocket.services_glob
     CallService.services_glob = RosbridgeUdpSocket.services_glob

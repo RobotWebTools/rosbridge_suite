@@ -18,7 +18,7 @@ def get_globs():
         param = rospy.get_param(param_name, '')
         # strips array delimiters in case of an array style value
         return [
-            element.strip().strip("'")
+            element.strip().strip("'").lstrip("<>")
             for element in param.strip('[').strip(']').split(',')
             if len(element.strip().strip("'")) > 0]
 
