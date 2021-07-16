@@ -57,5 +57,5 @@ install(
 
 if(BUILD_TESTING)
   find_package(ament_cmake_nose REQUIRED)
-  ament_add_nose_test(${PROJECT_NAME}_test_objectutils test/test_objectutils.py)
+  ament_add_nose_test(${PROJECT_NAME}_test_stringify_field_types test/test_stringify_field_types.py)
 endif()
