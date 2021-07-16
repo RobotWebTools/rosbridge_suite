@@ -40,6 +40,11 @@ string encoding
 uint8 is_bigendian
 uint32 step
 uint8[] data
+
+================================================================================
+MSG: std_msgs/Header
+builtin_interfaces/Time stamp
+string frame_id
 """,
         )
         self.assertEqual(
@@ -64,6 +69,11 @@ uint32 y_offset
 uint32 height
 uint32 width
 bool do_rectify
+
+================================================================================
+MSG: std_msgs/Header
+builtin_interfaces/Time stamp
+string frame_id
 """,
         )
 

@@ -32,7 +32,7 @@ def _stringify_type(ty: AbstractType, pkg: str):
     if isinstance(ty, BasicType):
         return IDL_TYPE_TO_MSG[ty.typename], None
     elif isinstance(ty, NamedType):
-        return ty.name, f"{pkg}/{ty.name}" if ty.name != "Header" else None
+        return ty.name, f"{pkg}/{ty.name}"
     elif isinstance(ty, NamespacedType):
         namespaced_name = ty.namespaced_name()
         if len(namespaced_name) == 3:
@@ -42,7 +42,7 @@ def _stringify_type(ty: AbstractType, pkg: str):
         else:
             full_name = "/".join(namespaced_name)
             raise RuntimeError(f"Unsupported namespaced type: f{full_name}")
-        is_builtin = ty.namespaces[0] == "builtin_interfaces" or full_name == "std_msgs/Header"
+        is_builtin = ty.namespaces[0] == "builtin_interfaces"
         return full_name, None if is_builtin else full_name
     elif isinstance(ty, AbstractGenericString):
         typename = "wstring" if isinstance(ty, AbstractWString) else "string"
