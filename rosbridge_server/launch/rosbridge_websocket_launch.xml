@@ -5,20 +5,20 @@
   <arg name="certfile" default=""/>
   <arg name="keyfile" default="" />
 
-  <arg name="retry_startup_delay" default="5" />
+  <arg name="retry_startup_delay" default="5.0" />
 
   <arg name="fragment_timeout" default="600" />
   <arg name="delay_between_messages" default="0" />
-  <arg name="max_message_size" default="None" />
-  <arg name="unregister_timeout" default="10" />
+  <arg name="max_message_size" default="Infinity" />
+  <arg name="unregister_timeout" default="10.0" />
 
   <arg name="use_compression" default="false" />
 
   <arg name="authenticate" default="false" />
 
-  <arg name="topics_glob" default="''[*]''" />
-  <arg name="services_glob" default="''[*]''" />
-  <arg name="params_glob" default="''[*]''" />
+  <arg name="topics_glob" default="'[*]'" />
+  <arg name="services_glob" default="'[*]'" />
+  <arg name="params_glob" default="'[*]'" />
   <arg name="bson_only_mode" default="false" />
 
   <arg unless="$(var bson_only_mode)" name="binary_encoder" default="default"/>

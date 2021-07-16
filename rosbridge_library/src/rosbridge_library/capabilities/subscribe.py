@@ -124,12 +124,11 @@ class Subscription():
 
         self.update_params()
 
-        if compression == "cbor-raw":
-            msg_type = "__AnyMsg"
+        raw = compression == "cbor-raw"
 
         # Subscribe with the manager. This will propagate any exceptions
         manager.subscribe(
-            self.client_id, self.topic, self.on_msg, self.node_handle, msg_type=msg_type)
+            self.client_id, self.topic, self.on_msg, self.node_handle, msg_type=msg_type, raw=raw)
 
     def unsubscribe(self, sid=None):
         """ Unsubscribe this particular client's subscription
@@ -331,11 +330,11 @@ class Subscribe(Capability):
             outgoing_msg[u"msg"] = message.get_cbor_values()
             outgoing_msg = bytearray(encode_cbor(outgoing_msg))
         elif compression=="cbor-raw":
-            now = self.node_handle.get_clock().now()
+            (secs, nsecs) = self.protocol.node_handle.get_clock().now().seconds_nanoseconds()
             outgoing_msg[u"msg"] = {
-                u"secs": now.secs,
-                u"nsecs": now.nsecs,
-                u"bytes": message._message._buff
+                u"secs": secs,
+                u"nsecs": nsecs,
+                u"bytes": message._message
             }
             outgoing_msg = bytearray(encode_cbor(outgoing_msg))
         else:

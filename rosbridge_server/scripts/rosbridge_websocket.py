@@ -48,6 +48,7 @@ from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 from std_msgs.msg import Int32
+from rcl_interfaces.msg import ParameterDescriptor
 
 from rosbridge_server import RosbridgeWebSocket, ClientManager
 
@@ -87,7 +88,7 @@ class RosbridgeWebsocketNode(Node):
             'delay_between_messages', RosbridgeWebSocket.delay_between_messages).value
 
         RosbridgeWebSocket.max_message_size = self.declare_parameter(
-            'max_message_size', RosbridgeWebSocket.max_message_size).value
+            'max_message_size', RosbridgeWebSocket.max_message_size, ParameterDescriptor(dynamic_typing=True)).value
 
         RosbridgeWebSocket.unregister_timeout = self.declare_parameter(
             'unregister_timeout', RosbridgeWebSocket.unregister_timeout).value

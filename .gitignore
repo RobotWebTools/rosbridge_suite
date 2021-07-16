@@ -5,3 +5,6 @@
 .pydevproject
 .DS_Store
 .idea
+build
+install
+log

@@ -50,7 +50,7 @@ class MultiSubscriber():
     callbacks being called in separate threads, must lock whenever modifying
     or accessing the subscribed clients. """
 
-    def __init__(self, topic, client_id, callback, node_handle, msg_type=None):
+    def __init__(self, topic, client_id, callback, node_handle, msg_type=None, raw=False):
         """ Register a subscriber on the specified topic.
 
         Keyword arguments:
@@ -89,16 +89,13 @@ class MultiSubscriber():
         if msg_type is None:
             msg_type = topic_type
 
-        if msg_type == "__AnyMsg":
-            msg_class = AnyMsg
-        else:
-            # Load the message class, propagating any exceptions from bad msg types
-            msg_class = ros_loader.get_message_class(msg_type)
+        # Load the message class, propagating any exceptions from bad msg types
+        msg_class = ros_loader.get_message_class(msg_type)
 
-            # Make sure the specified msg type and established msg type are same
-            msg_type_string = msg_class_type_repr(msg_class)
-            if topic_type is not None and topic_type != msg_type_string:
-                raise TypeConflictException(topic, topic_type, msg_type_string)
+        # Make sure the specified msg type and established msg type are same
+        msg_type_string = msg_class_type_repr(msg_class)
+        if topic_type is not None and topic_type != msg_type_string:
+            raise TypeConflictException(topic, topic_type, msg_type_string)
 
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
@@ -108,7 +105,7 @@ class MultiSubscriber():
         self.msg_class = msg_class
         self.node_handle = node_handle
         # TODO(@jubeira): add support for other QoS.
-        self.subscriber = node_handle.create_subscription(msg_class, topic, self.callback, 10)
+        self.subscriber = node_handle.create_subscription(msg_class, topic, self.callback, 10, raw=raw)
         self.new_subscriber = None
         self.new_subscriptions = {}
 
@@ -129,8 +126,6 @@ class MultiSubscriber():
         this publisher
 
         """
-        if msg_type == "__AnyMsg":
-            return
         if not ros_loader.get_message_class(msg_type) is self.msg_class:
             raise TypeConflictException(self.topic,
                                         msg_class_type_repr(self.msg_class), msg_type)
@@ -224,7 +219,7 @@ class SubscriberManager():
     def __init__(self):
         self._subscribers = {}
 
-    def subscribe(self, client_id, topic, callback, node_handle, msg_type=None):
+    def subscribe(self, client_id, topic, callback, node_handle, msg_type=None, raw=False):
         """ Subscribe to a topic
 
         Keyword arguments:
@@ -236,11 +231,11 @@ class SubscriberManager():
         """
         if not topic in self._subscribers:
             self._subscribers[topic] = MultiSubscriber(
-                topic, client_id, callback, node_handle, msg_type=msg_type)
+                topic, client_id, callback, node_handle, msg_type=msg_type, raw=raw)
         else:
             self._subscribers[topic].subscribe(client_id, callback)
 
-        if msg_type is not None:
+        if msg_type is not None and not raw:
             self._subscribers[topic].verify_type(msg_type)
 
     def unsubscribe(self, client_id, topic):

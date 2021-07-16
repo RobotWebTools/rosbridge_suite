@@ -54,3 +54,8 @@ install(
   FILES mapping_rules.yaml
   DESTINATION share/${PROJECT_NAME}
 )
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_nose REQUIRED)
+  ament_add_nose_test(${PROJECT_NAME}_test_objectutils test/test_objectutils.py)
+endif()

@@ -34,6 +34,9 @@
 from rosbridge_library.internal import ros_loader
 import inspect
 
+from rosidl_parser.definition import AbstractGenericString, AbstractNestedType, AbstractSequence, AbstractType, AbstractWString, Array, BasicType, NamedType, NamespacedType
+from rosidl_adapter.msg import MSG_TYPE_TO_IDL
+
 # Keep track of atomic types and special types
 atomics = ['bool', 'byte','int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64', 'float32', 'float64', 'string']
 specials = ['time', 'duration']
@@ -95,14 +98,71 @@ def get_service_response_typedef_recursive(servicetype):
     # Return the list of sub-typedefs
     return _get_subtypedefs_recursive(typedef, [])
 
-def get_typedef_full_text(type):
+def get_typedef_full_text(ty):
     """ Returns the full text (similar to `gendeps --cat`) for the specified message type """
     # Get an instance of the service response class and get its typedef
     try:
-        instance = ros_loader.get_message_instance(type)
-        return instance._full_text
-    except Exception:
-        return ""
+        return _stringify_field_types(ty)
+    except Exception as e:
+        return f"# failed to get full definition text for {ty}: {str(e)}"
+
+def _stringify_field_types(root_type):
+    definition = ""
+    stringified_types = set()
+    deps = [root_type]
+    is_root = True
+    while deps:
+        ty = deps.pop()
+        stringified_types.add(ty)
+        if not is_root:
+            definition += "\n================================================================================\n"
+            definition += f"MSG: {ty}\n"
+        is_root = False
+
+        cls = ros_loader.get_message_class(ty)
+        pkg = ty.split("/")[0]
+        fields_and_types = zip(cls._fields_and_field_types.keys(), cls.SLOT_TYPES)
+        for name, ty in fields_and_types:
+            type_str, type_deps = _stringify_type(ty, pkg)
+            for dep in type_deps:
+                if dep not in stringified_types:
+                    deps.append(dep)
+            definition += f"{type_str} {name}\n"
+    return definition
+
+IDL_TYPE_TO_MSG = {v: k for k, v in MSG_TYPE_TO_IDL.items()}
+def _idl_builtin_to_msg(ty):
+    return IDL_TYPE_TO_MSG[ty]
+
+def _stringify_type(ty: AbstractType, pkg: str):
+    if isinstance(ty, BasicType):
+        return _idl_builtin_to_msg(ty.typename), []
+    elif isinstance(ty, NamedType):
+        return ty.name, [f"{pkg}/{ty.name}"]
+    elif isinstance(ty, NamespacedType):
+        namespaced_name = ty.namespaced_name()
+        if len(namespaced_name) == 3:
+            full_name = f"{namespaced_name[0]}/{namespaced_name[2]}"
+        elif len(namespaced_name) == 2:
+            full_name = f"{namespaced_name[0]}/{namespaced_name[1]}"
+        else:
+            full_name = "/".join(namespaced_name)
+            raise RuntimeError(f"Unsupported namespaced type: f{full_name}")
+        is_builtin = ty.namespaces[0] == "builtin_interfaces"
+        return full_name, [] if is_builtin else [full_name]
+    elif isinstance(ty, AbstractGenericString):
+        typename = "wstring" if isinstance(ty, AbstractWString) else "string"
+        bound = f"[<={ty.maximum_size}]" if ty.has_maximum_size() else ""
+        return f"{typename}{bound}", []
+    elif isinstance(ty, Array):
+        name, deps = _stringify_type(ty.value_type, pkg)
+        return f"{name}[{ty.size}]", deps
+    elif isinstance(ty, AbstractSequence):
+        bound = f"[<={ty.maximum_size}]" if ty.has_maximum_size() else "[]"
+        name, deps = _stringify_type(ty.value_type, pkg)
+        return f"{name}{bound}", deps
+    else:
+        raise RuntimeError(f"Unhandled type {type(ty).__name__}")
 
 def _get_typedef(instance):
     """ Gets a typedef dict for the specified instance """
