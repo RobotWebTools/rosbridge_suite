@@ -317,9 +317,9 @@ class PublisherManager():
         self.unregister_timers[topic].start()
 
     def _unregister_impl(self, topic):
-        if not self._publishers[topic].has_clients():
-            self._publishers[topic].unregister()
-            del self._publishers[topic]
+        #if not self._publishers[topic].has_clients():
+        #    self._publishers[topic].unregister()
+        #    del self._publishers[topic]
         del self.unregister_timers[topic]
 
     def unregister_all(self, client_id):
