@@ -17,6 +17,7 @@
   <arg name="services_glob" default="[*]" />
   <arg name="params_glob" default="[*]" />
   <arg name="bson_only_mode" default="false" />
+  <arg name="null_terminated_tcp_messages" default="true"/>
 
   <node name="rosbridge_tcp" pkg="rosbridge_server" type="rosbridge_tcp" output="screen">
     <param name="authenticate" value="$(arg authenticate)" />
@@ -36,6 +37,7 @@
     <param name="params_glob" value="$(arg params_glob)"/>
 
     <param name="bson_only_mode" value="$(arg bson_only_mode)"/>
+    <param name="null_terminated_tcp_messages" value="$(arg null_terminated_tcp_messages)"/>
   </node>
 
   <node name="rosapi" pkg="rosapi" type="rosapi_node">

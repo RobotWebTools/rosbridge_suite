@@ -12,6 +12,8 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     TCP Socket server for rosbridge
     """
 
+    NULL_TERMINATOR = '\0'
+
     busy = False
     queue = []
     client_id_seed = 0
@@ -19,7 +21,8 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     client_count_pub = None
 
     # list of parameters
-    incoming_buffer = 65536                 # bytes
+    incoming_buffer_size = 65536            # bytes
+    incoming_buffer = ""
     socket_timeout = 10                     # seconds
     # The following are passed on to RosbridgeProtocol
     # defragmentation.py:
@@ -29,6 +32,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     max_message_size = None                 # bytes
     unregister_timeout = 10.0               # seconds
     bson_only_mode = False
+    null_terminated_msgs = False
 
     def setup(self):
         cls = self.__class__
@@ -92,20 +96,29 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         self.request.settimeout(cls.socket_timeout)
         while 1:
             try:
-              if self.bson_only_mode:
-                  if self.recv_bson() == None:
-                      break
-                  continue
+                if self.bson_only_mode:
+                    if self.recv_bson() == None:
+                        break
+                    continue
 
-              # non-BSON handling
-              data = self.request.recv(cls.incoming_buffer)
-              # Exit on empty string
-              if data.strip() == '':
-                  break
-              elif len(data.strip()) > 0:
-                  self.protocol.incoming(data.decode().strip(''))
-              else:
-                  pass
+                # non-BSON handling
+                data = self.request.recv(cls.incoming_buffer_size)
+                # Exit on empty string
+                if data.strip() == '':
+                    break
+                elif len(data.strip()) > 0:
+                    if not cls.null_terminated_msgs:
+                        self.protocol.incoming(data.decode().strip(''))
+                    else:
+                        data_str = data.decode()
+                        if data_str.endswith(cls.NULL_TERMINATOR):
+                            cls.incoming_buffer += data_str
+                            self.protocol.incoming(cls.incoming_buffer.strip(''))
+                            cls.incoming_buffer = ''
+                        else:
+                            cls.incoming_buffer += data_str
+                else:
+                    pass
             except Exception as e:
                 pass
                 self.protocol.log("debug", "socket connection timed out! (ignore warning if client is only listening..)")
@@ -125,4 +138,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Callback from rosbridge
         """
+        cls = self.__class__
+        if cls.null_terminated_msgs and not message.endswith(cls.NULL_TERMINATOR):
+            message += cls.NULL_TERMINATOR
         self.request.sendall(message.encode())

@@ -56,7 +56,7 @@ if __name__ == "__main__":
             # update parameters from parameter server or use default value ( second parameter of get_param )
             port = get_param('~port', 9090)
             host = get_param('~host', '')
-            incoming_buffer = get_param('~incoming_buffer', RosbridgeTcpSocket.incoming_buffer)
+            incoming_buffer_size = get_param('~incoming_buffer', RosbridgeTcpSocket.incoming_buffer)
             socket_timeout = get_param('~socket_timeout', RosbridgeTcpSocket.socket_timeout)
             retry_startup_delay = get_param('~retry_startup_delay', 5.0)  # seconds
             fragment_timeout = get_param('~fragment_timeout', RosbridgeTcpSocket.fragment_timeout)
@@ -64,6 +64,7 @@ if __name__ == "__main__":
             max_message_size = get_param('~max_message_size', RosbridgeTcpSocket.max_message_size)
             unregister_timeout = get_param('~unregister_timeout', RosbridgeTcpSocket.unregister_timeout)
             bson_only_mode = get_param('~bson_only_mode', False)
+            null_terminated_tcp_messages = get_param("~null_terminated_tcp_messages", False)
 
             if max_message_size == "None":
                 max_message_size = None
@@ -107,7 +108,7 @@ if __name__ == "__main__":
             if "--incoming_buffer" in sys.argv:
                 idx = sys.argv.index("--incoming_buffer") + 1
                 if idx < len(sys.argv):
-                    incoming_buffer = int(sys.argv[idx])
+                    incoming_buffer_size = int(sys.argv[idx])
                 else:
                     print("--incoming_buffer argument provided without a value.")
                     sys.exit(-1)
@@ -164,16 +165,6 @@ if __name__ == "__main__":
                     print("--unregister_timeout argument provided without a value.")
                     sys.exit(-1)
 
-            # export parameters to handler class
-            RosbridgeTcpSocket.incoming_buffer = incoming_buffer
-            RosbridgeTcpSocket.socket_timeout = socket_timeout
-            RosbridgeTcpSocket.fragment_timeout = fragment_timeout
-            RosbridgeTcpSocket.delay_between_messages = delay_between_messages
-            RosbridgeTcpSocket.max_message_size = max_message_size
-            RosbridgeTcpSocket.unregister_timeout = unregister_timeout
-            RosbridgeTcpSocket.bson_only_mode = bson_only_mode
-
-
             if "--topics_glob" in sys.argv:
                 idx = sys.argv.index("--topics_glob") + 1
                 if idx < len(sys.argv):
@@ -213,6 +204,22 @@ if __name__ == "__main__":
             if "--bson_only_mode" in sys.argv:
                 bson_only_mode = True
 
+
+            if "--null_terminated_tcp_messages" in sys.argv:
+                null_terminated_tcp_messages = True
+
+            
+            # export parameters to handler class
+            RosbridgeTcpSocket.incoming_buffer_size = incoming_buffer_size
+            RosbridgeTcpSocket.socket_timeout = socket_timeout
+            RosbridgeTcpSocket.fragment_timeout = fragment_timeout
+            RosbridgeTcpSocket.delay_between_messages = delay_between_messages
+            RosbridgeTcpSocket.max_message_size = max_message_size
+            RosbridgeTcpSocket.unregister_timeout = unregister_timeout
+            RosbridgeTcpSocket.bson_only_mode = bson_only_mode
+            RosbridgeTcpSocket.null_terminated_msgs = null_terminated_tcp_messages
+
+            
             # To be able to access the list of topics and services, you must be able to access the rosapi services.
             if RosbridgeTcpSocket.services_glob:
                 RosbridgeTcpSocket.services_glob.append("/rosapi/*")
