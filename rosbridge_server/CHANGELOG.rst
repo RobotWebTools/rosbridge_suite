@@ -2,6 +2,22 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add cbor-raw compression support (`#574 <https://github.com/foxglove/rosbridge_suite/issues/574>`_, adapted from ROS 1 implementation `#452 <https://github.com/foxglove/rosbridge_suite/issues/452>`_)
+* Adaptations to Eloquent [Again] (`#533 <https://github.com/foxglove/rosbridge_suite/issues/533>`_)
+  * increase spin period to 1000Hz to allow 1000 messages per second into the websocket
+  * allow interpreting int as float when needed
+  * better handling array.array and numpy arrays
+  * allow bytes and str websocket messages
+  * add boolean type
+  * handle type extraction of static array rostypes
+  * missing cls variable
+  Co-authored-by: Maximilian Matthe <maxi.matthe@googlemail.com>
+  Co-authored-by: CoRoLa generic <corola@bi>
+  Co-authored-by: joshwapohlmann <joshwa.pohlmann@barkhauseninstitut.org>
+* Contributors: Jacob Bandes-Storch, travipross
+
 1.0.2 (2019-09-24)
 ------------------
 * use Python 3 dependency keys (`#436 <https://github.com/RobotWebTools/rosbridge_suite/issues/436>`_)
