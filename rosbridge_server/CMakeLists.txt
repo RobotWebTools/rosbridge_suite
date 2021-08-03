@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(rosbridge_server NONE)
 
+find_package(ament_cmake_ros REQUIRED)
 find_package(ament_cmake_core REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 
