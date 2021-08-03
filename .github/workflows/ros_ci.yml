@@ -12,10 +12,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ros_distribution:
-          - dashing
-          - eloquent
-          - foxy
         include:
           # Dashing Diademata (May 2019 - May 2021)
           - docker_image: ubuntu:bionic
@@ -29,6 +25,10 @@ jobs:
           - docker_image: ubuntu:focal
             ros_distribution: foxy
             ros_version: 2
+          # Galactic Geochelone (May 2021 - November 2022)
+          - docker_image: ubuntu:focal
+            ros_distribution: galactic
+            ros_version: 2
     container:
       image: ${{ matrix.docker_image }}
     steps:
@@ -39,11 +39,11 @@ jobs:
         with:
           path: ros_ws/src
       - name: setup ROS environment
-        uses: ros-tooling/setup-ros@0.0.25
+        uses: ros-tooling/setup-ros@0.2.1
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
       - name: build and test
-        uses: ros-tooling/action-ros-ci@0.0.19
+        uses: ros-tooling/action-ros-ci@0.2.2
         with:
           package-name: rosbridge_suite
           target-ros2-distro: ${{ matrix.ros_distribution }}
