@@ -12,10 +12,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ros_distribution:
-          - dashing
-          - eloquent
-          - foxy
         include:
           # Dashing Diademata (May 2019 - May 2021)
           - docker_image: ubuntu:bionic
@@ -28,6 +24,10 @@ jobs:
           # Foxy Fitzroy (June 2020 - May 2023)
           - docker_image: ubuntu:focal
             ros_distribution: foxy
+            ros_version: 2
+          # Galactic Geochelone (May 2021 - November 2022)
+          - docker_image: ubuntu:focal
+            ros_distribution: galactic
             ros_version: 2
     container:
       image: ${{ matrix.docker_image }}
