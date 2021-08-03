@@ -98,7 +98,6 @@ def get_service_response_typedef_recursive(servicetype):
 
 def get_typedef_full_text(ty):
     """ Returns the full text (similar to `gendeps --cat`) for the specified message type """
-    # Get an instance of the service response class and get its typedef
     try:
         return stringify_field_types(ty)
     except Exception as e:

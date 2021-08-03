@@ -19,7 +19,7 @@ def stringify_field_types(root_type):
 
         cls = ros_loader.get_message_class(ty)
         pkg = ty.split("/")[0]
-        fields_and_types = zip(cls._fields_and_field_types.keys(), cls.SLOT_TYPES)
+        fields_and_types = zip(cls.get_fields_and_field_types().keys(), cls.SLOT_TYPES)
         for name, ty in fields_and_types:
             type_str, dep = _stringify_type(ty, pkg)
             if dep is not None and dep not in seen_types:

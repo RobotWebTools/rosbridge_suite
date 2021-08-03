@@ -334,7 +334,7 @@ class Subscribe(Capability):
             outgoing_msg[u"msg"] = {
                 u"secs": secs,
                 u"nsecs": nsecs,
-                u"bytes": message._message
+                u"bytes": message.message
             }
             outgoing_msg = bytearray(encode_cbor(outgoing_msg))
         else:
