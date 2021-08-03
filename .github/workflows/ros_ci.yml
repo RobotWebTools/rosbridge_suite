@@ -45,6 +45,5 @@ jobs:
       - name: build and test
         uses: ros-tooling/action-ros-ci@0.2.2
         with:
-          package-name: rosbridge_suite
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: ""

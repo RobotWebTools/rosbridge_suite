@@ -64,6 +64,7 @@ class Rosapi(Node):
         params.init(full_name)
         self.create_service(Topics, '/rosapi/topics', self.get_topics)
         self.create_service(TopicsForType, '/rosapi/topics_for_type', self.get_topics_for_type)
+        self.create_service(TopicsAndRawTypes, '/rosapi/topics_and_raw_types', self.get_topics_and_raw_types)
         self.create_service(Services, '/rosapi/services', self.get_services)
         self.create_service(ServicesForType, '/rosapi/services_for_type', self.get_services_for_type)
         self.create_service(Nodes, '/rosapi/nodes', self.get_nodes)
@@ -102,6 +103,14 @@ class Rosapi(Node):
     def get_topics_for_type(self, request, response):
         """ Called by the rosapi/TopicsForType service. Returns a list of all the topics that are publishing a given type """
         response.topics = proxy.get_topics_for_type(request.type, self.globs.topics)
+        return response
+
+
+    def get_topics_and_raw_types(self, request, response):
+        """ Called by the rosapi/TopicsAndRawTypes service. Returns a list of all the topics being published, and their
+        raw types, similar to `gendeps --cat`. """
+        response.topics, response.types = proxy.get_topics_and_types(self.globs.topics)
+        response.typedefs_full_text = [objectutils.get_typedef_full_text(type) for type in response.types]
         return response
 
     def get_services(self, request, response):

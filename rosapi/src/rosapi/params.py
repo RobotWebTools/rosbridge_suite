@@ -120,7 +120,7 @@ def get_param(node_name, name, default, params_glob):
         return
     # If the glob list is empty (i.e. false) or the parameter matches
     # one of the glob strings, continue to get the parameter.
-    if default is not "":
+    if default != "":
         try:
             default = loads(default)
         except ValueError:

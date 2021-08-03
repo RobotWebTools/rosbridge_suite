@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from rosapi.stringify_field_types import stringify_field_types
 from rosbridge_library.internal import ros_loader
 import inspect
 
@@ -94,6 +95,14 @@ def get_service_response_typedef_recursive(servicetype):
 
     # Return the list of sub-typedefs
     return _get_subtypedefs_recursive(typedef, [])
+
+def get_typedef_full_text(ty):
+    """ Returns the full text (similar to `gendeps --cat`) for the specified message type """
+    try:
+        return stringify_field_types(ty)
+    except Exception as e:
+        return f"# failed to get full definition text for {ty}: {str(e)}"
+
 
 def _get_typedef(instance):
     """ Gets a typedef dict for the specified instance """

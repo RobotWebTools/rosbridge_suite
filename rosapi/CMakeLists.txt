@@ -36,6 +36,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/SetParam.srv
   srv/Subscribers.srv
   srv/Topics.srv
+  srv/TopicsAndRawTypes.srv
   srv/TopicsForType.srv
   srv/TopicType.srv
   DEPENDENCIES builtin_interfaces
@@ -53,3 +54,8 @@ install(
   FILES mapping_rules.yaml
   DESTINATION share/${PROJECT_NAME}
 )
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_nose REQUIRED)
+  ament_add_nose_test(${PROJECT_NAME}_test_stringify_field_types test/test_stringify_field_types.py)
+endif()

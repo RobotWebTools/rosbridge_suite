@@ -50,7 +50,7 @@ class MultiSubscriber():
     callbacks being called in separate threads, must lock whenever modifying
     or accessing the subscribed clients. """
 
-    def __init__(self, topic, client_id, callback, node_handle, msg_type=None):
+    def __init__(self, topic, client_id, callback, node_handle, msg_type=None, raw=False):
         """ Register a subscriber on the specified topic.
 
         Keyword arguments:
@@ -105,7 +105,7 @@ class MultiSubscriber():
         self.msg_class = msg_class
         self.node_handle = node_handle
         # TODO(@jubeira): add support for other QoS.
-        self.subscriber = node_handle.create_subscription(msg_class, topic, self.callback, 10)
+        self.subscriber = node_handle.create_subscription(msg_class, topic, self.callback, 10, raw=raw)
         self.new_subscriber = None
         self.new_subscriptions = {}
 
@@ -219,7 +219,7 @@ class SubscriberManager():
     def __init__(self):
         self._subscribers = {}
 
-    def subscribe(self, client_id, topic, callback, node_handle, msg_type=None):
+    def subscribe(self, client_id, topic, callback, node_handle, msg_type=None, raw=False):
         """ Subscribe to a topic
 
         Keyword arguments:
@@ -231,11 +231,11 @@ class SubscriberManager():
         """
         if not topic in self._subscribers:
             self._subscribers[topic] = MultiSubscriber(
-                topic, client_id, callback, node_handle, msg_type=msg_type)
+                topic, client_id, callback, node_handle, msg_type=msg_type, raw=raw)
         else:
             self._subscribers[topic].subscribe(client_id, callback)
 
-        if msg_type is not None:
+        if msg_type is not None and not raw:
             self._subscribers[topic].verify_type(msg_type)
 
     def unsubscribe(self, client_id, topic):
