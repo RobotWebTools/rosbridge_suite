@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.3 (2021-08-03)
+------------------
 * Add TopicsAndRawTypes service (`#574 <https://github.com/foxglove/rosbridge_suite/issues/574>`_, adapted from ROS 1 implementation `#452 <https://github.com/foxglove/rosbridge_suite/issues/452>`_)
 * fix: remove json encoding before setting string params (`#521 <https://github.com/foxglove/rosbridge_suite/issues/521>`_)
 * Update rosapi/proxy.py to match eloquent API (`#447 <https://github.com/foxglove/rosbridge_suite/issues/447>`_)
