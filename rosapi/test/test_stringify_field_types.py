@@ -2,6 +2,7 @@
 import unittest
 
 from rosapi.stringify_field_types import stringify_field_types
+from rosbridge_library.internal.ros_loader import InvalidModuleException
 
 
 class TestObjectUtils(unittest.TestCase):
@@ -85,9 +86,10 @@ float64[<=3] dimensions
 """,
         )
 
-        self.assertEqual(
-            stringify_field_types("rmw_dds_common/NodeEntitiesInfo"),
-            """\
+        try:
+            self.assertEqual(
+                stringify_field_types("rmw_dds_common/NodeEntitiesInfo"),
+                """\
 string<=256 node_namespace
 string<=256 node_name
 rmw_dds_common/Gid[] reader_gid_seq
@@ -97,4 +99,7 @@ rmw_dds_common/Gid[] writer_gid_seq
 MSG: rmw_dds_common/Gid
 uint8[24] data
 """,
-        )
+            )
+        except InvalidModuleException:
+            # This message is not present on older ROS distributions
+            pass
