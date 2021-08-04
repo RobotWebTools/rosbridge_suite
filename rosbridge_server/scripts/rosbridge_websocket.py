@@ -88,7 +88,7 @@ class RosbridgeWebsocketNode(Node):
             'delay_between_messages', RosbridgeWebSocket.delay_between_messages).value
 
         RosbridgeWebSocket.max_message_size = self.declare_parameter(
-            'max_message_size', RosbridgeWebSocket.max_message_size, ParameterDescriptor(dynamic_typing=True)).value
+            'max_message_size', RosbridgeWebSocket.max_message_size).value
 
         RosbridgeWebSocket.unregister_timeout = self.declare_parameter(
             'unregister_timeout', RosbridgeWebSocket.unregister_timeout).value
