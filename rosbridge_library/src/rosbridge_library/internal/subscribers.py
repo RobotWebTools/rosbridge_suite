@@ -109,7 +109,7 @@ class MultiSubscriber():
             depth=1,
             durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
         )
-        self.subscriber = node_handle.create_subscription(msg_class, topic, self.callback, 10, raw=raw, qos_profile=node_qos)
+        self.subscriber = node_handle.create_subscription(msg_class, topic, self.callback, raw=raw, qos_profile=node_qos)
         self.new_subscriber = None
         self.new_subscriptions = {}
 
