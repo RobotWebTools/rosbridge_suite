@@ -39,6 +39,7 @@ from rosbridge_library.internal.topics import TopicNotEstablishedException
 from rosbridge_library.internal.topics import TypeConflictException
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
 from rospy.msg import AnyMsg
+import traceback
 
 """ Manages and interfaces with ROS Subscriber objects.  A single subscriber
 is shared between multiple clients
@@ -173,6 +174,7 @@ class MultiSubscriber():
             try:
                 callback(outgoing)
             except Exception as exc:
+                traceback.print_exc()
                 # Do nothing if one particular callback fails except log it
                 logerr("Exception calling subscribe callback: %s", exc)
 

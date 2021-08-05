@@ -61,7 +61,10 @@ if sys.version_info[0] < 3:
 else:
 
     def incoming_buffer(buffer, message):
-        return buffer + str(message)
+        if type(message) == str:
+            return buffer + str.encode(message)
+        else:
+            return buffer + message
 
 def has_binary(obj):
     """ Returns True if obj is a binary or contains a binary attribute

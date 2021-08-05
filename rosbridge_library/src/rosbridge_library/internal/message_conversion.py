@@ -136,7 +136,7 @@ def _from_inst(inst, rostype):
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
             encoded = get_encoder()(inst)
-            return encoded if python2 else encoded.decode('ascii')
+            return encoded
 
     # Check for time or duration
     if rostype in ros_time_types:
