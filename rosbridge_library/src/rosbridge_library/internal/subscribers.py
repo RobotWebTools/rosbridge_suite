@@ -51,7 +51,7 @@ class MultiSubscriber():
     callbacks being called in separate threads, must lock whenever modifying
     or accessing the subscribed clients. """
 
-    def __init__(self, topic, client_id, callback, node_handle, msg_type=None, raw=False):
+    def __init__(self, topic, client_id, callback, node_handle, msg_type=None, qos_durability="volatile", raw=False):
         """ Register a subscriber on the specified topic.
 
         Keyword arguments:
@@ -62,6 +62,8 @@ class MultiSubscriber():
         node_handle -- Handle to a rclpy node to create the publisher.
         msg_type -- (optional) the type to register the subscriber as.  If not
         provided, an attempt will be made to infer the topic type
+        qos_durability  -- (optional) the qos durability, 'volatile' or 
+        'transient_local'
 
         Throws:
         TopicNotEstablishedException -- if no msg_type was specified by the
@@ -105,9 +107,13 @@ class MultiSubscriber():
         self.topic = topic
         self.msg_class = msg_class
         self.node_handle = node_handle
-        node_qos = QoSProfile(
-            depth=1,
-            durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
+        node_qos = (
+            QoSProfile(
+                depth=1,
+                durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
+            )
+            if qos_durability == "transient_local"
+            else 10
         )
         self.subscriber = node_handle.create_subscription(msg_class, topic, self.callback, raw=raw, qos_profile=node_qos)
         self.new_subscriber = None
@@ -223,19 +229,19 @@ class SubscriberManager():
     def __init__(self):
         self._subscribers = {}
 
-    def subscribe(self, client_id, topic, callback, node_handle, msg_type=None, raw=False):
+    def subscribe(self, client_id, topic, callback, node_handle, msg_type=None, qos_durability="volatile", raw=False):
         """ Subscribe to a topic
 
         Keyword arguments:
-        client_id -- the ID of the client making this subscribe request
-        topic     -- the name of the topic to subscribe to
-        callback  -- the callback to call for incoming messages on the topic
-        msg_type  -- (optional) the type of the topic
-
+        client_id       -- the ID of the client making this subscribe request
+        topic           -- the name of the topic to subscribe to
+        callback        -- the callback to call for incoming messages on the topic
+        msg_type        -- (optional) the type of the topic
+        qos_durability  -- (optional) the qos durability, 'volatile' or 'transient_local'
         """
         if not topic in self._subscribers:
             self._subscribers[topic] = MultiSubscriber(
-                topic, client_id, callback, node_handle, msg_type=msg_type, raw=raw)
+                topic, client_id, callback, node_handle, msg_type=msg_type, qos_durability=qos_durability, raw=raw)
         else:
             self._subscribers[topic].subscribe(client_id, callback)
 

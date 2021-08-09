@@ -92,7 +92,8 @@ class Subscription():
         self.clients.clear()
 
     def subscribe(self, sid=None, msg_type=None, throttle_rate=0,
-                  queue_length=0, fragment_size=None, compression="none"):
+                  queue_length=0, qos_durability="volatile", fragment_size=None, 
+                  compression="none"):
         """ Add another client's subscription request
 
         If there are multiple calls to subscribe, the values actually used for
@@ -106,6 +107,7 @@ class Subscription():
         being sent.  If multiple subscriptions, the lower of these is used
         queue_length    -- the number of messages that can be buffered.  If
         multiple subscriptions, the lower of these is used
+        qos_durability  -- the qos durability, 'volatile' or 'transient_local'
         fragment_size   -- None if no fragmentation, or the maximum length of
         allowed outgoing messages
         compression     -- "none" if no compression, or some other value if
@@ -116,6 +118,7 @@ class Subscription():
         client_details = {
             "throttle_rate": throttle_rate,
             "queue_length": queue_length,
+            "qos_durability": qos_durability,
             "fragment_size": fragment_size,
             "compression": compression
         }
@@ -128,7 +131,7 @@ class Subscription():
 
         # Subscribe with the manager. This will propagate any exceptions
         manager.subscribe(
-            self.client_id, self.topic, self.on_msg, self.node_handle, msg_type=msg_type, raw=raw)
+            self.client_id, self.topic, self.on_msg, self.node_handle, msg_type=msg_type, qos_durability=qos_durability, raw=raw)
 
     def unsubscribe(self, sid=None):
         """ Unsubscribe this particular client's subscription
@@ -203,7 +206,8 @@ class Subscribe(Capability):
 
     subscribe_msg_fields = [(True, "topic", string_types), (False, "type", string_types),
                             (False, "throttle_rate", int), (False, "fragment_size", int),
-                            (False, "queue_length", int), (False, "compression", string_types)]
+                            (False, "queue_length", int), (False, "qos_durability", str),
+                            (False, "compression", string_types)]
     unsubscribe_msg_fields = [(True, "topic", string_types)]
 
     topics_glob = None
@@ -254,6 +258,7 @@ class Subscribe(Capability):
           "throttle_rate": msg.get("throttle_rate", 0),
           "fragment_size": msg.get("fragment_size", None),
           "queue_length": msg.get("queue_length", 0),
+          "qos_durability": msg.get("qos_durability", "volatile"),
           "compression": msg.get("compression", "none")
         }
         self._subscriptions[topic].subscribe(**subscribe_args)
