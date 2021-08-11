@@ -2,6 +2,9 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.3 (2021-08-03)
 ------------------
 * Add cbor-raw compression support (`#574 <https://github.com/foxglove/rosbridge_suite/issues/574>`_, adapted from ROS 1 implementation `#452 <https://github.com/foxglove/rosbridge_suite/issues/452>`_)
