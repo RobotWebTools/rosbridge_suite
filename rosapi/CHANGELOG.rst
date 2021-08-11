@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2021-08-11)
+------------------
 * Include /msg/ in type names (`#584 <https://github.com/foxglove/rosbridge_suite/issues/584>`_)
   It's more canonical for ROS 2 type names to be of the form `foo_msgs/msg/Bar` rather than just `foo_msgs/Bar`. This is occasionally reflected in documentation and command line tooling: https://docs.ros.org/en/galactic/Tutorials/Topics/Understanding-ROS2-Topics.html#ros2-interface-show
   So rather than stripping out `/msg/`, we include it in the type definitions.
