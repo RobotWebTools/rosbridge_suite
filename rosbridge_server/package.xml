@@ -24,6 +24,13 @@
   <exec_depend>rosapi</exec_depend>
   <exec_depend>rosauth</exec_depend>
 
+  <test_depend>python3-autobahn</test_depend>
+  <test_depend>launch</test_depend>
+  <test_depend>launch_ros</test_depend>
+  <test_depend>launch_testing</test_depend>
+  <test_depend>launch_testing_ros</test_depend>
+  <test_depend>launch_testing_ament_cmake</test_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>

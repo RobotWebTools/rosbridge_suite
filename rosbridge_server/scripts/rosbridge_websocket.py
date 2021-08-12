@@ -38,17 +38,16 @@ import time
 
 from socket import error
 
-from threading import Thread
+from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.ioloop import PeriodicCallback
+from tornado.netutil import bind_sockets
 from tornado.web import Application
 
 import rclpy
 from rclpy.node import Node
-from rclpy.parameter import Parameter
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 from std_msgs.msg import Int32
-from rcl_interfaces.msg import ParameterDescriptor
 
 from rosbridge_server import RosbridgeWebSocket, ClientManager
 
@@ -88,15 +87,12 @@ class RosbridgeWebsocketNode(Node):
             'delay_between_messages', RosbridgeWebSocket.delay_between_messages).value
 
         RosbridgeWebSocket.max_message_size = self.declare_parameter(
-            'max_message_size', RosbridgeWebSocket.max_message_size, ParameterDescriptor(dynamic_typing=True)).value
+            'max_message_size', RosbridgeWebSocket.max_message_size).value
 
         RosbridgeWebSocket.unregister_timeout = self.declare_parameter(
             'unregister_timeout', RosbridgeWebSocket.unregister_timeout).value
 
         bson_only_mode = self.declare_parameter('bson_only_mode', False).value
-
-        if RosbridgeWebSocket.max_message_size == "None":
-            RosbridgeWebSocket.max_message_size = None
 
         # get tornado application parameters
         tornado_settings = {}
@@ -190,12 +186,9 @@ class RosbridgeWebsocketNode(Node):
             idx = sys.argv.index("--max_message_size") + 1
             if idx < len(sys.argv):
                 value = sys.argv[idx]
-                if value == "None":
-                    RosbridgeWebSocket.max_message_size = None
-                else:
-                    RosbridgeWebSocket.max_message_size = int(value)
+                RosbridgeWebSocket.max_message_size = int(value)
             else:
-                print("--max_message_size argument provided without a value. (can be None or <Integer>)")
+                print("--max_message_size argument provided without a value. (can be <Integer>)")
                 sys.exit(-1)
 
         if "--unregister_timeout" in sys.argv:
@@ -281,11 +274,15 @@ class RosbridgeWebsocketNode(Node):
         connected = False
         while not connected and self.context.ok():
             try:
+                ssl_options = None
                 if certfile is not None and keyfile is not None:
-                    application.listen(port, address, ssl_options={ "certfile": certfile, "keyfile": keyfile})
-                else:
-                    application.listen(port, address)
-                self.get_logger().info("Rosbridge WebSocket server started on port {}".format(port))
+                    ssl_options = { "certfile": certfile, "keyfile": keyfile }
+                sockets = bind_sockets(port, address)
+                actual_port = sockets[0].getsockname()[1]
+                server = HTTPServer(application, ssl_options=ssl_options)
+                server.add_sockets(sockets)
+                self.declare_parameter("actual_port", actual_port)
+                self.get_logger().info("Rosbridge WebSocket server started on port {}".format(actual_port))
                 connected = True
             except error as e:
                 self.get_logger().warn(
