@@ -35,17 +35,23 @@ TIME_LIMIT = 5.0  # seconds
 
 
 def generate_test_description():
+    try:
+        node = launch_ros.actions.Node(
+            executable="rosbridge_websocket",
+            package="rosbridge_server",
+            parameters=[{"port": 0}],
+        )
+    except TypeError:
+        # Deprecated keyword arg node_executable: https://github.com/ros2/launch_ros/pull/140
+        node = launch_ros.actions.Node(
+            node_executable="rosbridge_websocket",
+            package="rosbridge_server",
+            parameters=[{"port": 0}],
+        )
+
     return launch.LaunchDescription(
         [
-            launch_ros.actions.Node(
-                executable="rosbridge_websocket",
-                package="rosbridge_server",
-                parameters=[
-                    {
-                        "port": 0,
-                    }
-                ],
-            ),
+            node,
             launch_testing.actions.ReadyToTest(),
         ]
     )
