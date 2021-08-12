@@ -33,8 +33,6 @@
 import uuid
 
 from rclpy.time import Time
-# TODO(@jubeira): Re-add once rosauth is ported to ROS2.
-# from rosauth.srv import Authentication
 
 import sys
 import threading
@@ -74,7 +72,6 @@ def log_exceptions(f):
 class RosbridgeWebSocket(WebSocketHandler):
     client_id_seed = 0
     clients_connected = 0
-    authenticate = False
     use_compression = False
 
     # The following are passed on to RosbridgeProtocol
@@ -102,7 +99,6 @@ class RosbridgeWebSocket(WebSocketHandler):
             self.protocol = RosbridgeProtocol(cls.client_id_seed, cls.node_handle, parameters=parameters)
             self.protocol.outgoing = self.send_message
             self.set_nodelay(True)
-            self.authenticated = False
             self._write_lock = threading.RLock()
             cls.client_id_seed += 1
             cls.clients_connected += 1
@@ -113,62 +109,12 @@ class RosbridgeWebSocket(WebSocketHandler):
             cls.node_handle.get_logger().error("Unable to accept incoming connection.  Reason: {}".format(exc))
 
         cls.node_handle.get_logger().info("Client connected. {} clients total.".format(cls.clients_connected))
-        if cls.authenticate:
-            cls.node_handle.get_logger().info("Awaiting proper authentication...")
 
     @log_exceptions
     def on_message(self, message):
-        cls = self.__class__
-        # check if we need to authenticate
-        if cls.authenticate and not self.authenticated:
-            try:
-                if cls.bson_only_mode:
-                    msg = bson.BSON(message).decode()
-                else:
-                    msg = json.loads(message)
-
-                if msg['op'] == 'auth':
-                    # check the authorization information
-                    auth_srv_client = cls.node_handle.create_client(Authentication, 'authenticate')
-                    auth_srv_req = Authentication.Request()
-                    auth_srv_req.mac = msg['mac']
-                    auth_srv_req.client = msg['client']
-                    auth_srv_req.dest = msg['dest']
-                    auth_srv_req.rand = msg['rand']
-                    auth_srv_req.t = Time(seconds=msg['t']).to_msg()
-                    auth_srv_req.level = msg['level']
-                    auth_srv_req.end = Time(seconds=msg['end']).to_msg()
-
-                    while not auth_srv_client.wait_for_service(timeout_sec=1.0):
-                        cls.node_handle.get_logger().info('Authenticate service not available, waiting again...')
-
-                    future = auth_srv_client.call_async(auth_srv_req)
-                    rclpy.spin_until_future_complete(cls.node_handle, future)
-
-                    # Log error if service could not be called.
-                    if future.result() is not None:
-                        self.authenticated = future.result().authenticated
-                    else:
-                        self.authenticated = False
-                        cls.node_handle.get_logger.error('Authenticate service call failed')
-
-                    if self.authenticated:
-                        cls.node_handle.get_logger().info("Client {} has authenticated.".format(self.protocol.client_id))
-                        return
-                # if we are here, no valid authentication was given
-                cls.node_handle.get_logger().warn(
-                    "Client {} did not authenticate. Closing connection.".format(self.protocol.client_id))
-                self.close()
-            except:
-                # proper error will be handled in the protocol class
-                if type(message) is bytes:
-                    message = message.decode('utf-8')
-                self.protocol.incoming(message)
-        else:
-            # no authentication required
-            if type(message) is bytes:
-                message = message.decode('utf-8')
-            self.protocol.incoming(message)
+        if type(message) is bytes:
+            message = message.decode('utf-8')
+        self.protocol.incoming(message)
 
     @log_exceptions
     def on_close(self):

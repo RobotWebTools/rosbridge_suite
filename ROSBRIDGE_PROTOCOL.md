@@ -267,7 +267,7 @@ Authentication is based on the MAC (message authentication code) scheme. The
 key to using MAC is that it does not tie users to a single "user database."
 It simply requires some trusted third-party to provide the hash-keys.
 
-#### 3.3.1 Authenticate ( _auth_ )
+#### 3.3.1 Authenticate ( _auth_, ROS 1 only )
 
 To send authentication credentials, use the auth command.
 
