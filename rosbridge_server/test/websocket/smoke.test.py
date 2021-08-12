@@ -12,8 +12,6 @@ import launch
 import launch.actions
 import launch_ros
 import launch_ros.actions
-import launch_testing
-import launch_testing.actions
 import rclpy
 import rclpy.task
 from rcl_interfaces.srv import GetParameters
@@ -34,7 +32,7 @@ WARMUP_DELAY = 1.0  # seconds
 TIME_LIMIT = 5.0  # seconds
 
 
-def generate_test_description():
+def generate_test_description(ready_fn):
     try:
         node = launch_ros.actions.Node(
             executable="rosbridge_websocket",
@@ -52,7 +50,7 @@ def generate_test_description():
     return launch.LaunchDescription(
         [
             node,
-            launch_testing.actions.ReadyToTest(),
+            launch.actions.OpaqueFunction(function=lambda context: ready_fn()),
         ]
     )
 
