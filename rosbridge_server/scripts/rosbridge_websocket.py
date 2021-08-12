@@ -39,8 +39,10 @@ import time
 from socket import error
 
 from threading import Thread
+from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.ioloop import PeriodicCallback
+from tornado.netutil import bind_sockets
 from tornado.web import Application
 
 import rclpy
@@ -281,11 +283,15 @@ class RosbridgeWebsocketNode(Node):
         connected = False
         while not connected and self.context.ok():
             try:
+                ssl_options = None
                 if certfile is not None and keyfile is not None:
-                    application.listen(port, address, ssl_options={ "certfile": certfile, "keyfile": keyfile})
-                else:
-                    application.listen(port, address)
-                self.get_logger().info("Rosbridge WebSocket server started on port {}".format(port))
+                    ssl_options = { "certfile": certfile, "keyfile": keyfile }
+                sockets = bind_sockets(port, address)
+                actual_port = sockets[0].getsockname()[1]
+                server = HTTPServer(application, ssl_options=ssl_options)
+                server.add_sockets(sockets)
+                self.declare_parameter("actual_port", actual_port)
+                self.get_logger().info("Rosbridge WebSocket server started on port {}".format(actual_port))
                 connected = True
             except error as e:
                 self.get_logger().warn(
