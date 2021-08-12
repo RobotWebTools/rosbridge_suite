@@ -1,6 +1,10 @@
 name: ROS 2 CI
 
 on:
+  push:
+    branches:
+      - 'ros2'
+      - 'ros2/*'
   pull_request:
     branches:
       - 'ros2' # TODO(flynneva): rename rosbrige_suite ros2 branch to ros2/main
