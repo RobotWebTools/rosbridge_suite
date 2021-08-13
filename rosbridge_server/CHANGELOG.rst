@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.5 (2021-08-12)
+------------------
 * Fix globs in launch xml for ROS 2 pre-Galactic (`#589 <https://github.com/foxglove/rosbridge_suite/issues/589>`_)
 * Remove authentication features and rosauth dependency (`#586 <https://github.com/foxglove/rosbridge_suite/issues/586>`_)
   [rosauth](http://wiki.ros.org/rosauth) is not maintained for ROS 2, and has not been released for Galactic (https://github.com/GT-RAIL/rosauth/issues/35). Since the authentication feature is old and not commonly used, and since rosbridge_suite has not yet been released in Eloquent, Foxy, or Galactic, we decided to just remove the authentication features to unblock us from pushing releases.
