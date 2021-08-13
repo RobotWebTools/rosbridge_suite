@@ -7,15 +7,11 @@
   <arg name="max_message_size" default="None" />
   <arg name="unregister_timeout" default="10" />
 
-  <arg name="authenticate" default="false" />
-
-  <arg name="topics_glob" default="''[*]''" />
-  <arg name="services_glob" default="''[*]''" />
-  <arg name="params_glob" default="''[*]''" />
+  <arg name="topics_glob" default="" />
+  <arg name="services_glob" default="" />
+  <arg name="params_glob" default="" />
 
   <node name="rosbridge_udp" pkg="rosbridge_server" exec="rosbridge_udp" output="screen">
-    <param name="authenticate" value="$(var authenticate)" />
-
     <param name="port" value="$(var port)"/>
     <param name="interface" value="$(var interface)"/>
     <param name="fragment_timeout" value="$(var fragment_timeout)"/>
