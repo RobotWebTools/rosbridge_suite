@@ -2,6 +2,9 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.4 (2021-08-11)
 ------------------
 * Include /msg/ in type names (`#584 <https://github.com/foxglove/rosbridge_suite/issues/584>`_)
