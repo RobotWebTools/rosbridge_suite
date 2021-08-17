@@ -97,18 +97,10 @@ def get_publications_and_types(glob, getter_function, **include_hidden_publicati
     # publication[0] has the publication name and publication[1] has the type wrapped in a list.
     all_publications = [publication[0] for publication in publication_names_and_types]
     filtered_publications = filter_globs(glob, all_publications)
-    filtered_publication_types = [sanitize_type_name(publication[1][0]) for publication
+    filtered_publication_types = [publication[1][0] for publication
                                   in publication_names_and_types
                                   if publication[0] in filtered_publications]
     return filtered_publications, filtered_publication_types
-
-def sanitize_type_name(name):
-    splits = name.split("/")
-    if len(splits) == 3:
-        return f"{splits[0]}/{splits[2]}"
-    if len(splits) == 2:
-        return f"{splits[0]}/{splits[1]}"
-    raise RuntimeError(f"Invalid type name {name}")
 
 
 def get_nodes(include_hidden=False):
