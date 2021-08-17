@@ -2,6 +2,12 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Include /msg/ in type names (`#591 <https://github.com/RobotWebTools/rosbridge_suite/issues/591>`_)
+* Fix broken links in changelogs
+* Contributors: Jacob Bandes-Storch
+
 1.0.5 (2021-08-12)
 ------------------
 

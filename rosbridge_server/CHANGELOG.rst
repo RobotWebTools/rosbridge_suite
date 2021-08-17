@@ -2,6 +2,11 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix broken links in changelogs
+* Contributors: Jacob Bandes-Storch
+
 1.0.5 (2021-08-12)
 ------------------
 * Fix globs in launch xml for ROS 2 pre-Galactic (`#589 <https://github.com/RobotWebTools/rosbridge_suite/issues/589>`_)

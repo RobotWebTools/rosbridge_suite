@@ -2,6 +2,11 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix broken links in changelogs
+* Contributors: Jacob Bandes-Storch
+
 1.0.5 (2021-08-12)
 ------------------
 
