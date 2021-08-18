@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2012, Willow Garage, Inc.
@@ -37,40 +37,29 @@ from rclpy.clock import ROSClock
 import numpy as np
 import array
 
+from rcl_interfaces.msg import Parameter
 from rosbridge_library.internal import ros_loader
 
 import math
 import re
-import string
 from base64 import standard_b64encode, standard_b64decode
 
 from rosbridge_library.util import string_types, bson
 
-import sys
-if sys.version_info >= (3, 0):
-    type_map = {
+try:
+    import rospy
+except ImportError:
+    rospy = None
+
+type_map = {
     "bool":    ["bool", "boolean"],
     "int":     ["int8", "byte", "uint8", "char",
                 "int16", "uint16", "int32", "uint32",
                 "int64", "uint64", "float32", "float64"],
     "float":   ["float32", "float64", "double", "float"],
     "str":     ["string"]
-    }
-    primitive_types = [bool, int, float]
-    python2 = False
-else:
-    type_map = {
-    "bool":    ["bool"],
-    "int":     ["int8", "byte", "uint8", "char",
-                "int16", "uint16", "int32", "uint32",
-                "int64", "uint64", "float32", "float64"],
-    "float":   ["float32", "float64"],
-    "str":     ["string"],
-    "unicode": ["string"],
-    "long":    ["int64", "uint64"]
-    }
-    primitive_types = [bool, int, long, float]
-    python2 = True
+}
+primitive_types = [bool, int, float]
 
 list_types = [list, tuple, np.ndarray, array.array]
 ros_time_types = ["builtin_interfaces/Time", "builtin_interfaces/Duration"]
@@ -96,9 +85,9 @@ def configure(node_handle=None):
     global binary_encoder, binary_encoder_type, bson_only_mode
 
     if node_handle is not None:
-        binary_encoder_type = node_handler.get_parameter_or('binary_encoder',
+        binary_encoder_type = node_handle.get_parameter_or('binary_encoder',
             Parameter('', value='default')).value
-        bson_only_mode = node_handler.get_parameter_or('bson_only_mode',
+        bson_only_mode = node_handle.get_parameter_or('bson_only_mode',
             Parameter('', value=False)).value
 
     if binary_encoder is None:
@@ -152,7 +141,7 @@ def msg_instance_type_repr(msg_inst):
     # E.g: 'std_msgs/Header'
     msg_type = type(msg_inst)
     if msg_type in primitive_types or msg_type in list_types:
-        return str(type(inst))
+        return str(type(msg_inst))
     inst_repr = str(msg_inst).split('.')
     return '{}/{}'.format(inst_repr[0], inst_repr[2].split('(')[0])
 
@@ -172,7 +161,7 @@ def _from_inst(inst, rostype):
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
             encoded = get_encoder()(inst)
-            return encoded if python2 else encoded.decode('ascii')
+            return encoded.decode('ascii')
 
     # Check for time or duration
     if rostype in ros_time_types:
@@ -301,7 +290,7 @@ def _to_primitive_inst(msg, rostype, roottype, stack):
     if msgtype in primitive_types and rostype in type_map[msgtype.__name__]:
         return msg
     elif msgtype in string_types and rostype in type_map[msgtype.__name__]:
-        return msg.encode("utf-8", "ignore") if python2 else msg
+        return msg
     raise FieldTypeMismatchException(roottype, stack, rostype, msgtype)
 
 
