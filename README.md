@@ -1,4 +1,4 @@
-rosbridge_suite [![Build Status](https://api.travis-ci.org/RobotWebTools/rosbridge_suite.png)](https://travis-ci.org/RobotWebTools/rosbridge_suite)
+rosbridge_suite
 ===============
 
 #### Server Implementations of the rosbridge v2 Protocol
