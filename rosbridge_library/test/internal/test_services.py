@@ -200,4 +200,3 @@ PKG = 'rosbridge_library'
 NAME = 'test_services'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestServices)
-

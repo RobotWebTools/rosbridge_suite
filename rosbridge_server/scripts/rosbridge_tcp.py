@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
 from rospy import init_node, get_param, loginfo, logerr, on_shutdown, Publisher
 from rosbridge_server import RosbridgeTcpSocket
 

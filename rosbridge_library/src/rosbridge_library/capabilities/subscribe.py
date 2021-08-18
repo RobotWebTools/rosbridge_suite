@@ -315,20 +315,20 @@ class Subscribe(Capability):
         else:
             self.protocol.log("debug", "No topic security glob, not checking topic publish.")
 
-        outgoing_msg = {u"op": u"publish", u"topic": topic}
+        outgoing_msg = {"op": "publish", "topic": topic}
         if compression=="png":
             outgoing_msg["msg"] = message.get_json_values()
             outgoing_msg_dumped = encode_json(outgoing_msg)
             outgoing_msg = {"op": "png", "data": encode_png(outgoing_msg_dumped)}
         elif compression=="cbor":
-            outgoing_msg[u"msg"] = message.get_cbor_values()
+            outgoing_msg["msg"] = message.get_cbor_values()
             outgoing_msg = bytearray(encode_cbor(outgoing_msg))
         elif compression=="cbor-raw":
             (secs, nsecs) = self.protocol.node_handle.get_clock().now().seconds_nanoseconds()
-            outgoing_msg[u"msg"] = {
-                u"secs": secs,
-                u"nsecs": nsecs,
-                u"bytes": message.message
+            outgoing_msg["msg"] = {
+                "secs": secs,
+                "nsecs": nsecs,
+                "bytes": message.message
             }
             outgoing_msg = bytearray(encode_cbor(outgoing_msg))
         else:

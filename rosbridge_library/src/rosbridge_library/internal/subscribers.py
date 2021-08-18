@@ -82,7 +82,7 @@ class MultiSubscriber():
         # topic_type is a list of types or None at this point; only one type is supported.
         if topic_type is not None:
             if len(topic_type) > 1:
-                node_handle.get_logger().warning('More than one topic type detected: {}'.format(topic_type))
+                node_handle.get_logger().warning(f'More than one topic type detected: {topic_type}')
             topic_type = topic_type[0]
 
         # Use the established topic type if none was specified
@@ -189,7 +189,7 @@ class MultiSubscriber():
                 callback(outgoing)
             except Exception as exc:
                 # Do nothing if one particular callback fails except log it
-                self.node_handle.get_logger().error("Exception calling subscribe callback: {}".format(exc))
+                self.node_handle.get_logger().error(f"Exception calling subscribe callback: {exc}")
                 pass
 
     def _new_sub_callback(self, msg):

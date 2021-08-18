@@ -106,9 +106,9 @@ class RosbridgeWebSocket(WebSocketHandler):
             if cls.client_manager:
                 cls.client_manager.add_client(self.client_id, self.request.remote_ip)
         except Exception as exc:
-            cls.node_handle.get_logger().error("Unable to accept incoming connection.  Reason: {}".format(exc))
+            cls.node_handle.get_logger().error(f"Unable to accept incoming connection.  Reason: {exc}")
 
-        cls.node_handle.get_logger().info("Client connected. {} clients total.".format(cls.clients_connected))
+        cls.node_handle.get_logger().info(f"Client connected. {cls.clients_connected} clients total.")
 
     @log_exceptions
     def on_message(self, message):
@@ -123,7 +123,7 @@ class RosbridgeWebSocket(WebSocketHandler):
         self.protocol.finish()
         if cls.client_manager:
             cls.client_manager.remove_client(self.client_id, self.request.remote_ip)
-        cls.node_handle.get_logger().info("Client disconnected. {} clients total.".format(cls.clients_connected))
+        cls.node_handle.get_logger().info(f"Client disconnected. {cls.clients_connected} clients total.")
 
     def send_message(self, message):
         if type(message) == bson.BSON:

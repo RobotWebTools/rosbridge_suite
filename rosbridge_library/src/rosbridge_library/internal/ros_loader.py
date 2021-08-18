@@ -180,7 +180,7 @@ def _load_class(modname, subname, classname):
 
     # This assumes the module is already in the path.
     try:
-        pypkg = importlib.import_module('%s.%s' % (modname, subname))
+        pypkg = importlib.import_module(f'{modname}.{subname}')
     except Exception as exc:
         raise InvalidModuleException(modname, subname, exc)
 

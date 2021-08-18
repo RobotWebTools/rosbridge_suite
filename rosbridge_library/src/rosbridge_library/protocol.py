@@ -185,11 +185,11 @@ class Protocol:
             if "receiver" in msg:
                 self.log("error", "Received a rosbridge v1.0 message.  Please refer to rosbridge.org for the correct format of rosbridge v2.0 messages.  Original message was: %s" % message_string)
             else:
-                self.log("error", "Received a message without an op.  All messages require 'op' field with value one of: %s.  Original message was: %s" % (list(self.operations.keys()), message_string), mid)
+                self.log("error", f"Received a message without an op.  All messages require 'op' field with value one of: {list(self.operations.keys())}.  Original message was: {message_string}", mid)
             return
         op = msg["op"]
         if op not in self.operations:
-            self.log("error", "Unknown operation: %s.  Allowed operations: %s" % (op, list(self.operations.keys())), mid)
+            self.log("error", f"Unknown operation: {op}.  Allowed operations: {list(self.operations.keys())}", mid)
             return
         # this way a client can change/overwrite it's active values anytime by just including parameter field in any message sent to rosbridge
         #  maybe need to be improved to bind parameter values to specific operation..
@@ -205,7 +205,7 @@ class Protocol:
         try:
             self.operations[op](msg)
         except Exception as exc:
-            self.log("error", "%s: %s" % (op, str(exc)), mid)
+            self.log("error", f"{op}: {str(exc)}", mid)
 
         # if anything left in buffer .. re-call self.incoming
         # TODO: check what happens if we have "garbage" on tcp-stack --> infinite loop might be triggered! .. might get out of it when next valid JSON arrives since only data after last 'valid' closing bracket is kept
@@ -382,9 +382,9 @@ class Protocol:
         """
         stdout_formatted_msg = None
         if lid is not None:
-            stdout_formatted_msg = "[Client %s] [id: %s] %s" % (self.client_id, lid, message)
+            stdout_formatted_msg = f"[Client {self.client_id}] [id: {lid}] {message}"
         else:
-            stdout_formatted_msg = "[Client %s] %s" % (self.client_id, message)
+            stdout_formatted_msg = f"[Client {self.client_id}] {message}"
 
         if level == "error" or level == "err":
             self.node_handle.get_logger().error(stdout_formatted_msg)

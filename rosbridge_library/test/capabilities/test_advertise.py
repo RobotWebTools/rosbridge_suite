@@ -51,7 +51,7 @@ class TestAdvertise(unittest.TestCase):
         invalid = ["", "/", "//", "///", "////", "/////", "bad", "stillbad",
        "not/better/still", "not//better//still", "not///better///still",
        "better/", "better//", "better///", "/better", "//better", "///better",
-       "this\isbad", "\\"]
+       r"this\isbad", "\\"]
 
         proto = Protocol("hello")
         adv = Advertise(proto)
