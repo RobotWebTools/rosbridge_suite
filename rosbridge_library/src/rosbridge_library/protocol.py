@@ -149,7 +149,7 @@ class Protocol:
                 # .. check for "op"-field. i can still imagine cases where a nested message ( e.g. complete service_response fits into the data field of a fragment..)
                 # .. would cause trouble, but if a response fits as a whole into a fragment, simply do not pack it into a fragment.
                 #
-                # --> from that follows current limitiation:
+                # --> from that follows current limitation:
                 #     fragment data must NOT (!) contain a complete json-object that has an "op-field"
                 #
                 # an alternative solution would be to only check from first opening bracket and have a time out on data in input buffer.. (to handle broken data)
@@ -169,7 +169,7 @@ class Protocol:
                             # debug json-decode errors with this line
                             #print e
                             pass
-                    # if load was successfull --> break outer loop, too.. -> no need to check if json begins at a "later" opening bracket..
+                    # if load was successful --> break outer loop, too.. -> no need to check if json begins at a "later" opening bracket..
                     if msg != None:
                         break
 
@@ -328,7 +328,7 @@ class Protocol:
 
             # TODO: implement a way to have a final Exception when nothing works out to decode (multiple/broken/partial JSON..)
 
-            # supressed logging of exception on json-decode to keep rosbridge-logs "clean", otherwise console logs would get spammed for every failed json-decode try
+            # suppressed logging of exception on json-decode to keep rosbridge-logs "clean", otherwise console logs would get spammed for every failed json-decode try
 #            if msg != self.buffer:
 #                error_msg = "Unable to deserialize message from client: %s"  % msg
 #                error_msg += "\nException was: " +str(e)

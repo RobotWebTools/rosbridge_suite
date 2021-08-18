@@ -40,7 +40,7 @@ ament_export_dependencies(rosidl_default_runtime)
 ament_package()
 
 if (BUILD_TESTING)
-  # TODO reenable rostests
+  # TODO re-enable rostests
   # find_package(rostest REQUIRED)
   # add_rostest(test/capabilities/test_capabilities.test)
   # add_rostest(test/internal/test_internal.test)

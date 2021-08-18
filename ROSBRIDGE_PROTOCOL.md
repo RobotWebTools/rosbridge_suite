@@ -330,8 +330,8 @@ the advertise command.
      is sent and this message is dropped.
    * If the topic already exists with the same type, the sender of this message
      is registered as another publisher.
-   * If the topic doesnt already exist but the type cannot be resolved, then an
-     error status message is sent and this message is dropped.
+   * If the topic doesn't already exist but the type cannot be resolved, then
+     an error status message is sent and this message is dropped.
 
 #### 3.4.2 Unadvertise ( _unadvertise_ )
 
