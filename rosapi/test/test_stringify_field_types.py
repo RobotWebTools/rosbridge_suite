@@ -11,12 +11,12 @@ class TestObjectUtils(unittest.TestCase):
 
         self.assertRegex(
             stringify_field_types("std_msgs/String"),
-            r"(?ms).+^string data",
+            r"(?ms)^string data",
         )
 
         self.assertRegex(
             stringify_field_types("std_msgs/msg/String"),
-            r"(?ms).+^string data",
+            r"(?ms)^string data",
         )
 
         self.assertRegex(
