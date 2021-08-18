@@ -293,7 +293,7 @@ def _to_time_inst(msg, rostype, inst=None):
 def _to_primitive_inst(msg, rostype, roottype, stack):
     # Typecheck the msg
     if type(msg) == int and rostype in type_map['float']:
-        # propably wrong parsing,
+        # probably wrong parsing,
         # fix that by casting the int to the expected float
         msg = float(msg)
 

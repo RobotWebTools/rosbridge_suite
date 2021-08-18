@@ -23,7 +23,7 @@ except ImportError:
 import sys
 import time
 
-#TODO: take care of socket timeouts and make sure to close sockets after killing programm to release network ports
+#TODO: take care of socket timeouts and make sure to close sockets after killing program to release network ports
 
 #TODO: add new parameters to websocket version! those of rosbridge_tcp.py might not be needed, but the others should work well when adding them to .._websocket.py
 

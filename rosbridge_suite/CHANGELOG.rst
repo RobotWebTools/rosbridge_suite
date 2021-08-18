@@ -223,6 +223,6 @@ Changelog for package rosbridge_suite
 * Fixed an inconsequential elif bug.
 * Refactored to use simplejson if the package is installed.
 * Added simplejson library and moved the location of the libraries.
-* Temporary commit adding profiling messages. something is goign awry.
+* Temporary commit adding profiling messages. something is going awry.
 * Renamed rosbridge stack to rosbridge_suite
 * Contributors: Austin Hendrix, Brandon Alexander, Jihoon Lee, jon

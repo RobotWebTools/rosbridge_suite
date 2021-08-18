@@ -449,7 +449,7 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
             # Don't interpret the tag, return it and the tagged object.
             ob = Tag(aux, ob)
         else:
-            # attempt to interpet the tag and the value into a Python object.
+            # attempt to interpret the tag and the value into a Python object.
             ob = tagify(ob, aux)
         return ob, bytes_read
     elif tag == CBOR_7:
