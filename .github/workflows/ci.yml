@@ -14,12 +14,12 @@ jobs:
         include:
           # Test supported ROS 2 distributions
           # https://docs.ros.org/en/rolling/Releases.html
-          - os: ubuntu-20.04
-            ros_distribution: foxy
-          - os: ubuntu-20.04
-            ros_distribution: galactic
+          - ros_distribution: foxy
+            os: ubuntu-20.04
+          - ros_distribution: galactic
+            os: ubuntu-20.04
 
-    name: ${{ matrix.ros_distribution }} (${{ matrix.os }})
+    name: ROS 2 ${{ matrix.ros_distribution }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -27,13 +27,10 @@ jobs:
         with:
           path: ros_ws/src
 
-      - name: Setup ROS
-        uses: ros-tooling/setup-ros@0.2.1
+      - uses: ros-tooling/setup-ros@v0.2
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
 
-      - name: Build and Test
-        uses: ros-tooling/action-ros-ci@0.2.2
+      - uses: ros-tooling/action-ros-ci@v0.2
         with:
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: ""
