@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: ["ros2"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Test supported ROS 2 distributions
+          # https://docs.ros.org/en/rolling/Releases.html
+          - os: ubuntu-20.04
+            ros_distribution: foxy
+          - os: ubuntu-20.04
+            ros_distribution: galactic
+
+    name: ${{ matrix.ros_distribution }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: ros_ws/src
+
+      - name: Setup ROS
+        uses: ros-tooling/setup-ros@0.2.1
+        with:
+          required-ros-distributions: ${{ matrix.ros_distribution }}
+
+      - name: Build and Test
+        uses: ros-tooling/action-ros-ci@0.2.2
+        with:
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ""
