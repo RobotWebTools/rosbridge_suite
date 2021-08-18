@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: ["ros1"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Test supported ROS 1 distributions
+          # http://wiki.ros.org/Distributions
+          - ros_distribution: melodic
+            os: ubuntu-18.04
+          - ros_distribution: noetic
+            os: ubuntu-20.04
+
+    name: ROS 1 ${{ matrix.ros_distribution }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: ros_ws/src
+
+      - uses: ros-tooling/setup-ros@v0.2
+        with:
+          required-ros-distributions: ${{ matrix.ros_distribution }}
+
+      - uses: ros-tooling/action-ros-ci@v0.2
+        with:
+          package-name: rosbridge_suite
+          target-ros1-distro: ${{ matrix.ros_distribution }}
