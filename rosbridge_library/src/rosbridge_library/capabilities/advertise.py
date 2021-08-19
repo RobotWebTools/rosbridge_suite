@@ -120,7 +120,7 @@ class Advertise(Capability):
             self.protocol.log("debug", "No topic security glob, not checking advertisement.")
 
         # Create the Registration if one doesn't yet exist
-        if not topic in self._registrations:
+        if topic not in self._registrations:
             client_id = self.protocol.client_id
             self._registrations[topic] = Registration(client_id, topic, self.protocol.node_handle)
 

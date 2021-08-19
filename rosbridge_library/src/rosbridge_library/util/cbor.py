@@ -136,7 +136,7 @@ def dumps_string(val, is_text=None, is_bytes=None):
         val = val.encode('utf8')
         is_text = True
         is_bytes = False
-    if (is_bytes) or not (is_text == True):
+    if is_bytes or is_text is not True:
         return _encode_type_num(CBOR_BYTES, len(val)) + val
     return _encode_type_num(CBOR_TEXT, len(val)) + val
 

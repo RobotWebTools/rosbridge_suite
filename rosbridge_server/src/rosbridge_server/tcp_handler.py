@@ -72,7 +72,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
 
         # Retrieve the rest of the message
         data = self.recvall(msglen - BSON_LENGTH_IN_BYTES)
-        if data == None:
+        if data is None:
             return None
         data = raw_msglen + data # Prefix the data with the message length that has already been received.
                                  # The message length is part of BSONs message format
@@ -90,10 +90,10 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         cls = self.__class__
         self.request.settimeout(cls.socket_timeout)
-        while 1:
+        while True:
             try:
               if self.bson_only_mode:
-                  if self.recv_bson() == None:
+                  if self.recv_bson() is None:
                       break
                   continue
 

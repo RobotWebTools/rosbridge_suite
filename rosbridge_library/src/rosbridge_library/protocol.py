@@ -157,7 +157,7 @@ class Protocol:
                     for end in closing_brackets:
                         try:
                             msg = self.deserialize(self.buffer[start:end+1])
-                            if msg.get("op",None) != None:
+                            if msg.get("op",None) is not None:
                                 # TODO: check if throwing away leading data like this is okay.. loops look okay..
                                 self.buffer = self.buffer[end+1:len(self.buffer)]
                                 # jump out of inner loop if json-decode succeeded
@@ -167,7 +167,7 @@ class Protocol:
                             #print e
                             pass
                     # if load was successful --> break outer loop, too.. -> no need to check if json begins at a "later" opening bracket..
-                    if msg != None:
+                    if msg is not None:
                         break
 
         # if decoding of buffer failed .. simply return
@@ -243,7 +243,7 @@ class Protocol:
                 pass
 
             fragment_list = None
-            if self.fragment_size != None and len(serialized) > self.fragment_size:
+            if self.fragment_size is not None and len(serialized) > self.fragment_size:
                 mid = message.get("id", None)
 
                 # TODO: think about splitting into fragments that have specified size including header-fields!
@@ -251,7 +251,7 @@ class Protocol:
                 fragment_list = Fragmentation(self).fragment(message, self.fragment_size, mid )
 
             # fragment list not empty -> send fragments
-            if fragment_list != None:
+            if fragment_list is not None:
                 for fragment in fragment_list:
                     if self.bson_only_mode:
                         self.outgoing(bson.BSON.encode(fragment))
@@ -287,7 +287,7 @@ class Protocol:
         Returns a JSON string representing the dictionary
         """
         try:
-            if type(msg) == bytearray:
+            if isinstance(msg, bytearray):
                 return msg
             if has_binary(msg) or self.bson_only_mode:
                 return bson.BSON.encode(msg)

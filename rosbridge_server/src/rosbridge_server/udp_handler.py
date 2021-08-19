@@ -64,7 +64,7 @@ class RosbridgeUdpSocket:
             cls.client_count_pub.publish(cls.clients_connected)
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
     def send_message(self, message):
-        binary = type(message)==bson.BSON
+        binary = isinstance(message, bson.BSON)
         self.write(message)
     def check_origin(self, origin):
         return False

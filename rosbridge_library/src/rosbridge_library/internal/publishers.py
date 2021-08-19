@@ -217,7 +217,7 @@ class PublisherManager():
 
         """
         latched_client_id = client_id if latch else None
-        if not topic in self._publishers:
+        if topic not in self._publishers:
             self._publishers[topic] = MultiPublisher(
                 topic, node_handle, msg_type=msg_type, latched_client_id=latched_client_id, queue_size=queue_size)
         elif latch and self._publishers[topic].latched_client_id != client_id:
@@ -247,7 +247,7 @@ class PublisherManager():
         topic     -- the topic to unregister the publisher for
 
         """
-        if not topic in self._publishers:
+        if topic not in self._publishers:
             return
 
         self._publishers[topic].unregister_client(client_id)

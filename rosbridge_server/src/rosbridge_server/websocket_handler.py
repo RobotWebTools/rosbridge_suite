@@ -107,7 +107,7 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     @log_exceptions
     def on_message(self, message):
-        if type(message) is bytes:
+        if isinstance(message, bytes):
             message = message.decode('utf-8')
         self.protocol.incoming(message)
 
@@ -121,9 +121,9 @@ class RosbridgeWebSocket(WebSocketHandler):
         cls.node_handle.get_logger().info(f"Client disconnected. {cls.clients_connected} clients total.")
 
     def send_message(self, message):
-        if type(message) == bson.BSON:
+        if isinstance(message, bson.BSON):
             binary = True
-        elif type(message) == bytearray:
+        elif isinstance(message, bytearray):
             binary = True
             message = bytes(message)
         else:

@@ -58,7 +58,7 @@ class Defragment(Capability, threading.Thread):
         self.protocol = protocol
 
         # populate parameters
-        if self.protocol.parameters != None:
+        if self.protocol.parameters is not None:
             self.fragment_timeout = self.protocol.parameters["fragment_timeout"]
 
         protocol.register_operation(self.opcode, self.defragment)
@@ -82,7 +82,7 @@ class Defragment(Capability, threading.Thread):
     def defragment(self, message):
         now = datetime.now()
 
-        if self.received_fragments != None:
+        if self.received_fragments is not None:
             for id in self.received_fragments.keys() :
                 time_diff = now - self.received_fragments[id]["timestamp_last_append"]
                 if (time_diff.total_seconds() > self.fragment_timeout and
@@ -106,9 +106,7 @@ class Defragment(Capability, threading.Thread):
         msg_data = message.get("data")
 
         # Abort if any message field is missing
-        if ((msg_opcode == None) or (msg_id == None) or
-            (msg_num == None) or (msg_total == None) or
-            (msg_data == None)):
+        if None in (msg_opcode, msg_id, msg_num, msg_total, msg_data):
             self.protocol.log("error", "received invalid fragment!")
             return
 

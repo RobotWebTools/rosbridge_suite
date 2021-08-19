@@ -114,7 +114,7 @@ try:
 
 
     returned_data = json.loads(reconstructed)                                   # when service response is received --> access it (as defined in srv-file)
-    if returned_data["values"] == None:
+    if returned_data["values"] is None:
         print("response was None -> service was not available")
     else:
         print("received:")
