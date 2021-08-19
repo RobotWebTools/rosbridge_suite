@@ -170,7 +170,8 @@ def _from_inst(inst, rostype):
             return {"secs": inst.secs, "nsecs": inst.nsecs}
 
 
-    if(bson_only_mode is None):bson_only_mode = rospy.get_param('~bson_only_mode', False)
+    if bson_only_mode is None:
+        bson_only_mode = rospy.get_param('~bson_only_mode', False)
     # Check for primitive types
     if rostype in ros_primitive_types:
         #JSON does not support Inf and NaN. They are mapped to None and encoded as null
@@ -199,7 +200,7 @@ def _from_list_inst(inst, rostype):
         rostype = re.search(bounded_array_tokens, rostype).group(1)
 
     # Shortcut for primitives
-    if rostype in ros_primitive_types and not rostype in type_map.get('float'):
+    if rostype in ros_primitive_types and rostype not in type_map.get('float'):
         return list(inst)
 
     # Call to _to_inst for every element of the list
@@ -280,7 +281,7 @@ def _to_time_inst(msg, rostype, inst=None):
 
 def _to_primitive_inst(msg, rostype, roottype, stack):
     # Typecheck the msg
-    if type(msg) == int and rostype in type_map['float']:
+    if isinstance(msg, int) and rostype in type_map['float']:
         # probably wrong parsing,
         # fix that by casting the int to the expected float
         msg = float(msg)
@@ -302,7 +303,7 @@ def _to_list_inst(msg, rostype, roottype, inst, stack):
     if len(msg) == 0:
         return []
 
-    if type(inst) is np.ndarray:
+    if isinstance(inst, np.ndarray):
         return list(inst.astype(float))
 
     # Remove the list indicators from the rostype
@@ -318,7 +319,7 @@ def _to_list_inst(msg, rostype, roottype, inst, stack):
 def _to_object_inst(msg, rostype, roottype, inst, stack):
 
     # Typecheck the msg
-    if type(msg) is not dict:
+    if not isinstance(msg, dict):
         raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))
 
     # Substitute the correct time if we're an std_msgs/Header
@@ -332,7 +333,7 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
         field_stack = stack + [field_name]
 
         # Raise an exception if the msg contains a bad field
-        if not field_name in inst_fields:
+        if field_name not in inst_fields:
             raise NonexistentFieldException(roottype, field_stack)
 
         field_rostype = inst_fields[field_name]

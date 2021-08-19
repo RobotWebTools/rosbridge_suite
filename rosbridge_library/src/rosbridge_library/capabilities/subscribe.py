@@ -177,7 +177,7 @@ class Subscription():
 
         self.throttle_rate = min(f("throttle_rate"))
         self.queue_length = min(f("queue_length"))
-        frags = [x for x in f("fragment_size") if x != None]
+        frags = [x for x in f("fragment_size") if x is not None]
         if frags == []:
             self.fragment_size = None
         else:
@@ -239,7 +239,7 @@ class Subscribe(Capability):
         else:
             self.protocol.log("debug", "No topic security glob, not checking subscription.")
 
-        if not topic in self._subscriptions:
+        if topic not in self._subscriptions:
             client_id = self.protocol.client_id
             cb = partial(self.publish, topic)
             self._subscriptions[topic] = Subscription(client_id, topic, cb, self.protocol.node_handle)

@@ -233,7 +233,7 @@ def get_service_node(queried_type, services_glob, include_hidden=False):
 def get_service_host(service):
     """ Returns the name of the machine that is hosting the given service, or empty string """
     uri = get_service_uri(service)
-    if uri == None:
+    if uri is None:
         uri = ""
     else:
         uri = uri[9:]

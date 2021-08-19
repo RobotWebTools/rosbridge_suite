@@ -229,7 +229,7 @@ class SubscriberManager():
         msg_type  -- (optional) the type of the topic
 
         """
-        if not topic in self._subscribers:
+        if topic not in self._subscribers:
             self._subscribers[topic] = MultiSubscriber(
                 topic, client_id, callback, node_handle, msg_type=msg_type, raw=raw)
         else:
@@ -246,7 +246,7 @@ class SubscriberManager():
         topic     -- the topic to unsubscribe from
 
         """
-        if not topic in self._subscribers:
+        if topic not in self._subscribers:
             return
 
         self._subscribers[topic].unsubscribe(client_id)

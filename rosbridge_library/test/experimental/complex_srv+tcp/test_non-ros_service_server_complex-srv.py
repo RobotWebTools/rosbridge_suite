@@ -212,7 +212,7 @@ try:                                                                            
           data = wait_for_service_request()                                     # receive request from rosbridge
           if data == '':                                                        # exit on empty string
               break                                                             
-          elif data != None and len(data) > 0:                                  # received service_request (or at least some data..)
+          elif data:                                                            # received service_request (or at least some data..)
             response = calculate_service_response(data)                         # generate service_response
 
             print("response calculated, now splitting into fragments..")
