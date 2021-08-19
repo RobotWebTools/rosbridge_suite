@@ -2,6 +2,9 @@
 Changelog for package rosbridge_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.6 (2021-08-17)
 ------------------
 

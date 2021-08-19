@@ -2,6 +2,12 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Load message definitions from .msg files; exclude /msg/ and include builtin_interfaces in combined definitions (`#597 <https://github.com/RobotWebTools/rosbridge_suite/issues/597>`_)
+* Fix typos discovered by codespell (`#600 <https://github.com/RobotWebTools/rosbridge_suite/issues/600>`_)
+* Contributors: Christian Clauss, Jacob Bandes-Storch
+
 1.0.6 (2021-08-17)
 ------------------
 * Include /msg/ in type names (`#591 <https://github.com/RobotWebTools/rosbridge_suite/issues/591>`_)
