@@ -3,6 +3,20 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  lint:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - run: pip install bandit codespell flake8
+      - run: bandit --recursive --skip B101,B110,B311 .
+      # See setup.cfg for the default settings for codespell and flake8
+      - run: codespell
+      - run: flake8
+      # Undefined names need to be fixed (#604) and the --exit-zero removed.
+      - run: flake8 --exit-zero --select=F82 --statistics
   test:
     strategy:
       fail-fast: false
