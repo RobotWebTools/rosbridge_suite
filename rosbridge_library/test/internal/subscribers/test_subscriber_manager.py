@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sys
 import rospy
 import rostest
 import unittest
@@ -7,10 +6,9 @@ from rosgraph import Master
 
 from time import sleep
 
-from rosbridge_library.internal.subscribers import *
-from rosbridge_library.internal.topics import *
-from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
-from std_msgs.msg import String, Int32
+from rosbridge_library.internal.subscribers import manager
+from rosbridge_library.internal.topics import TopicNotEstablishedException, TypeConflictException
+from std_msgs.msg import String
 
 
 class TestSubscriberManager(unittest.TestCase):
@@ -188,4 +186,3 @@ PKG = 'rosbridge_library'
 NAME = 'test_subscriber_manager'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestSubscriberManager)
-

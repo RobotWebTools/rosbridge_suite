@@ -1,16 +1,14 @@
 #!/usr/bin/env python
-import sys
 import rospy
 import rostest
 import unittest
 
-from time import sleep, time
+from time import sleep
 
-from rosbridge_library.internal.publishers import *
-from rosbridge_library.internal.topics import *
+from rosbridge_library.internal.publishers import MultiPublisher
+from rosbridge_library.internal.topics import TypeConflictException
 from rosbridge_library.internal import ros_loader
-from rosbridge_library.internal.message_conversion import *
-from std_msgs.msg import String, Int32
+from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 
 
 class TestMultiPublisher(unittest.TestCase):
@@ -27,7 +25,7 @@ class TestMultiPublisher(unittest.TestCase):
         msg_type = "std_msgs/String"
 
         self.assertFalse(self.is_topic_published(topic))
-        multipublisher = MultiPublisher(topic, msg_type)
+        _ = MultiPublisher(topic, msg_type)
         self.assertTrue(self.is_topic_published(topic))
 
     def test_unregister_multipublisher(self):
@@ -121,4 +119,3 @@ PKG = 'rosbridge_library'
 NAME = 'test_multi_publisher'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestMultiPublisher)
-

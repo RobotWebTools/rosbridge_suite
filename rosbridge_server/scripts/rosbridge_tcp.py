@@ -238,6 +238,6 @@ if __name__ == "__main__":
 
             server.serve_forever()
             loaded = True
-        except Exception as e:
+        except Exception:
             time.sleep(retry_startup_delay)
     print("server loaded")

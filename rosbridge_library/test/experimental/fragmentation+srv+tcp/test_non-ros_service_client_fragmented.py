@@ -71,7 +71,7 @@ try:
                 if data_object["op"] == "service_response":
                     reconstructed = buffer
                     done = True
-            except Exception as e:
+            except Exception:
                 #print "direct access to JSON failed.."
                 #print e
                 pass
@@ -86,7 +86,7 @@ try:
                         fragment = fragment + "}"
                     try:
                         result.append(json.loads(fragment))                     # try to parse json from string, and append if successful
-                    except Exception as e:
+                    except Exception:
                         #print e
                         #print result_string
                         raise                                                   # re-raise the last exception, allows to see and continue with processing of exception
@@ -105,10 +105,10 @@ try:
                     for fragment in sorted_result:
                         reconstructed = reconstructed + fragment["data"]
                     done = True
-            except Exception as e:
+            except Exception:
                 #print e
                 pass
-        except Exception as e:
+        except Exception:
 #            print e
             pass
 

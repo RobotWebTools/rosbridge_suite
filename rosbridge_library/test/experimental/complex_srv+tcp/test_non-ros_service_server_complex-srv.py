@@ -112,7 +112,7 @@ def wait_for_service_request():                                                 
                     data = buffer
                     done = True
                     return data                                                 # if parsing was successful --> return data string
-            except Exception as e:
+            except Exception:
                 #print "direct_access error:"
                 #print e
                 pass
@@ -156,7 +156,7 @@ def wait_for_service_request():                                                 
                 print("defrag_error:", buffer)
                 print(e)
                 pass
-    except Exception as e:
+    except Exception:
         #print "network-error(?):", e
         pass
     return data
