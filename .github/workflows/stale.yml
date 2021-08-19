@@ -10,6 +10,8 @@ jobs:
     steps:
       - uses: actions/stale@v3
         with:
+          operations-per-run: 250
+
           stale-issue-message: "This issue has been marked as stale because it has been open for 180 days with no activity. Please remove the stale label or add a comment to keep it open."
           stale-issue-label: stale
           days-before-issue-stale: 180
