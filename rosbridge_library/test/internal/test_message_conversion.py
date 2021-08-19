@@ -1,24 +1,14 @@
-#!/usr/bin/env python
-from __future__ import print_function
-import sys
+#!/usr/bin/env python3
 import rospy
 import rostest
 import unittest
 from json import loads, dumps
 
-try:
-    from cStringIO import StringIO  # Python 2.x
-except ImportError:
-    from io import BytesIO as StringIO  # Python 3.x
+from io import BytesIO
 
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader
-from base64 import standard_b64encode, standard_b64decode
-
-if sys.version_info >= (3, 0):
-    string_types = (str,)
-else:
-    string_types = (str, unicode)
+from base64 import standard_b64encode
 
 
 class TestMessageConversion(unittest.TestCase):
@@ -30,7 +20,7 @@ class TestMessageConversion(unittest.TestCase):
         """ Serializes and deserializes the inst to typecheck and ensure that
         instances are correct """
         inst1._check_types()
-        buff = StringIO()
+        buff = BytesIO()
         inst1.serialize(buff)
         inst2 = type(inst1)()
         inst2.deserialize(buff.getvalue())
@@ -38,7 +28,7 @@ class TestMessageConversion(unittest.TestCase):
         inst2._check_types()
 
     def msgs_equal(self, msg1, msg2):
-        if type(msg1) in string_types and type(msg2) in string_types:
+        if isinstance(msg1, str) and isinstance(msg2, str):
             pass
         else:
             self.assertEqual(type(msg1), type(msg2))

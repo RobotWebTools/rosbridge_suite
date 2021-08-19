@@ -1,9 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rostest
-import sys
 import unittest
-
-PYTHON2 = sys.version_info < (3, 0)
 
 import struct
 from rosbridge_library.internal.cbor_conversion import extract_cbor_values, TAGGED_ARRAY_FORMATS
@@ -35,10 +32,7 @@ class TestCBORConversion(unittest.TestCase):
         extracted = extract_cbor_values(msg)
 
         self.assertEqual(extracted['data'], msg.data)
-        if PYTHON2:
-            self.assertEqual(type(extracted['data']), unicode)
-        else:
-            self.assertEqual(type(extracted['data']), str)
+        self.assertEqual(type(extracted['data']), str)
 
     def test_bool(self):
         for val in [True, False]:
@@ -87,10 +81,7 @@ class TestCBORConversion(unittest.TestCase):
         data = extracted['data']
         self.assertEqual(type(data), bytes)
         for i, val in enumerate(msg.data):
-            if PYTHON2:
-                self.assertEqual(ord(data[i]), val)
-            else:
-                self.assertEqual(data[i], val)
+            self.assertEqual(data[i], val)
 
     def test_numeric_array(self):
         for msg_type in [Int8MultiArray, Int16MultiArray, Int32MultiArray, Int64MultiArray,
@@ -148,10 +139,7 @@ class TestCBORConversion(unittest.TestCase):
 
         keys = extracted.keys()
         for key in keys:
-            if PYTHON2:
-                self.assertEqual(type(key), unicode)
-            else:
-                self.assertEqual(type(key), str)
+            self.assertEqual(type(key), str)
 
 
 PKG = 'rosbridge_library'

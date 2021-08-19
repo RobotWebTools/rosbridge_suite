@@ -30,9 +30,6 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import sys
-PYTHON2 = sys.version_info < (3, 0)
-
 import fnmatch
 from threading import Lock
 from functools import partial
@@ -317,9 +314,6 @@ class Subscribe(Capability):
                 return
         else:
             self.protocol.log("debug", "No topic security glob, not checking topic publish.")
-
-        if PYTHON2:
-            topic = unicode(topic)
 
         outgoing_msg = {u"op": u"publish", u"topic": topic}
         if compression=="png":
