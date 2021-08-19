@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sys
 import rospy
 import rostest
 import unittest
@@ -8,7 +7,6 @@ import time
 from roscpp.srv import GetLoggers
 
 from json import loads, dumps
-from std_msgs.msg import String
 from std_srvs.srv import SetBool
 
 from rosbridge_library.capabilities.call_service import CallService

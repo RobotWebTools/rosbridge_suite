@@ -12,16 +12,13 @@ except ImportError:
 
 from std_msgs.msg import (
     Bool, String,
-    Byte, Char,
     Int8, Int16, Int32, Int64,
     UInt8, UInt16, UInt32, UInt64,
     Float32, Float64,
-    ByteMultiArray,
     Int8MultiArray, Int16MultiArray, Int32MultiArray, Int64MultiArray,
     UInt8MultiArray, UInt16MultiArray, UInt32MultiArray, UInt64MultiArray,
     Float32MultiArray, Float64MultiArray,
     Time, Duration,
-    Empty,
     MultiArrayLayout, MultiArrayDimension,
 )
 

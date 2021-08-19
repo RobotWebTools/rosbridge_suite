@@ -30,13 +30,10 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import uuid
-
-from rclpy.time import Time
-
 import sys
 import threading
 import traceback
+import uuid
 from functools import partial, wraps
 
 from tornado import version_info as tornado_version_info
@@ -46,9 +43,7 @@ from tornado.websocket import WebSocketHandler, WebSocketClosedError
 from tornado.gen import coroutine, BadYieldError
 
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-from rosbridge_library.util import json, bson
-
-from std_msgs.msg import Int32
+from rosbridge_library.util import bson
 
 
 def _log_exception():

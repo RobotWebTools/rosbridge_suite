@@ -31,14 +31,9 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import fnmatch
-import socket
-
 from ros2node.api import get_node_names, get_publisher_info, get_service_server_info, get_subscriber_info
 from ros2service.api import get_service_names, get_service_names_and_types
 from ros2topic.api import get_topic_names, get_topic_names_and_types
-
-from rosapi.msg import TypeDef
 
 from .glob_helper import filter_globs, any_match
 

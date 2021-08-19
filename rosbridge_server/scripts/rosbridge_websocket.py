@@ -35,8 +35,6 @@
 import sys
 import time
 
-from socket import error
-
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.ioloop import PeriodicCallback

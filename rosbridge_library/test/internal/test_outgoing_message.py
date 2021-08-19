@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-import rostest
-import sys
 import unittest
+
+import rostest
 
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
 from std_msgs.msg import String

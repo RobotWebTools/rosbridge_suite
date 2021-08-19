@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sys
 import rospy
 import rostest
 import unittest
@@ -8,8 +7,6 @@ from time import sleep
 from rosbridge_library.protocol import Protocol
 from rosbridge_library.protocol import InvalidArgumentException, MissingArgumentException
 from rosbridge_library.capabilities.publish import Publish
-from rosbridge_library.internal.publishers import manager
-from rosbridge_library.internal import ros_loader
 
 from std_msgs.msg import String
 
