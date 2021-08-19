@@ -3,6 +3,25 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  lint:
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version:
+          - 2.7
+          - 3.8
+
+    name: Lint (python-${{ matrix.python_version }})
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - run: pip install flake8
+      - run: flake8
+
   test:
     strategy:
       fail-fast: false
@@ -29,5 +48,4 @@ jobs:
 
       - uses: ros-tooling/action-ros-ci@v0.2
         with:
-          package-name: rosbridge_suite
           target-ros1-distro: ${{ matrix.ros_distribution }}
