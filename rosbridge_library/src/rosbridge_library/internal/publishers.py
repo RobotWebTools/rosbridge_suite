@@ -228,8 +228,7 @@ class PublisherManager():
             node_handle.get_logger().warn("Only a single registered latched publisher is supported at the time")
         elif not latch and self._publishers[topic].latched_client_id:
             node_handle.get_logger().warn(f"New non-latched publisher registration for topic [{topic}] which is "
-                    "already registered as latched. but this topic was previously "
-                    "registered.")
+                    "already registered as latched. but this topic was previously registered.")
             node_handle.get_logger().warn("Only a single registered latched publisher is supported at the time")
 
         if msg_type is not None:
