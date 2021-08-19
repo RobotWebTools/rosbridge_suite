@@ -5,10 +5,10 @@ except ImportError:
     try:
         import simplejson as json
     except ImportError:
-        import json
+        import json  # noqa: F401
 
 string_types = (str,)
-from io import StringIO
+from io import StringIO  # noqa: F401
 
 import bson
 try:
