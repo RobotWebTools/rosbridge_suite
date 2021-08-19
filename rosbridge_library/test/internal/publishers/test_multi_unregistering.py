@@ -1,16 +1,12 @@
 #!/usr/bin/env python
-import sys
 import rospy
 import rostest
 import unittest
 
-from time import sleep, time
+from time import sleep
 
-from rosbridge_library.internal.publishers import *
-from rosbridge_library.internal.topics import *
+from rosbridge_library.internal.publishers import MultiPublisher
 from rosbridge_library.internal import ros_loader
-from rosbridge_library.internal.message_conversion import *
-from std_msgs.msg import String, Int32
 
 
 class TestMultiUnregistering(unittest.TestCase):

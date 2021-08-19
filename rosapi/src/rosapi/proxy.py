@@ -151,7 +151,7 @@ def get_topic_type(topic, topics_glob):
     topics, types = get_topics_and_types(topics_glob)
     try:
         return types[topics.index(topic)]
-    except ValueError as e:
+    except ValueError:
         # Return empty string if the topic is not present.
         return ""
 
@@ -191,7 +191,7 @@ def get_service_type(service, services_glob):
     services, types = get_services_and_types(services_glob)
     try:
         return types[services.index(service)]
-    except ValueError as e:
+    except ValueError:
         # Return empty string if the service is not present.
         return ""
 

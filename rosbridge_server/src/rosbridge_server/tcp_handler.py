@@ -106,8 +106,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
                   self.protocol.incoming(data.strip(''))
               else:
                   pass
-            except Exception as e:
-                pass
+            except Exception:
                 self.protocol.log("debug", "socket connection timed out! (ignore warning if client is only listening..)")
 
     def finish(self):
