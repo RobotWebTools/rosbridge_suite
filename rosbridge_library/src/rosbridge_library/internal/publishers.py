@@ -223,12 +223,12 @@ class PublisherManager():
             self._publishers[topic] = MultiPublisher(
                 topic, node_handle, msg_type=msg_type, latched_client_id=latched_client_id, queue_size=queue_size)
         elif latch and self._publishers[topic].latched_client_id != client_id:
-            node_handle.get_logger().warn("Client ID %s attempted to register topic [%s] as latched " +
+            node_handle.get_logger().warn("Client ID %s attempted to register topic [%s] as latched "
                     "but this topic was previously registered." % (client_id, topic))
             node_handle.get_logger().warn("Only a single registered latched publisher is supported at the time")
         elif not latch and self._publishers[topic].latched_client_id:
-            node_handle.get_logger().warn("New non-latched publisher registration for topic [%s] which is " +
-                    "already registered as latched. but this topic was previously " +
+            node_handle.get_logger().warn("New non-latched publisher registration for topic [%s] which is "
+                    "already registered as latched. but this topic was previously "
                     "registered." % topic)
             node_handle.get_logger().warn("Only a single registered latched publisher is supported at the time")
 
