@@ -34,3 +34,19 @@ jobs:
       - uses: ros-tooling/action-ros-ci@v0.2
         with:
           target-ros2-distro: ${{ matrix.ros_distribution }}
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - run: pip install bandit codespell flake8
+
+      - run: bandit --recursive --skip B101,B110,B311 .
+      - run: codespell --ignore-words-list=miror
+      - run: flake8
+
+      # Undefined names need to be fixed (#593,#604) and the --exit-zero removed
+      - run: flake8 --exit-zero --ignore='' --max-complexity=10 --max-line-length=120 --statistics

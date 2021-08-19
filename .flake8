@@ -1,0 +1,7 @@
+[flake8]
+select = C9,E5,E9,F
+# Ignored issues should be fixed and removed from this list
+ignore = F40,F82,F84
+max-complexity = 36
+max-line-length = 230
+show-source = True
