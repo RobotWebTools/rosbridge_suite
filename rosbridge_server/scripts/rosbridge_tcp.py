@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from rospy import init_node, get_param, loginfo, logerr, on_shutdown, Publisher
+from rospy import init_node, get_param, loginfo, on_shutdown, Publisher
 from rosbridge_server import RosbridgeTcpSocket
 
 from rosbridge_library.capabilities.advertise import Advertise

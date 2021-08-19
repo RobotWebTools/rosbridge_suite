@@ -32,9 +32,6 @@
 
 import time
 
-from rosbridge_library.internal.exceptions import InvalidArgumentException
-from rosbridge_library.internal.exceptions import MissingArgumentException
-
 from rosbridge_library.capabilities.fragmentation import Fragmentation
 from rosbridge_library.util import json, bson
 

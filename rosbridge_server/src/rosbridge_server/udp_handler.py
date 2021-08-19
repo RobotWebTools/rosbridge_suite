@@ -1,8 +1,8 @@
 import rospy
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-from rosbridge_library.util import json, bson
+from rosbridge_library.util import bson
 
-from twisted.internet.protocol import DatagramProtocol,Factory
+from twisted.internet.protocol import DatagramProtocol
 
 class RosbridgeUdpFactory(DatagramProtocol):
     def startProtocol(self):

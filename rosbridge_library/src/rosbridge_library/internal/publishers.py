@@ -31,9 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from time import time
-from copy import copy
-from threading import Lock, Timer
+from threading import Timer
 from rclpy.duration import Duration
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 from rosbridge_library.internal import ros_loader, message_conversion

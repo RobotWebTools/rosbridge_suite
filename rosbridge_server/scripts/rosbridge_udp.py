@@ -34,7 +34,6 @@
 import rospy
 import sys
 
-from socket import error
 from twisted.internet import reactor
 from rosbridge_server import RosbridgeUdpSocket,RosbridgeUdpFactory
 

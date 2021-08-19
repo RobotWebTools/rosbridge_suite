@@ -237,4 +237,4 @@ def search_param(name, params_glob):
         return None
     # If the glob list is empty (i.e. false) or the parameter matches
     # one of the glob strings, continue to find the parameter.
-    return rospy.search_param(name)
+    return rospy.search_param(name)  # noqa: F821 as discussed in #608
