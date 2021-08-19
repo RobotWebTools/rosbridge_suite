@@ -31,7 +31,6 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import print_function
 import rclpy
 from rclpy.clock import ROSClock
 import numpy as np
@@ -69,7 +68,7 @@ ros_primitive_types = ["bool", "boolean", "byte", "char", "int8", "uint8", "int1
 ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
 ros_binary_types = ["uint8[]", "char[]"]
 list_tokens = re.compile('<(.+?)>')
-bounded_array_tokens = re.compile('(.+)\[.*\]')
+bounded_array_tokens = re.compile(r'(.+)\[.*\]')
 ros_binary_types_list_braces = [("uint8[]", re.compile(r'uint8\[[^\]]*\]')),
                                 ("char[]", re.compile(r'char\[[^\]]*\]'))]
 
@@ -110,15 +109,15 @@ class InvalidMessageException(Exception):
 
 class NonexistentFieldException(Exception):
     def __init__(self, basetype, fields):
-        Exception.__init__(self, "Message type %s does not have a field %s" % (basetype, '.'.join(fields)))
+        Exception.__init__(self, "Message type {} does not have a field {}".format(basetype, '.'.join(fields)))
 
 
 class FieldTypeMismatchException(Exception):
     def __init__(self, roottype, fields, expected_type, found_type):
         if roottype == expected_type:
-            Exception.__init__(self, "Expected a JSON object for type %s but received a %s" % (roottype, found_type))
+            Exception.__init__(self, f"Expected a JSON object for type {roottype} but received a {found_type}")
         else:
-            Exception.__init__(self, "%s message requires a %s for field %s, but got a %s" % (roottype, expected_type, '.'.join(fields), found_type))
+            Exception.__init__(self, "{} message requires a {} for field {}, but got a {}".format(roottype, expected_type, '.'.join(fields), found_type))
 
 
 def extract_values(inst):
@@ -152,7 +151,7 @@ def msg_class_type_repr(msg_class):
     # (e.g. <class 'std_msgs.msg._string.String'>).
     # This has to be converted to {package}/msg/{Message} (e.g. std_msgs/msg/String).
     class_repr = str(msg_class).split('\'')[1].split('.')
-    return '{}/{}/{}'.format(class_repr[0], class_repr[1], class_repr[3])
+    return f'{class_repr[0]}/{class_repr[1]}/{class_repr[3]}'
 
 
 def _from_inst(inst, rostype):

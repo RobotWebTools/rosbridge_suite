@@ -78,7 +78,7 @@ class MultiPublisher():
         # topic_type is a list of types or None at this point; only one type is supported.
         if topic_type is not None:
             if len(topic_type) > 1:
-                node_handle.get_logger().warning('More than one topic type detected: {}'.format(topic_type))
+                node_handle.get_logger().warning(f'More than one topic type detected: {topic_type}')
             topic_type = topic_type[0]
 
         # Use the established topic type if none was specified
@@ -223,13 +223,12 @@ class PublisherManager():
             self._publishers[topic] = MultiPublisher(
                 topic, node_handle, msg_type=msg_type, latched_client_id=latched_client_id, queue_size=queue_size)
         elif latch and self._publishers[topic].latched_client_id != client_id:
-            node_handle.get_logger().warn("Client ID %s attempted to register topic [%s] as latched "
-                    "but this topic was previously registered." % (client_id, topic))
+            node_handle.get_logger().warn(f"Client ID {client_id} attempted to register topic [{topic}] as "
+                    "latched but this topic was previously registered.")
             node_handle.get_logger().warn("Only a single registered latched publisher is supported at the time")
         elif not latch and self._publishers[topic].latched_client_id:
-            node_handle.get_logger().warn("New non-latched publisher registration for topic [%s] which is "
-                    "already registered as latched. but this topic was previously "
-                    "registered." % topic)
+            node_handle.get_logger().warn(f"New non-latched publisher registration for topic [{topic}] which is "
+                    "already registered as latched. but this topic was previously registered.")
             node_handle.get_logger().warn("Only a single registered latched publisher is supported at the time")
 
         if msg_type is not None:

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from .websocket_handler import RosbridgeWebSocket
 from .client_mananger import ClientManager
 

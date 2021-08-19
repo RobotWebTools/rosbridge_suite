@@ -213,7 +213,7 @@ def _get_param_names(node_name):
     if node_name == _parent_node_name:
         return []
 
-    client = _node.create_client(ListParameters, '{}/list_parameters'.format(node_name))
+    client = _node.create_client(ListParameters, f'{node_name}/list_parameters')
 
     ready = client.wait_for_service(timeout_sec=5.0)
     if not ready:
@@ -225,7 +225,7 @@ def _get_param_names(node_name):
     response = future.result()
 
     if response is not None:
-        return ['{}:{}'.format(node_name, param_name) for param_name in response.result.names]
+        return [f'{node_name}:{param_name}' for param_name in response.result.names]
     else:
         return []
 

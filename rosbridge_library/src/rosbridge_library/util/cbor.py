@@ -122,7 +122,7 @@ def _encode_type_num(cbor_type, val):
         ((cbor_type != CBOR_NEGINT) and (val <= 0x0ffffffffffffffff))):
         return struct.pack('!BQ', cbor_type | CBOR_UINT64_FOLLOWS, val)
     if cbor_type != CBOR_NEGINT:
-        raise Exception("value too big for CBOR unsigned number: {0!r}".format(val))
+        raise Exception(f"value too big for CBOR unsigned number: {val!r}")
     outb = _dumps_bignum_to_bytearray(val)
     return _CBOR_TAG_NEGBIGNUM_BYTES + _encode_type_num(CBOR_BYTES, len(outb)) + outb
 
@@ -213,13 +213,13 @@ def dump(obj, fp, sort_keys=False):
     fp.write(blob)
 
 
-class Tag(object):
+class Tag:
     def __init__(self, tag=None, value=None):
         self.tag = tag
         self.value = value
 
     def __repr__(self):
-        return "Tag({0!r}, {1!r})".format(self.tag, self.value)
+        return f"Tag({self.tag!r}, {self.value!r})"
 
     def __eq__(self, other):
         if not isinstance(other, Tag):
@@ -270,7 +270,7 @@ def _tag_aux(fp, tb):
         aux = struct.unpack_from("!Q", data, 0)[0]
         bytes_read += 8
     else:
-        assert tag_aux == CBOR_VAR_FOLLOWS, "bogus tag {0:02x}".format(tb)
+        assert tag_aux == CBOR_VAR_FOLLOWS, f"bogus tag {tb:02x}"
         aux = None
 
     return tag, tag_aux, aux, bytes_read
@@ -406,7 +406,7 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
             return (None, bytes_read)
         if tb == CBOR_UNDEFINED:
             return (None, bytes_read)
-        raise ValueError("unknown cbor tag 7 byte: {:02x}".format(tb))
+        raise ValueError(f"unknown cbor tag 7 byte: {tb:02x}")
 
 
 def loads_bytes(fp, aux, btag=CBOR_BYTES):

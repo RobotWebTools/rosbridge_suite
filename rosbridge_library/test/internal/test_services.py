@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import print_function
 import rospy
 import rostest
 import unittest
@@ -200,4 +199,3 @@ PKG = 'rosbridge_library'
 NAME = 'test_services'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestServices)
-

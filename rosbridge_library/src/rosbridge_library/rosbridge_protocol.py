@@ -30,7 +30,6 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import print_function
 from rosbridge_library.protocol import Protocol
 from rosbridge_library.capabilities.call_service import CallService
 from rosbridge_library.capabilities.advertise import Advertise

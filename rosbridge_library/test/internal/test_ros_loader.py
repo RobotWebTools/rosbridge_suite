@@ -16,7 +16,7 @@ class TestROSLoader(unittest.TestCase):
         bad = ["", "/", "//", "///", "////", "/////", "bad", "stillbad",
        "not/better/still", "not//better//still", "not///better///still",
        "better/", "better//", "better///", "/better", "//better", "///better",
-       "this\isbad", "\\"]
+       r"this\isbad", "\\"]
         for x in bad:
             self.assertRaises(ros_loader.InvalidTypeStringException,
                               ros_loader.get_message_class, x)
@@ -125,7 +125,7 @@ class TestROSLoader(unittest.TestCase):
         bad = ["", "/", "//", "///", "////", "/////", "bad", "stillbad",
        "not/better/still", "not//better//still", "not///better///still",
        "better/", "better//", "better///", "/better", "//better", "///better",
-       "this\isbad", "\\"]
+       r"this\isbad", "\\"]
         for x in bad:
             self.assertRaises(ros_loader.InvalidTypeStringException,
                               ros_loader.get_service_class, x)

@@ -108,7 +108,7 @@ def call_service(node_handle, service, args=None):
         raise InvalidServiceException(service)
     # service_type is a tuple of types at this point; only one type is supported.
     if len(service_type) > 1:
-        node_handle.get_logger().warning('More than one service type detected: {}'.format(service_type))
+        node_handle.get_logger().warning(f'More than one service type detected: {service_type}')
     service_type = service_type[0]
 
     service_class = get_service_class(service_type)

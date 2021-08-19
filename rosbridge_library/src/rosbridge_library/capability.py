@@ -101,5 +101,5 @@ class Capability:
                     if isinstance(msg[fieldname], typ):
                         valid = True
                 if not valid:
-                    raise InvalidArgumentException("Expected field %s to be one of %s. Invalid value: %s" % (fieldname, fieldtypes, msg[fieldname]))
+                    raise InvalidArgumentException(f"Expected field {fieldname} to be one of {fieldtypes}. Invalid value: {msg[fieldname]}")
 

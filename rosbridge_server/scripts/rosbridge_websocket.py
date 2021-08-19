@@ -31,7 +31,6 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import print_function
 
 import sys
 import time
@@ -282,9 +281,9 @@ class RosbridgeWebsocketNode(Node):
                 server = HTTPServer(application, ssl_options=ssl_options)
                 server.add_sockets(sockets)
                 self.declare_parameter("actual_port", actual_port)
-                self.get_logger().info("Rosbridge WebSocket server started on port {}".format(actual_port))
+                self.get_logger().info(f"Rosbridge WebSocket server started on port {actual_port}")
                 connected = True
-            except error as e:
+            except OSError as e:
                 self.get_logger().warn(
                     "Unable to start server: {} "
                     "Retrying in {}s.".format(e, retry_startup_delay))
