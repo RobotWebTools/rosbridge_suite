@@ -6,9 +6,9 @@ from random import randint
 from rosbridge_library.util import json
 
 
-####################### variables begin ########################################
+# ##################### variables begin ########################################
 # these parameters should be changed to match the actual environment           #
-################################################################################
+# ##############################################################################
 
 tcp_socket_timeout = 10                          # seconds
 max_msg_length = 20000                           # bytes
@@ -20,17 +20,18 @@ service_type = "rosbridge_library/SendBytes"                       # make sure t
 service_name = "send_bytes"                      # service name
 
 send_fragment_size = 1000
-# delay between sends to rosbridge is not needed anymore, if using my version of protocol (uses buffer to collect data from stream)
-send_fragment_delay = 0.000#1
+# delay between sends to rosbridge is not needed anymore, if using my version of
+# protocol (uses buffer to collect data from stream)
+send_fragment_delay = 0.000  # 1
 receive_fragment_size = 10
 receive_message_intervall = 0.0
 
-####################### variables end ##########################################
+# ##################### variables end ##########################################
 
 
-####################### service_calculation begin ##############################
+# ##################### service_calculation begin ##############################
 # change this function to match whatever service should be provided            #
-################################################################################
+# ##############################################################################
 
 def calculate_service_response(request):
     request_object = json.loads(request)                                        # parse string for service request
@@ -56,18 +57,18 @@ def calculate_service_response(request):
     response_object = { "op": "service_response",
                         "id": request_object["id"],
                         "service": service_name,
-                        "values": service_response_data                           # put service response in "data"-field of response object (in this case it's twice "data", because response value is also named data (in srv-file)
+                        "values": service_response_data                         # put service response in "data"-field of response object (in this case it's twice "data", because response value is also named data (in srv-file)
                       }
     response_message = json.dumps(response_object)
     return response_message
 
-####################### service_calculation end ################################
+# ##################### service_calculation end ################################
 
 
 
-####################### helper functions / and variables begin #################
+# ##################### helper functions / and variables begin #################
 # should not need to be changed (but could be improved )                       #
-################################################################################
+# ##############################################################################
 
 buffer = ""
 
@@ -115,7 +116,7 @@ def wait_for_service_request():                                                 
                     return data                                                 # if parsing was successful --> return data string
             except Exception:
                 #print "direct_access error:"
-                #print e
+                #print(e)
                 pass
                
             #print "trying to defragment"
@@ -183,7 +184,7 @@ def list_of_fragments(full_message, fragment_size):                             
     fragmented_messages_list = []                                               # generate list of fragmented messages (including headers)
     if len(fragments) > 1:
         for count, fragment in enumerate(fragments):                            # iterate through list and have index counter
-            fragmented_message_object = {"op":"fragment",                       #   create python-object for each fragment message
+            fragmented_message_object = {"op":"fragment",                       # create Python-object for each fragment message
                                          "id": str(message_id),
                                          "data": str(fragment),
                                          "num": count,
@@ -195,12 +196,12 @@ def list_of_fragments(full_message, fragment_size):                             
         fragmented_messages_list.append(str(fragment))
     return fragmented_messages_list                                             # return list of 'ready-to-send' fragmented messages
 
-####################### helper functions end ###################################
+# ##################### helper functions end ###################################
 
 
-####################### script begin ###########################################
+# ##################### script begin ###########################################
 # should not need to be changed (but could be improved )                       #
-################################################################################
+# ##############################################################################
 
 tcp_socket = connect_tcp_socket()                                               # open tcp_socket
 advertise_service()                                                             # advertise service in ROS (via rosbridge)

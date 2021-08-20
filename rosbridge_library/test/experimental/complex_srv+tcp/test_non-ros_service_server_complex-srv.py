@@ -6,9 +6,9 @@ from random import randint
 from rosbridge_library.util import json
 
 
-####################### variables begin ########################################
+# ##################### variables begin ########################################
 # these parameters should be changed to match the actual environment           #
-################################################################################
+# ##############################################################################
 
 tcp_socket_timeout = 10                          # seconds
 max_msg_length = 20000                           # bytes
@@ -21,23 +21,23 @@ service_name = "nested_srv"                      # service name
 
 send_fragment_size = 1000
 # delay between sends to rosbridge is not needed anymore, if using my version of protocol (uses buffer to collect data from stream)
-send_fragment_delay = 0.000#1
+send_fragment_delay = 0.000  # 1
 receive_fragment_size = 10
 receive_message_intervall = 0.0
 
-####################### variables end ##########################################
+# ##################### variables end ##########################################
 
 
-####################### service_calculation begin ##############################
+# ##################### service_calculation begin ##############################
 # change this function to match whatever service should be provided            #
-################################################################################
+# ##############################################################################
 
 def calculate_service_response(request):
     request_object = json.loads(request)                                        # parse string for service request
     args = request_object["args"]                                               # get parameter field (args)
-#    count = int(args["count"] )                                                 # get parameter(s) as described in corresponding ROS srv-file
+#    count = int(args["count"] )                                                # get parameter(s) as described in corresponding ROS srv-file
 #
-#    message = ""                                                                # calculate service response
+#    message = ""                                                               # calculate service response
 #    for i in range(0,count):
 #        message += str(chr(randint(32,126)))
 #        if i% 100000 == 0:
@@ -51,7 +51,7 @@ def calculate_service_response(request):
     --> use .decode("base64","strict") at client side
     """
     #message = message.encode('base64','strict')
-    service_response_data = message                                   # service response (as defined in srv-file)
+    service_response_data = message                                             # service response (as defined in srv-file)
 
     response_object = { "op": "service_response",
                         "id": request_object["id"],
@@ -60,13 +60,12 @@ def calculate_service_response(request):
     response_message = json.dumps(response_object)
     return response_message
 
-####################### service_calculation end ################################
+# ##################### service_calculation end ################################
 
 
-
-####################### helper functions / and variables begin #################
+# ##################### helper functions / and variables begin #################
 # should not need to be changed (but could be improved )                       #
-################################################################################
+# ##############################################################################
 
 buffer = ""
 
@@ -114,7 +113,7 @@ def wait_for_service_request():                                                 
                     return data                                                 # if parsing was successful --> return data string
             except Exception:
                 #print "direct_access error:"
-                #print e
+                #print(e)
                 pass
                
             #print "trying to defragment"
@@ -182,7 +181,7 @@ def list_of_fragments(full_message, fragment_size):                             
     fragmented_messages_list = []                                               # generate list of fragmented messages (including headers)
     if len(fragments) > 1:
         for count, fragment in enumerate(fragments):                            # iterate through list and have index counter
-            fragmented_message_object = {"op":"fragment",                       #   create python-object for each fragment message
+            fragmented_message_object = {"op":"fragment",                       # create Python-object for each fragment message
                                          "id": str(message_id),
                                          "data": str(fragment),
                                          "num": count,
@@ -194,12 +193,12 @@ def list_of_fragments(full_message, fragment_size):                             
         fragmented_messages_list.append(str(fragment))
     return fragmented_messages_list                                             # return list of 'ready-to-send' fragmented messages
 
-####################### helper functions end ###################################
+# ##################### helper functions end ###################################
 
 
-####################### script begin ###########################################
+# ##################### script begin ###########################################
 # should not need to be changed (but could be improved )                       #
-################################################################################
+# ##############################################################################
 
 tcp_socket = connect_tcp_socket()                                               # open tcp_socket
 advertise_service()                                                             # advertise service in ROS (via rosbridge)
