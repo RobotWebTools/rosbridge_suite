@@ -56,11 +56,8 @@ class TestSubscribe(unittest.TestCase):
             self.assertEqual(subscription.queue_length, min_queue_length)
             self.assertEqual(subscription.fragment_size, min_frag_size)
             self.assertEqual(subscription.compression, "png")
-        except:
+        finally:
             subscription.unregister()
-            raise
-
-        subscription.unregister()
 
     def test_missing_arguments(self):
         proto = Protocol("test_missing_arguments")
