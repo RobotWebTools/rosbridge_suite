@@ -15,8 +15,6 @@ jobs:
       # See setup.cfg for the default settings for codespell and flake8
       - run: codespell
       - run: flake8
-      # Undefined names need to be fixed (#604) and the --exit-zero removed.
-      - run: flake8 --exit-zero --select=F82 --statistics
   test:
     strategy:
       fail-fast: false

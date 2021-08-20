@@ -13,7 +13,9 @@ class RosbridgeUdpFactory(DatagramProtocol):
         if endpoint in self.socks:
             self.socks[endpoint].datagramReceived(message)
         else:
-            writefunc = lambda msg: self.transport.write(msg, (host,port))
+            def writefunc(msg):
+                self.transport.write(msg, (host, port))
+
             self.socks[endpoint] = RosbridgeUdpSocket(writefunc)
             self.socks[endpoint].startProtocol()
             self.socks[endpoint].datagramReceived(message)

@@ -1,4 +1,6 @@
-# try to import json-lib: 1st try ujson, 2nd try simplejson, else import standard python json
+# try to import json-lib: 1st try ujson, 2nd try simplejson, else import standard Python json
+from io import StringIO  # noqa: F401
+
 try:
     import ujson as json
 except ImportError:
@@ -6,9 +8,6 @@ except ImportError:
         import simplejson as json
     except ImportError:
         import json  # noqa: F401
-
-string_types = (str,)
-from io import StringIO  # noqa: F401
 
 import bson
 try:
@@ -19,3 +18,5 @@ except AttributeError:
         "Please use the MongoDB BSON implementation. "
         "See: https://github.com/RobotWebTools/rosbridge_suite/issues/198"
     )
+
+string_types = (str,)
