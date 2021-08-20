@@ -227,7 +227,7 @@ class TestMessageConversion(unittest.TestCase):
             inst = ros_loader.get_message_instance(rostype)
             msg = c.extract_values(inst)
             self.do_test(msg, rostype)
-            l = loads(dumps(msg))
+            _ = loads(dumps(msg))
             inst2 = ros_loader.get_message_instance(rostype)
             c.populate_instance(msg, inst2)
             self.assertEqual(inst, inst2)

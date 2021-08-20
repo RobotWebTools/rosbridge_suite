@@ -298,7 +298,7 @@ def main(args=None):
     spin_callback.start()
     start_hook()
 
-    node.destroy_node()
+    node.destroy_node()  # noqa: F821  # To be fixed in issue #604
     rclpy.shutdown()
     shutdown_hook()  # shutdown hook to stop the server
 
