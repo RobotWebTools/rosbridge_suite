@@ -43,7 +43,7 @@ import math
 import re
 from base64 import standard_b64encode, standard_b64decode
 
-from rosbridge_library.util import string_types, bson
+from rosbridge_library.util import bson
 
 try:
     import rospy
@@ -242,16 +242,10 @@ def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
 
 
 def _to_binary_inst(msg):
-    if type(msg) in string_types:
-        try:
-            return standard_b64decode(msg)
-        except :
-            return msg
-    else:
-        try:
-            return bytes(bytearray(msg))
-        except:
-            return msg
+    try:
+        return standard_b64decode(msg) if isinstance(msg, str) else bytes(bytearray(msg))
+    except Exception:
+        return msg
 
 
 def _to_time_inst(msg, rostype, inst=None):
@@ -289,7 +283,7 @@ def _to_primitive_inst(msg, rostype, roottype, stack):
     msgtype = type(msg)
     if msgtype in primitive_types and rostype in type_map[msgtype.__name__]:
         return msg
-    elif msgtype in string_types and rostype in type_map[msgtype.__name__]:
+    elif isinstance(msg, str) and rostype in type_map[msgtype.__name__]:
         return msg
     raise FieldTypeMismatchException(roottype, stack, rostype, msgtype)
 
