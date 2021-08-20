@@ -293,7 +293,7 @@ class Protocol:
                 return bson.BSON.encode(msg)
             else:    
                 return json.dumps(msg)
-        except:
+        except Exception:
             if cid is not None:
                 # Only bother sending the log message if there's an id
                 self.log("error", "Unable to serialize %s message to client"

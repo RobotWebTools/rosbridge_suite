@@ -153,12 +153,12 @@ class QueueMessageHandler(MessageHandler, Thread):
                 if self.alive and self.time_remaining() == 0 and len(self.queue) > 0:
                     try:
                         MessageHandler.handle_message(self, self.queue[0])
-                    except:
+                    except Exception:
                         pass
                     del self.queue[0]
         while self.time_remaining() == 0 and len(self.queue) > 0:
             try:
                 MessageHandler.handle_message(self, self.queue[0])
-            except:
+            except Exception:
                 pass
             del self.queue[0]

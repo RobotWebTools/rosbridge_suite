@@ -163,7 +163,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             else:
                 _log_exception()
                 raise
-        except:
+        except:  # noqa: E722  # Will log and raise
             _log_exception()
             raise
 

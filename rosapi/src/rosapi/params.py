@@ -108,7 +108,7 @@ def _set_param(node_name, name, value, parameter_type=None):
     try:
         # call_get_parameters will fail if node does not exist.
         call_set_parameters(node=_node, node_name=node_name, parameters=[parameter])
-    except:
+    except Exception:
         pass
 
 
@@ -138,7 +138,7 @@ def get_param(node_name, name, default, params_glob):
             # if type is 0 (parameter not set), the next line will raise an exception
             # and return value shall go to default.
             value = getattr(pvalue, _parameter_type_mapping[pvalue.type])
-        except:
+        except Exception:
             # If either the node or the parameter does not exist, return default.
             value = default
 
@@ -160,7 +160,7 @@ def has_param(node_name, name, params_glob):
             response = call_get_parameters(
                 node=_node, node_name=node_name,
                 parameter_names=[name])
-        except:
+        except Exception:
             return False
 
     return response.values[0].type > 0 and response.values[0].type < len(_parameter_type_mapping)

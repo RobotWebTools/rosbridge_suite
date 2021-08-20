@@ -52,7 +52,7 @@ class ServiceTester:
         gen = populate_random_args(gen)
         try:
             rsp = c.populate_instance(gen, rsp)
-        except:
+        except:  # noqa: E722  # Will print() and raise
             print("populating instance")
             print(rsp)
             print("populating with")
