@@ -3,10 +3,9 @@ import socket
 from rosbridge_library.util import json
 
 
-
-####################### variables begin ########################################
+# ##################### variables begin ########################################
 # these parameters should be changed to match the actual environment           #
-################################################################################
+# ##############################################################################
 
 client_socket_timeout = 6                       # seconds
 max_msg_length = 2000000                        # bytes
@@ -15,14 +14,14 @@ rosbridge_ip = "localhost"                      # hostname or ip
 rosbridge_port = 9090                           # port as integer
 
 service_name = "send_bytes"                     # service name
-request_byte_count = 500000                   ## note: receiving more than ~100.000 bytes without setting a fragment_size was not possible during testing..
+request_byte_count = 500000                     # NOTE: receiving more than ~100.000 bytes without setting a fragment_size was not possible during testing.
 receiving_fragment_size = 1000
 receive_message_intervall = 0.0
 
-####################### variables end ##########################################
+# ##################### variables end ##########################################
 
 
-################################################################################
+# ##############################################################################
 
 def request_service():
     service_request_object = { "op" : "call_service",                           # op-code for rosbridge
@@ -36,14 +35,14 @@ def request_service():
     print("sending JSON-message to rosbridge:", service_request)
     sock.send(service_request)
 
-################################################################################
+# ##############################################################################
 
 
-####################### script begin ###########################################
+# ##################### script begin ###########################################
 # should not need to be changed (but could be improved ;) )                    #
-################################################################################
+# ##############################################################################
 try:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)                    #connect to rosbridge
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)                    # connect to rosbridge
     sock.settimeout(client_socket_timeout)
     sock.connect((rosbridge_ip, rosbridge_port))
 
@@ -54,7 +53,9 @@ try:
     done = False
     result = None
     reconstructed = None
-    while not done:     # should not need a loop (maximum wait can be set by client_socket_timeout), but since its for test/demonstration only .. leave it as it is for now
+    # should not need a loop (maximum wait can be set by client_socket_timeout),
+    # but since its for test/demonstration only .. leave it as it is for now
+    while not done:
         try:
             incoming = sock.recv(max_msg_length)                                # receive service_response from rosbridge
             if buffer == "":
@@ -73,7 +74,7 @@ try:
                     done = True
             except Exception:
                 #print "direct access to JSON failed.."
-                #print e
+                #print(e)
                 pass
             try:                                        
                 #print "defragmenting incoming messages"
@@ -87,7 +88,7 @@ try:
                     try:
                         result.append(json.loads(fragment))                     # try to parse json from string, and append if successful
                     except Exception:
-                        #print e
+                        #print(e)
                         #print result_string
                         raise                                                   # re-raise the last exception, allows to see and continue with processing of exception
 
@@ -106,10 +107,10 @@ try:
                         reconstructed = reconstructed + fragment["data"]
                     done = True
             except Exception:
-                #print e
+                #print(e)
                 pass
         except Exception:
-#            print e
+#            print(e)
             pass
 
 
@@ -118,10 +119,10 @@ try:
         print("response was None -> service was not available")
     else:
         print("received:")
-        print(returned_data["values"]["data"].decode('base64','strict'))         # decode values-field
+        print(returned_data["values"]["data"].decode('base64','strict'))        # decode values-field
     
 except Exception as e:
     print("ERROR - could not receive service_response")
     print(e)
 
-sock.close()                                                                    # close socket
+sock.close()
