@@ -44,3 +44,9 @@ jobs:
       - uses: ros-tooling/action-ros-ci@v0.2
         with:
           target-ros2-distro: ${{ matrix.ros_distribution }}
+
+      - name: pytest
+        run: |
+          python3 -m pip install pytest
+          python3 -m pytest || true
+          python3 -m pytest ros_ws/src
