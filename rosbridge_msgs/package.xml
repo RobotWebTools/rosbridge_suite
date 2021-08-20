@@ -4,8 +4,9 @@
   <version>1.0.7</version>
   <description>Package containing message files</description>
 
-  <maintainer email="achim@intermodalics.eu">Hans-Joachim Krauch</maintainer>
   <author email="achim@intermodalics.eu">Hans-Joachim Krauch</author>
+  <maintainer email="achim@intermodalics.eu">Hans-Joachim Krauch</maintainer>
+  <maintainer email="jacob@foxglove.dev">Jacob Bandes-Storch</maintainer>
 
   <license>BSD</license>
 
