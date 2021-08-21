@@ -1,12 +1,11 @@
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import ros_loader, message_conversion
-from rosbridge_library.util import string_types
 
 
 class ServiceResponse(Capability):
 
     service_response_msg_fields = [
-        (True, "service", string_types), (False, "id", string_types),
+        (True, "service", str), (False, "id", str),
         (False, "values", dict), (True, "result", bool)
     ]
 

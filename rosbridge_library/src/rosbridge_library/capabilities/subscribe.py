@@ -51,8 +51,6 @@ except ImportError:
     except ImportError:
         from json import dumps as encode_json
 
-from rosbridge_library.util import string_types
-
 
 class Subscription():
     """ Keeps track of the clients multiple calls to subscribe.
@@ -198,10 +196,10 @@ class Subscription():
 
 class Subscribe(Capability):
 
-    subscribe_msg_fields = [(True, "topic", string_types), (False, "type", string_types),
+    subscribe_msg_fields = [(True, "topic", str), (False, "type", str),
                             (False, "throttle_rate", int), (False, "fragment_size", int),
-                            (False, "queue_length", int), (False, "compression", string_types)]
-    unsubscribe_msg_fields = [(True, "topic", string_types)]
+                            (False, "queue_length", int), (False, "compression", str)]
+    unsubscribe_msg_fields = [(True, "topic", str)]
 
     topics_glob = None
 

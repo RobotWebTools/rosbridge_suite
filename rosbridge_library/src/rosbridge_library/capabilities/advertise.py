@@ -34,7 +34,6 @@
 import fnmatch
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
-from rosbridge_library.util import string_types
 
 
 class Registration():
@@ -76,8 +75,8 @@ class Registration():
 
 class Advertise(Capability):
 
-    advertise_msg_fields = [(True, "topic", string_types), (True, "type", string_types)]
-    unadvertise_msg_fields = [(True, "topic", string_types)]
+    advertise_msg_fields = [(True, "topic", str), (True, "type", str)]
+    unadvertise_msg_fields = [(True, "topic", str)]
 
     topics_glob = None
 

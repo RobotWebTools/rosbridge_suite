@@ -34,14 +34,13 @@ import fnmatch
 from functools import partial
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.services import ServiceCaller
-from rosbridge_library.util import string_types
 
 
 class CallService(Capability):
 
-    call_service_msg_fields = [(True, "service", string_types),
+    call_service_msg_fields = [(True, "service", str),
                                (False, "fragment_size", (int, type(None))),
-                               (False, "compression", string_types)]
+                               (False, "compression", str)]
 
     services_glob = None
 

@@ -34,12 +34,11 @@
 import fnmatch
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
-from rosbridge_library.util import string_types
 
 
 class Publish(Capability):
 
-    publish_msg_fields = [(True, "topic", string_types)]
+    publish_msg_fields = [(True, "topic", str)]
 
     topics_glob = None
 
