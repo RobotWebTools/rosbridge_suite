@@ -14,7 +14,7 @@ jobs:
       - run: bandit --recursive --skip B101,B110,B311 .
       # See setup.cfg for the default settings for codespell and flake8
       - run: codespell
-      - run: flake8
+      - run: flake8 rosapi/scripts/rosapi_node .
   test:
     strategy:
       fail-fast: false
