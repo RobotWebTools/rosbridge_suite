@@ -38,7 +38,7 @@
   -->
   <exec_depend>rosidl_default_runtime</exec_depend>
 
-  <test_depend>ament_cmake_nose</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>sensor_msgs</test_depend>
   <test_depend>shape_msgs</test_depend>
   <test_depend>geometry_msgs</test_depend>
