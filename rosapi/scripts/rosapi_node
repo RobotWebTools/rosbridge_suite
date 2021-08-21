@@ -37,9 +37,32 @@ import rclpy
 from rclpy.clock import Clock, ClockType
 from rclpy.node import Node
 
+import rosapi
 from rosapi import glob_helper, proxy, objectutils, params
-from rosapi.srv import *
-from rosapi.msg import *
+from rosapi.srv import (Topics,
+        TopicsForType,
+        TopicsAndRawTypes,
+        Services,
+        ServicesForType,
+        Nodes,
+        NodeDetails,
+        GetActionServers,
+        TopicType,
+        ServiceType,
+        Publishers,
+        Subscribers,
+        ServiceProviders,
+        ServiceNode,
+        MessageDetails,
+        ServiceRequestDetails,
+        ServiceResponseDetails,
+        SetParam,
+        GetParam,
+        HasParam,
+        DeleteParam,
+        GetParamNames,
+        GetTime)
+from rosapi.msg import TypeDef
 
 
 class Rosapi(Node):
@@ -241,15 +264,15 @@ class Rosapi(Node):
 
 # TODO(@jubeira): make all of these methods of the node and port them.
 
-# Note(@jubeira): there is no equivalent for this in ROS2 so far. The service doesn't seem to e used anywhere in rosbridge.
+# Note(@jubeira): there is no equivalent for this in ROS2 so far. The service doesn't seem to be used anywhere in rosbridge.
 def get_service_host(request):
     """ Called by the rosapi/ServiceNode service.  Given the name of a service, returns the name of the machine
     that is hosting that service. """
-    return ServiceHostResponse(proxy.get_service_host(request.service))
+    return ServiceHostResponse(proxy.get_service_host(request.service))  # noqa F821
 
 # Note(@jubeira): rclpy does not have an equivalent for this. To be checked if this service is necessary or not.
 def search_param(request):
-    return SearchParamResponse(rosapi.params.search_param(request.name, rosapi.glob_helper.params))
+    return SearchParamResponse(rosapi.params.search_param(request.name, rosapi.glob_helper.params))  # noqa F821
 
 def dict_to_typedef(typedefdict):
     typedef = TypeDef()
@@ -271,7 +294,7 @@ def main(args=None):
     rosapi_node = Rosapi()
     rclpy.spin(rosapi_node)
 
-    node.destroy_node()
+    node.destroy_node()  # noqa F821
     rclpy.shutdown()
 
 if __name__ == '__main__':
