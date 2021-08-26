@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.8 (2021-08-26)
+------------------
 * Add missing test_depends and buildtool_depends (`#617 <https://github.com/RobotWebTools/rosbridge_suite/issues/617>`_)
 * Fix various Python code style and lint issues
 * Contributors: Christian Clauss, Jacob Bandes-Storch
