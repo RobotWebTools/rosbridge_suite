@@ -100,6 +100,13 @@ class MultiSubscriber:
         if topic_type is not None and topic_type != msg_type_string:
             raise TypeConflictException(topic, topic_type, msg_type_string)
 
+        # Get publishers info
+        publishers_info = node_handle.get_publishers_info_by_topic(topic)
+
+        # Select QoS
+        default_qos_profile = 10
+        qos_profile = publishers_info[0].qos_profile if publishers_info else default_qos_profile
+
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
         self.subscriptions = {client_id: callback}
@@ -107,9 +114,8 @@ class MultiSubscriber:
         self.topic = topic
         self.msg_class = msg_class
         self.node_handle = node_handle
-        # TODO(@jubeira): add support for other QoS.
         self.subscriber = node_handle.create_subscription(
-            msg_class, topic, self.callback, 10, raw=raw
+            msg_class, topic, self.callback, qos_profile, raw=raw
         )
         self.new_subscriber = None
         self.new_subscriptions = {}
