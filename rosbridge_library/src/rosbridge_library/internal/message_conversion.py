@@ -326,6 +326,10 @@ def _to_primitive_inst(msg, rostype, roottype, stack):
         # fix that by casting the int to the expected float
         msg = float(msg)
 
+    # Convert to byte
+    if rostype == 'octet' and isinstance(msg, int):
+        return bytes([msg])
+
     msgtype = type(msg)
     if msgtype in primitive_types and rostype in type_map[msgtype.__name__]:
         return msg
