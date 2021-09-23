@@ -32,7 +32,7 @@ class TestMessageConversion(unittest.TestCase):
         if type(msg1) in c.list_types:
             for x, y in zip(msg1, msg2):
                 self.msgs_equal(x, y)
-        elif type(msg1) in c.primitive_types or type(msg1) in c.string_types:
+        elif type(msg1) in c.primitive_types or type(msg1) is str:
             self.assertEqual(msg1, msg2)
         else:
             for x in msg1:
