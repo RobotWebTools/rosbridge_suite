@@ -53,6 +53,17 @@ class TestMessageConversion(unittest.TestCase):
                 self.assertEqual(msg["data"], msg2["data"])
                 self.assertEqual(msg2["data"], inst.data)
 
+    def do_byte_test(self, data_value, msgtype):
+        for msg in [{"data": data_value}]:
+            inst = ros_loader.get_message_instance(msgtype)
+            c.populate_instance(msg, inst)
+            self.assertEqual(inst.data, bytes([data_value]))
+            self.validate_instance(inst)
+            extracted = c.extract_values(inst)
+            for msg2 in [extracted, loads(dumps(extracted))]:
+                self.assertEqual(msg["data"], msg2["data"])
+                self.assertEqual(bytes([msg2["data"]]), inst.data)
+
     def do_test(self, orig_msg, msgtype):
         for msg in [orig_msg, loads(dumps(orig_msg))]:
             inst = ros_loader.get_message_instance(msgtype)
@@ -73,6 +84,13 @@ class TestMessageConversion(unittest.TestCase):
             for rostype in ["uint8", "uint16", "uint32", "uint64"]:
                 self.assertEqual(c._to_primitive_inst(msg, rostype, rostype, []), msg)
                 self.assertEqual(c._to_inst(msg, rostype, rostype), msg)
+
+    def test_byte_primitives(self):
+        # Test raw primitives
+        for msg in range(0, 200):
+            for rostype in ["octet"]:
+                self.assertEqual(c._to_primitive_inst(msg, rostype, rostype, []), bytes([msg]))
+                self.assertEqual(c._to_inst(msg, rostype, rostype), bytes([msg]))
 
     def test_bool_primitives(self):
         self.assertTrue(c._to_primitive_inst(True, "bool", "bool", []))
@@ -96,7 +114,6 @@ class TestMessageConversion(unittest.TestCase):
     def test_signed_int_base_msgs(self):
         int8s = range(-127, 128)
         for int8 in int8s:
-            self.do_primitive_test(int8, "std_msgs/Byte")
             self.do_primitive_test(int8, "std_msgs/Int8")
             self.do_primitive_test(int8, "std_msgs/Int16")
             self.do_primitive_test(int8, "std_msgs/Int32")
@@ -107,21 +124,18 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(int16, "std_msgs/Int16")
             self.do_primitive_test(int16, "std_msgs/Int32")
             self.do_primitive_test(int16, "std_msgs/Int64")
-            self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/Byte")
             self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/Int8")
 
         int32s = [-2147483647, 2147483647]
         for int32 in int32s:
             self.do_primitive_test(int32, "std_msgs/Int32")
             self.do_primitive_test(int32, "std_msgs/Int64")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Byte")
             self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Int8")
             self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Int16")
 
         int64s = [-9223372036854775807, 9223372036854775807]
         for int64 in int64s:
             self.do_primitive_test(int64, "std_msgs/Int64")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Byte")
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int8")
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int16")
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int32")
@@ -163,6 +177,11 @@ class TestMessageConversion(unittest.TestCase):
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt8")
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt16")
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt32")
+
+    def test_byte_base_msg(self):
+        int8s = range(0, 256)
+        for int8 in int8s:
+            self.do_byte_test(int8, "std_msgs/Byte")
 
     def test_bool_base_msg(self):
         self.do_primitive_test(True, "std_msgs/Bool")
