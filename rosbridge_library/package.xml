@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>rosbridge_library</name>
   <version>1.0.8</version>
   <description>
@@ -34,6 +34,8 @@
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
   <exec_depend>python3-bson</exec_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
     <build_type>ament_cmake</build_type>

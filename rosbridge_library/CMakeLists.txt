@@ -32,7 +32,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/TestRequestOnly.srv
   srv/TestResponseOnly.srv
   DEPENDENCIES builtin_interfaces geometry_msgs std_msgs
-  SKIP_INSTALL
 )
 
 ament_export_dependencies(rosidl_default_runtime)
