@@ -91,7 +91,7 @@ ros_primitive_types = [
     "string",
 ]
 ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
-ros_binary_types = ["uint8[]", "char[]"]
+ros_binary_types = ["uint8[]", "char[]", "sequence<uint8>", "sequence<char>"]
 list_tokens = re.compile("<(.+?)>")
 bounded_array_tokens = re.compile(r"(.+)\[.*\]")
 ros_binary_types_list_braces = [
@@ -327,7 +327,7 @@ def _to_primitive_inst(msg, rostype, roottype, stack):
         msg = float(msg)
 
     # Convert to byte
-    if rostype == 'octet' and isinstance(msg, int):
+    if rostype == "octet" and isinstance(msg, int):
         return bytes([msg])
 
     msgtype = type(msg)
