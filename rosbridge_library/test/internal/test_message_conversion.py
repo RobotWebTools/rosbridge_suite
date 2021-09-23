@@ -178,10 +178,10 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(x, "std_msgs/String")
 
     def test_time_msg(self):
-        msg = {"data": {"secs": 3, "nsecs": 5}}
+        msg = {"data": {"sec": 3, "nanosec": 5}}
         self.do_test(msg, "std_msgs/Time")
 
-        msg = {"times": [{"secs": 3, "nsecs": 5}, {"secs": 2, "nsecs": 7}]}
+        msg = {"times": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
         self.do_test(msg, "rosbridge_test_msgs/TestTimeArray")
 
     def test_time_msg_now(self):
@@ -195,23 +195,22 @@ class TestMessageConversion(unittest.TestCase):
         extracted = c.extract_values(inst)
         print(extracted)
         self.assertIn("data", extracted)
-        self.assertIn("secs", extracted["data"])
-        self.assertIn("nsecs", extracted["data"])
-        self.assertNotEqual(extracted["data"]["secs"], 0)
-        self.assertLessEqual(extracted["data"]["secs"], currenttime.secs)
-        self.assertGreaterEqual(currenttime.secs, extracted["data"]["secs"])
+        self.assertIn("sec", extracted["data"])
+        self.assertIn("nanosec", extracted["data"])
+        self.assertNotEqual(extracted["data"]["sec"], 0)
+        self.assertLessEqual(extracted["data"]["sec"], currenttime.sec)
+        self.assertGreaterEqual(currenttime.sec, extracted["data"]["sec"])
 
     def test_duration_msg(self):
-        msg = {"data": {"secs": 3, "nsecs": 5}}
+        msg = {"data": {"sec": 3, "nanosec": 5}}
         self.do_test(msg, "std_msgs/Duration")
 
-        msg = {"durations": [{"secs": 3, "nsecs": 5}, {"secs": 2, "nsecs": 7}]}
+        msg = {"durations": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
         self.do_test(msg, "rosbridge_test_msgs/TestDurationArray")
 
     def test_header_msg(self):
         msg = {
-            "seq": 5,
-            "stamp": {"secs": 12347, "nsecs": 322304},
+            "stamp": {"sec": 12347, "nanosec": 322304},
             "frame_id": "2394dnfnlcx;v[p234j]",
         }
         self.do_test(msg, "std_msgs/Header")
@@ -221,8 +220,6 @@ class TestMessageConversion(unittest.TestCase):
         self.do_test(msg, "rosbridge_test_msgs/TestHeaderTwo")
 
         msg = {"header": [msg["header"], msg["header"], msg["header"]]}
-        msg["header"][1]["seq"] = 6
-        msg["header"][2]["seq"] = 7
         self.do_test(msg, "rosbridge_test_msgs/TestHeaderArray")
 
     def test_assorted_msgs(self):
