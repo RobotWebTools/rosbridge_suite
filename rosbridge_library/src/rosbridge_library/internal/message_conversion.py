@@ -52,7 +52,7 @@ type_map = {
     "bool": ["bool", "boolean"],
     "int": [
         "int8",
-        "byte",
+        "octet",
         "uint8",
         "char",
         "int16",
@@ -74,7 +74,7 @@ ros_time_types = ["builtin_interfaces/Time", "builtin_interfaces/Duration"]
 ros_primitive_types = [
     "bool",
     "boolean",
-    "byte",
+    "octet",
     "char",
     "int8",
     "uint8",
