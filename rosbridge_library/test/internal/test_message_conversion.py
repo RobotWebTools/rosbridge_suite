@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import unittest
 from base64 import standard_b64encode
-from io import BytesIO
 from json import dumps, loads
 
 import rclpy
 from rclpy.clock import Clock
+from rclpy.serialization import deserialize_message, serialize_message
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader
 
@@ -20,13 +20,8 @@ class TestMessageConversion(unittest.TestCase):
     def validate_instance(self, inst1):
         """Serializes and deserializes the inst to typecheck and ensure that
         instances are correct"""
-        inst1._check_types()
-        buff = BytesIO()
-        inst1.serialize(buff)
-        inst2 = type(inst1)()
-        inst2.deserialize(buff.getvalue())
+        inst2 = deserialize_message(serialize_message(inst1), type(inst1))
         self.assertEqual(inst1, inst2)
-        inst2._check_types()
 
     def msgs_equal(self, msg1, msg2):
         if isinstance(msg1, str) and isinstance(msg2, str):
