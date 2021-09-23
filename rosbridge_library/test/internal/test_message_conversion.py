@@ -5,7 +5,6 @@ from json import dumps, loads
 
 import numpy as np
 import rclpy
-from rclpy.clock import Clock
 from rclpy.serialization import deserialize_message, serialize_message
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader
@@ -179,23 +178,6 @@ class TestMessageConversion(unittest.TestCase):
 
         msg = {"times": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
         self.do_test(msg, "rosbridge_test_msgs/TestTimeArray")
-
-    def test_time_msg_now(self):
-        msg = {"data": "now"}
-        msgtype = "std_msgs/Time"
-
-        inst = ros_loader.get_message_instance(msgtype)
-        c.populate_instance(msg, inst)
-        currenttime = Clock().now()
-        self.validate_instance(inst)
-        extracted = c.extract_values(inst)
-        print(extracted)
-        self.assertIn("data", extracted)
-        self.assertIn("sec", extracted["data"])
-        self.assertIn("nanosec", extracted["data"])
-        self.assertNotEqual(extracted["data"]["sec"], 0)
-        self.assertLessEqual(extracted["data"]["sec"], currenttime.sec)
-        self.assertGreaterEqual(currenttime.sec, extracted["data"]["sec"])
 
     def test_duration_msg(self):
         msg = {"sec": 3, "nanosec": 5}
