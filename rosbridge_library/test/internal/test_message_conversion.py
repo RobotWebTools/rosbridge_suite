@@ -3,6 +3,7 @@ import unittest
 from base64 import standard_b64encode
 from json import dumps, loads
 
+import numpy as np
 import rclpy
 from rclpy.clock import Clock
 from rclpy.serialization import deserialize_message, serialize_message
@@ -252,25 +253,25 @@ class TestMessageConversion(unittest.TestCase):
         for msgtype in ["TestChar", "TestUInt8"]:
             rostype = "rosbridge_test_msgs/" + msgtype
 
+            # From List[int]
             int8s = list(range(0, 256))
             ret = test_int8_msg(rostype, int8s)
-            self.assertEqual(ret, bytes(bytearray(int8s)))
+            np.testing.assert_array_equal(ret, np.array(int8s))
 
-            str_int8s = bytes(bytearray(int8s))
-
-            b64str_int8s = standard_b64encode(str_int8s).decode("ascii")
+            # From base64 string
+            b64str_int8s = standard_b64encode(bytes(int8s)).decode("ascii")
             ret = test_int8_msg(rostype, b64str_int8s)
-            self.assertEqual(ret, str_int8s)
+            np.testing.assert_array_equal(ret, np.array(int8s))
 
         for msgtype in ["TestUInt8FixedSizeArray16"]:
             rostype = "rosbridge_test_msgs/" + msgtype
 
+            # From List[int]
             int8s = list(range(0, 16))
             ret = test_int8_msg(rostype, int8s)
-            self.assertEqual(ret, bytes(bytearray(int8s)))
+            np.testing.assert_array_equal(ret, np.array(int8s))
 
-            str_int8s = bytes(bytearray(int8s))
-
-            b64str_int8s = standard_b64encode(str_int8s).decode("ascii")
+            # From base64 string
+            b64str_int8s = standard_b64encode(bytes(int8s)).decode("ascii")
             ret = test_int8_msg(rostype, b64str_int8s)
-            self.assertEqual(ret, str_int8s)
+            np.testing.assert_array_equal(ret, np.array(int8s))
