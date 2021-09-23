@@ -173,8 +173,8 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(x, "std_msgs/String")
 
     def test_time_msg(self):
-        msg = {"data": {"sec": 3, "nanosec": 5}}
-        self.do_test(msg, "std_msgs/Time")
+        msg = {"sec": 3, "nanosec": 5}
+        self.do_test(msg, "builtin_interfaces/Time")
 
         msg = {"times": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
         self.do_test(msg, "rosbridge_test_msgs/TestTimeArray")
@@ -197,8 +197,8 @@ class TestMessageConversion(unittest.TestCase):
         self.assertGreaterEqual(currenttime.sec, extracted["data"]["sec"])
 
     def test_duration_msg(self):
-        msg = {"data": {"sec": 3, "nanosec": 5}}
-        self.do_test(msg, "std_msgs/Duration")
+        msg = {"sec": 3, "nanosec": 5}
+        self.do_test(msg, "builtin_interfaces/Duration")
 
         msg = {"durations": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
         self.do_test(msg, "rosbridge_test_msgs/TestDurationArray")
