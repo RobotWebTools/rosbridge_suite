@@ -288,10 +288,11 @@ def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
 
 
 def _to_binary_inst(msg):
-    try:
-        return standard_b64decode(msg) if isinstance(msg, str) else bytes(bytearray(msg))
-    except Exception:
+    if isinstance(msg, str):
+        return list(standard_b64decode(msg))
+    if isinstance(msg, list):
         return msg
+    return bytes(bytearray(msg))
 
 
 def _to_time_inst(msg, rostype, inst=None):
