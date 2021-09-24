@@ -85,7 +85,6 @@ class TestAdvertise(unittest.TestCase):
         nonexistent = [
             "wangle_msgs/Jam",
             "whistleblower_msgs/Document",
-            "sexual_harrassment_msgs/UnwantedAdvance",
             "coercion_msgs/Bribe",
             "airconditioning_msgs/Cold",
             "pr2thoughts_msgs/Escape",

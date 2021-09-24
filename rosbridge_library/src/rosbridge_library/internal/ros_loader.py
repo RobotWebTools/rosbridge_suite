@@ -53,15 +53,6 @@ class InvalidTypeStringException(Exception):
         Exception.__init__(self, "%s is not a valid type string" % typestring)
 
 
-class InvalidPackageException(Exception):
-    def __init__(self, package, original_exception):
-        Exception.__init__(
-            self,
-            "Unable to load the manifest for package %s. Caused by: %s"
-            % (package, str(original_exception)),
-        )
-
-
 class InvalidModuleException(Exception):
     def __init__(self, modname, subname, original_exception):
         Exception.__init__(
