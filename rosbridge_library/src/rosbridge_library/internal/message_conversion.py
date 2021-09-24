@@ -214,6 +214,11 @@ def _from_inst(inst, rostype):
         if (not bson_only_mode) and (rostype in type_map.get("float")):
             if math.isnan(inst) or math.isinf(inst):
                 return None
+
+        # JSON does not support byte array. They are converted to int
+        if (not bson_only_mode) and (rostype == "octet"):
+            return int.from_bytes(inst, "little")
+
         return inst
 
     # Check if it's a list or tuple
