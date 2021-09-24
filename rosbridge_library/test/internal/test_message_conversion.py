@@ -4,19 +4,12 @@ from base64 import standard_b64encode
 from json import dumps, loads
 
 import numpy as np
-import rclpy
 from rclpy.serialization import deserialize_message, serialize_message
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader
 
 
 class TestMessageConversion(unittest.TestCase):
-    def setUp(self):
-        rclpy.init()
-
-    def tearDown(self):
-        rclpy.shutdown()
-
     def validate_instance(self, inst1):
         """Serializes and deserializes the inst to typecheck and ensure that
         instances are correct"""
