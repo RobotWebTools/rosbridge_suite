@@ -4,15 +4,18 @@ from base64 import standard_b64encode
 from io import BytesIO
 from json import dumps, loads
 
-import rospy
-import rostest
+import rclpy
+from rclpy.clock import Clock
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader
 
 
 class TestMessageConversion(unittest.TestCase):
     def setUp(self):
-        rospy.init_node("test_message_conversion")
+        rclpy.init()
+
+    def tearDown(self):
+        rclpy.shutdown()
 
     def validate_instance(self, inst1):
         """Serializes and deserializes the inst to typecheck and ensure that
@@ -187,7 +190,7 @@ class TestMessageConversion(unittest.TestCase):
 
         inst = ros_loader.get_message_instance(msgtype)
         c.populate_instance(msg, inst)
-        currenttime = rospy.get_rostime()
+        currenttime = Clock().now()
         self.validate_instance(inst)
         extracted = c.extract_values(inst)
         print(extracted)
@@ -279,9 +282,3 @@ class TestMessageConversion(unittest.TestCase):
             b64str_int8s = standard_b64encode(str_int8s).decode("ascii")
             ret = test_int8_msg(rostype, b64str_int8s)
             self.assertEqual(ret, str_int8s)
-
-
-PKG = "rosbridge_library"
-NAME = "test_message_conversion"
-if __name__ == "__main__":
-    rostest.unitrun(PKG, NAME, TestMessageConversion)
