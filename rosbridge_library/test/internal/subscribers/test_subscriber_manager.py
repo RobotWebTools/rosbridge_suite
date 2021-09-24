@@ -1,16 +1,15 @@
 #!/usr/bin/env python
-import rospy
-import rostest
 import unittest
-from rosgraph import Master
-
 from time import sleep
 
+import rospy
+import rostest
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.topics import (
     TopicNotEstablishedException,
     TypeConflictException,
 )
+from rosgraph import Master
 from std_msgs.msg import String
 
 

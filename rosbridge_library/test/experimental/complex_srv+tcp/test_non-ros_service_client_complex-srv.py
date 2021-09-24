@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import socket
-from rosbridge_library.util import json
 
+from rosbridge_library.util import json
 
 # ##################### variables begin ########################################
 # these parameters should be changed to match the actual environment           #

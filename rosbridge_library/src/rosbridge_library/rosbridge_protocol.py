@@ -30,19 +30,19 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from rosbridge_library.protocol import Protocol
-from rosbridge_library.capabilities.call_service import CallService
 from rosbridge_library.capabilities.advertise import Advertise
-from rosbridge_library.capabilities.publish import Publish
-from rosbridge_library.capabilities.subscribe import Subscribe
-
-# imports for defragmentation
-from rosbridge_library.capabilities.defragmentation import Defragment
 
 # imports for external service_server
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
+from rosbridge_library.capabilities.call_service import CallService
+
+# imports for defragmentation
+from rosbridge_library.capabilities.defragmentation import Defragment
+from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.capabilities.service_response import ServiceResponse
+from rosbridge_library.capabilities.subscribe import Subscribe
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
+from rosbridge_library.protocol import Protocol
 
 
 class RosbridgeProtocol(Protocol):

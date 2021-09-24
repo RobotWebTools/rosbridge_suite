@@ -1,7 +1,6 @@
 import rospy
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
-
 from twisted.internet.protocol import DatagramProtocol
 
 

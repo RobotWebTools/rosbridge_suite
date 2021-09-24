@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-import rospy
-import rostest
 import unittest
-
 from time import sleep
 
-from rosbridge_library.internal.publishers import MultiPublisher
+import rospy
+import rostest
 from rosbridge_library.internal import ros_loader
+from rosbridge_library.internal.publishers import MultiPublisher
 
 
 class TestMultiUnregistering(unittest.TestCase):

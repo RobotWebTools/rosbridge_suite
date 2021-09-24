@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-from collections import namedtuple
 import fnmatch
+from collections import namedtuple
+
 from rcl_interfaces.msg import ParameterType
 
 Globs = namedtuple("Globs", ["topics", "services", "params"])

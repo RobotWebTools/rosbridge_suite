@@ -1,9 +1,9 @@
 #!/usr/bin/env python
+import time
+import unittest
+
 import rospy
 import rostest
-import unittest
-import time
-
 from rosbridge_library.internal import subscription_modifiers as subscribe
 
 

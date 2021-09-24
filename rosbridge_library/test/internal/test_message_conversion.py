@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
+import unittest
+from base64 import standard_b64encode
+from io import BytesIO
+from json import dumps, loads
+
 import rospy
 import rostest
-import unittest
-from json import loads, dumps
-
-from io import BytesIO
-
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader
-from base64 import standard_b64encode
 
 
 class TestMessageConversion(unittest.TestCase):

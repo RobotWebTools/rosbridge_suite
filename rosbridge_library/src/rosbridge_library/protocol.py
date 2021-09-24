@@ -33,7 +33,7 @@
 import time
 
 from rosbridge_library.capabilities.fragmentation import Fragmentation
-from rosbridge_library.util import json, bson
+from rosbridge_library.util import bson, json
 
 
 def is_number(s):

@@ -35,9 +35,11 @@ from threading import Lock
 
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
-from rosbridge_library.internal.topics import TopicNotEstablishedException
-from rosbridge_library.internal.topics import TypeConflictException
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
+from rosbridge_library.internal.topics import (
+    TopicNotEstablishedException,
+    TypeConflictException,
+)
 
 """ Manages and interfaces with ROS Subscriber objects.  A single subscriber
 is shared between multiple clients

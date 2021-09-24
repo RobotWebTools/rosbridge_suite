@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-import rostest
+import struct
 import unittest
 
-import struct
+import rostest
 from rosbridge_library.internal.cbor_conversion import (
-    extract_cbor_values,
     TAGGED_ARRAY_FORMATS,
+    extract_cbor_values,
 )
 
 try:
@@ -15,31 +15,31 @@ except ImportError:
 
 from std_msgs.msg import (
     Bool,
-    String,
-    Int8,
-    Int16,
-    Int32,
-    Int64,
-    UInt8,
-    UInt16,
-    UInt32,
-    UInt64,
-    Float32,
-    Float64,
-    Int8MultiArray,
-    Int16MultiArray,
-    Int32MultiArray,
-    Int64MultiArray,
-    UInt8MultiArray,
-    UInt16MultiArray,
-    UInt32MultiArray,
-    UInt64MultiArray,
-    Float32MultiArray,
-    Float64MultiArray,
-    Time,
     Duration,
-    MultiArrayLayout,
+    Float32,
+    Float32MultiArray,
+    Float64,
+    Float64MultiArray,
+    Int8,
+    Int8MultiArray,
+    Int16,
+    Int16MultiArray,
+    Int32,
+    Int32MultiArray,
+    Int64,
+    Int64MultiArray,
     MultiArrayDimension,
+    MultiArrayLayout,
+    String,
+    Time,
+    UInt8,
+    UInt8MultiArray,
+    UInt16,
+    UInt16MultiArray,
+    UInt32,
+    UInt32MultiArray,
+    UInt64,
+    UInt64MultiArray,
 )
 
 

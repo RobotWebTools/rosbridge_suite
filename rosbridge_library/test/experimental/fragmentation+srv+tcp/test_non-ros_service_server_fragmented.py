@@ -1,10 +1,10 @@
 #!/usr/bin/python
-import sys
 import socket
+import sys
 import time
 from random import randint
-from rosbridge_library.util import json
 
+from rosbridge_library.util import json
 
 # ##################### variables begin ########################################
 # these parameters should be changed to match the actual environment           #

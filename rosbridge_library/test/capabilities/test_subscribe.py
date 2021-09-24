@@ -1,18 +1,17 @@
 #!/usr/bin/env python
+import time
+import unittest
+from json import dumps, loads
+
 import rospy
 import rostest
-import unittest
-import time
-
-from json import loads, dumps
-from std_msgs.msg import String
-
 from rosbridge_library.capabilities import subscribe
-from rosbridge_library.protocol import Protocol
 from rosbridge_library.protocol import (
     InvalidArgumentException,
     MissingArgumentException,
+    Protocol,
 )
+from std_msgs.msg import String
 
 
 class TestSubscribe(unittest.TestCase):

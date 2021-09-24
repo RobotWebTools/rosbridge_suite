@@ -31,9 +31,10 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import inspect
+
 from rosapi.stringify_field_types import stringify_field_types
 from rosbridge_library.internal import ros_loader
-import inspect
 
 # Keep track of atomic types and special types
 atomics = [

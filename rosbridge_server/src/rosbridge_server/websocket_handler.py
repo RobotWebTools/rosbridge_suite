@@ -36,14 +36,13 @@ import traceback
 import uuid
 from functools import partial, wraps
 
-from tornado import version_info as tornado_version_info
-from tornado.ioloop import IOLoop
-from tornado.iostream import StreamClosedError
-from tornado.websocket import WebSocketHandler, WebSocketClosedError
-from tornado.gen import coroutine, BadYieldError
-
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
+from tornado import version_info as tornado_version_info
+from tornado.gen import BadYieldError, coroutine
+from tornado.ioloop import IOLoop
+from tornado.iostream import StreamClosedError
+from tornado.websocket import WebSocketClosedError, WebSocketHandler
 
 
 def _log_exception():

@@ -17,9 +17,7 @@
 import datetime
 import re
 import struct
-
 from io import BytesIO
-
 
 CBOR_TYPE_MASK = 0xE0  # top 3 bits
 CBOR_INFO_BITS = 0x1F  # low 5 bits

@@ -31,12 +31,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from threading import Thread
+
 from rclpy import spin_until_future_complete
 from rclpy.expand_topic_name import expand_topic_name
-from rosbridge_library.internal.ros_loader import get_service_class
-from rosbridge_library.internal.ros_loader import get_service_request_instance
-from rosbridge_library.internal.message_conversion import populate_instance
-from rosbridge_library.internal.message_conversion import extract_values
+from rosbridge_library.internal.message_conversion import (
+    extract_values,
+    populate_instance,
+)
+from rosbridge_library.internal.ros_loader import (
+    get_service_class,
+    get_service_request_instance,
+)
 
 
 class InvalidServiceException(Exception):

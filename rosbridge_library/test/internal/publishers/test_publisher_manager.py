@@ -1,16 +1,15 @@
 #!/usr/bin/env python
-import rospy
-import rostest
 import unittest
-
 from time import sleep
 
+import rospy
+import rostest
+from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 from rosbridge_library.internal.publishers import manager
 from rosbridge_library.internal.topics import (
     TopicNotEstablishedException,
     TypeConflictException,
 )
-from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 from std_msgs.msg import String
 
 

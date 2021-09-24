@@ -1,7 +1,7 @@
+from rosbridge_library.internal.cbor_conversion import extract_cbor_values
 from rosbridge_library.internal.message_conversion import (
     extract_values as extract_json_values,
 )
-from rosbridge_library.internal.cbor_conversion import extract_cbor_values
 
 
 class OutgoingMessage:

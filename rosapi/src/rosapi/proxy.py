@@ -40,7 +40,7 @@ from ros2node.api import (
 from ros2service.api import get_service_names, get_service_names_and_types
 from ros2topic.api import get_topic_names, get_topic_names_and_types
 
-from .glob_helper import filter_globs, any_match
+from .glob_helper import any_match, filter_globs
 
 _node = None
 

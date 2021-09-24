@@ -1,5 +1,6 @@
-import rospy
 import struct
+
+import rospy
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 
 try:

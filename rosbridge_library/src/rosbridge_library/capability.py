@@ -30,8 +30,10 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from rosbridge_library.internal.exceptions import InvalidArgumentException
-from rosbridge_library.internal.exceptions import MissingArgumentException
+from rosbridge_library.internal.exceptions import (
+    InvalidArgumentException,
+    MissingArgumentException,
+)
 
 
 class Capability:

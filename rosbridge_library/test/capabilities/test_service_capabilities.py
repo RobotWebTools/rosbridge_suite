@@ -1,18 +1,17 @@
 #!/usr/bin/env python
+import unittest
+from json import dumps, loads
+
 import rospy
 import rostest
-import unittest
-
-from json import loads, dumps
-
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
-from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from rosbridge_library.capabilities.call_service import CallService
 from rosbridge_library.capabilities.service_response import ServiceResponse
-from rosbridge_library.protocol import Protocol
+from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from rosbridge_library.protocol import (
     InvalidArgumentException,
     MissingArgumentException,
+    Protocol,
 )
 
 

@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
-from rospy import init_node, get_param, loginfo, on_shutdown, Publisher
-from rosbridge_server import RosbridgeTcpSocket
+from functools import partial
+from signal import SIG_DFL, SIGINT, signal
 
 from rosbridge_library.capabilities.advertise import Advertise
+from rosbridge_library.capabilities.advertise_service import AdvertiseService
+from rosbridge_library.capabilities.call_service import CallService
 from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.capabilities.subscribe import Subscribe
-from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
-from rosbridge_library.capabilities.call_service import CallService
-
-from functools import partial
-from signal import signal, SIGINT, SIG_DFL
+from rospy import Publisher, get_param, init_node, loginfo, on_shutdown
 from std_msgs.msg import Int32
+
+from rosbridge_server import RosbridgeTcpSocket
 
 try:
     import SocketServer

@@ -30,8 +30,9 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from rosbridge_library.capability import Capability
 import math
+
+from rosbridge_library.capability import Capability
 
 
 class Fragmentation(Capability):

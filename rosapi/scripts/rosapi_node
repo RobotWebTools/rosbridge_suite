@@ -37,9 +37,9 @@ import rclpy
 from rclpy.clock import Clock, ClockType
 from rclpy.node import Node
 
-from rosapi import glob_helper, proxy, objectutils, params
-from rosapi.srv import *
+from rosapi import glob_helper, objectutils, params, proxy
 from rosapi.msg import *
+from rosapi.srv import *
 
 
 class Rosapi(Node):

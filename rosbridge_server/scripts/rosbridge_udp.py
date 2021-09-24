@@ -31,20 +31,19 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import rospy
 import sys
 
-from twisted.internet import reactor
-from rosbridge_server import RosbridgeUdpSocket, RosbridgeUdpFactory
-
+import rospy
 from rosbridge_library.capabilities.advertise import Advertise
+from rosbridge_library.capabilities.advertise_service import AdvertiseService
+from rosbridge_library.capabilities.call_service import CallService
 from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.capabilities.subscribe import Subscribe
-from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
-from rosbridge_library.capabilities.call_service import CallService
-
 from std_msgs.msg import Int32
+from twisted.internet import reactor
+
+from rosbridge_server import RosbridgeUdpFactory, RosbridgeUdpSocket
 
 
 def shutdown_hook():

@@ -3,20 +3,19 @@ import json
 import sys
 import unittest
 
-from autobahn.twisted.websocket import WebSocketClientFactory, WebSocketClientProtocol
-from twisted.internet import reactor
-from twisted.internet.endpoints import TCP4ClientEndpoint
-from twisted.python import log
-
 import launch
 import launch.actions
 import launch_ros
 import launch_ros.actions
 import rclpy
 import rclpy.task
+from autobahn.twisted.websocket import WebSocketClientFactory, WebSocketClientProtocol
 from rcl_interfaces.srv import GetParameters
 from rclpy.executors import SingleThreadedExecutor
 from std_msgs.msg import String
+from twisted.internet import reactor
+from twisted.internet.endpoints import TCP4ClientEndpoint
+from twisted.python import log
 
 log.startLogging(sys.stderr)
 

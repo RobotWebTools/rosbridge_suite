@@ -31,18 +31,16 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import rclpy
-from rclpy.clock import ROSClock
-import numpy as np
 import array
-
-from rcl_interfaces.msg import Parameter
-from rosbridge_library.internal import ros_loader
-
 import math
 import re
-from base64 import standard_b64encode, standard_b64decode
+from base64 import standard_b64decode, standard_b64encode
 
+import numpy as np
+import rclpy
+from rcl_interfaces.msg import Parameter
+from rclpy.clock import ROSClock
+from rosbridge_library.internal import ros_loader
 from rosbridge_library.util import bson
 
 try:

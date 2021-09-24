@@ -2,7 +2,6 @@
 import unittest
 
 import rostest
-
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
 from std_msgs.msg import String
 

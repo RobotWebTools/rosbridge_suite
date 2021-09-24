@@ -1,14 +1,13 @@
 #!/usr/bin/env python
-import rospy
-import rostest
 import unittest
-from rosgraph import Master
-
 from time import sleep
 
+import rospy
+import rostest
 from rosbridge_library.internal.subscribers import MultiSubscriber
 from rosbridge_library.internal.topics import TypeConflictException
-from std_msgs.msg import String, Int32
+from rosgraph import Master
+from std_msgs.msg import Int32, String
 
 
 class TestMultiSubscriber(unittest.TestCase):

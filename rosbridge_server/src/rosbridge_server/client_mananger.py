@@ -33,10 +33,10 @@
 import threading
 
 from rclpy.clock import ROSClock
-from rclpy.qos import QoSProfile, QoSDurabilityPolicy
+from rclpy.qos import QoSDurabilityPolicy, QoSProfile
+from std_msgs.msg import Int32
 
 from rosbridge_msgs.msg import ConnectedClient, ConnectedClients
-from std_msgs.msg import Int32
 
 
 class ClientManager:

@@ -1,19 +1,18 @@
 #!/usr/bin/env python
-import rospy
-import rostest
 import unittest
+from json import dumps, loads
 from time import sleep
 
-from rosbridge_library.protocol import Protocol
+import rospy
+import rostest
+from rosbridge_library.capabilities.advertise import Advertise
+from rosbridge_library.internal import ros_loader
+from rosbridge_library.internal.publishers import manager
 from rosbridge_library.protocol import (
     InvalidArgumentException,
     MissingArgumentException,
+    Protocol,
 )
-from rosbridge_library.capabilities.advertise import Advertise
-from rosbridge_library.internal.publishers import manager
-from rosbridge_library.internal import ros_loader
-
-from json import loads, dumps
 
 
 class TestAdvertise(unittest.TestCase):

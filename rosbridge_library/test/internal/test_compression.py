@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import rospy
-import rostest
 import unittest
 
+import rospy
+import rostest
 from rosbridge_library.internal import pngcompression
 
 

@@ -1,5 +1,5 @@
 from rosbridge_library.capability import Capability
-from rosbridge_library.internal import ros_loader, message_conversion
+from rosbridge_library.internal import message_conversion, ros_loader
 
 
 class ServiceResponse(Capability):

@@ -1,6 +1,7 @@
-from rosbridge_library.capability import Capability
-from datetime import datetime
 import threading
+from datetime import datetime
+
+from rosbridge_library.capability import Capability
 
 
 class ReceivedFragments:

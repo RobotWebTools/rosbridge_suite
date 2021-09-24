@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
+import random
+import time
+import unittest
+
 import rospy
 import rostest
-import unittest
-import time
-import random
-
-from rosbridge_library.internal import services, ros_loader
 from rosbridge_library.internal import message_conversion as c
+from rosbridge_library.internal import ros_loader, services
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
-
 from roscpp.srv import GetLoggers
 
 

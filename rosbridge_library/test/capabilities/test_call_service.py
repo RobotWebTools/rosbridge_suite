@@ -1,20 +1,18 @@
 #!/usr/bin/env python
+import time
+import unittest
+from json import dumps, loads
+
 import rospy
 import rostest
-import unittest
-import time
-
-from roscpp.srv import GetLoggers
-
-from json import loads, dumps
-from std_srvs.srv import SetBool
-
 from rosbridge_library.capabilities.call_service import CallService
-from rosbridge_library.protocol import Protocol
 from rosbridge_library.protocol import (
     InvalidArgumentException,
     MissingArgumentException,
+    Protocol,
 )
+from roscpp.srv import GetLoggers
+from std_srvs.srv import SetBool
 
 
 class TestCallService(unittest.TestCase):

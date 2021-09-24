@@ -32,6 +32,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import fnmatch
+
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
 

@@ -1,10 +1,10 @@
 import fnmatch
-from threading import Lock
 import time
+from threading import Lock
 
-from rosbridge_library.internal.ros_loader import get_service_class
-from rosbridge_library.internal import message_conversion
 from rosbridge_library.capability import Capability
+from rosbridge_library.internal import message_conversion
+from rosbridge_library.internal.ros_loader import get_service_class
 
 
 class AdvertisedServiceHandler:
