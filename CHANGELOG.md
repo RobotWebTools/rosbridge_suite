@@ -16,7 +16,7 @@ DEVEL
  * more natural json for call service result (OTL)
  * Add service call fail handling (OTL)
 
-2013-07-16 - **0.5.0** 
+2013-07-16 - **0.5.0**
  * Adds travis CI script (rctoris)
  * current authentication op code added (rctoris)
  * Removes global bin installation (jihoonl)
@@ -45,4 +45,3 @@ DEVEL
  * Fixes "int is not iterable" bug (baalexander)
  * Catkinizes tests (baalexander)
  * Catkinizes packages (baalexander)
-
