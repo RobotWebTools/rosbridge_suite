@@ -8,7 +8,6 @@ from rosbridge_library.internal import subscription_modifiers as subscribe
 
 
 class TestMessageHandlers(unittest.TestCase):
-
     def setUp(self):
         rospy.init_node("test_message_handlers")
 
@@ -20,11 +19,15 @@ class TestMessageHandlers(unittest.TestCase):
         self.help_test_default(handler)
 
     def test_throttle_message_handler(self):
-        handler = subscribe.ThrottleMessageHandler(subscribe.MessageHandler(None, self.dummy_cb))
+        handler = subscribe.ThrottleMessageHandler(
+            subscribe.MessageHandler(None, self.dummy_cb)
+        )
         self.help_test_throttle(handler, 50)
 
     def test_queue_message_handler_passes_msgs(self):
-        handler = subscribe.QueueMessageHandler(subscribe.MessageHandler(None, self.dummy_cb))
+        handler = subscribe.QueueMessageHandler(
+            subscribe.MessageHandler(None, self.dummy_cb)
+        )
         self.help_test_queue(handler, 1000)
         handler.finish()
 
@@ -93,6 +96,7 @@ class TestMessageHandlers(unittest.TestCase):
 
         def cb(msg):
             received["msg"] = msg
+
         handler.publish = cb
 
         self.assertTrue(handler.time_remaining() == 0)
@@ -106,8 +110,10 @@ class TestMessageHandlers(unittest.TestCase):
         self.assertEqual(handler.time_remaining(), 0)
 
         received = {"msgs": []}
+
         def cb(msg):
             received["msgs"].append(msg)
+
         handler.publish = cb
         xs = list(range(10000))
         for x in xs:
@@ -140,6 +146,7 @@ class TestMessageHandlers(unittest.TestCase):
         time.sleep(2.0 * handler.throttle_rate)
 
         received = {"msgs": []}
+
         def cb(msg):
             received["msgs"].append(msg)
 
@@ -210,7 +217,7 @@ class TestMessageHandlers(unittest.TestCase):
 
         return handler
 
-# Test that each transition works and is stable
+    # Test that each transition works and is stable
     def test_transitions(self):
         # MessageHandler.transition is stable
         handler = subscribe.MessageHandler(None, self.dummy_cb)
@@ -331,7 +338,7 @@ class TestMessageHandlers(unittest.TestCase):
 #        handler = self.help_test_throttle(handler, 50)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_message_handlers'
-if __name__ == '__main__':
+PKG = "rosbridge_library"
+NAME = "test_message_handlers"
+if __name__ == "__main__":
     rostest.unitrun(PKG, NAME, TestMessageHandlers)

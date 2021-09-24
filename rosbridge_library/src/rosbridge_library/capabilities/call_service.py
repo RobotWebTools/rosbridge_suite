@@ -38,9 +38,11 @@ from rosbridge_library.internal.services import ServiceCaller
 
 class CallService(Capability):
 
-    call_service_msg_fields = [(True, "service", str),
-                               (False, "fragment_size", (int, type(None))),
-                               (False, "compression", str)]
+    call_service_msg_fields = [
+        (True, "service", str),
+        (False, "fragment_size", (int, type(None))),
+        (False, "compression", str),
+    ]
 
     services_glob = None
 
@@ -65,18 +67,31 @@ class CallService(Capability):
         args = message.get("args", [])
 
         if CallService.services_glob is not None and CallService.services_glob:
-            self.protocol.log("debug", "Service security glob enabled, checking service: " + service)
+            self.protocol.log(
+                "debug", "Service security glob enabled, checking service: " + service
+            )
             match = False
             for glob in CallService.services_glob:
-                if (fnmatch.fnmatch(service, glob)):
-                    self.protocol.log("debug", "Found match with glob " + glob + ", continuing service call...")
+                if fnmatch.fnmatch(service, glob):
+                    self.protocol.log(
+                        "debug",
+                        "Found match with glob "
+                        + glob
+                        + ", continuing service call...",
+                    )
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for service, cancelling service call for: " + service)
+                self.protocol.log(
+                    "warn",
+                    "No match found for service, cancelling service call for: "
+                    + service,
+                )
                 return
         else:
-            self.protocol.log("debug", "No service security glob, not checking service call.")
+            self.protocol.log(
+                "debug", "No service security glob, not checking service call."
+            )
 
         # Check for deprecated service ID, eg. /rosbridge/topics#33
         cid = extract_id(service, cid)
@@ -86,14 +101,16 @@ class CallService(Capability):
         e_cb = partial(self._failure, cid, service)
 
         # Run service caller in the same thread.
-        ServiceCaller(trim_servicename(service), args, s_cb, e_cb, self.protocol.node_handle).run()
+        ServiceCaller(
+            trim_servicename(service), args, s_cb, e_cb, self.protocol.node_handle
+        ).run()
 
     def _success(self, cid, service, fragment_size, compression, message):
         outgoing_message = {
             "op": "service_response",
             "service": service,
             "values": message,
-            "result": True
+            "result": True,
         }
         if cid is not None:
             outgoing_message["id"] = cid
@@ -101,14 +118,15 @@ class CallService(Capability):
         self.protocol.send(outgoing_message)
 
     def _failure(self, cid, service, exc):
-        self.protocol.log("error", "call_service %s: %s" %
-                          (type(exc).__name__, str(exc)), cid)
+        self.protocol.log(
+            "error", "call_service %s: %s" % (type(exc).__name__, str(exc)), cid
+        )
         # send response with result: false
         outgoing_message = {
             "op": "service_response",
             "service": service,
             "values": str(exc),
-            "result": False
+            "result": False,
         }
         if cid is not None:
             outgoing_message["id"] = cid
@@ -116,13 +134,13 @@ class CallService(Capability):
 
 
 def trim_servicename(service):
-    if '#' in service:
-        return service[:service.find('#')]
+    if "#" in service:
+        return service[: service.find("#")]
     return service
 
 
 def extract_id(service, cid):
     if cid is not None:
         return cid
-    elif '#' in service:
-        return service[service.find('#') + 1:]
+    elif "#" in service:
+        return service[service.find("#") + 1 :]

@@ -7,12 +7,14 @@ from rosgraph import Master
 from time import sleep
 
 from rosbridge_library.internal.subscribers import manager
-from rosbridge_library.internal.topics import TopicNotEstablishedException, TypeConflictException
+from rosbridge_library.internal.topics import (
+    TopicNotEstablishedException,
+    TypeConflictException,
+)
 from std_msgs.msg import String
 
 
 class TestSubscriberManager(unittest.TestCase):
-
     def setUp(self):
         rospy.init_node("test_subscriber_manager")
 
@@ -23,7 +25,7 @@ class TestSubscriberManager(unittest.TestCase):
         return topicname in dict(Master("test_subscriber_manager").getSystemState()[1])
 
     def test_subscribe(self):
-        """ Register a publisher on a clean topic with a good msg type """
+        """Register a publisher on a clean topic with a good msg type"""
         topic = "/test_subscribe"
         msg_type = "std_msgs/String"
         client = "client_test_subscribe"
@@ -71,7 +73,14 @@ class TestSubscriberManager(unittest.TestCase):
         self.assertTrue(topic in manager._subscribers)
         self.assertTrue(self.is_topic_subscribed(topic))
 
-        self.assertRaises(TypeConflictException, manager.subscribe, "client2", topic, None, msg_type_bad)
+        self.assertRaises(
+            TypeConflictException,
+            manager.subscribe,
+            "client2",
+            topic,
+            None,
+            msg_type_bad,
+        )
 
     def test_register_multiple_publishers(self):
         topic1 = "/test_register_multiple_publishers1"
@@ -112,7 +121,9 @@ class TestSubscriberManager(unittest.TestCase):
 
         self.assertFalse(topic in manager._subscribers)
         self.assertFalse(self.is_topic_subscribed(topic))
-        self.assertRaises(TopicNotEstablishedException, manager.subscribe, client, topic, None)
+        self.assertRaises(
+            TopicNotEstablishedException, manager.subscribe, client, topic, None
+        )
 
     def test_register_infer_topictype(self):
         topic = "/test_register_infer_topictype"
@@ -159,7 +170,9 @@ class TestSubscriberManager(unittest.TestCase):
 
         self.assertFalse(topic in manager._subscribers)
         self.assertFalse(self.is_topic_subscribed(topic))
-        self.assertRaises(TopicNotEstablishedException, manager.subscribe, client, topic, None)
+        self.assertRaises(
+            TopicNotEstablishedException, manager.subscribe, client, topic, None
+        )
 
     def test_publisher_manager_publish(self):
         topic = "/test_publisher_manager_publish"
@@ -182,7 +195,7 @@ class TestSubscriberManager(unittest.TestCase):
         self.assertEqual(msg.data, received["msg"]["data"])
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_subscriber_manager'
-if __name__ == '__main__':
+PKG = "rosbridge_library"
+NAME = "test_subscriber_manager"
+if __name__ == "__main__":
     rostest.unitrun(PKG, NAME, TestSubscriberManager)

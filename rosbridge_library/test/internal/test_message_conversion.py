@@ -12,13 +12,12 @@ from base64 import standard_b64encode
 
 
 class TestMessageConversion(unittest.TestCase):
-
     def setUp(self):
         rospy.init_node("test_message_conversion")
 
     def validate_instance(self, inst1):
-        """ Serializes and deserializes the inst to typecheck and ensure that
-        instances are correct """
+        """Serializes and deserializes the inst to typecheck and ensure that
+        instances are correct"""
         inst1._check_types()
         buff = BytesIO()
         inst1.serialize(buff)
@@ -92,10 +91,12 @@ class TestMessageConversion(unittest.TestCase):
                 c._to_inst(msg, rostype, rostype)
 
     def test_float_special_cases(self):
-        for msg in [1e9999999, -1e9999999, float('nan')]:
+        for msg in [1e9999999, -1e9999999, float("nan")]:
             for rostype in ["float32", "float64"]:
                 self.assertEqual(c._from_inst(msg, rostype), None)
-                self.assertEqual(dumps({"data":c._from_inst(msg, rostype)}), "{\"data\": null}")
+                self.assertEqual(
+                    dumps({"data": c._from_inst(msg, rostype)}), '{"data": null}'
+                )
 
     def test_signed_int_base_msgs(self):
         int8s = range(-127, 128)
@@ -120,15 +121,21 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(int32, "std_msgs/Int64")
             self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Byte")
             self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Int8")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Int16")
+            self.assertRaises(
+                Exception, self.do_primitive_test, int32, "std_msgs/Int16"
+            )
 
         int64s = [-9223372036854775807, 9223372036854775807]
         for int64 in int64s:
             self.do_primitive_test(int64, "std_msgs/Int64")
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Byte")
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int8")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int16")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int32")
+            self.assertRaises(
+                Exception, self.do_primitive_test, int64, "std_msgs/Int16"
+            )
+            self.assertRaises(
+                Exception, self.do_primitive_test, int64, "std_msgs/Int32"
+            )
 
     def test_unsigned_int_base_msgs(self):
         int8s = range(0, 256)
@@ -145,24 +152,40 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(int16, "std_msgs/UInt32")
             self.do_primitive_test(int16, "std_msgs/UInt64")
             self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/Char")
-            self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/UInt8")
+            self.assertRaises(
+                Exception, self.do_primitive_test, int16, "std_msgs/UInt8"
+            )
 
         int32s = [2147483647, 2147483648, 4294967295]
         for int32 in int32s:
             self.do_primitive_test(int32, "std_msgs/UInt32")
             self.do_primitive_test(int32, "std_msgs/UInt64")
             self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Char")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/UInt8")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/UInt16")
+            self.assertRaises(
+                Exception, self.do_primitive_test, int32, "std_msgs/UInt8"
+            )
+            self.assertRaises(
+                Exception, self.do_primitive_test, int32, "std_msgs/UInt16"
+            )
 
-        int64s = [4294967296, 9223372036854775807, 9223372036854775808,
-                   18446744073709551615]
+        int64s = [
+            4294967296,
+            9223372036854775807,
+            9223372036854775808,
+            18446744073709551615,
+        ]
         for int64 in int64s:
             self.do_primitive_test(int64, "std_msgs/UInt64")
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Char")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt8")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt16")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt32")
+            self.assertRaises(
+                Exception, self.do_primitive_test, int64, "std_msgs/UInt8"
+            )
+            self.assertRaises(
+                Exception, self.do_primitive_test, int64, "std_msgs/UInt16"
+            )
+            self.assertRaises(
+                Exception, self.do_primitive_test, int64, "std_msgs/UInt32"
+            )
 
     def test_bool_base_msg(self):
         self.do_primitive_test(True, "std_msgs/Bool")
@@ -204,7 +227,11 @@ class TestMessageConversion(unittest.TestCase):
         self.do_test(msg, "rosbridge_library/TestDurationArray")
 
     def test_header_msg(self):
-        msg = {"seq": 5, "stamp": {"secs": 12347, "nsecs": 322304}, "frame_id": "2394dnfnlcx;v[p234j]"}
+        msg = {
+            "seq": 5,
+            "stamp": {"secs": 12347, "nsecs": 322304},
+            "frame_id": "2394dnfnlcx;v[p234j]",
+        }
         self.do_test(msg, "std_msgs/Header")
 
         msg = {"header": msg}
@@ -217,12 +244,20 @@ class TestMessageConversion(unittest.TestCase):
         self.do_test(msg, "rosbridge_library/TestHeaderArray")
 
     def test_assorted_msgs(self):
-        assortedmsgs = ["geometry_msgs/Pose", "actionlib_msgs/GoalStatus",
-        "geometry_msgs/WrenchStamped", "stereo_msgs/DisparityImage",
-        "nav_msgs/OccupancyGrid", "geometry_msgs/Point32", "std_msgs/String",
-        "trajectory_msgs/JointTrajectoryPoint", "diagnostic_msgs/KeyValue",
-        "visualization_msgs/InteractiveMarkerUpdate", "nav_msgs/GridCells",
-        "sensor_msgs/PointCloud2"]
+        assortedmsgs = [
+            "geometry_msgs/Pose",
+            "actionlib_msgs/GoalStatus",
+            "geometry_msgs/WrenchStamped",
+            "stereo_msgs/DisparityImage",
+            "nav_msgs/OccupancyGrid",
+            "geometry_msgs/Point32",
+            "std_msgs/String",
+            "trajectory_msgs/JointTrajectoryPoint",
+            "diagnostic_msgs/KeyValue",
+            "visualization_msgs/InteractiveMarkerUpdate",
+            "nav_msgs/GridCells",
+            "sensor_msgs/PointCloud2",
+        ]
         for rostype in assortedmsgs:
             inst = ros_loader.get_message_instance(rostype)
             msg = c.extract_values(inst)
@@ -249,7 +284,7 @@ class TestMessageConversion(unittest.TestCase):
 
             str_int8s = bytes(bytearray(int8s))
 
-            b64str_int8s = standard_b64encode(str_int8s).decode('ascii')
+            b64str_int8s = standard_b64encode(str_int8s).decode("ascii")
             ret = test_int8_msg(rostype, b64str_int8s)
             self.assertEqual(ret, str_int8s)
 
@@ -262,12 +297,12 @@ class TestMessageConversion(unittest.TestCase):
 
             str_int8s = bytes(bytearray(int8s))
 
-            b64str_int8s = standard_b64encode(str_int8s).decode('ascii')
+            b64str_int8s = standard_b64encode(str_int8s).decode("ascii")
             ret = test_int8_msg(rostype, b64str_int8s)
             self.assertEqual(ret, str_int8s)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_message_conversion'
-if __name__ == '__main__':
+PKG = "rosbridge_library"
+NAME = "test_message_conversion"
+if __name__ == "__main__":
     rostest.unitrun(PKG, NAME, TestMessageConversion)

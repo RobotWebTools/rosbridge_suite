@@ -11,11 +11,13 @@ from std_srvs.srv import SetBool
 
 from rosbridge_library.capabilities.call_service import CallService
 from rosbridge_library.protocol import Protocol
-from rosbridge_library.protocol import InvalidArgumentException, MissingArgumentException
+from rosbridge_library.protocol import (
+    InvalidArgumentException,
+    MissingArgumentException,
+)
 
 
 class TestCallService(unittest.TestCase):
-
     def setUp(self):
         rospy.init_node("test_call_service")
 
@@ -40,7 +42,9 @@ class TestCallService(unittest.TestCase):
 
         proto = Protocol("test_call_service_works")
         s = CallService(proto)
-        msg = loads(dumps({"op": "call_service", "service": rospy.get_name() + "/get_loggers"}))
+        msg = loads(
+            dumps({"op": "call_service", "service": rospy.get_name() + "/get_loggers"})
+        )
 
         received = {"msg": None, "arrived": False}
 
@@ -70,14 +74,22 @@ class TestCallService(unittest.TestCase):
 
     def test_call_service_fail(self):
         # Dummy service that instantly fails
-        service_server = rospy.Service("set_bool_fail", SetBool,
-                                       lambda req: None)
+        service_server = rospy.Service("set_bool_fail", SetBool, lambda req: None)
 
         proto = Protocol("test_call_service_fail")
         s = CallService(proto)
-        send_msg = loads(dumps({"op": "call_service", "service": rospy.get_name() + "/set_bool_fail", "args": '[ true ]'}))
+        send_msg = loads(
+            dumps(
+                {
+                    "op": "call_service",
+                    "service": rospy.get_name() + "/set_bool_fail",
+                    "args": "[ true ]",
+                }
+            )
+        )
 
         received = {"msg": None, "arrived": False}
+
         def cb(msg, cid=None):
             received["msg"] = msg
             received["arrived"] = True
@@ -96,8 +108,7 @@ class TestCallService(unittest.TestCase):
         self.assertFalse(received["msg"]["result"])
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_call_service'
-if __name__ == '__main__':
+PKG = "rosbridge_library"
+NAME = "test_call_service"
+if __name__ == "__main__":
     rostest.unitrun(PKG, NAME, TestCallService)
-

@@ -5,8 +5,10 @@ from rosbridge_library.internal import ros_loader, message_conversion
 class ServiceResponse(Capability):
 
     service_response_msg_fields = [
-        (True, "service", str), (False, "id", str),
-        (False, "values", dict), (True, "result", bool)
+        (True, "service", str),
+        (False, "id", str),
+        (False, "values", dict),
+        (True, "result", bool),
     ]
 
     def __init__(self, protocol):
@@ -28,9 +30,14 @@ class ServiceResponse(Capability):
             request_id = message["id"]
             values = message["values"]
             # create a message instance
-            resp = ros_loader.get_service_response_instance(service_handler.service_type)
+            resp = ros_loader.get_service_response_instance(
+                service_handler.service_type
+            )
             message_conversion.populate_instance(values, resp)
             # pass along the response
             service_handler.responses[request_id] = resp
         else:
-            self.protocol.log("error", "Service %s has not been advertised via rosbridge." % service_name)
+            self.protocol.log(
+                "error",
+                "Service %s has not been advertised via rosbridge." % service_name,
+            )

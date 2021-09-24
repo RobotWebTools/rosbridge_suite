@@ -35,7 +35,7 @@ from rosbridge_library.internal.exceptions import MissingArgumentException
 
 
 class Capability:
-    """ Handles the operation-specific logic of a rosbridge message
+    """Handles the operation-specific logic of a rosbridge message
 
     May define one or more opcodes to handle, for example 'publish' or
     'call_service'
@@ -48,7 +48,7 @@ class Capability:
     """
 
     def __init__(self, protocol):
-        """ Abstract class constructor.  All capabilities require a handle to
+        """Abstract class constructor.  All capabilities require a handle to
         the containing protocol.
 
         Keyword arguments:
@@ -58,7 +58,7 @@ class Capability:
         self.protocol = protocol
 
     def handle_message(self, message):
-        """ Handle an incoming message.
+        """Handle an incoming message.
 
         Called by the protocol after having already checked the message op code
 
@@ -69,12 +69,12 @@ class Capability:
         pass
 
     def finish(self):
-        """ Notify this capability that the client is finished and that it's
-        time to free up resources. """
+        """Notify this capability that the client is finished and that it's
+        time to free up resources."""
         pass
 
     def basic_type_check(self, msg, types_info):
-        """ Performs basic typechecking on fields in msg.
+        """Performs basic typechecking on fields in msg.
 
         Keyword arguments:
         msg        -- a message, deserialized into a dictoinary
@@ -92,14 +92,17 @@ class Capability:
         """
         for mandatory, fieldname, fieldtypes in types_info:
             if mandatory and fieldname not in msg:
-                raise MissingArgumentException("Expected a %s field but none was found." % fieldname)
+                raise MissingArgumentException(
+                    "Expected a %s field but none was found." % fieldname
+                )
             elif fieldname in msg:
                 if not isinstance(fieldtypes, tuple):
-                    fieldtypes = (fieldtypes, )
+                    fieldtypes = (fieldtypes,)
                 valid = False
                 for typ in fieldtypes:
                     if isinstance(msg[fieldname], typ):
                         valid = True
                 if not valid:
-                    raise InvalidArgumentException(f"Expected field {fieldname} to be one of {fieldtypes}. Invalid value: {msg[fieldname]}")
-
+                    raise InvalidArgumentException(
+                        f"Expected field {fieldname} to be one of {fieldtypes}. Invalid value: {msg[fieldname]}"
+                    )

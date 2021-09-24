@@ -12,7 +12,6 @@ from std_msgs.msg import String, Int32
 
 
 class TestMultiSubscriber(unittest.TestCase):
-
     def setUp(self):
         rospy.init_node("test_multi_subscriber")
 
@@ -23,7 +22,7 @@ class TestMultiSubscriber(unittest.TestCase):
         return topicname in dict(Master("test_multi_subscriber").getSystemState()[1])
 
     def test_register_multisubscriber(self):
-        """ Register a subscriber on a clean topic with a good msg type """
+        """Register a subscriber on a clean topic with a good msg type"""
         topic = "/test_register_multisubscriber"
         msg_type = "std_msgs/String"
 
@@ -32,7 +31,7 @@ class TestMultiSubscriber(unittest.TestCase):
         self.assertTrue(self.is_topic_subscribed(topic))
 
     def test_unregister_multisubscriber(self):
-        """ Register and unregister a subscriber on a clean topic with a good msg type """
+        """Register and unregister a subscriber on a clean topic with a good msg type"""
         topic = "/test_unregister_multisubscriber"
         msg_type = "std_msgs/String"
 
@@ -45,12 +44,19 @@ class TestMultiSubscriber(unittest.TestCase):
     def test_verify_type(self):
         topic = "/test_verify_type"
         msg_type = "std_msgs/String"
-        othertypes = ["geometry_msgs/Pose", "actionlib_msgs/GoalStatus",
-        "geometry_msgs/WrenchStamped", "stereo_msgs/DisparityImage",
-        "nav_msgs/OccupancyGrid", "geometry_msgs/Point32",
-        "trajectory_msgs/JointTrajectoryPoint", "diagnostic_msgs/KeyValue",
-        "visualization_msgs/InteractiveMarkerUpdate", "nav_msgs/GridCells",
-        "sensor_msgs/PointCloud2"]
+        othertypes = [
+            "geometry_msgs/Pose",
+            "actionlib_msgs/GoalStatus",
+            "geometry_msgs/WrenchStamped",
+            "stereo_msgs/DisparityImage",
+            "nav_msgs/OccupancyGrid",
+            "geometry_msgs/Point32",
+            "trajectory_msgs/JointTrajectoryPoint",
+            "diagnostic_msgs/KeyValue",
+            "visualization_msgs/InteractiveMarkerUpdate",
+            "nav_msgs/GridCells",
+            "sensor_msgs/PointCloud2",
+        ]
 
         s = MultiSubscriber(topic, msg_type)
         s.verify_type(msg_type)
@@ -178,7 +184,7 @@ class TestMultiSubscriber(unittest.TestCase):
         self.assertEqual(msg.data, received["msg2"]["data"])
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_multi_subscriber'
-if __name__ == '__main__':
+PKG = "rosbridge_library"
+NAME = "test_multi_subscriber"
+if __name__ == "__main__":
     rostest.unitrun(PKG, NAME, TestMultiSubscriber)

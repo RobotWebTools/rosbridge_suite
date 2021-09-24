@@ -10,17 +10,17 @@ from rosbridge_library.internal import ros_loader
 
 
 class TestMultiUnregistering(unittest.TestCase):
-
     def setUp(self):
         rospy.init_node("test_multi_unregistering")
 
     def test_publish_once(self):
-        """ Make sure that publishing works """
+        """Make sure that publishing works"""
         topic = "/test_publish_once"
         msg_type = "std_msgs/String"
         msg = {"data": "why halo thar"}
 
         received = {"msg": None}
+
         def cb(msg):
             received["msg"] = msg
 
@@ -33,12 +33,13 @@ class TestMultiUnregistering(unittest.TestCase):
         self.assertEqual(received["msg"].data, msg["data"])
 
     def test_publish_twice(self):
-        """ Make sure that publishing works """
+        """Make sure that publishing works"""
         topic = "/test_publish_twice"
         msg_type = "std_msgs/String"
         msg = {"data": "why halo thar"}
 
         received = {"msg": None}
+
         def cb(msg):
             received["msg"] = msg
 
@@ -79,7 +80,7 @@ class TestMultiUnregistering(unittest.TestCase):
         self.assertEqual(received["msg"].data, msg["data"])
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_multi_unregistering'
-if __name__ == '__main__':
+PKG = "rosbridge_library"
+NAME = "test_multi_unregistering"
+if __name__ == "__main__":
     rostest.unitrun(PKG, NAME, TestMultiUnregistering)

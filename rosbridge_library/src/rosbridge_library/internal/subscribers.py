@@ -43,15 +43,18 @@ from rosbridge_library.internal.outgoing_message import OutgoingMessage
 is shared between multiple clients
 """
 
-class MultiSubscriber():
-    """ Handles multiple clients for a single subscriber.
+
+class MultiSubscriber:
+    """Handles multiple clients for a single subscriber.
 
     Converts msgs to JSON before handing them to callbacks.  Due to subscriber
     callbacks being called in separate threads, must lock whenever modifying
-    or accessing the subscribed clients. """
+    or accessing the subscribed clients."""
 
-    def __init__(self, topic, client_id, callback, node_handle, msg_type=None, raw=False):
-        """ Register a subscriber on the specified topic.
+    def __init__(
+        self, topic, client_id, callback, node_handle, msg_type=None, raw=False
+    ):
+        """Register a subscriber on the specified topic.
 
         Keyword arguments:
         topic    -- the name of the topic to register the subscriber on
@@ -82,7 +85,9 @@ class MultiSubscriber():
         # topic_type is a list of types or None at this point; only one type is supported.
         if topic_type is not None:
             if len(topic_type) > 1:
-                node_handle.get_logger().warning(f'More than one topic type detected: {topic_type}')
+                node_handle.get_logger().warning(
+                    f"More than one topic type detected: {topic_type}"
+                )
             topic_type = topic_type[0]
 
         # Use the established topic type if none was specified
@@ -105,7 +110,9 @@ class MultiSubscriber():
         self.msg_class = msg_class
         self.node_handle = node_handle
         # TODO(@jubeira): add support for other QoS.
-        self.subscriber = node_handle.create_subscription(msg_class, topic, self.callback, 10, raw=raw)
+        self.subscriber = node_handle.create_subscription(
+            msg_class, topic, self.callback, 10, raw=raw
+        )
         self.new_subscriber = None
         self.new_subscriptions = {}
 
@@ -115,7 +122,7 @@ class MultiSubscriber():
             self.subscriptions.clear()
 
     def verify_type(self, msg_type):
-        """ Verify that the subscriber subscribes to messages of this type.
+        """Verify that the subscriber subscribes to messages of this type.
 
         Keyword arguments:
         msg_type -- the type to check this subscriber against
@@ -127,12 +134,13 @@ class MultiSubscriber():
 
         """
         if not ros_loader.get_message_class(msg_type) is self.msg_class:
-            raise TypeConflictException(self.topic,
-                                        msg_class_type_repr(self.msg_class), msg_type)
+            raise TypeConflictException(
+                self.topic, msg_class_type_repr(self.msg_class), msg_type
+            )
         return
 
     def subscribe(self, client_id, callback):
-        """ Subscribe the specified client to this subscriber.
+        """Subscribe the specified client to this subscriber.
 
         Keyword arguments:
         client_id -- the ID of the client subscribing
@@ -148,10 +156,11 @@ class MultiSubscriber():
             self.new_subscriptions.update({client_id: callback})
             if self.new_subscriber is None:
                 self.new_subscriber = self.node_handle.create_subscription(
-                    self.msg_class, self.topic, self._new_sub_callback, 10)
+                    self.msg_class, self.topic, self._new_sub_callback, 10
+                )
 
     def unsubscribe(self, client_id):
-        """ Unsubscribe the specified client from this subscriber
+        """Unsubscribe the specified client from this subscriber
 
         Keyword arguments:
         client_id -- the ID of the client to unsubscribe
@@ -161,13 +170,13 @@ class MultiSubscriber():
             del self.subscriptions[client_id]
 
     def has_subscribers(self):
-        """ Return true if there are subscribers """
+        """Return true if there are subscribers"""
         with self.lock:
             ret = len(self.subscriptions) != 0
             return ret
 
     def callback(self, msg, callbacks=None):
-        """ Callback for incoming messages on the rclpy subscription.
+        """Callback for incoming messages on the rclpy subscription.
 
         Passes the message to registered subscriber callbacks.
 
@@ -189,7 +198,9 @@ class MultiSubscriber():
                 callback(outgoing)
             except Exception as exc:
                 # Do nothing if one particular callback fails except log it
-                self.node_handle.get_logger().error(f"Exception calling subscribe callback: {exc}")
+                self.node_handle.get_logger().error(
+                    f"Exception calling subscribe callback: {exc}"
+                )
                 pass
 
     def _new_sub_callback(self, msg):
@@ -211,7 +222,7 @@ class MultiSubscriber():
             self.new_subscriber = None
 
 
-class SubscriberManager():
+class SubscriberManager:
     """
     Keeps track of client subscriptions
     """
@@ -219,8 +230,10 @@ class SubscriberManager():
     def __init__(self):
         self._subscribers = {}
 
-    def subscribe(self, client_id, topic, callback, node_handle, msg_type=None, raw=False):
-        """ Subscribe to a topic
+    def subscribe(
+        self, client_id, topic, callback, node_handle, msg_type=None, raw=False
+    ):
+        """Subscribe to a topic
 
         Keyword arguments:
         client_id -- the ID of the client making this subscribe request
@@ -231,7 +244,8 @@ class SubscriberManager():
         """
         if topic not in self._subscribers:
             self._subscribers[topic] = MultiSubscriber(
-                topic, client_id, callback, node_handle, msg_type=msg_type, raw=raw)
+                topic, client_id, callback, node_handle, msg_type=msg_type, raw=raw
+            )
         else:
             self._subscribers[topic].subscribe(client_id, callback)
 
@@ -239,7 +253,7 @@ class SubscriberManager():
             self._subscribers[topic].verify_type(msg_type)
 
     def unsubscribe(self, client_id, topic):
-        """ Unsubscribe from a topic
+        """Unsubscribe from a topic
 
         Keyword arguments:
         client_id -- the ID of the client to unsubscribe
@@ -257,4 +271,3 @@ class SubscriberManager():
 
 
 manager = SubscriberManager()
-
