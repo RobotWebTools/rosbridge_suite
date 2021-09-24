@@ -91,7 +91,7 @@ def args_to_service_request_instance(service, inst, args):
     Propagates any exceptions that may be raised."""
     msg = {}
     if isinstance(args, list):
-        msg = dict(zip(inst.__slots__, args))
+        msg = dict(zip(inst.get_fields_and_field_types().keys(), args))
     elif isinstance(args, dict):
         msg = args
 
