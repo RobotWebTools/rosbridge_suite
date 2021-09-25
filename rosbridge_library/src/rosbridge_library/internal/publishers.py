@@ -49,9 +49,7 @@ class MultiPublisher:
     Provides an API to publish messages and register clients that are using
     this publisher"""
 
-    def __init__(
-        self, topic, node_handle, msg_type=None, latched_client_id=None, queue_size=100
-    ):
+    def __init__(self, topic, node_handle, msg_type=None, latched_client_id=None, queue_size=100):
         """Register a publisher on the specified topic.
 
         Keyword arguments:
@@ -82,9 +80,7 @@ class MultiPublisher:
         # topic_type is a list of types or None at this point; only one type is supported.
         if topic_type is not None:
             if len(topic_type) > 1:
-                node_handle.get_logger().warning(
-                    f"More than one topic type detected: {topic_type}"
-                )
+                node_handle.get_logger().warning(f"More than one topic type detected: {topic_type}")
             topic_type = topic_type[0]
 
         # Use the established topic type if none was specified
@@ -120,9 +116,7 @@ class MultiPublisher:
         else:
             publisher_qos.depth = 1
 
-        self.publisher = node_handle.create_publisher(
-            msg_class, topic, qos_profile=publisher_qos
-        )
+        self.publisher = node_handle.create_publisher(msg_class, topic, qos_profile=publisher_qos)
 
     def unregister(self):
         """Unregisters the publisher and clears the clients"""
@@ -142,9 +136,7 @@ class MultiPublisher:
 
         """
         if not ros_loader.get_message_class(msg_type) is self.msg_class:
-            raise TypeConflictException(
-                self.topic, msg_class_type_repr(self.msg_class), msg_type
-            )
+            raise TypeConflictException(self.topic, msg_class_type_repr(self.msg_class), msg_type)
         return
 
     def publish(self, msg):
@@ -209,9 +201,7 @@ class PublisherManager:
         self.unregister_timers = {}
         self.unregister_timeout = 10.0
 
-    def register(
-        self, client_id, topic, node_handle, msg_type=None, latch=False, queue_size=100
-    ):
+    def register(self, client_id, topic, node_handle, msg_type=None, latch=False, queue_size=100):
         """Register a publisher on the specified topic.
 
         Publishers are shared between clients, so a single MultiPublisher

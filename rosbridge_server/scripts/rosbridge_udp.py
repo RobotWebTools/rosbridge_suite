@@ -165,9 +165,7 @@ if __name__ == "__main__":
                     element.strip().strip("'") for element in value[1:-1].split(",")
                 ]
         else:
-            print(
-                "--topics_glob argument provided without a value. (can be None or a list)"
-            )
+            print("--topics_glob argument provided without a value. (can be None or a list)")
             sys.exit(-1)
 
     if "--services_glob" in sys.argv:
@@ -181,9 +179,7 @@ if __name__ == "__main__":
                     element.strip().strip("'") for element in value[1:-1].split(",")
                 ]
         else:
-            print(
-                "--services_glob argument provided without a value. (can be None or a list)"
-            )
+            print("--services_glob argument provided without a value. (can be None or a list)")
             sys.exit(-1)
 
     if "--params_glob" in sys.argv:
@@ -197,9 +193,7 @@ if __name__ == "__main__":
                     element.strip().strip("'") for element in value[1:-1].split(",")
                 ]
         else:
-            print(
-                "--params_glob argument provided without a value. (can be None or a list)"
-            )
+            print("--params_glob argument provided without a value. (can be None or a list)")
             sys.exit(-1)
 
     # To be able to access the list of topics and services, you must be able to access the rosapi services.

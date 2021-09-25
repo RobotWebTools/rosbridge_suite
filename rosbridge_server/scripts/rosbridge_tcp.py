@@ -56,22 +56,14 @@ if __name__ == "__main__":
             # update parameters from parameter server or use default value ( second parameter of get_param )
             port = get_param("~port", 9090)
             host = get_param("~host", "")
-            incoming_buffer = get_param(
-                "~incoming_buffer", RosbridgeTcpSocket.incoming_buffer
-            )
-            socket_timeout = get_param(
-                "~socket_timeout", RosbridgeTcpSocket.socket_timeout
-            )
+            incoming_buffer = get_param("~incoming_buffer", RosbridgeTcpSocket.incoming_buffer)
+            socket_timeout = get_param("~socket_timeout", RosbridgeTcpSocket.socket_timeout)
             retry_startup_delay = get_param("~retry_startup_delay", 5.0)  # seconds
-            fragment_timeout = get_param(
-                "~fragment_timeout", RosbridgeTcpSocket.fragment_timeout
-            )
+            fragment_timeout = get_param("~fragment_timeout", RosbridgeTcpSocket.fragment_timeout)
             delay_between_messages = get_param(
                 "~delay_between_messages", RosbridgeTcpSocket.delay_between_messages
             )
-            max_message_size = get_param(
-                "~max_message_size", RosbridgeTcpSocket.max_message_size
-            )
+            max_message_size = get_param("~max_message_size", RosbridgeTcpSocket.max_message_size)
             unregister_timeout = get_param(
                 "~unregister_timeout", RosbridgeTcpSocket.unregister_timeout
             )
@@ -200,8 +192,7 @@ if __name__ == "__main__":
                         RosbridgeTcpSocket.topics_glob = []
                     else:
                         RosbridgeTcpSocket.topics_glob = [
-                            element.strip().strip("'")
-                            for element in value[1:-1].split(",")
+                            element.strip().strip("'") for element in value[1:-1].split(",")
                         ]
                 else:
                     print(
@@ -217,8 +208,7 @@ if __name__ == "__main__":
                         RosbridgeTcpSocket.services_glob = []
                     else:
                         RosbridgeTcpSocket.services_glob = [
-                            element.strip().strip("'")
-                            for element in value[1:-1].split(",")
+                            element.strip().strip("'") for element in value[1:-1].split(",")
                         ]
                 else:
                     print(
@@ -234,8 +224,7 @@ if __name__ == "__main__":
                         RosbridgeTcpSocket.params_glob = []
                     else:
                         RosbridgeTcpSocket.params_glob = [
-                            element.strip().strip("'")
-                            for element in value[1:-1].split(",")
+                            element.strip().strip("'") for element in value[1:-1].split(",")
                         ]
                 else:
                     print(

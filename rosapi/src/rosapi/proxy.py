@@ -71,18 +71,14 @@ def get_topics_for_type(topic_type, topics_glob, include_hidden=False):
         node=_node, include_hidden_topics=include_hidden
     )
     # topic[0] has the topic name and topic[1] has the type wrapped in a list.
-    topics_for_type = [
-        topic[0] for topic in topic_names_and_types if topic[1][0] == topic_type
-    ]
+    topics_for_type = [topic[0] for topic in topic_names_and_types if topic[1][0] == topic_type]
     return filter_globs(topics_glob, topics_for_type)
 
 
 def get_services(services_glob, include_hidden=False):
     """Returns a list of all the services advertised in the ROS system"""
     # Filter the list of services by whether they are public before returning.
-    service_names = get_service_names(
-        node=_node, include_hidden_services=include_hidden
-    )
+    service_names = get_service_names(node=_node, include_hidden_services=include_hidden)
     return filter_globs(services_glob, service_names)
 
 
@@ -102,18 +98,14 @@ def get_services_for_type(service_type, services_glob, include_hidden=False):
     )
     # service[0] has the topic name and service[1] has the type wrapped in a list.
     services_for_type = [
-        service[0]
-        for service in services_names_and_types
-        if service[1][0] == service_type
+        service[0] for service in services_names_and_types if service[1][0] == service_type
     ]
     return filter_globs(services_glob, services_for_type)
 
 
 def get_publications_and_types(glob, getter_function, **include_hidden_publications):
     """Generic getter function for both services and topics"""
-    publication_names_and_types = getter_function(
-        node=_node, **include_hidden_publications
-    )
+    publication_names_and_types = getter_function(node=_node, **include_hidden_publications)
     # publication[0] has the publication name and publication[1] has the type wrapped in a list.
     all_publications = [publication[0] for publication in publication_names_and_types]
     filtered_publications = filter_globs(glob, all_publications)

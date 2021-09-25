@@ -37,40 +37,26 @@ class TestServiceCapabilities(unittest.TestCase):
 
     def test_advertise_missing_arguments(self):
         advertise_msg = loads(dumps({"op": "advertise_service"}))
-        self.assertRaises(
-            MissingArgumentException, self.advertise.advertise_service, advertise_msg
-        )
+        self.assertRaises(MissingArgumentException, self.advertise.advertise_service, advertise_msg)
 
     def test_advertise_invalid_arguments(self):
-        advertise_msg = loads(
-            dumps({"op": "advertise_service", "type": 42, "service": None})
-        )
-        self.assertRaises(
-            InvalidArgumentException, self.advertise.advertise_service, advertise_msg
-        )
+        advertise_msg = loads(dumps({"op": "advertise_service", "type": 42, "service": None}))
+        self.assertRaises(InvalidArgumentException, self.advertise.advertise_service, advertise_msg)
 
     def test_response_missing_arguments(self):
         response_msg = loads(dumps({"op": "service_response"}))
-        self.assertRaises(
-            MissingArgumentException, self.response.service_response, response_msg
-        )
+        self.assertRaises(MissingArgumentException, self.response.service_response, response_msg)
 
         # this message has the optional fields, with correct types, but not the
         # required ones
         response_msg = loads(
             dumps({"op": "service_response", "id": "dummy_service", "values": "none"})
         )
-        self.assertRaises(
-            MissingArgumentException, self.response.service_response, response_msg
-        )
+        self.assertRaises(MissingArgumentException, self.response.service_response, response_msg)
 
     def test_response_invalid_arguments(self):
-        response_msg = loads(
-            dumps({"op": "service_response", "service": 5, "result": "error"})
-        )
-        self.assertRaises(
-            InvalidArgumentException, self.response.service_response, response_msg
-        )
+        response_msg = loads(dumps({"op": "service_response", "service": 5, "result": "error"}))
+        self.assertRaises(InvalidArgumentException, self.response.service_response, response_msg)
 
     def test_advertise_service(self):
         service_path = "/set_bool_1"
@@ -124,8 +110,7 @@ class TestServiceCapabilities(unittest.TestCase):
             loop_iterations += 1
             if loop_iterations > 3:
                 self.fail(
-                    "did not receive service call rosbridge message "
-                    "after waiting 2 seconds"
+                    "did not receive service call rosbridge message " "after waiting 2 seconds"
                 )
 
         self.assertFalse(self.received_message is None)
@@ -154,8 +139,7 @@ class TestServiceCapabilities(unittest.TestCase):
             loop_iterations += 1
             if loop_iterations > 3:
                 self.fail(
-                    "did not receive service response rosbridge message "
-                    "after waiting 2 seconds"
+                    "did not receive service response rosbridge message " "after waiting 2 seconds"
                 )
 
         self.assertFalse(self.received_message is None)
@@ -199,8 +183,7 @@ class TestServiceCapabilities(unittest.TestCase):
             loop_iterations += 1
             if loop_iterations > 3:
                 self.fail(
-                    "did not receive service call rosbridge message "
-                    "after waiting 2 seconds"
+                    "did not receive service call rosbridge message " "after waiting 2 seconds"
                 )
 
         self.assertFalse(self.received_message is None)
@@ -209,9 +192,7 @@ class TestServiceCapabilities(unittest.TestCase):
         self.assertTrue("id" in self.received_message)
 
         # Now send the response
-        response_msg = loads(
-            dumps({"op": "unadvertise_service", "service": service_path})
-        )
+        response_msg = loads(dumps({"op": "unadvertise_service", "service": service_path}))
         self.received_message = None
         self.unadvertise.unadvertise_service(response_msg)
 
@@ -221,8 +202,7 @@ class TestServiceCapabilities(unittest.TestCase):
             loop_iterations += 1
             if loop_iterations > 3:
                 self.fail(
-                    "did not receive service response rosbridge message "
-                    "after waiting 2 seconds"
+                    "did not receive service response rosbridge message " "after waiting 2 seconds"
                 )
 
         self.assertFalse(self.received_message is None)

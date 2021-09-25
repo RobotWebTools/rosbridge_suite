@@ -63,9 +63,7 @@ class Rosapi(Node):
             full_name = self.get_namespace() + "/" + self.get_name()
         params.init(full_name)
         self.create_service(Topics, "/rosapi/topics", self.get_topics)
-        self.create_service(
-            TopicsForType, "/rosapi/topics_for_type", self.get_topics_for_type
-        )
+        self.create_service(TopicsForType, "/rosapi/topics_for_type", self.get_topics_for_type)
         self.create_service(
             TopicsAndRawTypes,
             "/rosapi/topics_and_raw_types",
@@ -77,9 +75,7 @@ class Rosapi(Node):
         )
         self.create_service(Nodes, "/rosapi/nodes", self.get_nodes)
         self.create_service(NodeDetails, "/rosapi/node_details", self.get_node_details)
-        self.create_service(
-            GetActionServers, "/rosapi/action_servers", self.get_action_servers
-        )
+        self.create_service(GetActionServers, "/rosapi/action_servers", self.get_action_servers)
         self.create_service(TopicType, "/rosapi/topic_type", self.get_topic_type)
         self.create_service(ServiceType, "/rosapi/service_type", self.get_service_type)
         self.create_service(Publishers, "/rosapi/publishers", self.get_publishers)
@@ -88,9 +84,7 @@ class Rosapi(Node):
             ServiceProviders, "/rosapi/service_providers", self.get_service_providers
         )
         self.create_service(ServiceNode, "/rosapi/service_node", self.get_service_node)
-        self.create_service(
-            MessageDetails, "/rosapi/message_details", self.get_message_details
-        )
+        self.create_service(MessageDetails, "/rosapi/message_details", self.get_message_details)
         self.create_service(
             ServiceRequestDetails,
             "/rosapi/service_request_details",
@@ -105,9 +99,7 @@ class Rosapi(Node):
         self.create_service(GetParam, "/rosapi/get_param", self.get_param)
         self.create_service(HasParam, "/rosapi/has_param", self.has_param)
         self.create_service(DeleteParam, "/rosapi/delete_param", self.delete_param)
-        self.create_service(
-            GetParamNames, "/rosapi/get_param_names", self.get_param_names
-        )
+        self.create_service(GetParamNames, "/rosapi/get_param_names", self.get_param_names)
         self.create_service(GetTime, "/rosapi/get_time", self.get_time)
 
         # TODO(@jubeira): Implement missing services:
@@ -143,9 +135,7 @@ class Rosapi(Node):
 
     def get_services_for_type(self, request, response):
         """Called by the rosapi/ServicesForType service. Returns a list of all the services that are publishing a given type"""
-        response.services = proxy.get_services_for_type(
-            request.type, self.globs.services
-        )
+        response.services = proxy.get_services_for_type(request.type, self.globs.services)
         return response
 
     def get_nodes(self, request, response):
@@ -199,9 +189,7 @@ class Rosapi(Node):
     def get_service_providers(self, request, response):
         """Called by the rosapi/ServiceProviders service.  Given the name of a topic, returns a list of node names
         that are advertising that service type"""
-        response.providers = proxy.get_service_providers(
-            request.service, self.globs.services
-        )
+        response.providers = proxy.get_service_providers(request.service, self.globs.services)
         return response
 
     def get_service_node(self, request, response):
@@ -279,9 +267,7 @@ class Rosapi(Node):
 
     def _print_malformed_param_name_warning(self, param_name):
         self.get_logger().warn(
-            "Malformed parameter name: {}; expecting <node_name>:<param_name>".format(
-                param_name
-            )
+            "Malformed parameter name: {}; expecting <node_name>:<param_name>".format(param_name)
         )
 
 
@@ -296,9 +282,7 @@ def get_service_host(request):
 
 # Note(@jubeira): rclpy does not have an equivalent for this. To be checked if this service is necessary or not.
 def search_param(request):
-    return SearchParamResponse(
-        rosapi.params.search_param(request.name, rosapi.glob_helper.params)
-    )
+    return SearchParamResponse(rosapi.params.search_param(request.name, rosapi.glob_helper.params))
 
 
 def dict_to_typedef(typedefdict):

@@ -100,9 +100,7 @@ class TestAdvertise(unittest.TestCase):
                 "topic": "/test_invalid_msg_package",
                 "type": invalid_type,
             }
-            self.assertRaises(
-                ros_loader.InvalidPackageException, adv.advertise, loads(dumps(msg))
-            )
+            self.assertRaises(ros_loader.InvalidPackageException, adv.advertise, loads(dumps(msg)))
 
     def test_invalid_msg_module(self):
         no_msgs = [
@@ -122,9 +120,7 @@ class TestAdvertise(unittest.TestCase):
                 "topic": "/test_invalid_msg_module",
                 "type": invalid_type,
             }
-            self.assertRaises(
-                ros_loader.InvalidModuleException, adv.advertise, loads(dumps(msg))
-            )
+            self.assertRaises(ros_loader.InvalidModuleException, adv.advertise, loads(dumps(msg)))
 
     def test_invalid_msg_classes(self):
         nonexistent = [
@@ -148,9 +144,7 @@ class TestAdvertise(unittest.TestCase):
                 "topic": "/test_invalid_msg_classes",
                 "type": invalid_type,
             }
-            self.assertRaises(
-                ros_loader.InvalidClassException, adv.advertise, loads(dumps(msg))
-            )
+            self.assertRaises(ros_loader.InvalidClassException, adv.advertise, loads(dumps(msg)))
 
     def test_valid_msg_classes(self):
         assortedmsgs = [

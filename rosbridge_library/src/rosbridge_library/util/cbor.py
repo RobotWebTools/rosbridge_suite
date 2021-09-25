@@ -50,9 +50,7 @@ CBOR_FLOAT32 = CBOR_7 | 26
 CBOR_FLOAT64 = CBOR_7 | 27
 
 CBOR_TAG_DATE_STRING = 0  # RFC3339
-CBOR_TAG_DATE_ARRAY = (
-    1  # any number type follows, seconds since 1970-01-01T00:00:00 UTC
-)
+CBOR_TAG_DATE_ARRAY = 1  # any number type follows, seconds since 1970-01-01T00:00:00 UTC
 CBOR_TAG_BIGNUM = 2  # big endian byte string follows
 CBOR_TAG_NEGBIGNUM = 3  # big endian byte string follows
 CBOR_TAG_DECIMAL = 4  # [ 10^x exponent, number ]

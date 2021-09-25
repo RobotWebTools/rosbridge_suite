@@ -65,9 +65,7 @@ try:
     # but since its for test/demonstration only .. leave it as it is for now
     while not done:
         try:
-            incoming = sock.recv(
-                max_msg_length
-            )  # receive service_response from rosbridge
+            incoming = sock.recv(max_msg_length)  # receive service_response from rosbridge
             if buffer == "":
                 buffer = incoming
                 if incoming == "":
@@ -109,9 +107,7 @@ try:
                 fragment_count = len(result)
                 print("fragment_count:", fragment_count)
                 announced = int(result[0]["total"])
-                if (
-                    fragment_count == announced
-                ):  # if all fragments received --> sort and defragment
+                if fragment_count == announced:  # if all fragments received --> sort and defragment
                     # sort fragments
                     sorted_result = [None] * fragment_count
                     unsorted_result = []

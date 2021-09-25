@@ -173,9 +173,7 @@ def send_service_response(response):  # send response to rosbridge
     tcp_socket.send(response)
 
 
-def list_of_fragments(
-    full_message, fragment_size
-):  # create fragment messages for a huge message
+def list_of_fragments(full_message, fragment_size):  # create fragment messages for a huge message
     message_id = randint(0, 64000)  # generate random message id
     fragments = []  # generate list of data fragments
     cursor = 0
@@ -190,13 +188,9 @@ def list_of_fragments(
         fragment = full_message[fragment_begin:fragment_end]
         fragments.append(fragment)
 
-    fragmented_messages_list = (
-        []
-    )  # generate list of fragmented messages (including headers)
+    fragmented_messages_list = []  # generate list of fragmented messages (including headers)
     if len(fragments) > 1:
-        for count, fragment in enumerate(
-            fragments
-        ):  # iterate through list and have index counter
+        for count, fragment in enumerate(fragments):  # iterate through list and have index counter
             fragmented_message_object = {
                 "op": "fragment",  # create Python-object for each fragment message
                 "id": str(message_id),
@@ -212,9 +206,7 @@ def list_of_fragments(
             )  # append JSON-object to list of fragmented messages
     else:  # if only 1 fragment --> do not send as fragment, but as service_response
         fragmented_messages_list.append(str(fragment))
-    return (
-        fragmented_messages_list  # return list of 'ready-to-send' fragmented messages
-    )
+    return fragmented_messages_list  # return list of 'ready-to-send' fragmented messages
 
 
 # ##################### helper functions end ###################################

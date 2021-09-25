@@ -19,15 +19,11 @@ class TestMessageHandlers(unittest.TestCase):
         self.help_test_default(handler)
 
     def test_throttle_message_handler(self):
-        handler = subscribe.ThrottleMessageHandler(
-            subscribe.MessageHandler(None, self.dummy_cb)
-        )
+        handler = subscribe.ThrottleMessageHandler(subscribe.MessageHandler(None, self.dummy_cb))
         self.help_test_throttle(handler, 50)
 
     def test_queue_message_handler_passes_msgs(self):
-        handler = subscribe.QueueMessageHandler(
-            subscribe.MessageHandler(None, self.dummy_cb)
-        )
+        handler = subscribe.QueueMessageHandler(subscribe.MessageHandler(None, self.dummy_cb))
         self.help_test_queue(handler, 1000)
         handler.finish()
 

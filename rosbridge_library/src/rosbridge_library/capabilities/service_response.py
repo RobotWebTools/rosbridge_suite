@@ -30,9 +30,7 @@ class ServiceResponse(Capability):
             request_id = message["id"]
             values = message["values"]
             # create a message instance
-            resp = ros_loader.get_service_response_instance(
-                service_handler.service_type
-            )
+            resp = ros_loader.get_service_response_instance(service_handler.service_type)
             message_conversion.populate_instance(values, resp)
             # pass along the response
             service_handler.responses[request_id] = resp

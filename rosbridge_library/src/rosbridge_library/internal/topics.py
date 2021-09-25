@@ -37,8 +37,7 @@ class TopicNotEstablishedException(Exception):
     def __init__(self, topic):
         Exception.__init__(
             self,
-            "Cannot infer topic type for topic %s as it is not yet advertised"
-            % (topic,),
+            "Cannot infer topic type for topic %s as it is not yet advertised" % (topic,),
         )
 
 

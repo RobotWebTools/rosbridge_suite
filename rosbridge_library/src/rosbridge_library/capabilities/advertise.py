@@ -57,9 +57,7 @@ class Registration:
     def unregister(self):
         manager.unregister(self.client_id, self.topic)
 
-    def register_advertisement(
-        self, msg_type, adv_id=None, latch=False, queue_size=100
-    ):
+    def register_advertisement(self, msg_type, adv_id=None, latch=False, queue_size=100):
         # Register with the publisher manager, propagating any exception
         manager.register(
             self.client_id,
@@ -114,17 +112,13 @@ class Advertise(Capability):
         queue_size = message.get("queue_size", 100)
 
         if Advertise.topics_glob is not None and Advertise.topics_glob:
-            self.protocol.log(
-                "debug", "Topic security glob enabled, checking topic: " + topic
-            )
+            self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Advertise.topics_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",
-                        "Found match with glob "
-                        + glob
-                        + ", continuing advertisement...",
+                        "Found match with glob " + glob + ", continuing advertisement...",
                     )
                     match = True
                     break
@@ -135,21 +129,15 @@ class Advertise(Capability):
                 )
                 return
         else:
-            self.protocol.log(
-                "debug", "No topic security glob, not checking advertisement."
-            )
+            self.protocol.log("debug", "No topic security glob, not checking advertisement.")
 
         # Create the Registration if one doesn't yet exist
         if topic not in self._registrations:
             client_id = self.protocol.client_id
-            self._registrations[topic] = Registration(
-                client_id, topic, self.protocol.node_handle
-            )
+            self._registrations[topic] = Registration(client_id, topic, self.protocol.node_handle)
 
         # Register, propagating any exceptions
-        self._registrations[topic].register_advertisement(
-            msg_type, aid, latch, queue_size
-        )
+        self._registrations[topic].register_advertisement(msg_type, aid, latch, queue_size)
 
     def unadvertise(self, message):
         # Pull out the ID
@@ -159,17 +147,13 @@ class Advertise(Capability):
         topic = message["topic"]
 
         if Advertise.topics_glob is not None and Advertise.topics_glob:
-            self.protocol.log(
-                "debug", "Topic security glob enabled, checking topic: " + topic
-            )
+            self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Advertise.topics_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",
-                        "Found match with glob "
-                        + glob
-                        + ", continuing unadvertisement...",
+                        "Found match with glob " + glob + ", continuing unadvertisement...",
                     )
                     match = True
                     break
@@ -180,9 +164,7 @@ class Advertise(Capability):
                 )
                 return
         else:
-            self.protocol.log(
-                "debug", "No topic security glob, not checking unadvertisement."
-            )
+            self.protocol.log("debug", "No topic security glob, not checking unadvertisement.")
 
         # Now unadvertise the topic
         if topic not in self._registrations:

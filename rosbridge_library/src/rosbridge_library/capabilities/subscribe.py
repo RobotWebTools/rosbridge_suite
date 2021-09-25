@@ -243,17 +243,13 @@ class Subscribe(Capability):
         topic = msg["topic"]
 
         if Subscribe.topics_glob is not None and Subscribe.topics_glob:
-            self.protocol.log(
-                "debug", "Topic security glob enabled, checking topic: " + topic
-            )
+            self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Subscribe.topics_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",
-                        "Found match with glob "
-                        + glob
-                        + ", continuing subscription...",
+                        "Found match with glob " + glob + ", continuing subscription...",
                     )
                     match = True
                     break
@@ -264,9 +260,7 @@ class Subscribe(Capability):
                 )
                 return
         else:
-            self.protocol.log(
-                "debug", "No topic security glob, not checking subscription."
-            )
+            self.protocol.log("debug", "No topic security glob, not checking subscription.")
 
         if topic not in self._subscriptions:
             client_id = self.protocol.client_id
@@ -296,31 +290,24 @@ class Subscribe(Capability):
 
         topic = msg["topic"]
         if Subscribe.topics_glob is not None and Subscribe.topics_glob:
-            self.protocol.log(
-                "debug", "Topic security glob enabled, checking topic: " + topic
-            )
+            self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Subscribe.topics_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",
-                        "Found match with glob "
-                        + glob
-                        + ", continuing unsubscription...",
+                        "Found match with glob " + glob + ", continuing unsubscription...",
                     )
                     match = True
                     break
             if not match:
                 self.protocol.log(
                     "warn",
-                    "No match found for topic, cancelling unsubscription from: "
-                    + topic,
+                    "No match found for topic, cancelling unsubscription from: " + topic,
                 )
                 return
         else:
-            self.protocol.log(
-                "debug", "No topic security glob, not checking unsubscription."
-            )
+            self.protocol.log("debug", "No topic security glob, not checking unsubscription.")
 
         if topic not in self._subscriptions:
             return
@@ -346,17 +333,13 @@ class Subscribe(Capability):
         """
         # TODO: fragmentation, proper ids
         if Subscribe.topics_glob and Subscribe.topics_glob:
-            self.protocol.log(
-                "debug", "Topic security glob enabled, checking topic: " + topic
-            )
+            self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Subscribe.topics_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",
-                        "Found match with glob "
-                        + glob
-                        + ", continuing topic publish...",
+                        "Found match with glob " + glob + ", continuing topic publish...",
                     )
                     match = True
                     break
@@ -367,9 +350,7 @@ class Subscribe(Capability):
                 )
                 return
         else:
-            self.protocol.log(
-                "debug", "No topic security glob, not checking topic publish."
-            )
+            self.protocol.log("debug", "No topic security glob, not checking topic publish.")
 
         outgoing_msg = {"op": "publish", "topic": topic}
         if compression == "png":
@@ -380,9 +361,7 @@ class Subscribe(Capability):
             outgoing_msg["msg"] = message.get_cbor_values()
             outgoing_msg = bytearray(encode_cbor(outgoing_msg))
         elif compression == "cbor-raw":
-            (secs, nsecs) = (
-                self.protocol.node_handle.get_clock().now().seconds_nanoseconds()
-            )
+            (secs, nsecs) = self.protocol.node_handle.get_clock().now().seconds_nanoseconds()
             outgoing_msg["msg"] = {
                 "secs": secs,
                 "nsecs": nsecs,

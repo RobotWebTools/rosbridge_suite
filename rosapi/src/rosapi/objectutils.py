@@ -147,9 +147,7 @@ def _get_typedef(instance):
         fieldnames.append(name)
 
         # Pull out the type and determine whether it's an array
-        field_type = instance._fields_and_field_types[
-            name[1:]
-        ]  # Remove trailing underscore.
+        field_type = instance._fields_and_field_types[name[1:]]  # Remove trailing underscore.
         arraylen = -1
         if field_type[-1:] == "]":
             if field_type[-2:-1] == "[":

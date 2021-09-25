@@ -38,9 +38,7 @@ class TestSubscribe(unittest.TestCase):
             for queue_length in range(min_queue_length, min_queue_length + 10):
                 for frag_size in range(min_frag_size, min_frag_size + 10):
                     sid = throttle_rate * 100 + queue_length * 10 + frag_size
-                    subscription.subscribe(
-                        sid, msg_type, throttle_rate, queue_length, frag_size
-                    )
+                    subscription.subscribe(sid, msg_type, throttle_rate, queue_length, frag_size)
 
         subscription.update_params()
 
@@ -104,9 +102,7 @@ class TestSubscribe(unittest.TestCase):
 
         proto.send = send
 
-        sub.subscribe(
-            loads(dumps({"op": "subscribe", "topic": topic, "type": msg_type}))
-        )
+        sub.subscribe(loads(dumps({"op": "subscribe", "topic": topic, "type": msg_type})))
 
         p = rospy.Publisher(topic, String, queue_size=5)
         time.sleep(0.25)

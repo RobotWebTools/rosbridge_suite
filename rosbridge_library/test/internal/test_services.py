@@ -102,18 +102,14 @@ class TestServices(unittest.TestCase):
             cls = ros_loader.get_service_class("rosbridge_library/" + srv_type)
             for args in [[], {}, None]:
                 # Should throw no exceptions
-                services.args_to_service_request_instance(
-                    "", cls._request_class(), args
-                )
+                services.args_to_service_request_instance("", cls._request_class(), args)
 
         # Test msgs with data message
         for srv_type in ["TestRequestOnly", "TestRequestAndResponse"]:
             cls = ros_loader.get_service_class("rosbridge_library/" + srv_type)
             for args in [[3], {"data": 3}]:
                 # Should throw no exceptions
-                services.args_to_service_request_instance(
-                    "", cls._request_class(), args
-                )
+                services.args_to_service_request_instance("", cls._request_class(), args)
             self.assertRaises(
                 FieldTypeMismatchException,
                 services.args_to_service_request_instance,
@@ -123,9 +119,7 @@ class TestServices(unittest.TestCase):
             )
 
         # Test message with multiple fields
-        cls = ros_loader.get_service_class(
-            "rosbridge_library/TestMultipleRequestFields"
-        )
+        cls = ros_loader.get_service_class("rosbridge_library/TestMultipleRequestFields")
         for args in [
             [3, 3.5, "hello", False],
             {"int": 3, "float": 3.5, "string": "hello", "bool": False},
@@ -162,9 +156,7 @@ class TestServices(unittest.TestCase):
             raise Exception()
 
         # Now, call using the services
-        services.ServiceCaller(
-            rospy.get_name() + "/get_loggers", None, success, error
-        ).start()
+        services.ServiceCaller(rospy.get_name() + "/get_loggers", None, success, error).start()
 
         time.sleep(0.5)
 
@@ -173,9 +165,7 @@ class TestServices(unittest.TestCase):
             self.assertEqual(x.level, y["level"])
 
     def test_service_tester(self):
-        t = ServiceTester(
-            "/test_service_tester", "rosbridge_library/TestRequestAndResponse"
-        )
+        t = ServiceTester("/test_service_tester", "rosbridge_library/TestRequestAndResponse")
         t.start()
         time.sleep(1.0)
         t.validate(self.msgs_equal)
@@ -191,9 +181,7 @@ class TestServices(unittest.TestCase):
             "TestMultipleRequestFields",
             "TestArrayRequest",
         ]:
-            t = ServiceTester(
-                "/test_service_tester_alltypes_" + srv, "rosbridge_library/" + srv
-            )
+            t = ServiceTester("/test_service_tester_alltypes_" + srv, "rosbridge_library/" + srv)
             t.start()
             ts.append(t)
 

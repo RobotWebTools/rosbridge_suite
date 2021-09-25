@@ -120,9 +120,7 @@ class TestSubscriberManager(unittest.TestCase):
 
         self.assertFalse(topic in manager._subscribers)
         self.assertFalse(self.is_topic_subscribed(topic))
-        self.assertRaises(
-            TopicNotEstablishedException, manager.subscribe, client, topic, None
-        )
+        self.assertRaises(TopicNotEstablishedException, manager.subscribe, client, topic, None)
 
     def test_register_infer_topictype(self):
         topic = "/test_register_infer_topictype"
@@ -169,9 +167,7 @@ class TestSubscriberManager(unittest.TestCase):
 
         self.assertFalse(topic in manager._subscribers)
         self.assertFalse(self.is_topic_subscribed(topic))
-        self.assertRaises(
-            TopicNotEstablishedException, manager.subscribe, client, topic, None
-        )
+        self.assertRaises(TopicNotEstablishedException, manager.subscribe, client, topic, None)
 
     def test_publisher_manager_publish(self):
         topic = "/test_publisher_manager_publish"

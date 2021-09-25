@@ -86,12 +86,8 @@ class TestCBORConversion(unittest.TestCase):
             msg = msg_type()
             extracted = extract_cbor_values(msg)
 
-            self.assertEqual(
-                extracted["data"]["secs"], msg.data.secs, f"type={msg_type}"
-            )
-            self.assertEqual(
-                extracted["data"]["nsecs"], msg.data.nsecs, f"type={msg_type}"
-            )
+            self.assertEqual(extracted["data"]["secs"], msg.data.secs, f"type={msg_type}")
+            self.assertEqual(extracted["data"]["nsecs"], msg.data.nsecs, f"type={msg_type}")
             self.assertEqual(type(extracted["data"]["secs"]), int, f"type={msg_type}")
             self.assertEqual(type(extracted["data"]["nsecs"]), int, f"type={msg_type}")
 

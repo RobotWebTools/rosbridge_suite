@@ -101,9 +101,7 @@ class Defragment(Capability, threading.Thread):
                     else:
                         log_msg.extend([" -> but we're just about to add fragment #"])
                         log_msg.extend([str(message.get("num")), " of "])
-                        log_msg.extend(
-                            [str(self.received_fragments[message.get("id")]["total"])]
-                        )
+                        log_msg.extend([str(self.received_fragments[message.get("id")]["total"])])
                         log_msg.extend([" ..keeping the list"])
                     self.protocol.log("warning", "".join(log_msg))
 
@@ -163,9 +161,7 @@ class Defragment(Capability, threading.Thread):
 
         # Make sure total number of fragments received
         if existing_fragments == announced_total:
-            log_msg = [
-                "enough/all fragments for messageID " + str(msg_id) + " received"
-            ]
+            log_msg = ["enough/all fragments for messageID " + str(msg_id) + " received"]
             log_msg.extend([" [", str(existing_fragments), "]"])
             log_msg = "".join(log_msg)
             self.protocol.log("debug", log_msg)
@@ -185,9 +181,7 @@ class Defragment(Capability, threading.Thread):
             self.protocol.log("debug", log_msg)
 
             # Reconstruct the message
-            reconstructed_msg = "".join(
-                self.received_fragments[msg_id]["fragment_list"].values()
-            )
+            reconstructed_msg = "".join(self.received_fragments[msg_id]["fragment_list"].values())
 
             log_msg = ["reconstructed original message:\n"]
             log_msg.append(reconstructed_msg)

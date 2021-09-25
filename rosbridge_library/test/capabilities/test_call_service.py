@@ -40,9 +40,7 @@ class TestCallService(unittest.TestCase):
 
         proto = Protocol("test_call_service_works")
         s = CallService(proto)
-        msg = loads(
-            dumps({"op": "call_service", "service": rospy.get_name() + "/get_loggers"})
-        )
+        msg = loads(dumps({"op": "call_service", "service": rospy.get_name() + "/get_loggers"}))
 
         received = {"msg": None, "arrived": False}
 

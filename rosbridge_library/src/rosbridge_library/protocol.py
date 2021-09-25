@@ -149,12 +149,8 @@ class Protocol:
                 #     fragment data must NOT (!) contain a complete json-object that has an "op-field"
                 #
                 # an alternative solution would be to only check from first opening bracket and have a time out on data in input buffer.. (to handle broken data)
-                opening_brackets = [
-                    i for i, letter in enumerate(self.buffer) if letter == "{"
-                ]
-                closing_brackets = [
-                    i for i, letter in enumerate(self.buffer) if letter == "}"
-                ]
+                opening_brackets = [i for i, letter in enumerate(self.buffer) if letter == "{"]
+                closing_brackets = [i for i, letter in enumerate(self.buffer) if letter == "}"]
 
                 for start in opening_brackets:
                     for end in closing_brackets:
@@ -261,9 +257,7 @@ class Protocol:
 
                 # TODO: think about splitting into fragments that have specified size including header-fields!
                 # --> estimate header size --> split content into fragments that have the requested overall size, rather than requested content size
-                fragment_list = Fragmentation(self).fragment(
-                    message, self.fragment_size, mid
-                )
+                fragment_list = Fragmentation(self).fragment(message, self.fragment_size, mid)
 
             # fragment list not empty -> send fragments
             if fragment_list is not None:
@@ -311,9 +305,7 @@ class Protocol:
         except Exception:
             if cid is not None:
                 # Only bother sending the log message if there's an id
-                self.log(
-                    "error", "Unable to serialize %s message to client" % msg["op"], cid
-                )
+                self.log("error", "Unable to serialize %s message to client" % msg["op"], cid)
             return None
 
     def deserialize(self, msg, cid=None):

@@ -80,9 +80,7 @@ class TestPublisherManager(unittest.TestCase):
         self.assertTrue(topic in manager._publishers)
         self.assertTrue(self.is_topic_published(topic))
 
-        self.assertRaises(
-            TypeConflictException, manager.register, "client2", topic, msg_type_bad
-        )
+        self.assertRaises(TypeConflictException, manager.register, "client2", topic, msg_type_bad)
 
     def test_register_multiple_publishers(self):
         topic1 = "/test_register_multiple_publishers1"
@@ -182,9 +180,7 @@ class TestPublisherManager(unittest.TestCase):
 
         self.assertFalse(topic in manager._publishers)
         self.assertFalse(self.is_topic_published(topic))
-        self.assertRaises(
-            TopicNotEstablishedException, manager.publish, client, topic, msg
-        )
+        self.assertRaises(TopicNotEstablishedException, manager.publish, client, topic, msg)
 
     def test_publisher_manager_publish(self):
         """Make sure that publishing works"""
@@ -211,9 +207,7 @@ class TestPublisherManager(unittest.TestCase):
         msg = {"data": 3}
 
         manager.register(client, topic, msg_type)
-        self.assertRaises(
-            FieldTypeMismatchException, manager.publish, client, topic, msg
-        )
+        self.assertRaises(FieldTypeMismatchException, manager.publish, client, topic, msg)
 
 
 PKG = "rosbridge_library"

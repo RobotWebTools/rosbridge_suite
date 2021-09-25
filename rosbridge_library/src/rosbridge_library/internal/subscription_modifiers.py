@@ -143,9 +143,7 @@ class QueueMessageHandler(MessageHandler, Thread):
     def run(self):
         while self.alive:
             with self.c:
-                while self.alive and (
-                    self.time_remaining() > 0 or len(self.queue) == 0
-                ):
+                while self.alive and (self.time_remaining() > 0 or len(self.queue) == 0):
                     if len(self.queue) == 0:
                         self.c.wait()
                     else:

@@ -20,10 +20,7 @@ class UnadvertiseService(Capability):
         # parse the message
         service_name = message["service"]
 
-        if (
-            UnadvertiseService.services_glob is not None
-            and UnadvertiseService.services_glob
-        ):
+        if UnadvertiseService.services_glob is not None and UnadvertiseService.services_glob:
             self.protocol.log(
                 "debug",
                 "Service security glob enabled, checking service: " + service_name,
@@ -33,9 +30,7 @@ class UnadvertiseService(Capability):
                 if fnmatch.fnmatch(service_name, glob):
                     self.protocol.log(
                         "debug",
-                        "Found match with glob "
-                        + glob
-                        + ", continuing service unadvertisement...",
+                        "Found match with glob " + glob + ", continuing service unadvertisement...",
                     )
                     match = True
                     break
@@ -54,9 +49,7 @@ class UnadvertiseService(Capability):
 
         # unregister service in ROS
         if service_name in self.protocol.external_service_list.keys():
-            self.protocol.external_service_list[service_name].graceful_shutdown(
-                timeout=1.0
-            )
+            self.protocol.external_service_list[service_name].graceful_shutdown(timeout=1.0)
             self.protocol.external_service_list[service_name].service_handle.shutdown(
                 "Unadvertise request."
             )

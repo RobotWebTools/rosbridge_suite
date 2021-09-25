@@ -53,9 +53,7 @@ class MultiSubscriber:
     callbacks being called in separate threads, must lock whenever modifying
     or accessing the subscribed clients."""
 
-    def __init__(
-        self, topic, client_id, callback, node_handle, msg_type=None, raw=False
-    ):
+    def __init__(self, topic, client_id, callback, node_handle, msg_type=None, raw=False):
         """Register a subscriber on the specified topic.
 
         Keyword arguments:
@@ -87,9 +85,7 @@ class MultiSubscriber:
         # topic_type is a list of types or None at this point; only one type is supported.
         if topic_type is not None:
             if len(topic_type) > 1:
-                node_handle.get_logger().warning(
-                    f"More than one topic type detected: {topic_type}"
-                )
+                node_handle.get_logger().warning(f"More than one topic type detected: {topic_type}")
             topic_type = topic_type[0]
 
         # Use the established topic type if none was specified
@@ -136,9 +132,7 @@ class MultiSubscriber:
 
         """
         if not ros_loader.get_message_class(msg_type) is self.msg_class:
-            raise TypeConflictException(
-                self.topic, msg_class_type_repr(self.msg_class), msg_type
-            )
+            raise TypeConflictException(self.topic, msg_class_type_repr(self.msg_class), msg_type)
         return
 
     def subscribe(self, client_id, callback):
@@ -200,9 +194,7 @@ class MultiSubscriber:
                 callback(outgoing)
             except Exception as exc:
                 # Do nothing if one particular callback fails except log it
-                self.node_handle.get_logger().error(
-                    f"Exception calling subscribe callback: {exc}"
-                )
+                self.node_handle.get_logger().error(f"Exception calling subscribe callback: {exc}")
                 pass
 
     def _new_sub_callback(self, msg):
@@ -232,9 +224,7 @@ class SubscriberManager:
     def __init__(self):
         self._subscribers = {}
 
-    def subscribe(
-        self, client_id, topic, callback, node_handle, msg_type=None, raw=False
-    ):
+    def subscribe(self, client_id, topic, callback, node_handle, msg_type=None, raw=False):
         """Subscribe to a topic
 
         Keyword arguments:

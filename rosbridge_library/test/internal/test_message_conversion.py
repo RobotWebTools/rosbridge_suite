@@ -93,9 +93,7 @@ class TestMessageConversion(unittest.TestCase):
         for msg in [1e9999999, -1e9999999, float("nan")]:
             for rostype in ["float32", "float64"]:
                 self.assertEqual(c._from_inst(msg, rostype), None)
-                self.assertEqual(
-                    dumps({"data": c._from_inst(msg, rostype)}), '{"data": null}'
-                )
+                self.assertEqual(dumps({"data": c._from_inst(msg, rostype)}), '{"data": null}')
 
     def test_signed_int_base_msgs(self):
         int8s = range(-127, 128)
@@ -120,21 +118,15 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(int32, "std_msgs/Int64")
             self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Byte")
             self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Int8")
-            self.assertRaises(
-                Exception, self.do_primitive_test, int32, "std_msgs/Int16"
-            )
+            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Int16")
 
         int64s = [-9223372036854775807, 9223372036854775807]
         for int64 in int64s:
             self.do_primitive_test(int64, "std_msgs/Int64")
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Byte")
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int8")
-            self.assertRaises(
-                Exception, self.do_primitive_test, int64, "std_msgs/Int16"
-            )
-            self.assertRaises(
-                Exception, self.do_primitive_test, int64, "std_msgs/Int32"
-            )
+            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int16")
+            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int32")
 
     def test_unsigned_int_base_msgs(self):
         int8s = range(0, 256)
@@ -151,21 +143,15 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(int16, "std_msgs/UInt32")
             self.do_primitive_test(int16, "std_msgs/UInt64")
             self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/Char")
-            self.assertRaises(
-                Exception, self.do_primitive_test, int16, "std_msgs/UInt8"
-            )
+            self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/UInt8")
 
         int32s = [2147483647, 2147483648, 4294967295]
         for int32 in int32s:
             self.do_primitive_test(int32, "std_msgs/UInt32")
             self.do_primitive_test(int32, "std_msgs/UInt64")
             self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Char")
-            self.assertRaises(
-                Exception, self.do_primitive_test, int32, "std_msgs/UInt8"
-            )
-            self.assertRaises(
-                Exception, self.do_primitive_test, int32, "std_msgs/UInt16"
-            )
+            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/UInt8")
+            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/UInt16")
 
         int64s = [
             4294967296,
@@ -176,15 +162,9 @@ class TestMessageConversion(unittest.TestCase):
         for int64 in int64s:
             self.do_primitive_test(int64, "std_msgs/UInt64")
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Char")
-            self.assertRaises(
-                Exception, self.do_primitive_test, int64, "std_msgs/UInt8"
-            )
-            self.assertRaises(
-                Exception, self.do_primitive_test, int64, "std_msgs/UInt16"
-            )
-            self.assertRaises(
-                Exception, self.do_primitive_test, int64, "std_msgs/UInt32"
-            )
+            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt8")
+            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt16")
+            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt32")
 
     def test_bool_base_msg(self):
         self.do_primitive_test(True, "std_msgs/Bool")

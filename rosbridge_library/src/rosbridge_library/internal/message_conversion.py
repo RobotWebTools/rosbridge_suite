@@ -144,9 +144,7 @@ class NonexistentFieldException(Exception):
     def __init__(self, basetype, fields):
         Exception.__init__(
             self,
-            "Message type {} does not have a field {}".format(
-                basetype, ".".join(fields)
-            ),
+            "Message type {} does not have a field {}".format(basetype, ".".join(fields)),
         )
 
 
@@ -291,9 +289,7 @@ def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
 
 def _to_binary_inst(msg):
     try:
-        return (
-            standard_b64decode(msg) if isinstance(msg, str) else bytes(bytearray(msg))
-        )
+        return standard_b64decode(msg) if isinstance(msg, str) else bytes(bytearray(msg))
     except Exception:
         return msg
 
@@ -383,9 +379,7 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
         field_rostype = inst_fields[field_name]
         field_inst = getattr(inst, field_name)
 
-        field_value = _to_inst(
-            msg[field_name], field_rostype, roottype, field_inst, field_stack
-        )
+        field_value = _to_inst(msg[field_name], field_rostype, roottype, field_inst, field_stack)
 
         setattr(inst, field_name, field_value)
 

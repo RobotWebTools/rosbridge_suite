@@ -77,9 +77,7 @@ def init(parent_node_name):
 def set_param(node_name, name, value, params_glob):
     """Sets a parameter in a given node"""
 
-    if params_glob and not any(
-        fnmatch.fnmatch(str(name), glob) for glob in params_glob
-    ):
+    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to set the parameter.
         return
@@ -126,9 +124,7 @@ def _set_param(node_name, name, value, parameter_type=None):
 def get_param(node_name, name, default, params_glob):
     """Gets a parameter from a given node"""
 
-    if params_glob and not any(
-        fnmatch.fnmatch(str(name), glob) for glob in params_glob
-    ):
+    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to get the parameter.
         return
@@ -144,9 +140,7 @@ def get_param(node_name, name, default, params_glob):
     with param_server_lock:
         try:
             # call_get_parameters will fail if node does not exist.
-            response = call_get_parameters(
-                node=_node, node_name=node_name, parameter_names=[name]
-            )
+            response = call_get_parameters(node=_node, node_name=node_name, parameter_names=[name])
             pvalue = response.values[0]
             # if type is 0 (parameter not set), the next line will raise an exception
             # and return value shall go to default.
@@ -161,9 +155,7 @@ def get_param(node_name, name, default, params_glob):
 def has_param(node_name, name, params_glob):
     """Checks whether a given node has a parameter or not"""
 
-    if params_glob and not any(
-        fnmatch.fnmatch(str(name), glob) for glob in params_glob
-    ):
+    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to set the parameter.
         return False
@@ -172,23 +164,17 @@ def has_param(node_name, name, params_glob):
     node_name = get_absolute_node_name(node_name)
     with param_server_lock:
         try:
-            response = call_get_parameters(
-                node=_node, node_name=node_name, parameter_names=[name]
-            )
+            response = call_get_parameters(node=_node, node_name=node_name, parameter_names=[name])
         except Exception:
             return False
 
-    return response.values[0].type > 0 and response.values[0].type < len(
-        _parameter_type_mapping
-    )
+    return response.values[0].type > 0 and response.values[0].type < len(_parameter_type_mapping)
 
 
 def delete_param(node_name, name, params_glob):
     """Deletes a parameter in a given node"""
 
-    if params_glob and not any(
-        fnmatch.fnmatch(str(name), glob) for glob in params_glob
-    ):
+    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to delete the parameter.
         return
@@ -219,9 +205,7 @@ def get_node_param_names(node_name, params_glob):
             # If there is a parameter glob, filter by it.
             return list(
                 filter(
-                    lambda x: any(
-                        fnmatch.fnmatch(str(x), glob) for glob in params_glob
-                    ),
+                    lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob),
                     _get_param_names(node_name),
                 )
             )
@@ -256,9 +240,7 @@ def _get_param_names(node_name):
 
 # TODO(@jubeira): functions to be ported below.
 def search_param(name, params_glob):
-    if params_glob and not any(
-        fnmatch.fnmatch(str(name), glob) for glob in params_glob
-    ):
+    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to find the parameter.
         return None

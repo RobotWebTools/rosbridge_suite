@@ -58,8 +58,7 @@ class AdvertisedServiceHandler:
                 self.protocol.log(
                     "warning",
                     "Service %s was unadvertised with a service call in progress, "
-                    "aborting service call with request ID %s"
-                    % (self.service_name, request_id),
+                    "aborting service call with request ID %s" % (self.service_name, request_id),
                 )
                 return None
 
@@ -102,10 +101,7 @@ class AdvertiseService(Capability):
         # parse the incoming message
         service_name = message["service"]
 
-        if (
-            AdvertiseService.services_glob is not None
-            and AdvertiseService.services_glob
-        ):
+        if AdvertiseService.services_glob is not None and AdvertiseService.services_glob:
             self.protocol.log(
                 "debug",
                 "Service security glob enabled, checking service: " + service_name,
@@ -115,9 +111,7 @@ class AdvertiseService(Capability):
                 if fnmatch.fnmatch(service_name, glob):
                     self.protocol.log(
                         "debug",
-                        "Found match with glob "
-                        + glob
-                        + ", continuing service advertisement...",
+                        "Found match with glob " + glob + ", continuing service advertisement...",
                     )
                     match = True
                     break
@@ -145,8 +139,6 @@ class AdvertiseService(Capability):
 
         # setup and store the service information
         service_type = message["type"]
-        service_handler = AdvertisedServiceHandler(
-            service_name, service_type, self.protocol
-        )
+        service_handler = AdvertisedServiceHandler(service_name, service_type, self.protocol)
         self.protocol.external_service_list[service_name] = service_handler
         self.protocol.log("info", "Advertised service %s." % service_name)

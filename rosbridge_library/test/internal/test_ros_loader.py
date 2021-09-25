@@ -195,9 +195,7 @@ class TestROSLoader(unittest.TestCase):
             "pr2thoughts_msgs/Escape",
         ]
         for x in nonexistent:
-            self.assertRaises(
-                ros_loader.InvalidPackageException, ros_loader.get_message_class, x
-            )
+            self.assertRaises(ros_loader.InvalidPackageException, ros_loader.get_message_class, x)
             self.assertRaises(
                 ros_loader.InvalidPackageException, ros_loader.get_message_instance, x
             )
@@ -211,12 +209,8 @@ class TestROSLoader(unittest.TestCase):
             "topic_tools/MessageMessage",
         ]
         for x in no_msgs:
-            self.assertRaises(
-                ros_loader.InvalidModuleException, ros_loader.get_message_class, x
-            )
-            self.assertRaises(
-                ros_loader.InvalidModuleException, ros_loader.get_message_instance, x
-            )
+            self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_message_class, x)
+            self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_message_instance, x)
 
     def test_nonexistent_msg_classnames(self):
         nonexistent = [
@@ -231,12 +225,8 @@ class TestROSLoader(unittest.TestCase):
             "sensor_msgs/TelepathyUnit",
         ]
         for x in nonexistent:
-            self.assertRaises(
-                ros_loader.InvalidClassException, ros_loader.get_message_class, x
-            )
-            self.assertRaises(
-                ros_loader.InvalidClassException, ros_loader.get_message_instance, x
-            )
+            self.assertRaises(ros_loader.InvalidClassException, ros_loader.get_message_class, x)
+            self.assertRaises(ros_loader.InvalidClassException, ros_loader.get_message_instance, x)
 
     def test_bad_servicenames(self):
         bad = [
@@ -343,12 +333,8 @@ class TestROSLoader(unittest.TestCase):
     def test_packages_without_srvs(self):
         no_msgs = ["roslib/A", "roslib/B", "roslib/C", "std_msgs/CuriousSrv"]
         for x in no_msgs:
-            self.assertRaises(
-                ros_loader.InvalidModuleException, ros_loader.get_service_class, x
-            )
-            self.assertRaises(
-                ros_loader.InvalidModuleException, ros_loader.get_service_instance, x
-            )
+            self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_service_class, x)
+            self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_service_instance, x)
             self.assertRaises(
                 ros_loader.InvalidModuleException,
                 ros_loader.get_service_request_instance,
@@ -368,9 +354,7 @@ class TestROSLoader(unittest.TestCase):
             "revenge_srvs/BackStab",
         ]
         for x in nonexistent:
-            self.assertRaises(
-                ros_loader.InvalidPackageException, ros_loader.get_service_class, x
-            )
+            self.assertRaises(ros_loader.InvalidPackageException, ros_loader.get_service_class, x)
             self.assertRaises(
                 ros_loader.InvalidPackageException, ros_loader.get_service_instance, x
             )
@@ -394,12 +378,8 @@ class TestROSLoader(unittest.TestCase):
             "topic_tools/TellMeWhatThisTopicIsActuallyAbout",
         ]
         for x in nonexistent:
-            self.assertRaises(
-                ros_loader.InvalidClassException, ros_loader.get_service_class, x
-            )
-            self.assertRaises(
-                ros_loader.InvalidClassException, ros_loader.get_service_instance, x
-            )
+            self.assertRaises(ros_loader.InvalidClassException, ros_loader.get_service_class, x)
+            self.assertRaises(ros_loader.InvalidClassException, ros_loader.get_service_instance, x)
             self.assertRaises(
                 ros_loader.InvalidClassException,
                 ros_loader.get_service_request_instance,
