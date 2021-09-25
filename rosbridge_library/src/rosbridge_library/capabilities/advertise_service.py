@@ -29,7 +29,7 @@ class AdvertisedServiceHandler:
         self.id_counter += 1
         return id
 
-    def handle_request(self, req):
+    def handle_request(self, req, res):
         with self.lock:
             self.active_requests += 1
         # generate a unique ID
@@ -62,9 +62,9 @@ class AdvertisedServiceHandler:
                 )
                 return None
 
-        resp = self.responses[request_id]
+        res = self.responses[request_id]
         del self.responses[request_id]
-        return resp
+        return res
 
     def graceful_shutdown(self, timeout):
         """
