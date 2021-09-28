@@ -1,38 +1,24 @@
-# Modified from https://github.com/ros-planning/moveit2/blob/d184714751b347a2389cf1e8742b1be94eed63b8/.pre-commit-config.yaml
-#
-# To use:
-#
-#     pre-commit run -a
-#
-# Or:
-#
-#     pre-commit install  # (runs every time you commit in git)
-#
-# To update this file:
-#
-#     pre-commit autoupdate
-#
-# See https://github.com/pre-commit/pre-commit
-
+# See https://pre-commit.com for more information
 repos:
-  # Standard hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
-      - id: check-json
       - id: check-merge-conflict
       - id: check-symlinks
-      - id: check-toml
       - id: check-yaml
       - id: debug-statements
       - id: destroyed-symlinks
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: mixed-line-ending
-      - id: pretty-format-json
       - id: trailing-whitespace
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.9.3
+    hooks:
+      - id: isort
 
   - repo: https://github.com/psf/black
     rev: 21.9b0
@@ -40,8 +26,18 @@ repos:
       - id: black
         args: ["--line-length=100"]
 
-  - repo: https://github.com/pycqa/isort
-    rev: 5.8.0
+  - repo: https://github.com/PyCQA/flake8
+    rev: 3.9.2
     hooks:
-      - id: isort
-        name: isort (python)
+      - id: flake8
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.0
+    hooks:
+    - id: bandit
+      args: ["--skip", "B101,B110,B311"]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.1.0
+    hooks:
+      - id: codespell
