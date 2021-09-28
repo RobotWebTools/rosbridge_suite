@@ -43,6 +43,7 @@
   <test_depend>nav_msgs</test_depend>
   <test_depend>sensor_msgs</test_depend>
   <test_depend>std_msgs</test_depend>
+  <test_depend>std_srvs</test_depend>
   <test_depend>stereo_msgs</test_depend>
   <test_depend>tf2_msgs</test_depend>
   <test_depend>trajectory_msgs</test_depend>
