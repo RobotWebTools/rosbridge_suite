@@ -38,8 +38,34 @@ from rclpy.clock import Clock, ClockType
 from rclpy.node import Node
 
 from rosapi import glob_helper, objectutils, params, proxy
-from rosapi.msg import *
-from rosapi.srv import *
+from rosapi.msg import TypeDef
+from rosapi.srv import (
+    DeleteParam,
+    GetActionServers,
+    GetParam,
+    GetParamNames,
+    GetTime,
+    HasParam,
+    MessageDetails,
+    NodeDetails,
+    Nodes,
+    Publishers,
+    SearchParam,
+    ServiceHost,
+    ServiceNode,
+    ServiceProviders,
+    ServiceRequestDetails,
+    ServiceResponseDetails,
+    Services,
+    ServicesForType,
+    ServiceType,
+    SetParam,
+    Subscribers,
+    Topics,
+    TopicsAndRawTypes,
+    TopicsForType,
+    TopicType,
+)
 
 
 class Rosapi(Node):
@@ -277,12 +303,12 @@ class Rosapi(Node):
 def get_service_host(request):
     """Called by the rosapi/ServiceNode service.  Given the name of a service, returns the name of the machine
     that is hosting that service."""
-    return ServiceHostResponse(proxy.get_service_host(request.service))
+    return ServiceHost(proxy.get_service_host(request.service))
 
 
 # Note(@jubeira): rclpy does not have an equivalent for this. To be checked if this service is necessary or not.
 def search_param(request):
-    return SearchParamResponse(rosapi.params.search_param(request.name, rosapi.glob_helper.params))
+    return SearchParam(params.search_param(request.name, glob_helper.params))
 
 
 def dict_to_typedef(typedefdict):
@@ -302,8 +328,8 @@ def main(args=None):
         args = sys.argv
 
     rclpy.init(args=args)
-    rosapi_node = Rosapi()
-    rclpy.spin(rosapi_node)
+    node = Rosapi()
+    rclpy.spin(node)
 
     node.destroy_node()
     rclpy.shutdown()

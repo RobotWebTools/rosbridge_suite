@@ -7,13 +7,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-python@v2
         with:
           python-version: '3.8'
-      - run: pip install bandit codespell flake8
-      - run: bandit --recursive --skip B101,B110,B311 .
-      - run: codespell
-      - run: flake8
+
+      - uses: pre-commit/action@v2.0.3
 
   test:
     strategy:
