@@ -311,15 +311,13 @@ def main(args=None):
         args = sys.argv
 
     rclpy.init(args=args)
-    rosbridge_websocket_node = RosbridgeWebsocketNode()
+    node = RosbridgeWebsocketNode()
 
-    spin_callback = PeriodicCallback(
-        lambda: rclpy.spin_once(rosbridge_websocket_node, timeout_sec=0.01), 1
-    )
+    spin_callback = PeriodicCallback(lambda: rclpy.spin_once(node, timeout_sec=0.01), 1)
     spin_callback.start()
     start_hook()
 
-    node.destroy_node()  # noqa: F821  # To be fixed in issue #604
+    node.destroy_node()
     rclpy.shutdown()
     shutdown_hook()  # shutdown hook to stop the server
 
