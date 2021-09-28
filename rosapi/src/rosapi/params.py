@@ -236,14 +236,3 @@ def _get_param_names(node_name):
         return [f"{node_name}:{param_name}" for param_name in response.result.names]
     else:
         return []
-
-
-# TODO(@jubeira): functions to be ported below.
-def search_param(name, params_glob):
-    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
-        # If the glob list is not empty and there are no glob matches,
-        # stop the attempt to find the parameter.
-        return None
-    # If the glob list is empty (i.e. false) or the parameter matches
-    # one of the glob strings, continue to find the parameter.
-    return rospy.search_param(name)  # noqa: F821 as discussed in #608
