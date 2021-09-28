@@ -35,7 +35,18 @@
   <exec_depend>rosidl_default_runtime</exec_depend>
   <exec_depend>python3-bson</exec_depend>
 
+  <test_depend>actionlib_msgs</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>builtin_interfaces</test_depend>
+  <test_depend>diagnostic_msgs</test_depend>
+  <test_depend>geometry_msgs</test_depend>
+  <test_depend>nav_msgs</test_depend>
+  <test_depend>sensor_msgs</test_depend>
+  <test_depend>std_msgs</test_depend>
+  <test_depend>stereo_msgs</test_depend>
+  <test_depend>tf2_msgs</test_depend>
+  <test_depend>trajectory_msgs</test_depend>
+  <test_depend>visualization_msgs</test_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
