@@ -448,6 +448,7 @@ If no ID is provided, then all subscriptions are unsubscribed.
 ```json
 { "op": "call_service",
   (optional) "id": <string>,
+  "type": <string>,
   "service": <string>,
   (optional) "args": <list<json>>,
   (optional) "fragment_size": <int>,
@@ -457,6 +458,7 @@ If no ID is provided, then all subscriptions are unsubscribed.
 
 Calls a ROS service
 
+ * **type** – the service message type (required by rcl_client_init to create handle)
  * **service** – the name of the service to call
  * **args** – if the service has no args, then args does not have to be
     provided, though an empty list is equally acceptable. Args should be a list
