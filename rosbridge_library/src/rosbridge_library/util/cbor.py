@@ -17,59 +17,57 @@
 import datetime
 import re
 import struct
-
 from io import BytesIO
-
 
 CBOR_TYPE_MASK = 0xE0  # top 3 bits
 CBOR_INFO_BITS = 0x1F  # low 5 bits
 
 
-CBOR_UINT    = 0x00
-CBOR_NEGINT  = 0x20
-CBOR_BYTES   = 0x40
-CBOR_TEXT    = 0x60
-CBOR_ARRAY   = 0x80
-CBOR_MAP     = 0xA0
-CBOR_TAG     = 0xC0
-CBOR_7       = 0xE0  # float and other types
+CBOR_UINT = 0x00
+CBOR_NEGINT = 0x20
+CBOR_BYTES = 0x40
+CBOR_TEXT = 0x60
+CBOR_ARRAY = 0x80
+CBOR_MAP = 0xA0
+CBOR_TAG = 0xC0
+CBOR_7 = 0xE0  # float and other types
 
-CBOR_UINT8_FOLLOWS  = 24  # 0x18
+CBOR_UINT8_FOLLOWS = 24  # 0x18
 CBOR_UINT16_FOLLOWS = 25  # 0x19
 CBOR_UINT32_FOLLOWS = 26  # 0x1a
 CBOR_UINT64_FOLLOWS = 27  # 0x1b
-CBOR_VAR_FOLLOWS    = 31  # 0x1f
+CBOR_VAR_FOLLOWS = 31  # 0x1f
 
-CBOR_BREAK  = 0xFF
+CBOR_BREAK = 0xFF
 
-CBOR_FALSE  = (CBOR_7 | 20)
-CBOR_TRUE   = (CBOR_7 | 21)
-CBOR_NULL   = (CBOR_7 | 22)
-CBOR_UNDEFINED   = (CBOR_7 | 23)  # js 'undefined' value
+CBOR_FALSE = CBOR_7 | 20
+CBOR_TRUE = CBOR_7 | 21
+CBOR_NULL = CBOR_7 | 22
+CBOR_UNDEFINED = CBOR_7 | 23  # js 'undefined' value
 
-CBOR_FLOAT16 = (CBOR_7 | 25)
-CBOR_FLOAT32 = (CBOR_7 | 26)
-CBOR_FLOAT64 = (CBOR_7 | 27)
+CBOR_FLOAT16 = CBOR_7 | 25
+CBOR_FLOAT32 = CBOR_7 | 26
+CBOR_FLOAT64 = CBOR_7 | 27
 
-CBOR_TAG_DATE_STRING = 0 # RFC3339
-CBOR_TAG_DATE_ARRAY = 1 # any number type follows, seconds since 1970-01-01T00:00:00 UTC
-CBOR_TAG_BIGNUM = 2 # big endian byte string follows
-CBOR_TAG_NEGBIGNUM = 3 # big endian byte string follows
-CBOR_TAG_DECIMAL = 4 # [ 10^x exponent, number ]
-CBOR_TAG_BIGFLOAT = 5 # [ 2^x exponent, number ]
+CBOR_TAG_DATE_STRING = 0  # RFC3339
+CBOR_TAG_DATE_ARRAY = 1  # any number type follows, seconds since 1970-01-01T00:00:00 UTC
+CBOR_TAG_BIGNUM = 2  # big endian byte string follows
+CBOR_TAG_NEGBIGNUM = 3  # big endian byte string follows
+CBOR_TAG_DECIMAL = 4  # [ 10^x exponent, number ]
+CBOR_TAG_BIGFLOAT = 5  # [ 2^x exponent, number ]
 CBOR_TAG_BASE64URL = 21
 CBOR_TAG_BASE64 = 22
 CBOR_TAG_BASE16 = 23
-CBOR_TAG_CBOR = 24 # following byte string is embedded CBOR data
+CBOR_TAG_CBOR = 24  # following byte string is embedded CBOR data
 
 CBOR_TAG_URI = 32
 CBOR_TAG_BASE64URL = 33
 CBOR_TAG_BASE64 = 34
 CBOR_TAG_REGEX = 35
-CBOR_TAG_MIME = 36 # following text is MIME message, headers, separators and all
-CBOR_TAG_CBOR_FILEHEADER = 55799 # can open a file with 0xd9d9f7
+CBOR_TAG_MIME = 36  # following text is MIME message, headers, separators and all
+CBOR_TAG_CBOR_FILEHEADER = 55799  # can open a file with 0xd9d9f7
 
-_CBOR_TAG_BIGNUM_BYTES = struct.pack('B', CBOR_TAG | CBOR_TAG_BIGNUM)
+_CBOR_TAG_BIGNUM_BYTES = struct.pack("B", CBOR_TAG | CBOR_TAG_BIGNUM)
 
 
 def dumps_int(val):
@@ -77,15 +75,15 @@ def dumps_int(val):
     if val >= 0:
         # CBOR_UINT is 0, so I'm lazy/efficient about not OR-ing it in.
         if val <= 23:
-            return struct.pack('B', val)
-        if val <= 0x0ff:
-            return struct.pack('BB', CBOR_UINT8_FOLLOWS, val)
-        if val <= 0x0ffff:
-            return struct.pack('!BH', CBOR_UINT16_FOLLOWS, val)
-        if val <= 0x0ffffffff:
-            return struct.pack('!BI', CBOR_UINT32_FOLLOWS, val)
-        if val <= 0x0ffffffffffffffff:
-            return struct.pack('!BQ', CBOR_UINT64_FOLLOWS, val)
+            return struct.pack("B", val)
+        if val <= 0x0FF:
+            return struct.pack("BB", CBOR_UINT8_FOLLOWS, val)
+        if val <= 0x0FFFF:
+            return struct.pack("!BH", CBOR_UINT16_FOLLOWS, val)
+        if val <= 0x0FFFFFFFF:
+            return struct.pack("!BI", CBOR_UINT32_FOLLOWS, val)
+        if val <= 0x0FFFFFFFFFFFFFFFF:
+            return struct.pack("!BQ", CBOR_UINT64_FOLLOWS, val)
         outb = _dumps_bignum_to_bytearray(val)
         return _CBOR_TAG_BIGNUM_BYTES + _encode_type_num(CBOR_BYTES, len(outb)) + outb
     val = -1 - val
@@ -95,7 +93,7 @@ def dumps_int(val):
 def _dumps_bignum_to_bytearray(val):
     out = []
     while val > 0:
-        out.insert(0, val & 0x0ff)
+        out.insert(0, val & 0x0FF)
         val = val >> 8
     return bytes(out)
 
@@ -104,23 +102,24 @@ def dumps_float(val):
     return struct.pack("!Bd", CBOR_FLOAT64, val)
 
 
-_CBOR_TAG_NEGBIGNUM_BYTES = struct.pack('B', CBOR_TAG | CBOR_TAG_NEGBIGNUM)
+_CBOR_TAG_NEGBIGNUM_BYTES = struct.pack("B", CBOR_TAG | CBOR_TAG_NEGBIGNUM)
 
 
 def _encode_type_num(cbor_type, val):
     """For some CBOR primary type [0..7] and an auxiliary unsigned number, return CBOR encoded bytes"""
     assert val >= 0
     if val <= 23:
-        return struct.pack('B', cbor_type | val)
-    if val <= 0x0ff:
-        return struct.pack('BB', cbor_type | CBOR_UINT8_FOLLOWS, val)
-    if val <= 0x0ffff:
-        return struct.pack('!BH', cbor_type | CBOR_UINT16_FOLLOWS, val)
-    if val <= 0x0ffffffff:
-        return struct.pack('!BI', cbor_type | CBOR_UINT32_FOLLOWS, val)
-    if (((cbor_type == CBOR_NEGINT) and (val <= 0x07fffffffffffffff)) or
-        ((cbor_type != CBOR_NEGINT) and (val <= 0x0ffffffffffffffff))):
-        return struct.pack('!BQ', cbor_type | CBOR_UINT64_FOLLOWS, val)
+        return struct.pack("B", cbor_type | val)
+    if val <= 0x0FF:
+        return struct.pack("BB", cbor_type | CBOR_UINT8_FOLLOWS, val)
+    if val <= 0x0FFFF:
+        return struct.pack("!BH", cbor_type | CBOR_UINT16_FOLLOWS, val)
+    if val <= 0x0FFFFFFFF:
+        return struct.pack("!BI", cbor_type | CBOR_UINT32_FOLLOWS, val)
+    if ((cbor_type == CBOR_NEGINT) and (val <= 0x07FFFFFFFFFFFFFFF)) or (
+        (cbor_type != CBOR_NEGINT) and (val <= 0x0FFFFFFFFFFFFFFFF)
+    ):
+        return struct.pack("!BQ", cbor_type | CBOR_UINT64_FOLLOWS, val)
     if cbor_type != CBOR_NEGINT:
         raise Exception(f"value too big for CBOR unsigned number: {val!r}")
     outb = _dumps_bignum_to_bytearray(val)
@@ -133,7 +132,7 @@ def _is_unicode(val):
 
 def dumps_string(val, is_text=None, is_bytes=None):
     if _is_unicode(val):
-        val = val.encode('utf8')
+        val = val.encode("utf8")
         is_text = True
         is_bytes = False
     if is_bytes or is_text is not True:
@@ -144,7 +143,7 @@ def dumps_string(val, is_text=None, is_bytes=None):
 def dumps_array(arr, sort_keys=False):
     head = _encode_type_num(CBOR_ARRAY, len(arr))
     parts = [dumps(x, sort_keys=sort_keys) for x in arr]
-    return head + b''.join(parts)
+    return head + b"".join(parts)
 
 
 def dumps_dict(d, sort_keys=False):
@@ -156,16 +155,16 @@ def dumps_dict(d, sort_keys=False):
             parts.append(dumps(k, sort_keys=sort_keys))
             parts.append(dumps(v, sort_keys=sort_keys))
     else:
-        for k,v in d.items():
+        for k, v in d.items():
             parts.append(dumps(k, sort_keys=sort_keys))
             parts.append(dumps(v, sort_keys=sort_keys))
-    return b''.join(parts)
+    return b"".join(parts)
 
 
 def dumps_bool(b):
     if b:
-        return struct.pack('B', CBOR_TRUE)
-    return struct.pack('B', CBOR_FALSE)
+        return struct.pack("B", CBOR_TRUE)
+    return struct.pack("B", CBOR_FALSE)
 
 
 def dumps_tag(t, sort_keys=False):
@@ -182,7 +181,7 @@ def _is_intish(x):
 
 def dumps(ob, sort_keys=False):
     if ob is None:
-        return struct.pack('B', CBOR_NULL)
+        return struct.pack("B", CBOR_NULL)
     if isinstance(ob, bool):
         return dumps_bool(ob)
     if _is_stringish(ob):
@@ -349,9 +348,9 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
             val = mant * (2.0 ** -24)
         elif exp == 31:
             if mant == 0:
-                val = float('Inf')
+                val = float("Inf")
             else:
-                val = float('NaN')
+                val = float("NaN")
         else:
             val = (mant + 1024.0) * (2 ** (exp - 25))
         if hibyte & 0x80:
@@ -377,7 +376,7 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
         return (ob, bytes_read + subpos)
     elif tag == CBOR_TEXT:
         raw, subpos = loads_bytes(fp, aux, btag=CBOR_TEXT)
-        ob = raw.decode('utf8')
+        ob = raw.decode("utf8")
         return (ob, bytes_read + subpos)
     elif tag == CBOR_ARRAY:
         if aux is None:
@@ -424,11 +423,11 @@ def loads_bytes(fp, aux, btag=CBOR_BYTES):
             total_bytes_read += 1
             break
         tag, tag_aux, aux, bytes_read = _tag_aux(fp, tb)
-        assert tag == btag, 'variable length value contains unexpected component'
+        assert tag == btag, "variable length value contains unexpected component"
         ob = fp.read(aux)
         chunklist.append(ob)
         total_bytes_read += bytes_read + aux
-    return (b''.join(chunklist), total_bytes_read)
+    return (b"".join(chunklist), total_bytes_read)
 
 
 def _bytes_to_biguint(bs):

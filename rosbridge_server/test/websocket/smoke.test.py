@@ -3,20 +3,19 @@ import json
 import sys
 import unittest
 
-from autobahn.twisted.websocket import WebSocketClientFactory, WebSocketClientProtocol
-from twisted.internet import reactor
-from twisted.internet.endpoints import TCP4ClientEndpoint
-from twisted.python import log
-
 import launch
 import launch.actions
 import launch_ros
 import launch_ros.actions
 import rclpy
 import rclpy.task
+from autobahn.twisted.websocket import WebSocketClientFactory, WebSocketClientProtocol
 from rcl_interfaces.srv import GetParameters
 from rclpy.executors import SingleThreadedExecutor
 from std_msgs.msg import String
+from twisted.internet import reactor
+from twisted.internet.endpoints import TCP4ClientEndpoint
+from twisted.python import log
 
 log.startLogging(sys.stderr)
 
@@ -96,15 +95,11 @@ class TestWebsocketSmoke(unittest.TestCase):
         """
         Returns the port which the WebSocket server is running on
         """
-        client = self.node.create_client(
-            GetParameters, "/rosbridge_websocket/get_parameters"
-        )
+        client = self.node.create_client(GetParameters, "/rosbridge_websocket/get_parameters")
         try:
             if not client.wait_for_service(5):
                 raise RuntimeError("GetParameters service not available")
-            port_param = await client.call_async(
-                GetParameters.Request(names=["actual_port"])
-            )
+            port_param = await client.call_async(GetParameters.Request(names=["actual_port"]))
             return port_param.values[0].integer_value
         finally:
             self.node.destroy_client(client)
@@ -142,9 +137,7 @@ class TestWebsocketSmoke(unittest.TestCase):
 
     def test_smoke(self):
         ros_received = []
-        sub_a = self.node.create_subscription(
-            String, A_TOPIC, ros_received.append, NUM_MSGS
-        )
+        sub_a = self.node.create_subscription(String, A_TOPIC, ros_received.append, NUM_MSGS)
         pub_b = self.node.create_publisher(String, B_TOPIC, NUM_MSGS)
 
         async def run_test():
@@ -189,9 +182,7 @@ class TestWebsocketSmoke(unittest.TestCase):
             return ws_client.received
 
         future = self.executor.create_task(run_test)
-        reactor.callInThread(
-            rclpy.spin_until_future_complete, self.node, future, self.executor
-        )
+        reactor.callInThread(rclpy.spin_until_future_complete, self.node, future, self.executor)
         reactor.run(installSignalHandlers=False)
 
         ws_received = future.result()

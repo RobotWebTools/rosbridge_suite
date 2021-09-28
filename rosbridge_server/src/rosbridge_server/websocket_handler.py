@@ -36,24 +36,24 @@ import traceback
 import uuid
 from functools import partial, wraps
 
-from tornado import version_info as tornado_version_info
-from tornado.ioloop import IOLoop
-from tornado.iostream import StreamClosedError
-from tornado.websocket import WebSocketHandler, WebSocketClosedError
-from tornado.gen import coroutine, BadYieldError
-
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
+from tornado import version_info as tornado_version_info
+from tornado.gen import BadYieldError, coroutine
+from tornado.ioloop import IOLoop
+from tornado.iostream import StreamClosedError
+from tornado.websocket import WebSocketClosedError, WebSocketHandler
 
 
 def _log_exception():
     """Log the most recent exception to ROS."""
     exc = traceback.format_exception(*sys.exc_info())
-    RosbridgeWebSocket.node_handle.get_logger().error(''.join(exc))
+    RosbridgeWebSocket.node_handle.get_logger().error("".join(exc))
 
 
 def log_exceptions(f):
     """Decorator for logging exceptions to ROS."""
+
     @wraps(f)
     def wrapper(*args, **kwargs):
         try:
@@ -61,6 +61,7 @@ def log_exceptions(f):
         except Exception:
             _log_exception()
             raise
+
     return wrapper
 
 
@@ -71,14 +72,13 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     # The following are passed on to RosbridgeProtocol
     # defragmentation.py:
-    fragment_timeout = 600                  # seconds
+    fragment_timeout = 600  # seconds
     # protocol.py:
-    delay_between_messages = 0              # seconds
-    max_message_size = 10000000             # bytes
-    unregister_timeout = 10.0               # seconds
+    delay_between_messages = 0  # seconds
+    max_message_size = 10000000  # bytes
+    unregister_timeout = 10.0  # seconds
     bson_only_mode = False
     node_handle = None
-
 
     @log_exceptions
     def open(self):
@@ -88,10 +88,12 @@ class RosbridgeWebSocket(WebSocketHandler):
             "delay_between_messages": cls.delay_between_messages,
             "max_message_size": cls.max_message_size,
             "unregister_timeout": cls.unregister_timeout,
-            "bson_only_mode": cls.bson_only_mode
+            "bson_only_mode": cls.bson_only_mode,
         }
         try:
-            self.protocol = RosbridgeProtocol(cls.client_id_seed, cls.node_handle, parameters=parameters)
+            self.protocol = RosbridgeProtocol(
+                cls.client_id_seed, cls.node_handle, parameters=parameters
+            )
             self.protocol.outgoing = self.send_message
             self.set_nodelay(True)
             self._write_lock = threading.RLock()
@@ -101,14 +103,18 @@ class RosbridgeWebSocket(WebSocketHandler):
             if cls.client_manager:
                 cls.client_manager.add_client(self.client_id, self.request.remote_ip)
         except Exception as exc:
-            cls.node_handle.get_logger().error(f"Unable to accept incoming connection.  Reason: {exc}")
+            cls.node_handle.get_logger().error(
+                f"Unable to accept incoming connection.  Reason: {exc}"
+            )
 
-        cls.node_handle.get_logger().info(f"Client connected. {cls.clients_connected} clients total.")
+        cls.node_handle.get_logger().info(
+            f"Client connected. {cls.clients_connected} clients total."
+        )
 
     @log_exceptions
     def on_message(self, message):
         if isinstance(message, bytes):
-            message = message.decode('utf-8')
+            message = message.decode("utf-8")
         self.protocol.incoming(message)
 
     @log_exceptions
@@ -118,7 +124,9 @@ class RosbridgeWebSocket(WebSocketHandler):
         self.protocol.finish()
         if cls.client_manager:
             cls.client_manager.remove_client(self.client_id, self.request.remote_ip)
-        cls.node_handle.get_logger().info(f"Client disconnected. {cls.clients_connected} clients total.")
+        cls.node_handle.get_logger().info(
+            f"Client disconnected. {cls.clients_connected} clients total."
+        )
 
     def send_message(self, message):
         if isinstance(message, bson.BSON):
@@ -143,17 +151,21 @@ class RosbridgeWebSocket(WebSocketHandler):
                 # When closing, self.write_message() return None even if it's an undocument output.
                 # Consider it as WebSocketClosedError
                 # For tornado versions <4.3.0 self.write_message() does not have a return value
-                if future is None and tornado_version_info >= (4,3,0,0):
+                if future is None and tornado_version_info >= (4, 3, 0, 0):
                     raise WebSocketClosedError
 
                 yield future
         except WebSocketClosedError:
-            cls.node_handle.get_logger().warn('WebSocketClosedError: Tried to write to a closed websocket',
-                throttle_duration_sec=1.0)
+            cls.node_handle.get_logger().warn(
+                "WebSocketClosedError: Tried to write to a closed websocket",
+                throttle_duration_sec=1.0,
+            )
             raise
         except StreamClosedError:
-            cls.node_handle.get_logger().warn('StreamClosedError: Tried to write to a closed stream',
-                throttle_duration_sec=1.0)
+            cls.node_handle.get_logger().warn(
+                "StreamClosedError: Tried to write to a closed stream",
+                throttle_duration_sec=1.0,
+            )
             raise
         except BadYieldError:
             # Tornado <4.5.0 doesn't like its own yield and raises BadYieldError.

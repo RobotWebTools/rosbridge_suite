@@ -1,5 +1,5 @@
-from rosidl_runtime_py import get_interface_path
 from rosidl_adapter.parser import parse_message_string
+from rosidl_runtime_py import get_interface_path
 
 
 def stringify_field_types(root_type):
@@ -17,9 +17,7 @@ def stringify_field_types(root_type):
 
         msg_name = parts[2] if len(parts) == 3 else parts[1]
         interface_name = ty if len(parts) == 3 else f"{parts[0]}/msg/{parts[1]}"
-        with open(
-            get_interface_path(interface_name), encoding="utf-8"
-        ) as msg_file:
+        with open(get_interface_path(interface_name), encoding="utf-8") as msg_file:
             msg_definition = msg_file.read()
         definition += msg_definition
 

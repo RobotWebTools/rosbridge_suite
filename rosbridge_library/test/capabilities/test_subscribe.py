@@ -1,19 +1,20 @@
 #!/usr/bin/env python
+import time
+import unittest
+from json import dumps, loads
+
 import rospy
 import rostest
-import unittest
-import time
-
-from json import loads, dumps
-from std_msgs.msg import String
-
 from rosbridge_library.capabilities import subscribe
-from rosbridge_library.protocol import Protocol
-from rosbridge_library.protocol import InvalidArgumentException, MissingArgumentException
+from rosbridge_library.protocol import (
+    InvalidArgumentException,
+    MissingArgumentException,
+    Protocol,
+)
+from std_msgs.msg import String
 
 
 class TestSubscribe(unittest.TestCase):
-
     def setUp(self):
         rospy.init_node("test_subscribe")
 
@@ -21,8 +22,8 @@ class TestSubscribe(unittest.TestCase):
         pass
 
     def test_update_params(self):
-        """ Adds a bunch of random clients to the subscription and sees whether
-        the correct parameters are chosen as the min """
+        """Adds a bunch of random clients to the subscription and sees whether
+        the correct parameters are chosen as the min"""
         client_id = "client_test_update_params"
         topic = "/test_update_params"
         msg_type = "std_msgs/String"
@@ -37,8 +38,7 @@ class TestSubscribe(unittest.TestCase):
             for queue_length in range(min_queue_length, min_queue_length + 10):
                 for frag_size in range(min_frag_size, min_frag_size + 10):
                     sid = throttle_rate * 100 + queue_length * 10 + frag_size
-                    subscription.subscribe(sid, msg_type, throttle_rate,
-                                           queue_length, frag_size)
+                    subscription.subscribe(sid, msg_type, throttle_rate, queue_length, frag_size)
 
         subscription.update_params()
 
@@ -112,8 +112,7 @@ class TestSubscribe(unittest.TestCase):
         self.assertEqual(received["msg"]["msg"]["data"], msg.data)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_subscribe'
-if __name__ == '__main__':
+PKG = "rosbridge_library"
+NAME = "test_subscribe"
+if __name__ == "__main__":
     rostest.unitrun(PKG, NAME, TestSubscribe)
-

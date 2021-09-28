@@ -1,12 +1,14 @@
 from rosbridge_library.capability import Capability
-from rosbridge_library.internal import ros_loader, message_conversion
+from rosbridge_library.internal import message_conversion, ros_loader
 
 
 class ServiceResponse(Capability):
 
     service_response_msg_fields = [
-        (True, "service", str), (False, "id", str),
-        (False, "values", dict), (True, "result", bool)
+        (True, "service", str),
+        (False, "id", str),
+        (False, "values", dict),
+        (True, "result", bool),
     ]
 
     def __init__(self, protocol):
@@ -33,4 +35,7 @@ class ServiceResponse(Capability):
             # pass along the response
             service_handler.responses[request_id] = resp
         else:
-            self.protocol.log("error", "Service %s has not been advertised via rosbridge." % service_name)
+            self.protocol.log(
+                "error",
+                "Service %s has not been advertised via rosbridge." % service_name,
+            )

@@ -33,7 +33,7 @@
 import time
 
 from rosbridge_library.capabilities.fragmentation import Fragmentation
-from rosbridge_library.util import json, bson
+from rosbridge_library.util import bson, json
 
 
 def is_number(s):
@@ -45,8 +45,7 @@ def is_number(s):
 
 
 def has_binary(obj):
-    """ Returns True if obj is a binary or contains a binary attribute
-    """
+    """Returns True if obj is a binary or contains a binary attribute"""
 
     if isinstance(obj, list):
         return any(has_binary(item) for item in obj)
@@ -58,7 +57,7 @@ def has_binary(obj):
 
 
 class Protocol:
-    """ The interface for a single client to interact with ROS.
+    """The interface for a single client to interact with ROS.
 
     See rosbridge_protocol for the default protocol used by rosbridge
 
@@ -89,7 +88,7 @@ class Protocol:
     parameters = None
 
     def __init__(self, client_id, node_handle):
-        """ Keyword arguments:
+        """Keyword arguments:
         client_id -- a unique ID for this client to take.  Uniqueness is
         important otherwise there will be conflicts between multiple clients
         with shared resources
@@ -104,18 +103,18 @@ class Protocol:
         if self.parameters:
             self.fragment_size = self.parameters["max_message_size"]
             self.delay_between_messages = self.parameters["delay_between_messages"]
-            self.bson_only_mode = self.parameters.get('bson_only_mode', False)
+            self.bson_only_mode = self.parameters.get("bson_only_mode", False)
 
     # added default message_string="" to allow recalling incoming until buffer is empty without giving a parameter
     # --> allows to get rid of (..or minimize) delay between client-side sends
     def incoming(self, message_string=""):
-        """ Process an incoming message from the client
+        """Process an incoming message from the client
 
         Keyword arguments:
         message_string -- the wire-level message sent by the client
 
         """
-        if(len(self.buffer) > 0):
+        if len(self.buffer) > 0:
             self.buffer = self.buffer + message_string
         else:
             self.buffer = message_string
@@ -150,21 +149,21 @@ class Protocol:
                 #     fragment data must NOT (!) contain a complete json-object that has an "op-field"
                 #
                 # an alternative solution would be to only check from first opening bracket and have a time out on data in input buffer.. (to handle broken data)
-                opening_brackets = [i for i, letter in enumerate(self.buffer) if letter == '{']
-                closing_brackets = [i for i, letter in enumerate(self.buffer) if letter == '}']
+                opening_brackets = [i for i, letter in enumerate(self.buffer) if letter == "{"]
+                closing_brackets = [i for i, letter in enumerate(self.buffer) if letter == "}"]
 
                 for start in opening_brackets:
                     for end in closing_brackets:
                         try:
-                            msg = self.deserialize(self.buffer[start:end+1])
-                            if msg.get("op",None) is not None:
+                            msg = self.deserialize(self.buffer[start : end + 1])
+                            if msg.get("op", None) is not None:
                                 # TODO: check if throwing away leading data like this is okay.. loops look okay..
-                                self.buffer = self.buffer[end+1:len(self.buffer)]
+                                self.buffer = self.buffer[end + 1 : len(self.buffer)]
                                 # jump out of inner loop if json-decode succeeded
                                 break
                         except Exception:
                             # debug json-decode errors with this line
-                            #print e
+                            # print e
                             pass
                     # if load was successful --> break outer loop, too.. -> no need to check if json begins at a "later" opening bracket..
                     if msg is not None:
@@ -180,19 +179,31 @@ class Protocol:
             mid = msg["id"]
         if "op" not in msg:
             if "receiver" in msg:
-                self.log("error", "Received a rosbridge v1.0 message.  Please refer to rosbridge.org for the correct format of rosbridge v2.0 messages.  Original message was: %s" % message_string)
+                self.log(
+                    "error",
+                    "Received a rosbridge v1.0 message.  Please refer to rosbridge.org for the correct format of rosbridge v2.0 messages.  Original message was: %s"
+                    % message_string,
+                )
             else:
-                self.log("error", f"Received a message without an op.  All messages require 'op' field with value one of: {list(self.operations.keys())}.  Original message was: {message_string}", mid)
+                self.log(
+                    "error",
+                    f"Received a message without an op.  All messages require 'op' field with value one of: {list(self.operations.keys())}.  Original message was: {message_string}",
+                    mid,
+                )
             return
         op = msg["op"]
         if op not in self.operations:
-            self.log("error", f"Unknown operation: {op}.  Allowed operations: {list(self.operations.keys())}", mid)
+            self.log(
+                "error",
+                f"Unknown operation: {op}.  Allowed operations: {list(self.operations.keys())}",
+                mid,
+            )
             return
         # this way a client can change/overwrite it's active values anytime by just including parameter field in any message sent to rosbridge
         #  maybe need to be improved to bind parameter values to specific operation..
         if "fragment_size" in msg.keys():
             self.fragment_size = msg["fragment_size"]
-            #print "fragment size set to:", self.fragment_size
+            # print "fragment size set to:", self.fragment_size
         if "message_intervall" in msg.keys() and is_number(msg["message_intervall"]):
             self.delay_between_messages = msg["message_intervall"]
         if "png" in msg.keys():
@@ -212,10 +223,8 @@ class Protocol:
                 self.old_buffer = self.buffer
                 self.incoming()
 
-
-
     def outgoing(self, message):
-        """ Pass an outgoing message to the client.  This method should be
+        """Pass an outgoing message to the client.  This method should be
         overridden.
 
         Keyword arguments:
@@ -225,7 +234,7 @@ class Protocol:
         pass
 
     def send(self, message, cid=None):
-        """ Called internally in preparation for sending messages to the client
+        """Called internally in preparation for sending messages to the client
 
         This method pre-processes the message then passes it to the overridden
         outgoing method.
@@ -248,7 +257,7 @@ class Protocol:
 
                 # TODO: think about splitting into fragments that have specified size including header-fields!
                 # --> estimate header size --> split content into fragments that have the requested overall size, rather than requested content size
-                fragment_list = Fragmentation(self).fragment(message, self.fragment_size, mid )
+                fragment_list = Fragmentation(self).fragment(message, self.fragment_size, mid)
 
             # fragment list not empty -> send fragments
             if fragment_list is not None:
@@ -266,7 +275,7 @@ class Protocol:
                 time.sleep(self.delay_between_messages)
 
     def finish(self):
-        """ Indicate that the client is finished and clean up resources.
+        """Indicate that the client is finished and clean up resources.
 
         All clients should call this method after disconnecting.
 
@@ -275,7 +284,7 @@ class Protocol:
             capability.finish()
 
     def serialize(self, msg, cid=None):
-        """ Turns a dictionary of values into the appropriate wire-level
+        """Turns a dictionary of values into the appropriate wire-level
         representation.
 
         Default behaviour uses JSON.  Override to use a different container.
@@ -291,18 +300,17 @@ class Protocol:
                 return msg
             if has_binary(msg) or self.bson_only_mode:
                 return bson.BSON.encode(msg)
-            else:    
+            else:
                 return json.dumps(msg)
         except Exception:
             if cid is not None:
                 # Only bother sending the log message if there's an id
-                self.log("error", "Unable to serialize %s message to client"
-                         % msg["op"], cid)
+                self.log("error", "Unable to serialize %s message to client" % msg["op"], cid)
             return None
 
     def deserialize(self, msg, cid=None):
 
-        """ Turns the wire-level representation into a dictionary of values
+        """Turns the wire-level representation into a dictionary of values
 
         Default behaviour assumes JSON. Override to use a different container.
 
@@ -326,18 +334,18 @@ class Protocol:
             # TODO: implement a way to have a final Exception when nothing works out to decode (multiple/broken/partial JSON..)
 
             # suppressed logging of exception on json-decode to keep rosbridge-logs "clean", otherwise console logs would get spammed for every failed json-decode try
-#            if msg != self.buffer:
-#                error_msg = "Unable to deserialize message from client: %s"  % msg
-#                error_msg += "\nException was: " +str(e)
-#
-#                self.log("error", error_msg, cid)
+            #            if msg != self.buffer:
+            #                error_msg = "Unable to deserialize message from client: %s"  % msg
+            #                error_msg += "\nException was: " +str(e)
+            #
+            #                self.log("error", error_msg, cid)
 
             # re-raise Exception to allow handling outside of deserialize function instead of returning None
             raise
-            #return None
+            # return None
 
     def register_operation(self, opcode, handler):
-        """ Register a handler for an opcode
+        """Register a handler for an opcode
 
         Keyword arguments:
         opcode  -- the opcode to register this handler for
@@ -347,7 +355,7 @@ class Protocol:
         self.operations[opcode] = handler
 
     def unregister_operation(self, opcode):
-        """ Unregister a handler for an opcode
+        """Unregister a handler for an opcode
 
         Keyword arguments:
         opcode -- the opcode to unregister the handler for
@@ -357,7 +365,7 @@ class Protocol:
             del self.operations[opcode]
 
     def add_capability(self, capability_class):
-        """ Add a capability to the protocol.
+        """Add a capability to the protocol.
 
         This method is for convenience; assumes the default capability
         constructor
@@ -369,7 +377,7 @@ class Protocol:
         self.capabilities.append(capability_class(self))
 
     def log(self, level, message, lid=None):
-        """ Log a message to the client.  By default just sends to stdout
+        """Log a message to the client.  By default just sends to stdout
 
         Keyword arguments:
         level   -- the logger level of this message

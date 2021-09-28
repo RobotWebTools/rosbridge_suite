@@ -1,11 +1,13 @@
-import rospy
 import struct
+
+import rospy
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 
 try:
     import SocketServer
 except ImportError:
     import socketserver as SocketServer
+
 
 class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     """
@@ -19,15 +21,15 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     client_count_pub = None
 
     # list of parameters
-    incoming_buffer = 65536                 # bytes
-    socket_timeout = 10                     # seconds
+    incoming_buffer = 65536  # bytes
+    socket_timeout = 10  # seconds
     # The following are passed on to RosbridgeProtocol
     # defragmentation.py:
-    fragment_timeout = 600                  # seconds
+    fragment_timeout = 600  # seconds
     # protocol.py:
-    delay_between_messages = 0              # seconds
-    max_message_size = None                 # bytes
-    unregister_timeout = 10.0               # seconds
+    delay_between_messages = 0  # seconds
+    max_message_size = None  # bytes
+    unregister_timeout = 10.0  # seconds
     bson_only_mode = False
 
     def setup(self):
@@ -37,7 +39,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
             "delay_between_messages": cls.delay_between_messages,
             "max_message_size": cls.max_message_size,
             "unregister_timeout": cls.unregister_timeout,
-            "bson_only_mode": cls.bson_only_mode
+            "bson_only_mode": cls.bson_only_mode,
         }
 
         try:
@@ -51,10 +53,10 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         except Exception as exc:
             rospy.logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
 
-    def recvall(self,n):
+    def recvall(self, n):
         # http://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data
         # Helper function to recv n bytes or return None if EOF is hit
-        data = ''
+        data = ""
         while len(data) < n:
             packet = self.request.recv(n - len(data))
             if not packet:
@@ -68,14 +70,16 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         raw_msglen = self.recvall(BSON_LENGTH_IN_BYTES)
         if not raw_msglen:
             return None
-        msglen = struct.unpack('i', raw_msglen)[0]
+        msglen = struct.unpack("i", raw_msglen)[0]
 
         # Retrieve the rest of the message
         data = self.recvall(msglen - BSON_LENGTH_IN_BYTES)
         if data is None:
             return None
-        data = raw_msglen + data # Prefix the data with the message length that has already been received.
-                                 # The message length is part of BSONs message format
+        data = (
+            raw_msglen + data
+        )  # Prefix the data with the message length that has already been received.
+        # The message length is part of BSONs message format
 
         # Exit on empty message
         if len(data) == 0:
@@ -92,22 +96,25 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         self.request.settimeout(cls.socket_timeout)
         while True:
             try:
-              if self.bson_only_mode:
-                  if self.recv_bson() is None:
-                      break
-                  continue
+                if self.bson_only_mode:
+                    if self.recv_bson() is None:
+                        break
+                    continue
 
-              # non-BSON handling
-              data = self.request.recv(cls.incoming_buffer)
-              # Exit on empty string
-              if data.strip() == '':
-                  break
-              elif len(data.strip()) > 0:
-                  self.protocol.incoming(data.strip(''))
-              else:
-                  pass
+                # non-BSON handling
+                data = self.request.recv(cls.incoming_buffer)
+                # Exit on empty string
+                if data.strip() == "":
+                    break
+                elif len(data.strip()) > 0:
+                    self.protocol.incoming(data.strip(""))
+                else:
+                    pass
             except Exception:
-                self.protocol.log("debug", "socket connection timed out! (ignore warning if client is only listening..)")
+                self.protocol.log(
+                    "debug",
+                    "socket connection timed out! (ignore warning if client is only listening..)",
+                )
 
     def finish(self):
         """
@@ -118,7 +125,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         self.protocol.finish()
         if cls.client_count_pub:
             cls.client_count_pub.publish(cls.clients_connected)
-        self.protocol.log("info", "disconnected. " + str(cls.clients_connected) + " client total." )
+        self.protocol.log("info", "disconnected. " + str(cls.clients_connected) + " client total.")
 
     def send_message(self, message=None):
         """

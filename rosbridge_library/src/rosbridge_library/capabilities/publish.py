@@ -32,6 +32,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import fnmatch
+
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
 
@@ -66,26 +67,44 @@ class Publish(Capability):
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Publish.topics_glob:
-                if (fnmatch.fnmatch(topic, glob)):
-                    self.protocol.log("debug", "Found match with glob " + glob + ", continuing publish...")
+                if fnmatch.fnmatch(topic, glob):
+                    self.protocol.log(
+                        "debug",
+                        "Found match with glob " + glob + ", continuing publish...",
+                    )
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for topic, cancelling publish to: " + topic)
+                self.protocol.log(
+                    "warn", "No match found for topic, cancelling publish to: " + topic
+                )
                 return
         else:
             self.protocol.log("debug", "No topic security glob, not checking publish.")
 
         # Register as a publishing client, propagating any exceptions
         client_id = self.protocol.client_id
-        manager.register(client_id, topic, self.protocol.node_handle, latch=latch, queue_size=queue_size)
+        manager.register(
+            client_id,
+            topic,
+            self.protocol.node_handle,
+            latch=latch,
+            queue_size=queue_size,
+        )
         self._published[topic] = True
 
         # Get the message if one was provided
         msg = message.get("msg", {})
 
         # Publish the message
-        manager.publish(client_id, topic, msg, self.protocol.node_handle, latch=latch, queue_size=queue_size)
+        manager.publish(
+            client_id,
+            topic,
+            msg,
+            self.protocol.node_handle,
+            latch=latch,
+            queue_size=queue_size,
+        )
 
     def finish(self):
         client_id = self.protocol.client_id

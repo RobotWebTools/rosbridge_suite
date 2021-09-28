@@ -11,4 +11,4 @@ Contributors
  * Brandon Alexander (baalexander@gmail.com)
  * David Bertram (davidbertram@gmx.de)
  * Matthias Gruhler (matthias.gruhler@ipa.fraunhofer.de)
- * Travis Prosser (travisprosser@gmail.com) 
+ * Travis Prosser (travisprosser@gmail.com)

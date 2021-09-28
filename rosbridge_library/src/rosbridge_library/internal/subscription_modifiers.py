@@ -30,7 +30,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from threading import Thread, Condition
+from threading import Condition, Thread
 from time import time
 
 """ Sits between incoming messages from a subscription, and the outgoing
@@ -41,7 +41,7 @@ of handler
 """
 
 
-class MessageHandler():
+class MessageHandler:
     def __init__(self, previous_handler=None, publish=None):
         if previous_handler:
             self.last_publish = previous_handler.last_publish
@@ -82,7 +82,6 @@ class MessageHandler():
 
 
 class ThrottleMessageHandler(MessageHandler):
-
     def handle_message(self, msg):
         if self.time_remaining() == 0:
             MessageHandler.handle_message(self, msg)
@@ -100,7 +99,6 @@ class ThrottleMessageHandler(MessageHandler):
 
 
 class QueueMessageHandler(MessageHandler, Thread):
-
     def __init__(self, previous_handler):
         Thread.__init__(self)
         MessageHandler.__init__(self, previous_handler)
@@ -115,7 +113,7 @@ class QueueMessageHandler(MessageHandler, Thread):
             should_notify = len(self.queue) == 0
             self.queue.append(msg)
             if len(self.queue) > self.queue_length:
-                del self.queue[0:len(self.queue) - self.queue_length]
+                del self.queue[0 : len(self.queue) - self.queue_length]
             if should_notify:
                 self.c.notify()
 
@@ -129,12 +127,12 @@ class QueueMessageHandler(MessageHandler, Thread):
         else:
             with self.c:
                 if len(self.queue) > self.queue_length:
-                    del self.queue[0:len(self.queue) - self.queue_length]
+                    del self.queue[0 : len(self.queue) - self.queue_length]
                 self.c.notify()
             return self
 
     def finish(self):
-        """ If throttle was set to 0, this pushes all buffered messages """
+        """If throttle was set to 0, this pushes all buffered messages"""
         # Notify the thread to finish
         with self.c:
             self.alive = False

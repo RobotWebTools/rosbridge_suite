@@ -8,6 +8,7 @@ except ImportError:
         import json  # noqa: F401
 
 import bson
+
 try:
     bson.BSON
 except AttributeError:
