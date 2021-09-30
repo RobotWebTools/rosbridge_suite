@@ -75,6 +75,41 @@ class TestMessageHandlers(unittest.TestCase):
         finally:
             handler.finish()
 
+    def test_queue_message_handler_dropping(self):
+        received = {"msgs": []}
+
+        def cb(msg):
+            received["msgs"].append(msg)
+            time.sleep(1)
+
+        queue_length = 5
+        msgs = range(queue_length * 5)
+
+        handler = subscribe.MessageHandler(None, cb)
+
+        handler = handler.set_queue_length(queue_length)
+        self.assertIsInstance(handler, subscribe.QueueMessageHandler)
+
+        # send all messages at once.
+        # only the first and the last queue_length should get through,
+        # because the callbacks are blocked.
+        for x in msgs:
+            handler.handle_message(x)
+            # yield the thread so the first callback can append,
+            # otherwise the first handled value is non-deterministic.
+            time.sleep(0)
+
+        # wait long enough for all the callbacks, and then some.
+        time.sleep(queue_length + 3)
+
+        try:
+            self.assertEqual([msgs[0]] + msgs[-queue_length:], received["msgs"])
+        except:  # noqa: E722  # Will finish and raise
+            handler.finish()
+            raise
+
+        handler.finish()
+
     def test_queue_message_handler_rate(self):
         handler = subscribe.MessageHandler(None, self.dummy_cb)
         self.help_test_queue_rate(handler, 50, 10)

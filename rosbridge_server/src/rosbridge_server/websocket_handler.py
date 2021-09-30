@@ -34,6 +34,7 @@ import sys
 import threading
 import traceback
 import uuid
+from collections import deque
 from functools import partial, wraps
 
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
@@ -43,6 +44,8 @@ from tornado.gen import BadYieldError, coroutine
 from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
+
+_io_loop = IOLoop.instance()
 
 
 def _log_exception():
@@ -63,6 +66,51 @@ def log_exceptions(f):
             raise
 
     return wrapper
+
+
+class IncomingQueue(threading.Thread):
+    """Decouples incoming messages from the Tornado thread.
+
+    This mitigates cases where outgoing messages are blocked by incoming,
+    and vice versa.
+    """
+
+    def __init__(self, protocol):
+        threading.Thread.__init__(self)
+        self.daemon = True
+        self.queue = deque()
+        self.protocol = protocol
+
+        self.cond = threading.Condition()
+        self._finished = False
+
+    def finish(self):
+        """Clear the queue and do not accept further messages."""
+        with self.cond:
+            self._finished = True
+            while len(self.queue) > 0:
+                self.queue.popleft()
+            self.cond.notify()
+
+    def push(self, msg):
+        with self.cond:
+            self.queue.append(msg)
+            self.cond.notify()
+
+    def run(self):
+        while True:
+            with self.cond:
+                if len(self.queue) == 0 and not self._finished:
+                    self.cond.wait()
+
+                if self._finished:
+                    break
+
+                msg = self.queue.popleft()
+
+            self.protocol.incoming(msg)
+
+        self.protocol.finish()
 
 
 class RosbridgeWebSocket(WebSocketHandler):
@@ -94,6 +142,8 @@ class RosbridgeWebSocket(WebSocketHandler):
             self.protocol = RosbridgeProtocol(
                 cls.client_id_seed, cls.node_handle, parameters=parameters
             )
+            self.incoming_queue = IncomingQueue(self.protocol)
+            self.incoming_queue.start()
             self.protocol.outgoing = self.send_message
             self.set_nodelay(True)
             self._write_lock = threading.RLock()
@@ -115,18 +165,18 @@ class RosbridgeWebSocket(WebSocketHandler):
     def on_message(self, message):
         if isinstance(message, bytes):
             message = message.decode("utf-8")
-        self.protocol.incoming(message)
+        self.incoming_queue.push(message)
 
     @log_exceptions
     def on_close(self):
         cls = self.__class__
         cls.clients_connected -= 1
-        self.protocol.finish()
         if cls.client_manager:
             cls.client_manager.remove_client(self.client_id, self.request.remote_ip)
         cls.node_handle.get_logger().info(
             f"Client disconnected. {cls.clients_connected} clients total."
         )
+        self.incoming_queue.finish()
 
     def send_message(self, message):
         if isinstance(message, bson.BSON):
@@ -138,7 +188,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             binary = False
 
         with self._write_lock:
-            IOLoop.instance().add_callback(partial(self.prewrite_message, message, binary))
+            _io_loop.add_callback(partial(self.prewrite_message, message, binary))
 
     @coroutine
     def prewrite_message(self, message, binary):
