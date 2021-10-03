@@ -33,6 +33,7 @@
 
 from threading import Lock
 
+from rclpy.qos import HistoryPolicy
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
@@ -105,7 +106,13 @@ class MultiSubscriber:
 
         # Select QoS
         default_qos_profile = 10
-        qos_profile = publishers_info[0].qos_profile if publishers_info else default_qos_profile
+        if publishers_info:
+            qos_profile = publishers_info[0].qos_profile
+            # Set history for Foxy
+            if qos_profile.history == HistoryPolicy.UNKNOWN:
+                qos_profile.history = HistoryPolicy.KEEP_LAST
+        else:
+            qos_profile = default_qos_profile
 
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
