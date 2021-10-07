@@ -1,6 +1,5 @@
 import rospy
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-from rosbridge_library.util import bson
 from twisted.internet.protocol import DatagramProtocol
 
 
@@ -70,7 +69,6 @@ class RosbridgeUdpSocket:
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
 
     def send_message(self, message):
-        # binary = isinstance(message, bson.BSON)  # Unused variable
         self.write(message)
 
     def check_origin(self, origin):

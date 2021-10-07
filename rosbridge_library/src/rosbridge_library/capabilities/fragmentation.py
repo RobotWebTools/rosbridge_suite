@@ -77,8 +77,6 @@ class Fragmentation(Capability):
         if message_length <= fragment_size:
             return [message]
 
-        # msg_id = message.get("id", None)  # Unused variable
-
         expected_duration = int(
             math.ceil(math.ceil(message_length / float(fragment_size)))
             * self.protocol.delay_between_messages
