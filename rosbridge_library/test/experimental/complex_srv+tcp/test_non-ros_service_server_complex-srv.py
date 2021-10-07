@@ -35,7 +35,7 @@ receive_message_intervall = 0.0
 
 def calculate_service_response(request):
     request_object = json.loads(request)  # parse string for service request
-    args = request_object["args"]  # get parameter field (args)
+    # args = request_object["args"]  # get parameter field (args)                   # unused variable
     #    count = int(args["count"] )                                                # get parameter(s) as described in corresponding ROS srv-file
     #
     #    message = ""                                                               # calculate service response

@@ -201,7 +201,7 @@ class RosbridgeWebsocketNode(Node):
         if "--unregister_timeout" in sys.argv:
             idx = sys.argv.index("--unregister_timeout") + 1
             if idx < len(sys.argv):
-                unregister_timeout = float(sys.argv[idx])
+                RosbridgeWebSocket.unregister_timeout = float(sys.argv[idx])
             else:
                 print("--unregister_timeout argument provided without a value.")
                 sys.exit(-1)
