@@ -24,8 +24,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/Nodes.srv
   srv/NodeDetails.srv
   srv/Publishers.srv
-  srv/SearchParam.srv
-  srv/ServiceHost.srv
   srv/ServiceNode.srv
   srv/ServiceProviders.srv
   srv/ServiceRequestDetails.srv

@@ -50,8 +50,6 @@ from rosapi.srv import (
     NodeDetails,
     Nodes,
     Publishers,
-    SearchParam,
-    ServiceHost,
     ServiceNode,
     ServiceProviders,
     ServiceRequestDetails,
@@ -127,10 +125,6 @@ class Rosapi(Node):
         self.create_service(DeleteParam, "/rosapi/delete_param", self.delete_param)
         self.create_service(GetParamNames, "/rosapi/get_param_names", self.get_param_names)
         self.create_service(GetTime, "/rosapi/get_time", self.get_time)
-
-        # TODO(@jubeira): Implement missing services:
-        # rospy.Service('/rosapi/service_host', ServiceHost, get_service_host)
-        # rospy.Service('/rosapi/search_param', SearchParam, search_param)
 
     def get_globs(self):
         return glob_helper.get_globs(self)
@@ -295,20 +289,6 @@ class Rosapi(Node):
         self.get_logger().warn(
             "Malformed parameter name: {}; expecting <node_name>:<param_name>".format(param_name)
         )
-
-
-# TODO(@jubeira): make all of these methods of the node and port them.
-
-# Note(@jubeira): there is no equivalent for this in ROS2 so far. The service doesn't seem to e used anywhere in rosbridge.
-def get_service_host(request):
-    """Called by the rosapi/ServiceNode service.  Given the name of a service, returns the name of the machine
-    that is hosting that service."""
-    return ServiceHost(proxy.get_service_host(request.service))
-
-
-# Note(@jubeira): rclpy does not have an equivalent for this. To be checked if this service is necessary or not.
-def search_param(request):
-    return SearchParam(params.search_param(request.name, glob_helper.params))
 
 
 def dict_to_typedef(typedefdict):
