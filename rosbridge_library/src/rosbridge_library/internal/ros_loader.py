@@ -101,13 +101,6 @@ def get_message_instance(typestring):
     return cls()
 
 
-def get_service_instance(typestring):
-    """If not loaded, loads the specified type.
-    Then returns an instance of it, or None."""
-    cls = get_service_class(typestring)
-    return cls()
-
-
 def get_service_request_instance(typestring):
     cls = get_service_class(typestring)
     return cls.Request()
