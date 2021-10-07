@@ -32,7 +32,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/TestRequestOnly.srv
   srv/TestResponseOnly.srv
   DEPENDENCIES builtin_interfaces geometry_msgs std_msgs
-  SKIP_INSTALL
 )
 
 ament_export_dependencies(rosidl_default_runtime)
@@ -40,8 +39,9 @@ ament_export_dependencies(rosidl_default_runtime)
 ament_package()
 
 if (BUILD_TESTING)
-  # TODO re-enable rostests
-  # find_package(rostest REQUIRED)
-  # add_rostest(test/capabilities/test_capabilities.test)
-  # add_rostest(test/internal/test_internal.test)
+  find_package(ament_cmake_pytest REQUIRED)
+
+  # TODO: Enable tests
+  # ament_add_pytest_test(test_capabilities "test/capabilities")
+  # ament_add_pytest_test(test_internal "test/internal")
 endif()
