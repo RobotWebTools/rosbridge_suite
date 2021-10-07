@@ -70,7 +70,7 @@ class TestCallService(unittest.TestCase):
 
     def test_call_service_fail(self):
         # Dummy service that instantly fails
-        service_server = rospy.Service("set_bool_fail", SetBool, lambda req: None)
+        _ = rospy.Service("set_bool_fail", SetBool, lambda req: None)
 
         proto = Protocol("test_call_service_fail")
         s = CallService(proto)
