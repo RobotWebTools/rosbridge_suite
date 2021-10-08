@@ -515,6 +515,37 @@ A response to a ROS service call
     response will contain the ID
  * **result** - return value of service callback. true means success, false failure.
 
+#### 3.4.10 Advertise Action
+
+```json
+{ "op": "advertise_action",
+  (optional) "id": <string>,
+  "type": <string>,
+  "action": <string>
+}
+```
+
+#### 3.4.11 Unadvertise Action
+
+```json
+{ "op": "unadvertise_action",
+  "service": <string>
+}
+```
+
+#### 3.4.12 Send goal Action
+
+```json
+{ "op": "send_goal",
+  "type": <string>,
+  "action": <string>
+  (optional) "args": <list<json>>,
+  (optional) "fragment_size": <int>,
+  (optional) "compression": <string>
+}
+```
+
+
 ## 4 Further considerations
 
 Further considerations for the rosbridge protocol are listed below.
