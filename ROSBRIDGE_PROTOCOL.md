@@ -545,7 +545,7 @@ A response to a ROS service call
   (optional) "compression": <string>
 }
 ```
-#### 3.4.11 Cancel goal Action
+#### 3.4.13 Cancel goal Action
 
 ```json
 { "op": "cancel_goal",
