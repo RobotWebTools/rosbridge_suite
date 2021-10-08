@@ -529,7 +529,7 @@ A response to a ROS service call
 
 ```json
 { "op": "unadvertise_action",
-  "service": <string>
+  "action": <string>
 }
 ```
 
@@ -537,11 +537,21 @@ A response to a ROS service call
 
 ```json
 { "op": "send_goal",
+  "id": <string>,
   "type": <string>,
   "action": <string>
   (optional) "args": <list<json>>,
   (optional) "fragment_size": <int>,
   (optional) "compression": <string>
+}
+```
+#### 3.4.11 Cancel goal Action
+
+```json
+{ "op": "cancel_goal",
+  "id": <string>,
+  "type": <string>,
+  "action": <string>
 }
 ```
 
