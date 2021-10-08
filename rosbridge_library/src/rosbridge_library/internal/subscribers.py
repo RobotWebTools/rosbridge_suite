@@ -108,9 +108,8 @@ class MultiSubscriber:
         default_qos_profile = 10
         if publishers_info:
             qos_profile = publishers_info[0].qos_profile
-            # Set history for Foxy
-            if qos_profile.history == HistoryPolicy.UNKNOWN:
-                qos_profile.history = HistoryPolicy.KEEP_LAST
+            qos_profile.history = HistoryPolicy.KEEP_LAST
+            qos_profile.depth = 10
         else:
             qos_profile = default_qos_profile
 
