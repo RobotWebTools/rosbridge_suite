@@ -533,7 +533,7 @@ A response to a ROS service call
 }
 ```
 
-#### 3.4.12 Send goal Action
+#### 3.4.12 Send goal 
 
 ```json
 { "op": "send_goal",
@@ -545,13 +545,37 @@ A response to a ROS service call
   (optional) "compression": <string>
 }
 ```
-#### 3.4.13 Cancel goal Action
+#### 3.4.13 Cancel goal 
 
 ```json
 { "op": "cancel_goal",
   "id": <string>,
   "type": <string>,
   "action": <string>
+}
+```
+#### 3.4.14 Goal accepted
+
+```json
+{ "op": "goal_accepted",
+  "id": <string>,
+  "accepted":  <list<json>>
+}
+```
+#### 3.4.15 Goal feedback
+
+```json
+{ "op": "goal_feedback",
+  "id": <string>,
+  "feedback":  <list<json>>
+}
+```
+#### 3.4.16 Goal result
+
+```json
+{ "op": "goal_result",
+  "id": <string>,
+  "result":  <list<json>>
 }
 ```
 
