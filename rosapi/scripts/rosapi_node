@@ -38,8 +38,8 @@ from rclpy.clock import Clock, ClockType
 from rclpy.node import Node
 
 from rosapi import glob_helper, objectutils, params, proxy
-from rosapi.msg import TypeDef
-from rosapi.srv import (
+from rosapi_msgs.msg import TypeDef
+from rosapi_msgs.srv import (
     DeleteParam,
     GetActionServers,
     GetParam,

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>rosapi</name>
+  <name>rosapi_msgs</name>
   <version>1.0.8</version>
   <description>
     Provides service calls for getting ros meta-information, like list of
@@ -19,29 +19,17 @@
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
 
-  <exec_depend>rosapi_msgs</exec_depend>
-  <exec_depend>builtin_interfaces</exec_depend>
-  <exec_depend>rclpy</exec_depend>
-  <exec_depend>rcl_interfaces</exec_depend>
-  <exec_depend>rosbridge_library</exec_depend>
-  <exec_depend>ros2node</exec_depend>
-  <exec_depend>ros2param</exec_depend>
-  <exec_depend>ros2pkg</exec_depend>
-  <exec_depend>ros2service</exec_depend>
-  <exec_depend>ros2topic</exec_depend>
-  <!--
-  <exec_depend>rosnode</exec_depend>
-  <exec_depend>rosgraph</exec_depend>
-  -->
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
-  <test_depend>ament_cmake_pytest</test_depend>
-  <test_depend>sensor_msgs</test_depend>
-  <test_depend>shape_msgs</test_depend>
-  <test_depend>geometry_msgs</test_depend>
-  <test_depend>rmw_dds_common</test_depend>
+  <build_depend>builtin_interfaces</build_depend>
+
+  <exec_depend>builtin_interfaces</exec_depend>
+  <exec_depend>rcl_interfaces</exec_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
     <build_type>ament_cmake</build_type>
-    <ros1_bridge mapping_rules="mapping_rules.yaml"/>
   </export>
 </package>
