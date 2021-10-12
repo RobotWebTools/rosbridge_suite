@@ -315,7 +315,10 @@ def main(args=None):
 
     spin_callback = PeriodicCallback(lambda: rclpy.spin_once(node, timeout_sec=0.01), 1)
     spin_callback.start()
-    start_hook()
+    try:
+        start_hook()
+    except KeyboardInterrupt:
+        node.get_logger().info("Exiting due to SIGINT")
 
     node.destroy_node()
     rclpy.shutdown()

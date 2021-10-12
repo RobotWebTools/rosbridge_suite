@@ -58,6 +58,7 @@ class TestClientProtocol(WebSocketClientProtocol):
     def __init__(self, *args, **kwargs):
         self.received = []
         self.connected_future = rclpy.task.Future()
+        self.completed_future = rclpy.task.Future()
         super().__init__(*args, **kwargs)
 
     def onOpen(self):
@@ -72,6 +73,13 @@ class TestClientProtocol(WebSocketClientProtocol):
     def onMessage(self, payload, binary):
         print(f"WebSocket client received message: {payload}")
         self.received.append(payload)
+        if len(self.received) == NUM_MSGS:
+            print("Received all messages on WebSocket subscriber")
+            self.completed_future.set_result(None)
+        elif len(self.received) > NUM_MSGS:
+            raise AssertionError(
+                f"Received {len(self.received)} WebSocket messages but expected {NUM_MSGS}"
+            )
 
 
 class TestWebsocketSmoke(unittest.TestCase):
@@ -137,7 +145,19 @@ class TestWebsocketSmoke(unittest.TestCase):
 
     def test_smoke(self):
         ros_received = []
-        sub_a = self.node.create_subscription(String, A_TOPIC, ros_received.append, NUM_MSGS)
+        sub_completed_future = rclpy.task.Future()
+
+        def sub_handler(msg):
+            ros_received.append(msg)
+            if len(ros_received) == NUM_MSGS:
+                self.node.get_logger().info("Received all messages on ROS subscriber")
+                sub_completed_future.set_result(None)
+            elif len(ros_received) > NUM_MSGS:
+                raise AssertionError(
+                    f"Received {len(ros_received)} messages on ROS subscriber but expected {NUM_MSGS}"
+                )
+
+        sub_a = self.node.create_subscription(String, A_TOPIC, sub_handler, NUM_MSGS)
         pub_b = self.node.create_publisher(String, B_TOPIC, NUM_MSGS)
 
         async def run_test():
@@ -176,7 +196,9 @@ class TestWebsocketSmoke(unittest.TestCase):
             for _ in range(NUM_MSGS):
                 pub_b.publish(String(data=B_STRING))
 
-            await self.sleep(TIME_LIMIT)
+            ws_client.completed_future.add_done_callback(lambda _: self.executor.wake())
+            await sub_completed_future
+            await ws_client.completed_future
 
             reactor.callFromThread(reactor.stop)
             return ws_client.received
