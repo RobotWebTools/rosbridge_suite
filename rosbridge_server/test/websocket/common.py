@@ -150,3 +150,25 @@ def websocket_test(test_fn):
         run_websocket_test(test_fn.__name__, lambda *args: test_fn(self, *args))
 
     return run_test
+
+
+def expect_messages(count: int, description: str, logger):
+    """
+    Convenience function to create a Future and a message handler function which gathers results
+    into a list and waits for the list to have the expected number of items.
+    """
+    future = rclpy.Future()
+    results = []
+
+    def handler(msg):
+        logger.info(f"Received message on {description}: {msg}")
+        results.append(msg)
+        if len(results) == count:
+            logger.info(f"Received all messages on {description}")
+            future.set_result(results)
+        elif len(results) > count:
+            raise AssertionError(
+                f"Received {len(results)} messages on {description} but expected {count}"
+            )
+
+    return future, handler

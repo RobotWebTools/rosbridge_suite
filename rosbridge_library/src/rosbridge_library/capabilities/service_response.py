@@ -33,7 +33,7 @@ class ServiceResponse(Capability):
             resp = ros_loader.get_service_response_instance(service_handler.service_type)
             message_conversion.populate_instance(values, resp)
             # pass along the response
-            service_handler.responses[request_id] = resp
+            service_handler.handle_response(request_id, resp)
         else:
             self.protocol.log(
                 "error",
