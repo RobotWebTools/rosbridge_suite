@@ -45,6 +45,8 @@ from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
 
+from typing import (Any)
+
 _io_loop = IOLoop.instance()
 
 
@@ -127,6 +129,21 @@ class RosbridgeWebSocket(WebSocketHandler):
     unregister_timeout = 10.0  # seconds
     bson_only_mode = False
     node_handle = None
+
+    @log_exceptions
+    async def get(self, *args: Any, **kwargs: Any) -> None:
+        cls = self.__class__
+        h = self.request.headers
+        for (k,v) in sorted(h.get_all()):
+             cls.node_handle.get_logger().info('%s: %s' % (k,v))
+
+        allowed = True
+        if allowed:
+            super().get(*args, **kwargs)
+        else:
+            self.set_status(403)
+            log_msg = "Unathorized request"
+            self.finish(log_msg)
 
     @log_exceptions
     def open(self):
