@@ -1,11 +1,9 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>rosbridge_library</name>
-  <version>1.0.8</version>
+  <name>rosbridge_test_msgs</name>
+  <version>0.0.0</version>
   <description>
-    The core rosbridge package, responsible for interpreting JSON andperforming
-    the appropriate ROS action, like subscribe, publish, call service, and
-    interact with params.
+    Message and service definitions used in internal tests for rosbridge packages.
   </description>
 
   <license>BSD</license>
@@ -20,15 +18,17 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>python3-pil</build_depend>
-  <build_depend>python3-bson</build_depend>
+  <build_depend>builtin_interfaces</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>rosidl_default_generators</build_depend>
 
+  <exec_depend>builtin_interfaces</exec_depend>
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>python3-pil</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
-  <exec_depend>python3-bson</exec_depend>
 
-  <test_depend>rosbridge_test_msgs</test_depend>
   <test_depend>actionlib_msgs</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>builtin_interfaces</test_depend>
@@ -43,6 +43,8 @@
   <test_depend>tf2_msgs</test_depend>
   <test_depend>trajectory_msgs</test_depend>
   <test_depend>visualization_msgs</test_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -255,7 +255,7 @@ class TestMessageConversion(unittest.TestCase):
             return inst.data
 
         for msgtype in ["TestChar", "TestUInt8"]:
-            rostype = "rosbridge_library/" + msgtype
+            rostype = "rosbridge_test_msgs/" + msgtype
 
             int8s = list(range(0, 256))
             ret = test_int8_msg(rostype, int8s)
@@ -268,7 +268,7 @@ class TestMessageConversion(unittest.TestCase):
             self.assertEqual(ret, str_int8s)
 
         for msgtype in ["TestUInt8FixedSizeArray16"]:
-            rostype = "rosbridge_library/" + msgtype
+            rostype = "rosbridge_test_msgs/" + msgtype
 
             int8s = list(range(0, 16))
             ret = test_int8_msg(rostype, int8s)
