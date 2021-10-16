@@ -179,7 +179,7 @@ class TestMessageConversion(unittest.TestCase):
         self.do_test(msg, "std_msgs/Time")
 
         msg = {"times": [{"secs": 3, "nsecs": 5}, {"secs": 2, "nsecs": 7}]}
-        self.do_test(msg, "rosbridge_library/TestTimeArray")
+        self.do_test(msg, "rosbridge_test_msgs/TestTimeArray")
 
     def test_time_msg_now(self):
         msg = {"data": "now"}
@@ -203,7 +203,7 @@ class TestMessageConversion(unittest.TestCase):
         self.do_test(msg, "std_msgs/Duration")
 
         msg = {"durations": [{"secs": 3, "nsecs": 5}, {"secs": 2, "nsecs": 7}]}
-        self.do_test(msg, "rosbridge_library/TestDurationArray")
+        self.do_test(msg, "rosbridge_test_msgs/TestDurationArray")
 
     def test_header_msg(self):
         msg = {
@@ -214,13 +214,13 @@ class TestMessageConversion(unittest.TestCase):
         self.do_test(msg, "std_msgs/Header")
 
         msg = {"header": msg}
-        self.do_test(msg, "rosbridge_library/TestHeader")
-        self.do_test(msg, "rosbridge_library/TestHeaderTwo")
+        self.do_test(msg, "rosbridge_test_msgs/TestHeader")
+        self.do_test(msg, "rosbridge_test_msgs/TestHeaderTwo")
 
         msg = {"header": [msg["header"], msg["header"], msg["header"]]}
         msg["header"][1]["seq"] = 6
         msg["header"][2]["seq"] = 7
-        self.do_test(msg, "rosbridge_library/TestHeaderArray")
+        self.do_test(msg, "rosbridge_test_msgs/TestHeaderArray")
 
     def test_assorted_msgs(self):
         assortedmsgs = [
