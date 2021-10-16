@@ -1,0 +1,21 @@
+# The generated client_id for the server connection request.
+# A duplicated client_id should produce a 500 Internal server error
+# response unless a unique client_id is sent in response to the
+# service caller.
+string client_id
+
+# HTTP headers from the client
+HttpHeaderFieldList headers
+
+---
+
+# The authentication service can override the client_id. If the
+# overridden client_id is not valid a 500 Internal Server Error is
+# issued to the client
+string client_id
+
+# HTTP status code to send to the client
+int8 status_code
+
+# HTTP header fields to send to the client
+HttpHeaderFieldList headers
