@@ -3,15 +3,15 @@ string CAPABILITY_PUBLISH = publish
 string CAPABILITY_CALL_SERVICE = call_service
 string CAPABILITY_ADVERTISE_SERVICE = advertise_service
 
-string client_id
+string client_connection_id
 
 # See defined constants
-string capability_type
+string ros_operation_type
 
 # For pub/sub this is the topic name. For services this is the service name.
-string capability_name
+string ros_operation_name_arg
 
 ---
 
-string client_id
+string client_conection_id
 bool authorized
