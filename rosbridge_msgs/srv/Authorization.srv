@@ -1,0 +1,17 @@
+string CAPABILITY_SUBSCRIBE = subscribe
+string CAPABILITY_PUBLISH = publish
+string CAPABILITY_CALL_SERVICE = call_service
+string CAPABILITY_ADVERTISE_SERVICE = advertise_service
+
+string client_id
+
+# See defined constants
+string capability_type
+
+# For pub/sub this is the topic name. For services this is the service name.
+string capability_name
+
+---
+
+string client_id
+bool authorized
