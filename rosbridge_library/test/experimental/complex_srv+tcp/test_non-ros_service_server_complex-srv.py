@@ -16,7 +16,7 @@ max_msg_length = 20000  # bytes
 rosbridge_ip = "localhost"  # hostname or ip
 rosbridge_port = 9090  # port as integer
 
-service_type = "rosbridge_library/TestNestedService"  # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+service_type = "rosbridge_test_msgs/TestNestedService"  # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
 service_name = "nested_srv"  # service name
 
 send_fragment_size = 1000
