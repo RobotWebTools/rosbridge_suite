@@ -12,6 +12,10 @@ endif()
 rosidl_generate_interfaces(${PROJECT_NAME}
   msg/ConnectedClient.msg
   msg/ConnectedClients.msg
+  msg/HttpHeaderField.msg
+  msg/HttpHeaderFieldList.msg
+  srv/Authorization.srv
+  srv/HttpAuthentication.srv
   DEPENDENCIES builtin_interfaces
 )
 
