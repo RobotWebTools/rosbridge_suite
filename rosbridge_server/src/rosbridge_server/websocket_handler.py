@@ -37,6 +37,8 @@ import uuid
 from collections import deque
 from functools import partial, wraps
 
+from rosbridge_msgs.srv import HttpAuthentication
+from rosbridge_library.internal.services import ServiceCaller
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
 from tornado import version_info as tornado_version_info
@@ -130,6 +132,16 @@ class RosbridgeWebSocket(WebSocketHandler):
     bson_only_mode = False
     node_handle = None
 
+    # Optional service name that is called to authenticate each client
+    # connection
+    authentication_service = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        cls = self.__class__
+        if self.authentication_service is not None:
+            self.authentication_service = cls.node_handle.create_client(HttpAuthentication, self.authentication_service)
+
     @log_exceptions
     async def get(self, *args: Any, **kwargs: Any) -> None:
         cls = self.__class__
@@ -138,12 +150,28 @@ class RosbridgeWebSocket(WebSocketHandler):
              cls.node_handle.get_logger().info('%s: %s' % (k,v))
 
         allowed = True
+
+        if self.authorization_service is not None:
+            allowed = False
+            args = []
+            # Create the callbacks
+            s_cb = partial(self._success, cid, service, fragment_size, compression)
+            e_cb = partial(self._failure, cid, service)
+            # Run service caller in the same thread.
+            # ServiceCaller(self.authorization_service, args, s_cb, e_cb, self.protocol.node_handle).run()
+             
         if allowed:
             super().get(*args, **kwargs)
         else:
             self.set_status(403)
             log_msg = "Unathorized request"
             self.finish(log_msg)
+
+    def _authenticate_success(self, cid, service, fragment_size, compression, message):
+        pass
+    
+    def _authenticate_failure(self, cid, service, exc):
+        pass
 
     @log_exceptions
     def open(self):

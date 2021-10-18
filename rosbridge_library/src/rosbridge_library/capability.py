@@ -49,6 +49,10 @@ class Capability:
 
     """
 
+    # Optional service name that is called to check if clients are
+    # authorized to perform capability opcodes
+    authorization_service = None
+
     def __init__(self, protocol):
         """Abstract class constructor.  All capabilities require a handle to
         the containing protocol.

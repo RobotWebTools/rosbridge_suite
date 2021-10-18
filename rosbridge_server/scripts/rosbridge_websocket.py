@@ -38,6 +38,7 @@ import time
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSDurabilityPolicy, QoSProfile
+from rosbridge_library.capability import Capability
 from rosbridge_library.capabilities.advertise import Advertise
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.call_service import CallService
@@ -148,6 +149,9 @@ class RosbridgeWebsocketNode(Node):
             for element in params_glob[1:-1].split(",")
             if len(element.strip().strip("'")) > 0
         ]
+
+        RosbridgeWebSocket.authentication_service = self.declare_parameter("authentication_service", False).value
+        Capability.authorization_service = self.declare_parameter("authorization_service", False).value
 
         if "--port" in sys.argv:
             idx = sys.argv.index("--port") + 1
@@ -265,6 +269,22 @@ class RosbridgeWebsocketNode(Node):
                 tornado_settings["websocket_ping_timeout"] = float(sys.argv[idx])
             else:
                 print("--websocket_ping_timeout argument provided without a value.")
+                sys.exit(-1)
+
+        if "--authentication_service" in sys.argv:
+            idx = sys.argv.index("--authentication_service") + 1
+            if idx < len(sys.argv):
+                RosbridgeWebSocket.authentication_service = float(sys.argv[idx])
+            else:
+                print("--authentication_service argument provided without a value.")
+                sys.exit(-1)
+
+        if "--authorization_service" in sys.argv:
+            idx = sys.argv.index("--authorization_service") + 1
+            if idx < len(sys.argv):
+                Capability.authorization_service = float(sys.argv[idx])
+            else:
+                print("--authorization_service argument provided without a value.")
                 sys.exit(-1)
 
         # To be able to access the list of topics and services, you must be able to access the rosapi services.
