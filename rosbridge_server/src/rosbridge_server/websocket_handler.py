@@ -174,8 +174,7 @@ class RosbridgeWebSocket(WebSocketHandler):
                 return
             else:
                 if auth_future.done():
-                    response = minimal_client.future.result()
-                    allowed = response.authenticated
+                    allowed = auth_future.result().authenticated
                 else:
                     cls.node_handle.get_logger().error('Service call timed out while waiting for response from %s'
                                                        % self.authentication_service)
