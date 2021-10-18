@@ -13,5 +13,4 @@ string ros_operation_name_arg
 
 ---
 
-string client_conection_id
 bool authorized
