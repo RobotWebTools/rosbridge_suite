@@ -5,7 +5,7 @@
 string client_connection_id
 
 # HTTP headers from the client
-HttpHeaderFieldList headers
+HttpHeaderField[] headers
 
 ---
 
@@ -18,6 +18,6 @@ string client_connection_id
 int8 status_code
 
 # HTTP header fields to send to the client
-HttpHeaderFieldList headers
+HttpHeaderField[] headers
 
 bool authenticated
