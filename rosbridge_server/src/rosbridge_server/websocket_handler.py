@@ -139,12 +139,10 @@ class RosbridgeWebSocket(WebSocketHandler):
     authentication_service = None
 
     @log_exceptions
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         cls = self.__class__
-        cls.node_handle.get_logger().info('%s' % self.authentication_service)
         if self.authentication_service is not None:
-            cls.node_handle.get_logger().info('%s' % self.authentication_service)
             self.auth_client = cls.node_handle.create_client(HttpAuthentication, self.authentication_service)
             if not self.auth_client.wait_for_service(timeout_sec=5.0):
                 cls.node_handle.get_logger().warn('Authentication service %s not available'
@@ -165,25 +163,26 @@ class RosbridgeWebSocket(WebSocketHandler):
                 field.name = k
                 field.value = v
                 auth_req.headers.append(field)
-            auth_future = self.auth_client.call_async(auth_req)
-            rclpy.spin_until_future_complete(cls.node_handle, auth_future, timeout_sec=5.0)
-            if auth_future.done():
-                try:
-                    response = minimal_client.future.result()
-                except Exception as e:
-                    cls.node_handle.get_logger().error('Service call failed %r' % (e,))
-                    self.set_status(500)
-                    log_msg = "Authentication service call failed"
-                    self.finish(log_msg)
-                    return
-                allowed = response.authenticated
-            else:
-                cls.node_handle.get_logger().error('Service call timed out while waiting for response from %s'
-                                                  % self.authentication_service)
+            try:
+                auth_future = self.auth_client.call_async(auth_req)
+                rclpy.spin_until_future_complete(cls.node_handle, auth_future, timeout_sec=5.0)
+            except Exception as e:
+                cls.node_handle.get_logger().error('Service call failed %r' % (e,))
                 self.set_status(500)
-                log_msg = "Authentication service call timed out"
+                log_msg = "Authentication service call failed"
                 self.finish(log_msg)
                 return
+            else:
+                if auth_future.done():
+                    response = minimal_client.future.result()
+                    allowed = response.authenticated
+                else:
+                    cls.node_handle.get_logger().error('Service call timed out while waiting for response from %s'
+                                                       % self.authentication_service)
+                    self.set_status(500)
+                    log_msg = "Authentication service call timed out"
+                    self.finish(log_msg)
+                    return
         if allowed:
             super().get(*args, **kwargs)
         else:
