@@ -274,18 +274,22 @@ class RosbridgeWebsocketNode(Node):
         if "--authentication_service" in sys.argv:
             idx = sys.argv.index("--authentication_service") + 1
             if idx < len(sys.argv):
-                RosbridgeWebSocket.authentication_service = float(sys.argv[idx])
+                RosbridgeWebSocket.authentication_service = sys.argv[idx]
             else:
                 print("--authentication_service argument provided without a value.")
                 sys.exit(-1)
+        if RosbridgeWebSocket.authentication_service == False:
+            RosbridgeWebSocket.authentication_service = None
 
         if "--authorization_service" in sys.argv:
             idx = sys.argv.index("--authorization_service") + 1
             if idx < len(sys.argv):
-                Capability.authorization_service = float(sys.argv[idx])
+                Capability.authorization_service = sys.argv[idx]
             else:
                 print("--authorization_service argument provided without a value.")
                 sys.exit(-1)
+        if Capability.authorization_service == False:
+            Capability.authorization_service = None
 
         # To be able to access the list of topics and services, you must be able to access the rosapi services.
         if RosbridgeWebSocket.services_glob:
