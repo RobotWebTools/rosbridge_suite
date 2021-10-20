@@ -29,6 +29,7 @@ install(FILES
 
 if(BUILD_TESTING)
   find_package(launch_testing_ament_cmake REQUIRED)
-  add_launch_test(test/websocket/smoke.test.py)
   add_launch_test(test/websocket/advertise_service.test.py)
+  add_launch_test(test/websocket/call_service.test.py)
+  add_launch_test(test/websocket/smoke.test.py)
 endif()
