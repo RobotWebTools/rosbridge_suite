@@ -1,11 +1,10 @@
-string CAPABILITY_SUBSCRIBE = subscribe
-string CAPABILITY_PUBLISH = publish
-string CAPABILITY_CALL_SERVICE = call_service
-string CAPABILITY_ADVERTISE_SERVICE = advertise_service
-
+# The client ID returned from the authentication request for the client connection
 string client_connection_id
 
-# See defined constants
+# The optional 'id' field in rosbridge  protocol
+string id
+
+# The 'op' field in the rosbridge protocol
 string ros_operation_type
 
 # For pub/sub this is the topic name. For services this is the service name.
