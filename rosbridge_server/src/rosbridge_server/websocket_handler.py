@@ -120,7 +120,6 @@ class IncomingQueue(threading.Thread):
 
 
 class RosbridgeWebSocket(WebSocketHandler):
-    client_id_seed = 0
     clients_connected = 0
     use_compression = False
 
@@ -147,18 +146,18 @@ class RosbridgeWebSocket(WebSocketHandler):
             if not self.auth_client.wait_for_service(timeout_sec=5.0):
                 cls.node_handle.get_logger().warn('Authentication service %s not available'
                                                    % self.authentication_service)
-
+                
     @log_exceptions
     async def get(self, *args: Any, **kwargs: Any) -> None:
         cls = self.__class__
+        self.client_id = uuid.uuid4()
         allowed = True
         if self.auth_client is not None:
             allowed = False
             auth_req = HttpAuthentication.Request()
-            auth_req.client_connection_id = str(cls.client_id_seed + 1)
+            auth_req.client_connection_id = str(self.client_id)
             h = self.request.headers
             for (k,v) in sorted(h.get_all()):
-                cls.node_handle.get_logger().info('%s: %s' % (k,v))
                 field = HttpHeaderField()
                 field.name = k
                 field.value = v
@@ -201,16 +200,14 @@ class RosbridgeWebSocket(WebSocketHandler):
         }
         try:
             self.protocol = RosbridgeProtocol(
-                cls.client_id_seed, cls.node_handle, parameters=parameters
+                self.client_id, cls.node_handle, parameters=parameters
             )
             self.incoming_queue = IncomingQueue(self.protocol)
             self.incoming_queue.start()
             self.protocol.outgoing = self.send_message
             self.set_nodelay(True)
             self._write_lock = threading.RLock()
-            cls.client_id_seed += 1
             cls.clients_connected += 1
-            self.client_id = uuid.uuid4()
             if cls.client_manager:
                 cls.client_manager.add_client(self.client_id, self.request.remote_ip)
         except Exception as exc:
