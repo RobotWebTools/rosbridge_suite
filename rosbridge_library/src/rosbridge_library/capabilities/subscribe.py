@@ -262,6 +262,13 @@ class Subscribe(Capability):
         else:
             self.protocol.log("debug", "No topic security glob, not checking subscription.")
 
+        # Check if the client connection is authorized
+        if not self.authorization_check(msg):
+            self.protocol.log("warn",
+                              "Client %s not authorized for %s %s"
+                              % (self.protocol.client_id, msg["op"], topic))
+            return
+
         if topic not in self._subscriptions:
             client_id = self.protocol.client_id
             cb = partial(self.publish, topic)

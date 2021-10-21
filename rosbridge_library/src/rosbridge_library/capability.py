@@ -35,6 +35,8 @@ from rosbridge_library.internal.exceptions import (
     MissingArgumentException,
 )
 
+import rclpy
+from rosbridge_msgs.srv import Authorization
 
 class Capability:
     """Handles the operation-specific logic of a rosbridge message
@@ -62,6 +64,14 @@ class Capability:
 
         """
         self.protocol = protocol
+
+        if self.authorization_service is not None:
+            self.auth_client = self.protocol.node_handle.create_client(Authorization, self.authorization_service)
+            if not self.auth_client.wait_for_service(timeout_sec=5.0):
+                self.protocol.log("warn",
+                                  'Authorization service %s not available'
+                                  % self.authorization_service)
+
 
     def handle_message(self, message):
         """Handle an incoming message.
@@ -112,3 +122,25 @@ class Capability:
                     raise InvalidArgumentException(
                         f"Expected field {fieldname} to be one of {fieldtypes}. Invalid value: {msg[fieldname]}"
                     )
+
+
+    def authorization_check(self, msg):
+        if self.auth_client is None:
+            return True
+        self.protocol.log("info", "Authorize with %s" % (self.authorization_service))
+        auth_req = Authorization.Request()
+        auth_req.client_connection_id = str(self.protocol.client_id)
+        # sid = msg.get("id", None) # TODO add id to the request?
+        auth_req.ros_operation_type = msg["op"]
+        auth_req.ros_operation_name_arg = msg.get("topic", msg.get("service", None))
+        try:
+            auth_future = self.auth_client.call_async(auth_req)
+            rclpy.spin_until_future_complete(self.protocol.node_handle, auth_future, timeout_sec=5.0)
+        except Exception as exc:
+            self.protocol.log("warn", f"Unable to authorize ROS operation.  Reason: {exc}")
+            return False
+        else:
+            if auth_future.done():
+                return auth_future.result().authorized
+        return False
+

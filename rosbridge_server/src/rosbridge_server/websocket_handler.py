@@ -185,7 +185,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             super().get(*args, **kwargs)
         else:
             self.set_status(403)
-            log_msg = "Unathorized request"
+            log_msg = "Unauthorized request"
             self.finish(log_msg)
 
     @log_exceptions
