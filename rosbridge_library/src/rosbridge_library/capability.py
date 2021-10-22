@@ -130,14 +130,14 @@ class Capability:
         self.protocol.log("info", "Authorize with %s" % (self.authorization_service))
         auth_req = Authorization.Request()
         auth_req.client_connection_id = str(self.protocol.client_id)
-        auth_req.id = str(msg.get("id", None))
+        auth_req.msg_id = str(msg.get("id", None))
         auth_req.ros_operation_type = str(msg["op"])
         auth_req.ros_operation_name_arg = str(msg.get("topic", msg.get("service", None)))
         try:
             auth_future = self.auth_client.call_async(auth_req)
             rclpy.spin_until_future_complete(self.protocol.node_handle, auth_future, timeout_sec=5.0)
         except Exception as exc:
-            self.protocol.log("warn", f"Unable to authorize ROS operation.  Reason: {exc}")
+            self.protocol.log("warn", f"Unable to authorize ROS operation. Reason: {exc}")
             return False
         else:
             if auth_future.done():
