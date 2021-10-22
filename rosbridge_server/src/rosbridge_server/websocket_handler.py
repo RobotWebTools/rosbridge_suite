@@ -146,60 +146,16 @@ class RosbridgeWebSocket(WebSocketHandler):
             if not self.auth_client.wait_for_service(timeout_sec=5.0):
                 cls.node_handle.get_logger().warn('Authentication service %s not available'
                                                    % self.authentication_service)
-                
+
+
     @log_exceptions
     async def get(self, *args: Any, **kwargs: Any) -> None:
         cls = self.__class__
         self.client_id = uuid.uuid4()
-        allowed = True
-        auth_response_headers = None
-        auth_response_code = None
-        if self.auth_client is not None:
-            allowed = False
-            auth_req = HttpAuthentication.Request()
-            auth_req.client_connection_id = str(self.client_id)
-            h = self.request.headers
-            for (k,v) in sorted(h.get_all()):
-                auth_req.headers.append(HttpHeaderField(name=k, value=v))
-            try:
-                auth_future = self.auth_client.call_async(auth_req)
-                rclpy.spin_until_future_complete(cls.node_handle, auth_future, timeout_sec=5.0)
-            except Exception as e:
-                cls.node_handle.get_logger().error('Service call failed %r' % (e,))
-                self.set_status(500)
-                log_msg = "Authentication service call failed"
-                self.finish(log_msg)
-                return
-            else:
-                if auth_future.done():
-                    auth_response = auth_future.result()
-                    allowed = auth_response.authenticated
-                    auth_response_headers = auth_response.headers
-                    auth_response_code = auth_response.status_code
-                    have_server_error = False
-                    server_error_msg = "Authentication service call failed."
-                    if auth_response.client_connection_id:
-                        self.client_id = auth_response.client_connection_id
-                        # Set an upper bound on the client_id
-                        if len(auth_response.client_connection_id) > 4000:
-                            have_server_error = True
-                            server_error_msg += " Bad client_id response: %s" \
-                                % (auth_response.client_connection_id)
-                    if allowed and auth_response_code and auth_response_code != 200:
-                        have_server_error = True
-                        server_error_msg += " Bad status_code: %s" % auth_response_code
-                    if have_server_error:
-                        cls.node_handle.get_logger().error(server_error_msg)
-                        self.set_status(500)
-                        self.finish(server_error_msg)
-                        return
-                else:
-                    cls.node_handle.get_logger().error('Service call timed out while waiting for response from %s'
-                                                       % self.authentication_service)
-                    self.set_status(500)
-                    log_msg = "Authentication service call timed out"
-                    self.finish(log_msg)
-                    return
+        (allowed,
+         auth_response_code,
+         auth_response_headers,
+         log_msg) = self.check_authentication()
         if auth_response_headers is not None:
             for field in auth_response_headers:
                 self.set_header(field.name, field.value)
@@ -240,6 +196,52 @@ class RosbridgeWebSocket(WebSocketHandler):
         cls.node_handle.get_logger().info(
             f"Client connected. {cls.clients_connected} clients total."
         )
+
+
+    @log_exceptions
+    def check_authentication(self) -> (bool, int, [], str):
+        cls = self.__class__
+        if self.auth_client is None:
+            return (true, 200, None, None)
+        allowed = False
+        auth_req = HttpAuthentication.Request()
+        auth_req.client_connection_id = str(self.client_id)
+        h = self.request.headers
+        for (k,v) in sorted(h.get_all()):
+            auth_req.headers.append(HttpHeaderField(name=k, value=v))
+        try:
+            auth_future = self.auth_client.call_async(auth_req)
+            rclpy.spin_until_future_complete(cls.node_handle, auth_future, timeout_sec=5.0)
+        except Exception as e:
+            cls.node_handle.get_logger().error('Service call failed %r' % (e,))
+            return (false, 500, None, "Authentication service call failed")
+        else:
+            if not auth_future.done():
+                cls.node_handle.get_logger().error('Service call timed out while waiting for response from %s'
+                                                   % self.authentication_service)
+                return (false, 500, None, "Authentication service call timed out")
+            auth_response = auth_future.result()
+            allowed = auth_response.authenticated
+            auth_response_headers = auth_response.headers
+            auth_response_code = auth_response.status_code
+            have_server_error = False
+            server_error_msg = "Authentication service call failed."
+            if auth_response.client_connection_id:
+                # Set the client ID provided by the authentication service
+                self.client_id = auth_response.client_connection_id
+                # Check an upper bound on the client_id length
+                if len(auth_response.client_connection_id) > 4000:
+                    have_server_error = True
+                    server_error_msg += " Bad client_id response: %s" \
+                        % (auth_response.client_connection_id)
+            if allowed and auth_response_code and auth_response_code != 200:
+                have_server_error = True
+                server_error_msg += " Bad status_code: %s" % auth_response_code
+            if have_server_error:
+                return (false, 500, None, server_error_msg)
+            else:
+                return (allowed, auth_response_code, auth_response_headers, None)
+
 
     @log_exceptions
     def on_message(self, message):
