@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.0 (2021-10-22)
+------------------
 * Fix test imports from rosbridge_test_msgs (`#668 <https://github.com/RobotWebTools/rosbridge_suite/issues/668>`_)
 * Move msg/srv from rosapi and rosbridge_library into separate packages; enable Rolling in CI (`#665 <https://github.com/RobotWebTools/rosbridge_suite/issues/665>`_)
 * Fix test_services.py (`#653 <https://github.com/RobotWebTools/rosbridge_suite/issues/653>`_)
