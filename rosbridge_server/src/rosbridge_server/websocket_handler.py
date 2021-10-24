@@ -40,7 +40,6 @@ from functools import partial, wraps
 import rclpy
 from rosbridge_msgs.srv import HttpAuthentication
 from rosbridge_msgs.msg import HttpHeaderField
-from rosbridge_library.internal.services import ServiceCaller
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
 from tornado import version_info as tornado_version_info
@@ -211,7 +210,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             auth_req.headers.append(HttpHeaderField(name=k, value=v))
         try:
             auth_future = self.auth_client.call_async(auth_req)
-            rclpy.spin_until_future_complete(cls.node_handle, auth_future, timeout_sec=5.0)
+            rclpy.spin_until_future_complete(cls.node_handle, auth_future, timeout_sec=30.0)
         except Exception as e:
             cls.node_handle.get_logger().error('Service call failed %r' % (e,))
             return (false, 500, None, "Authentication service call failed")
