@@ -206,7 +206,7 @@ class MultiSubscriber:
         subscriptors.
         """
         with self.lock:
-            self.callback(msg, [self.new_subscriptions.values()])
+            self.callback(msg, self.new_subscriptions.values())
             self.subscriptions.update(self.new_subscriptions)
             self.new_subscriptions = {}
             self.node_handle.destroy_subscription(self.new_subscriber)
