@@ -127,6 +127,7 @@ class Protocol:
         # ..first, try to load the whole buffer as a JSON-object
         try:
             msg = self.deserialize(self.buffer)
+            self.buffer = ""
 
         # if loading whole object fails try to load part of it (from first opening bracket "{" to next closing bracket "}"
         # .. this causes Exceptions on "inner" closing brackets --> so I suppressed logging of deserialization errors
