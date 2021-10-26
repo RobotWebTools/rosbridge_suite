@@ -127,7 +127,6 @@ class Protocol:
         # ..first, try to load the whole buffer as a JSON-object
         try:
             msg = self.deserialize(self.buffer)
-            self.buffer = ""
 
         # if loading whole object fails try to load part of it (from first opening bracket "{" to next closing bracket "}"
         # .. this causes Exceptions on "inner" closing brackets --> so I suppressed logging of deserialization errors
@@ -171,6 +170,8 @@ class Protocol:
                     # if load was successfull --> break outer loop, too.. -> no need to check if json begins at a "later" opening bracket..
                     if msg != None:
                         break
+        finally:
+            self.buffer = ""
 
         # if decoding of buffer failed .. simply return
         if msg is None:
