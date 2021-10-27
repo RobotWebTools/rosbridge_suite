@@ -137,6 +137,7 @@ class Protocol:
                 # that receives exactly one full BSON message.
                 # This will then be passed to self.deserialize and shouldn't cause any
                 # exceptions because of fragmented messages (broken or invalid messages might still be sent tough)
+                self.buffer = ""
                 self.log("error", "Exception in deserialization of BSON")
 
             else:
@@ -171,8 +172,6 @@ class Protocol:
                     # if load was successfull --> break outer loop, too.. -> no need to check if json begins at a "later" opening bracket..
                     if msg != None:
                         break
-        finally:
-            self.buffer = ""
 
         # if decoding of buffer failed .. simply return
         if msg is None:
