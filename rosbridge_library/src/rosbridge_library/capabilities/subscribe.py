@@ -151,7 +151,7 @@ class Subscription():
     def _publish(self, message):
         """ Internal method to propagate published messages to the registered
         publish callback """
-        self.publish(message, self.fragment_size, self.compression)
+        self.publish(message, self.fragment_size, self.compression, self.clients.keys())
 
     def on_msg(self, msg):
         """ Raw callback called by subscription manager for all incoming
@@ -290,7 +290,7 @@ class Subscribe(Capability):
 
         self.protocol.log("info", "Unsubscribed from %s" % topic)
 
-    def publish(self, topic, message, fragment_size=None, compression="none"):
+    def publish(self, topic, message, fragment_size=None, compression="none", ids=list()):
         """ Publish a message to the client
 
         Keyword arguments:
@@ -339,7 +339,12 @@ class Subscribe(Capability):
         else:
             outgoing_msg["msg"] = message.get_json_values()
 
-        self.protocol.send(outgoing_msg)
+        for id in ids:
+            if id:
+                outgoing_msg[u"id"] = id
+            elif u"id" in outgoing_msg:
+                del outgoing_msg[u"id"]
+            self.protocol.send(outgoing_msg)
 
     def finish(self):
         for subscription in self._subscriptions.values():
