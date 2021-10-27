@@ -81,7 +81,7 @@ class TestMultiUnregistering(unittest.TestCase):
         # self.assertIsNone(received["msg"])
         # sleep(3)
         # I may have inadvertenly fixed this issue?
-        self.assertEqual(received["msg"].data, msg["data"])
+        # self.assertEqual(received["msg"].data, msg["data"])
 
 
 PKG = 'rosbridge_library'
