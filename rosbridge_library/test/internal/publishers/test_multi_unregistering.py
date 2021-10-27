@@ -78,8 +78,9 @@ class TestMultiUnregistering(unittest.TestCase):
         sleep(2)
         # Next two lines should be removed when this is fixed:
         # https://github.com/ros/ros_comm/blob/indigo-devel/clients/rospy/src/rospy/impl/tcpros_base.py#L733
-        self.assertIsNone(received["msg"])
-        sleep(3)
+        # self.assertIsNone(received["msg"])
+        # sleep(3)
+        # I may have inadvertenly fixed this issue?
         self.assertEqual(received["msg"].data, msg["data"])
 
 
