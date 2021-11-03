@@ -38,8 +38,8 @@ from collections import deque
 from functools import partial, wraps
 
 import rclpy
-from rosbridge_msgs.srv import HttpAuthentication
-from rosbridge_msgs.msg import HttpHeaderField
+from rosbridge_msgs.srv import Authentication
+from rosbridge_msgs.msg import AuthenticationField
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
 from tornado import version_info as tornado_version_info
@@ -141,29 +141,10 @@ class RosbridgeWebSocket(WebSocketHandler):
         super().__init__(*args, **kwargs)
         cls = self.__class__
         if self.authentication_service is not None:
-            self.auth_client = cls.node_handle.create_client(HttpAuthentication, self.authentication_service)
+            self.auth_client = cls.node_handle.create_client(Authentication, self.authentication_service)
             if not self.auth_client.wait_for_service(timeout_sec=5.0):
                 cls.node_handle.get_logger().warn('Authentication service %s not available'
                                                    % self.authentication_service)
-
-
-    @log_exceptions
-    async def get(self, *args: Any, **kwargs: Any) -> None:
-        cls = self.__class__
-        self.client_id = uuid.uuid4()
-        (allowed,
-         auth_response_code,
-         auth_response_headers,
-         log_msg) = self.check_authentication()
-        if auth_response_headers is not None:
-            for field in auth_response_headers:
-                self.set_header(field.name, field.value)
-        if allowed:
-            super().get(*args, **kwargs)
-        else:
-            self.set_status(auth_response_code or 403)
-            log_msg = "Authorization required"
-            self.finish(log_msg)
 
     @log_exceptions
     def open(self):
@@ -176,12 +157,14 @@ class RosbridgeWebSocket(WebSocketHandler):
             "bson_only_mode": cls.bson_only_mode,
         }
         try:
+            self.client_id = uuid.uuid4()
             self.protocol = RosbridgeProtocol(
                 self.client_id, cls.node_handle, parameters=parameters
             )
             self.incoming_queue = IncomingQueue(self.protocol)
             self.incoming_queue.start()
             self.protocol.outgoing = self.send_message
+            self.authenticated = False
             self.set_nodelay(True)
             self._write_lock = threading.RLock()
             cls.clients_connected += 1
@@ -244,9 +227,45 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     @log_exceptions
     def on_message(self, message):
+        cls = self.__class__
+
         if isinstance(message, bytes):
             message = message.decode("utf-8")
-        self.incoming_queue.push(message)
+
+        # check if we need to authenticate
+        if self.authenticated or self.authentication_service is None:
+            # no authentication required
+            self.incoming_queue.push(message)
+        else:
+            msg = json.loads(message)
+            if msg['op'] == 'auth':
+                # check the authorization information
+                auth_req = Authentication.Request()
+                auth_req.client_connection_id = str(self.client_id)
+                auth_req.fields.append(AuthenticationField(name=remote_ip, value=self.request.remote_ip))
+                try:
+                    auth_future = self.auth_client.call_async(auth_req)
+                    rclpy.spin_until_future_complete(cls.node_handle, auth_future, timeout_sec=30.0)
+                except Exception as e:
+                    cls.node_handle.get_logger().error('Service call failed %r' % (e,))
+                else:
+                    if auth_future.done():
+                        auth_response = auth_future.result()
+                        self.authenticated = auth_response.authenticated
+                    else:
+                        cls.node_handle.get_logger().error('Service call timed out while waiting for response from %s'
+                                                       % self.authentication_service)
+            else:
+                cls.node_handle.get_logger().error('Authentication required for client: %s' % (self.client_id))
+    
+            if self.authenticated:
+                return
+            else:
+                # if we are here, no valid authentication was given
+                cls.node_handle.get_logger().error('Authentication failed for client: %s' % (self.client_id))
+                self.close()
+
+
 
     @log_exceptions
     def on_close(self):

@@ -1,17 +1,11 @@
-# The client_connection_id field is the generated id for the server
-# connection request. A duplicated client_id should produce an error
-# unless a unique client_id is sent in response to the service caller.
+# The client_connection_id field is the generated id for the client
+# connection requesting authentication.
 string client_connection_id
 
 # List of key-value pairs sent as authentication arguments
 AuthenticationField[] fields
 
 ---
-
-# The authentication service can override the client_connection_id. If
-# the overridden client_connection_id is not valid a 500 Internal
-# Server Error is issued to the client
-string client_connection_id
 
 # If the connection has proper authentication
 bool authenticated
