@@ -71,6 +71,8 @@ class Capability:
                 self.protocol.log("warn",
                                   'Authorization service %s not available'
                                   % self.authorization_service)
+        else:
+            self.auth_client = None
 
 
     def handle_message(self, message):

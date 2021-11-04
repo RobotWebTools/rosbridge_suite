@@ -41,7 +41,7 @@ import rclpy
 from rosbridge_msgs.srv import Authentication
 from rosbridge_msgs.msg import AuthenticationField
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-from rosbridge_library.util import bson
+from rosbridge_library.util import json, bson
 from tornado import version_info as tornado_version_info
 from tornado.gen import BadYieldError, coroutine
 from tornado.ioloop import IOLoop
@@ -232,6 +232,9 @@ class RosbridgeWebSocket(WebSocketHandler):
         if isinstance(message, bytes):
             message = message.decode("utf-8")
 
+        if not message.strip():
+            return
+
         # check if we need to authenticate
         if self.authenticated or self.authentication_service is None:
             # no authentication required
@@ -240,29 +243,34 @@ class RosbridgeWebSocket(WebSocketHandler):
             msg = json.loads(message)
             if msg['op'] == 'auth':
                 # check the authorization information
-                auth_req = Authentication.Request()
-                auth_req.client_connection_id = str(self.client_id)
-                auth_req.fields.append(AuthenticationField(name=remote_ip, value=self.request.remote_ip))
+                auth_req = Authentication.Request(
+                    client_connection_id = str(self.client_id),
+                    remote_ip = self.request.remote_ip
+                )
+                if 'fields' in msg and isinstance(msg['fields'], dict):
+                    for k, v in msg['fields'].items():
+                        auth_req.fields.append(AuthenticationField(name=k, value=v))
                 try:
                     auth_future = self.auth_client.call_async(auth_req)
                     rclpy.spin_until_future_complete(cls.node_handle, auth_future, timeout_sec=30.0)
                 except Exception as e:
-                    cls.node_handle.get_logger().error('Service call failed %r' % (e,))
+                    cls.node_handle.get_logger().error('Authentication service call to %s failed %r'
+                                                       % (self.authentication_service, e))
                 else:
                     if auth_future.done():
                         auth_response = auth_future.result()
                         self.authenticated = auth_response.authenticated
                     else:
-                        cls.node_handle.get_logger().error('Service call timed out while waiting for response from %s'
-                                                       % self.authentication_service)
+                        cls.node_handle.get_logger().error('Authentication service call timed out while waiting for response from %s'
+                                                           % self.authentication_service)
             else:
-                cls.node_handle.get_logger().error('Authentication required for client: %s' % (self.client_id))
+                cls.node_handle.get_logger().warn('Authentication required for client: %s' % (self.client_id))
     
             if self.authenticated:
                 return
             else:
                 # if we are here, no valid authentication was given
-                cls.node_handle.get_logger().error('Authentication failed for client: %s' % (self.client_id))
+                cls.node_handle.get_logger().warn('Authentication failed for client: %s' % (self.client_id))
                 self.close()
 
 
