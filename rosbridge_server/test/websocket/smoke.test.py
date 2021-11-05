@@ -37,6 +37,7 @@ class TestWebsocketSmoke(unittest.TestCase):
         ws_completed_future = rclpy.task.Future()
 
         def sub_handler(msg):
+            node.get_logger().info(f"Received message via ROS subscriber: {msg}")
             ros_received.append(msg)
             if len(ros_received) == NUM_MSGS:
                 node.get_logger().info("Received all messages on ROS subscriber")
@@ -49,7 +50,7 @@ class TestWebsocketSmoke(unittest.TestCase):
         def ws_handler(msg):
             ws_received.append(msg)
             if len(ws_received) == NUM_MSGS:
-                node.get_logger().info("Received all messages on ROS subscriber")
+                node.get_logger().info("Received all WebSocket messages")
                 ws_completed_future.set_result(None)
             elif len(ws_received) > NUM_MSGS:
                 raise AssertionError(
@@ -75,6 +76,9 @@ class TestWebsocketSmoke(unittest.TestCase):
                 "type": "std_msgs/String",
             }
         )
+
+        await sleep(node, WARMUP_DELAY)
+
         ws_client.sendJson(
             {
                 "op": "publish",
@@ -85,8 +89,6 @@ class TestWebsocketSmoke(unittest.TestCase):
             },
             times=NUM_MSGS,
         )
-
-        await sleep(node, WARMUP_DELAY)
 
         for _ in range(NUM_MSGS):
             pub_b.publish(String(data=B_STRING))
