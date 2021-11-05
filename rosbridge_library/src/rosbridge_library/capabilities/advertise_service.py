@@ -32,7 +32,6 @@ class AdvertisedServiceHandler:
     async def handle_request(self, req, res):
         # generate a unique ID
         request_id = "service_request:" + self.service_name + ":" + str(self.next_id())
-        self.protocol.log("warning", f"Handling request... {request_id}")
 
         future = rclpy.task.Future()
         self.request_futures[request_id] = future
