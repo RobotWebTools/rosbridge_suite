@@ -7,14 +7,13 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-python@v2
         with:
           python-version: '3.8'
-      - run: pip install bandit codespell flake8
-      - run: bandit --recursive --skip B101,B110,B311 .
-      # See setup.cfg for the default settings for codespell and flake8
-      - run: codespell
-      - run: flake8
+
+      - uses: pre-commit/action@v2.0.3
+
   test:
     strategy:
       fail-fast: false
@@ -22,12 +21,14 @@ jobs:
         include:
           # Test supported ROS 2 distributions
           # https://docs.ros.org/en/rolling/Releases.html
-          - ros_distribution: foxy
+          - ros: foxy
             os: ubuntu-20.04
-          - ros_distribution: galactic
+          - ros: galactic
+            os: ubuntu-20.04
+          - ros: rolling
             os: ubuntu-20.04
 
-    name: ROS 2 ${{ matrix.ros_distribution }} (${{ matrix.os }})
+    name: ROS 2 ${{ matrix.ros }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -36,9 +37,7 @@ jobs:
           path: ros_ws/src
 
       - uses: ros-tooling/setup-ros@v0.2
-        with:
-          required-ros-distributions: ${{ matrix.ros_distribution }}
 
       - uses: ros-tooling/action-ros-ci@v0.2
         with:
-          target-ros2-distro: ${{ matrix.ros_distribution }}
+          target-ros2-distro: ${{ matrix.ros }}

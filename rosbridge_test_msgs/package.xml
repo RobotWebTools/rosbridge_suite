@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>rosbridge_test_msgs</name>
+  <version>1.1.0</version>
+  <description>
+    Message and service definitions used in internal tests for rosbridge packages.
+  </description>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/rosbridge_library</url>
+  <url type="bugtracker">https://github.com/RobotWebTools/rosbridge_suite/issues</url>
+  <url type="repository">https://github.com/RobotWebTools/rosbridge_suite</url>
+
+  <author email="jonathan.c.mace@gmail.com">Jonathan Mace</author>
+  <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
+  <maintainer email="jacob@foxglove.dev">Jacob Bandes-Storch</maintainer>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <build_depend>builtin_interfaces</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>rosidl_default_generators</build_depend>
+
+  <exec_depend>builtin_interfaces</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <test_depend>actionlib_msgs</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>builtin_interfaces</test_depend>
+  <test_depend>diagnostic_msgs</test_depend>
+  <test_depend>example_interfaces</test_depend>
+  <test_depend>geometry_msgs</test_depend>
+  <test_depend>nav_msgs</test_depend>
+  <test_depend>sensor_msgs</test_depend>
+  <test_depend>std_msgs</test_depend>
+  <test_depend>std_srvs</test_depend>
+  <test_depend>stereo_msgs</test_depend>
+  <test_depend>tf2_msgs</test_depend>
+  <test_depend>trajectory_msgs</test_depend>
+  <test_depend>visualization_msgs</test_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>rosbridge_library</name>
-  <version>1.0.7</version>
+  <version>1.1.0</version>
   <description>
     The core rosbridge package, responsible for interpreting JSON andperforming
     the appropriate ROS action, like subscribe, publish, call service, and
@@ -20,20 +20,29 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>builtin_interfaces</build_depend>
-  <build_depend>std_msgs</build_depend>
   <build_depend>python3-pil</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>rosidl_default_generators</build_depend>
   <build_depend>python3-bson</build_depend>
 
-  <exec_depend>builtin_interfaces</exec_depend>
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
   <exec_depend>python3-pil</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
   <exec_depend>python3-bson</exec_depend>
+
+  <test_depend>rosbridge_test_msgs</test_depend>
+  <test_depend>actionlib_msgs</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>builtin_interfaces</test_depend>
+  <test_depend>diagnostic_msgs</test_depend>
+  <test_depend>example_interfaces</test_depend>
+  <test_depend>geometry_msgs</test_depend>
+  <test_depend>nav_msgs</test_depend>
+  <test_depend>sensor_msgs</test_depend>
+  <test_depend>std_msgs</test_depend>
+  <test_depend>std_srvs</test_depend>
+  <test_depend>stereo_msgs</test_depend>
+  <test_depend>tf2_msgs</test_depend>
+  <test_depend>trajectory_msgs</test_depend>
+  <test_depend>visualization_msgs</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -1,9 +1,12 @@
-from rosbridge_library.internal.message_conversion import extract_values as extract_json_values
 from rosbridge_library.internal.cbor_conversion import extract_cbor_values
+from rosbridge_library.internal.message_conversion import (
+    extract_values as extract_json_values,
+)
 
 
 class OutgoingMessage:
     """A message wrapper for caching encoding operations."""
+
     def __init__(self, message):
         self._message = message
         self._json_values = None

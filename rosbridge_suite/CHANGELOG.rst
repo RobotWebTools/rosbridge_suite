@@ -2,6 +2,12 @@
 Changelog for package rosbridge_suite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.0 (2021-10-22)
+------------------
+
+1.0.8 (2021-08-26)
+------------------
+
 1.0.7 (2021-08-18)
 ------------------
 * Fix typos discovered by codespell (`#600 <https://github.com/RobotWebTools/rosbridge_suite/issues/600>`_)

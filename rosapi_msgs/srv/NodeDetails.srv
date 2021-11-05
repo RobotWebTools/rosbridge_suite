@@ -1,0 +1,5 @@
+string node
+---
+string[] subscribing
+string[] publishing
+string[] services

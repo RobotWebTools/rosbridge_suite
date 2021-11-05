@@ -31,12 +31,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from threading import Thread
+
 from rclpy import spin_until_future_complete
 from rclpy.expand_topic_name import expand_topic_name
-from rosbridge_library.internal.ros_loader import get_service_class
-from rosbridge_library.internal.ros_loader import get_service_request_instance
-from rosbridge_library.internal.message_conversion import populate_instance
-from rosbridge_library.internal.message_conversion import extract_values
+from rosbridge_library.internal.message_conversion import (
+    extract_values,
+    populate_instance,
+)
+from rosbridge_library.internal.ros_loader import (
+    get_service_class,
+    get_service_request_instance,
+)
 
 
 class InvalidServiceException(Exception):
@@ -45,9 +50,8 @@ class InvalidServiceException(Exception):
 
 
 class ServiceCaller(Thread):
-
     def __init__(self, service, args, success_callback, error_callback, node_handle):
-        """ Create a service caller for the specified service.  Use start()
+        """Create a service caller for the specified service.  Use start()
         to start in a separate thread or run() to run in this thread.
 
         Keyword arguments:
@@ -61,7 +65,7 @@ class ServiceCaller(Thread):
         error_callback   -- a callback to call if an error occurs.  The
         callback will be passed the exception that caused the failure
         node_handle      -- a ROS2 node handle to call services.
-         """
+        """
         Thread.__init__(self)
         self.daemon = True
         self.service = service
@@ -80,14 +84,14 @@ class ServiceCaller(Thread):
 
 
 def args_to_service_request_instance(service, inst, args):
-    """ Populate a service request instance with the provided args
+    """Populate a service request instance with the provided args
 
     args can be a dictionary of values, or a list, or None
 
-    Propagates any exceptions that may be raised. """
+    Propagates any exceptions that may be raised."""
     msg = {}
     if isinstance(args, list):
-        msg = dict(zip(inst.__slots__, args))
+        msg = dict(zip(inst.get_fields_and_field_types().keys(), args))
     elif isinstance(args, dict):
         msg = args
 
@@ -108,7 +112,7 @@ def call_service(node_handle, service, args=None):
         raise InvalidServiceException(service)
     # service_type is a tuple of types at this point; only one type is supported.
     if len(service_type) > 1:
-        node_handle.get_logger().warning(f'More than one service type detected: {service_type}')
+        node_handle.get_logger().warning(f"More than one service type detected: {service_type}")
     service_type = service_type[0]
 
     service_class = get_service_class(service_type)

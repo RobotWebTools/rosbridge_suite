@@ -1,18 +1,16 @@
 #!/usr/bin/env python
-import rospy
-import rostest
 import unittest
-
 from time import sleep
 
-from rosbridge_library.internal.publishers import MultiPublisher
-from rosbridge_library.internal.topics import TypeConflictException
+import rospy
+import rostest
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
+from rosbridge_library.internal.publishers import MultiPublisher
+from rosbridge_library.internal.topics import TypeConflictException
 
 
 class TestMultiPublisher(unittest.TestCase):
-
     def setUp(self):
         rospy.init_node("test_multi_publisher")
 
@@ -20,7 +18,7 @@ class TestMultiPublisher(unittest.TestCase):
         return topicname in dict(rospy.get_published_topics()).keys()
 
     def test_register_multipublisher(self):
-        """ Register a publisher on a clean topic with a good msg type """
+        """Register a publisher on a clean topic with a good msg type"""
         topic = "/test_register_multipublisher"
         msg_type = "std_msgs/String"
 
@@ -29,7 +27,7 @@ class TestMultiPublisher(unittest.TestCase):
         self.assertTrue(self.is_topic_published(topic))
 
     def test_unregister_multipublisher(self):
-        """ Register and unregister a publisher on a clean topic with a good msg type """
+        """Register and unregister a publisher on a clean topic with a good msg type"""
         topic = "/test_unregister_multipublisher"
         msg_type = "std_msgs/String"
 
@@ -40,7 +38,7 @@ class TestMultiPublisher(unittest.TestCase):
         self.assertFalse(self.is_topic_published(topic))
 
     def test_register_client(self):
-        """ Adds a publisher then removes it.  """
+        """Adds a publisher then removes it."""
         topic = "/test_register_client"
         msg_type = "std_msgs/String"
         client_id = "client1"
@@ -55,7 +53,7 @@ class TestMultiPublisher(unittest.TestCase):
         self.assertFalse(p.has_clients())
 
     def test_register_multiple_clients(self):
-        """ Adds multiple publishers then removes them.  """
+        """Adds multiple publishers then removes them."""
         topic = "/test_register_multiple_clients"
         msg_type = "std_msgs/String"
 
@@ -75,12 +73,19 @@ class TestMultiPublisher(unittest.TestCase):
     def test_verify_type(self):
         topic = "/test_verify_type"
         msg_type = "std_msgs/String"
-        othertypes = ["geometry_msgs/Pose", "actionlib_msgs/GoalStatus",
-        "geometry_msgs/WrenchStamped", "stereo_msgs/DisparityImage",
-        "nav_msgs/OccupancyGrid", "geometry_msgs/Point32",
-        "trajectory_msgs/JointTrajectoryPoint", "diagnostic_msgs/KeyValue",
-        "visualization_msgs/InteractiveMarkerUpdate", "nav_msgs/GridCells",
-        "sensor_msgs/PointCloud2"]
+        othertypes = [
+            "geometry_msgs/Pose",
+            "actionlib_msgs/GoalStatus",
+            "geometry_msgs/WrenchStamped",
+            "stereo_msgs/DisparityImage",
+            "nav_msgs/OccupancyGrid",
+            "geometry_msgs/Point32",
+            "trajectory_msgs/JointTrajectoryPoint",
+            "diagnostic_msgs/KeyValue",
+            "visualization_msgs/InteractiveMarkerUpdate",
+            "nav_msgs/GridCells",
+            "sensor_msgs/PointCloud2",
+        ]
 
         p = MultiPublisher(topic, msg_type)
         p.verify_type(msg_type)
@@ -88,12 +93,13 @@ class TestMultiPublisher(unittest.TestCase):
             self.assertRaises(TypeConflictException, p.verify_type, othertype)
 
     def test_publish(self):
-        """ Make sure that publishing works """
+        """Make sure that publishing works"""
         topic = "/test_publish"
         msg_type = "std_msgs/String"
         msg = {"data": "why halo thar"}
 
         received = {"msg": None}
+
         def cb(msg):
             received["msg"] = msg
 
@@ -106,7 +112,7 @@ class TestMultiPublisher(unittest.TestCase):
         self.assertEqual(received["msg"].data, msg["data"])
 
     def test_bad_publish(self):
-        """ Make sure that bad publishing fails """
+        """Make sure that bad publishing fails"""
         topic = "/test_publish"
         msg_type = "std_msgs/String"
         msg = {"data": 3}
@@ -115,7 +121,7 @@ class TestMultiPublisher(unittest.TestCase):
         self.assertRaises(FieldTypeMismatchException, p.publish, msg)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_multi_publisher'
-if __name__ == '__main__':
+PKG = "rosbridge_library"
+NAME = "test_multi_publisher"
+if __name__ == "__main__":
     rostest.unitrun(PKG, NAME, TestMultiPublisher)

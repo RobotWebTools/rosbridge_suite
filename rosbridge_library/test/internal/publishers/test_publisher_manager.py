@@ -1,18 +1,19 @@
 #!/usr/bin/env python
-import rospy
-import rostest
 import unittest
-
 from time import sleep
 
-from rosbridge_library.internal.publishers import manager
-from rosbridge_library.internal.topics import TopicNotEstablishedException, TypeConflictException
+import rospy
+import rostest
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
+from rosbridge_library.internal.publishers import manager
+from rosbridge_library.internal.topics import (
+    TopicNotEstablishedException,
+    TypeConflictException,
+)
 from std_msgs.msg import String
 
 
 class TestPublisherManager(unittest.TestCase):
-
     def setUp(self):
         rospy.init_node("test_publisher_manager")
         manager.unregister_timeout = 1.0
@@ -21,7 +22,7 @@ class TestPublisherManager(unittest.TestCase):
         return topicname in dict(rospy.get_published_topics()).keys()
 
     def test_register_publisher(self):
-        """ Register a publisher on a clean topic with a good msg type """
+        """Register a publisher on a clean topic with a good msg type"""
         topic = "/test_register_publisher"
         msg_type = "std_msgs/String"
         client = "client_test_register_publisher"
@@ -36,7 +37,7 @@ class TestPublisherManager(unittest.TestCase):
         self.assertTrue(topic in manager.unregister_timers)
         self.assertTrue(topic in manager._publishers)
         self.assertTrue(self.is_topic_published(topic))
-        sleep(manager.unregister_timeout*1.1)
+        sleep(manager.unregister_timeout * 1.1)
         self.assertFalse(topic in manager._publishers)
         self.assertFalse(self.is_topic_published(topic))
         self.assertFalse(topic in manager.unregister_timers)
@@ -62,7 +63,7 @@ class TestPublisherManager(unittest.TestCase):
         self.assertTrue(topic in manager.unregister_timers)
         self.assertTrue(topic in manager._publishers)
         self.assertTrue(self.is_topic_published(topic))
-        sleep(manager.unregister_timeout*1.1)
+        sleep(manager.unregister_timeout * 1.1)
         self.assertFalse(topic in manager._publishers)
         self.assertFalse(self.is_topic_published(topic))
         self.assertFalse(topic in manager.unregister_timers)
@@ -111,7 +112,7 @@ class TestPublisherManager(unittest.TestCase):
         manager.unregister(client, topic2)
         self.assertTrue(topic2 in manager.unregister_timers)
         self.assertTrue(self.is_topic_published(topic2))
-        sleep(manager.unregister_timeout*1.1)
+        sleep(manager.unregister_timeout * 1.1)
         self.assertFalse(topic1 in manager._publishers)
         self.assertFalse(self.is_topic_published(topic1))
         self.assertFalse(topic2 in manager._publishers)
@@ -167,7 +168,7 @@ class TestPublisherManager(unittest.TestCase):
         manager.unregister(client2, topic)
         self.assertTrue(topic in manager.unregister_timers)
         self.assertTrue(topic in manager._publishers)
-        sleep(manager.unregister_timeout*1.1)
+        sleep(manager.unregister_timeout * 1.1)
         self.assertFalse(topic in manager._publishers)
         self.assertFalse(topic in manager.unregister_timers)
         self.assertFalse(self.is_topic_published(topic))
@@ -182,7 +183,7 @@ class TestPublisherManager(unittest.TestCase):
         self.assertRaises(TopicNotEstablishedException, manager.publish, client, topic, msg)
 
     def test_publisher_manager_publish(self):
-        """ Make sure that publishing works """
+        """Make sure that publishing works"""
         topic = "/test_publisher_manager_publish"
         msg = {"data": "test publisher manager publish"}
         client = "client_test_publisher_manager_publish"
@@ -199,7 +200,7 @@ class TestPublisherManager(unittest.TestCase):
         self.assertEqual(received["msg"].data, msg["data"])
 
     def test_publisher_manager_bad_publish(self):
-        """ Make sure that bad publishing fails """
+        """Make sure that bad publishing fails"""
         topic = "/test_publisher_manager_bad_publish"
         client = "client_test_publisher_manager_bad_publish"
         msg_type = "std_msgs/String"
@@ -209,7 +210,7 @@ class TestPublisherManager(unittest.TestCase):
         self.assertRaises(FieldTypeMismatchException, manager.publish, client, topic, msg)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_publisher_manager'
-if __name__ == '__main__':
+PKG = "rosbridge_library"
+NAME = "test_publisher_manager"
+if __name__ == "__main__":
     rostest.unitrun(PKG, NAME, TestPublisherManager)

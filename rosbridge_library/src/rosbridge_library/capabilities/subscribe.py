@@ -31,12 +31,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import fnmatch
-from threading import Lock
 from functools import partial
+from threading import Lock
+
 from rosbridge_library.capability import Capability
+from rosbridge_library.internal.pngcompression import encode as encode_png
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
-from rosbridge_library.internal.pngcompression import encode as encode_png
 
 try:
     from cbor import dumps as encode_cbor
@@ -52,13 +53,13 @@ except ImportError:
         from json import dumps as encode_json
 
 
-class Subscription():
-    """ Keeps track of the clients multiple calls to subscribe.
+class Subscription:
+    """Keeps track of the clients multiple calls to subscribe.
 
-    Chooses the most appropriate settings to send messages """
+    Chooses the most appropriate settings to send messages"""
 
     def __init__(self, client_id, topic, publish, node_handle):
-        """ Create a subscription for the specified client on the specified
+        """Create a subscription for the specified client on the specified
         topic, with callback publish
 
         Keyword arguments:
@@ -80,15 +81,22 @@ class Subscription():
         self.update_params()
 
     def unregister(self):
-        """ Unsubscribes this subscription and cleans up resources """
+        """Unsubscribes this subscription and cleans up resources"""
         manager.unsubscribe(self.client_id, self.topic)
         with self.handler_lock:
-            self.handler.finish()
+            self.handler.finish(block=False)
         self.clients.clear()
 
-    def subscribe(self, sid=None, msg_type=None, throttle_rate=0,
-                  queue_length=0, fragment_size=None, compression="none"):
-        """ Add another client's subscription request
+    def subscribe(
+        self,
+        sid=None,
+        msg_type=None,
+        throttle_rate=0,
+        queue_length=0,
+        fragment_size=None,
+        compression="none",
+    ):
+        """Add another client's subscription request
 
         If there are multiple calls to subscribe, the values actually used for
         queue_length, fragment_size, compression and throttle_rate are
@@ -106,13 +114,13 @@ class Subscription():
         compression     -- "none" if no compression, or some other value if
         compression is to be used (current valid values are 'png')
 
-         """
+        """
 
         client_details = {
             "throttle_rate": throttle_rate,
             "queue_length": queue_length,
             "fragment_size": fragment_size,
-            "compression": compression
+            "compression": compression,
         }
 
         self.clients[sid] = client_details
@@ -123,10 +131,16 @@ class Subscription():
 
         # Subscribe with the manager. This will propagate any exceptions
         manager.subscribe(
-            self.client_id, self.topic, self.on_msg, self.node_handle, msg_type=msg_type, raw=raw)
+            self.client_id,
+            self.topic,
+            self.on_msg,
+            self.node_handle,
+            msg_type=msg_type,
+            raw=raw,
+        )
 
     def unsubscribe(self, sid=None):
-        """ Unsubscribe this particular client's subscription
+        """Unsubscribe this particular client's subscription
 
         Keyword arguments:
         sid -- the individual subscription id.  If None, all are unsubscribed
@@ -141,16 +155,16 @@ class Subscription():
             self.update_params()
 
     def is_empty(self):
-        """ Return true if there are no subscriptions currently """
+        """Return true if there are no subscriptions currently"""
         return len(self.clients) == 0
 
     def _publish(self, message):
-        """ Internal method to propagate published messages to the registered
-        publish callback """
+        """Internal method to propagate published messages to the registered
+        publish callback"""
         self.publish(message, self.fragment_size, self.compression)
 
     def on_msg(self, msg):
-        """ Raw callback called by subscription manager for all incoming
+        """Raw callback called by subscription manager for all incoming
         messages.
 
         Incoming messages are passed to the message handler which may drop,
@@ -161,8 +175,8 @@ class Subscription():
             self.handler.handle_message(msg)
 
     def update_params(self):
-        """ Determine the 'lowest common denominator' params to satisfy all
-        subscribed clients. """
+        """Determine the 'lowest common denominator' params to satisfy all
+        subscribed clients."""
         if len(self.clients) == 0:
             self.throttle_rate = 0
             self.queue_length = 0
@@ -196,9 +210,14 @@ class Subscription():
 
 class Subscribe(Capability):
 
-    subscribe_msg_fields = [(True, "topic", str), (False, "type", str),
-                            (False, "throttle_rate", int), (False, "fragment_size", int),
-                            (False, "queue_length", int), (False, "compression", str)]
+    subscribe_msg_fields = [
+        (True, "topic", str),
+        (False, "type", str),
+        (False, "throttle_rate", int),
+        (False, "fragment_size", int),
+        (False, "queue_length", int),
+        (False, "compression", str),
+    ]
     unsubscribe_msg_fields = [(True, "topic", str)]
 
     topics_glob = None
@@ -227,12 +246,18 @@ class Subscribe(Capability):
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Subscribe.topics_glob:
-                if (fnmatch.fnmatch(topic, glob)):
-                    self.protocol.log("debug", "Found match with glob " + glob + ", continuing subscription...")
+                if fnmatch.fnmatch(topic, glob):
+                    self.protocol.log(
+                        "debug",
+                        "Found match with glob " + glob + ", continuing subscription...",
+                    )
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for topic, cancelling subscription to: " + topic)
+                self.protocol.log(
+                    "warn",
+                    "No match found for topic, cancelling subscription to: " + topic,
+                )
                 return
         else:
             self.protocol.log("debug", "No topic security glob, not checking subscription.")
@@ -240,16 +265,18 @@ class Subscribe(Capability):
         if topic not in self._subscriptions:
             client_id = self.protocol.client_id
             cb = partial(self.publish, topic)
-            self._subscriptions[topic] = Subscription(client_id, topic, cb, self.protocol.node_handle)
+            self._subscriptions[topic] = Subscription(
+                client_id, topic, cb, self.protocol.node_handle
+            )
 
         # Register the subscriber
         subscribe_args = {
-          "sid": sid,
-          "msg_type": msg.get("type", None),
-          "throttle_rate": msg.get("throttle_rate", 0),
-          "fragment_size": msg.get("fragment_size", None),
-          "queue_length": msg.get("queue_length", 0),
-          "compression": msg.get("compression", "none")
+            "sid": sid,
+            "msg_type": msg.get("type", None),
+            "throttle_rate": msg.get("throttle_rate", 0),
+            "fragment_size": msg.get("fragment_size", None),
+            "queue_length": msg.get("queue_length", 0),
+            "compression": msg.get("compression", "none"),
         }
         self._subscriptions[topic].subscribe(**subscribe_args)
 
@@ -266,12 +293,18 @@ class Subscribe(Capability):
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Subscribe.topics_glob:
-                if (fnmatch.fnmatch(topic, glob)):
-                    self.protocol.log("debug", "Found match with glob " + glob + ", continuing unsubscription...")
+                if fnmatch.fnmatch(topic, glob):
+                    self.protocol.log(
+                        "debug",
+                        "Found match with glob " + glob + ", continuing unsubscription...",
+                    )
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for topic, cancelling unsubscription from: " + topic)
+                self.protocol.log(
+                    "warn",
+                    "No match found for topic, cancelling unsubscription from: " + topic,
+                )
                 return
         else:
             self.protocol.log("debug", "No topic security glob, not checking unsubscription.")
@@ -287,7 +320,7 @@ class Subscribe(Capability):
         self.protocol.log("info", "Unsubscribed from %s" % topic)
 
     def publish(self, topic, message, fragment_size=None, compression="none"):
-        """ Publish a message to the client
+        """Publish a message to the client
 
         Keyword arguments:
         topic   -- the topic to publish the message on
@@ -303,30 +336,36 @@ class Subscribe(Capability):
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in Subscribe.topics_glob:
-                if (fnmatch.fnmatch(topic, glob)):
-                    self.protocol.log("debug", "Found match with glob " + glob + ", continuing topic publish...")
+                if fnmatch.fnmatch(topic, glob):
+                    self.protocol.log(
+                        "debug",
+                        "Found match with glob " + glob + ", continuing topic publish...",
+                    )
                     match = True
                     break
             if not match:
-                self.protocol.log("warn", "No match found for topic, cancelling topic publish to: " + topic)
+                self.protocol.log(
+                    "warn",
+                    "No match found for topic, cancelling topic publish to: " + topic,
+                )
                 return
         else:
             self.protocol.log("debug", "No topic security glob, not checking topic publish.")
 
         outgoing_msg = {"op": "publish", "topic": topic}
-        if compression=="png":
+        if compression == "png":
             outgoing_msg["msg"] = message.get_json_values()
             outgoing_msg_dumped = encode_json(outgoing_msg)
             outgoing_msg = {"op": "png", "data": encode_png(outgoing_msg_dumped)}
-        elif compression=="cbor":
+        elif compression == "cbor":
             outgoing_msg["msg"] = message.get_cbor_values()
             outgoing_msg = bytearray(encode_cbor(outgoing_msg))
-        elif compression=="cbor-raw":
+        elif compression == "cbor-raw":
             (secs, nsecs) = self.protocol.node_handle.get_clock().now().seconds_nanoseconds()
             outgoing_msg["msg"] = {
                 "secs": secs,
                 "nsecs": nsecs,
-                "bytes": message.message
+                "bytes": message.message,
             }
             outgoing_msg = bytearray(encode_cbor(outgoing_msg))
         else:

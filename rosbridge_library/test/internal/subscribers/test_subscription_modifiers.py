@@ -1,14 +1,13 @@
 #!/usr/bin/env python
+import time
+import unittest
+
 import rospy
 import rostest
-import unittest
-import time
-
 from rosbridge_library.internal import subscription_modifiers as subscribe
 
 
 class TestMessageHandlers(unittest.TestCase):
-
     def setUp(self):
         rospy.init_node("test_message_handlers")
 
@@ -76,6 +75,41 @@ class TestMessageHandlers(unittest.TestCase):
         finally:
             handler.finish()
 
+    def test_queue_message_handler_dropping(self):
+        received = {"msgs": []}
+
+        def cb(msg):
+            received["msgs"].append(msg)
+            time.sleep(1)
+
+        queue_length = 5
+        msgs = range(queue_length * 5)
+
+        handler = subscribe.MessageHandler(None, cb)
+
+        handler = handler.set_queue_length(queue_length)
+        self.assertIsInstance(handler, subscribe.QueueMessageHandler)
+
+        # send all messages at once.
+        # only the first and the last queue_length should get through,
+        # because the callbacks are blocked.
+        for x in msgs:
+            handler.handle_message(x)
+            # yield the thread so the first callback can append,
+            # otherwise the first handled value is non-deterministic.
+            time.sleep(0)
+
+        # wait long enough for all the callbacks, and then some.
+        time.sleep(queue_length + 3)
+
+        try:
+            self.assertEqual([msgs[0]] + msgs[-queue_length:], received["msgs"])
+        except:  # noqa: E722  # Will finish and raise
+            handler.finish()
+            raise
+
+        handler.finish()
+
     def test_queue_message_handler_rate(self):
         handler = subscribe.MessageHandler(None, self.dummy_cb)
         self.help_test_queue_rate(handler, 50, 10)
@@ -93,6 +127,7 @@ class TestMessageHandlers(unittest.TestCase):
 
         def cb(msg):
             received["msg"] = msg
+
         handler.publish = cb
 
         self.assertTrue(handler.time_remaining() == 0)
@@ -106,8 +141,10 @@ class TestMessageHandlers(unittest.TestCase):
         self.assertEqual(handler.time_remaining(), 0)
 
         received = {"msgs": []}
+
         def cb(msg):
             received["msgs"].append(msg)
+
         handler.publish = cb
         xs = list(range(10000))
         for x in xs:
@@ -140,6 +177,7 @@ class TestMessageHandlers(unittest.TestCase):
         time.sleep(2.0 * handler.throttle_rate)
 
         received = {"msgs": []}
+
         def cb(msg):
             received["msgs"].append(msg)
 
@@ -210,7 +248,7 @@ class TestMessageHandlers(unittest.TestCase):
 
         return handler
 
-# Test that each transition works and is stable
+    # Test that each transition works and is stable
     def test_transitions(self):
         # MessageHandler.transition is stable
         handler = subscribe.MessageHandler(None, self.dummy_cb)
@@ -331,7 +369,7 @@ class TestMessageHandlers(unittest.TestCase):
 #        handler = self.help_test_throttle(handler, 50)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_message_handlers'
-if __name__ == '__main__':
+PKG = "rosbridge_library"
+NAME = "test_message_handlers"
+if __name__ == "__main__":
     rostest.unitrun(PKG, NAME, TestMessageHandlers)

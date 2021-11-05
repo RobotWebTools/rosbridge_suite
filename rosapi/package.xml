@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>rosapi</name>
-  <version>1.0.7</version>
+  <version>1.1.0</version>
   <description>
     Provides service calls for getting ros meta-information, like list of
     topics, services, params, etc.
@@ -19,10 +19,7 @@
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
 
-  <buildtool_depend>rosidl_default_generators</buildtool_depend>
-
-  <build_depend>builtin_interfaces</build_depend>
-
+  <exec_depend>rosapi_msgs</exec_depend>
   <exec_depend>builtin_interfaces</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>rcl_interfaces</exec_depend>
@@ -36,15 +33,12 @@
   <exec_depend>rosnode</exec_depend>
   <exec_depend>rosgraph</exec_depend>
   -->
-  <exec_depend>rosidl_default_runtime</exec_depend>
 
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>sensor_msgs</test_depend>
   <test_depend>shape_msgs</test_depend>
   <test_depend>geometry_msgs</test_depend>
   <test_depend>rmw_dds_common</test_depend>
-
-  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
     <build_type>ament_cmake</build_type>

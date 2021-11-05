@@ -2,6 +2,21 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.0 (2021-10-22)
+------------------
+* Move msg/srv from rosapi and rosbridge_library into separate packages; enable Rolling in CI (`#665 <https://github.com/RobotWebTools/rosbridge_suite/issues/665>`_)
+* Exit cleanly on SIGINT; remove sleep in test (`#667 <https://github.com/RobotWebTools/rosbridge_suite/issues/667>`_)
+* Remove unused service_host and search_param services (`#660 <https://github.com/RobotWebTools/rosbridge_suite/issues/660>`_)
+* Migrate remaining linters to pre-commit (`#657 <https://github.com/RobotWebTools/rosbridge_suite/issues/657>`_)
+* Add pre-commit, format with black and isort (`#648 <https://github.com/RobotWebTools/rosbridge_suite/issues/648>`_)
+* Contributors: Adrian Macneil, Jacob Bandes-Storch, Kenji Miyake
+
+1.0.8 (2021-08-26)
+------------------
+* Add missing test_depends and buildtool_depends (`#617 <https://github.com/RobotWebTools/rosbridge_suite/issues/617>`_)
+* Fix various Python code style and lint issues
+* Contributors: Christian Clauss, Jacob Bandes-Storch
+
 1.0.7 (2021-08-18)
 ------------------
 * Load message definitions from .msg files; exclude /msg/ and include builtin_interfaces in combined definitions (`#597 <https://github.com/RobotWebTools/rosbridge_suite/issues/597>`_)

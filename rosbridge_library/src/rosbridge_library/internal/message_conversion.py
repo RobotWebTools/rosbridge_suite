@@ -31,18 +31,16 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import rclpy
-from rclpy.clock import ROSClock
-import numpy as np
 import array
-
-from rcl_interfaces.msg import Parameter
-from rosbridge_library.internal import ros_loader
-
 import math
 import re
-from base64 import standard_b64encode, standard_b64decode
+from base64 import standard_b64decode, standard_b64encode
 
+import numpy as np
+import rclpy
+from rcl_interfaces.msg import Parameter
+from rclpy.clock import ROSClock
+from rosbridge_library.internal import ros_loader
 from rosbridge_library.util import bson
 
 try:
@@ -51,31 +49,59 @@ except ImportError:
     rospy = None
 
 type_map = {
-    "bool":    ["bool", "boolean"],
-    "int":     ["int8", "byte", "uint8", "char",
-                "int16", "uint16", "int32", "uint32",
-                "int64", "uint64", "float32", "float64"],
-    "float":   ["float32", "float64", "double", "float"],
-    "str":     ["string"]
+    "bool": ["bool", "boolean"],
+    "int": [
+        "int8",
+        "byte",
+        "uint8",
+        "char",
+        "int16",
+        "uint16",
+        "int32",
+        "uint32",
+        "int64",
+        "uint64",
+        "float32",
+        "float64",
+    ],
+    "float": ["float32", "float64", "double", "float"],
+    "str": ["string"],
 }
 primitive_types = [bool, int, float]
 
 list_types = [list, tuple, np.ndarray, array.array]
 ros_time_types = ["builtin_interfaces/Time", "builtin_interfaces/Duration"]
-ros_primitive_types = ["bool", "boolean", "byte", "char", "int8", "uint8", "int16",
-                       "uint16", "int32", "uint32", "int64", "uint64",
-                       "float32", "float64", "float", "double", "string"]
+ros_primitive_types = [
+    "bool",
+    "boolean",
+    "byte",
+    "char",
+    "int8",
+    "uint8",
+    "int16",
+    "uint16",
+    "int32",
+    "uint32",
+    "int64",
+    "uint64",
+    "float32",
+    "float64",
+    "float",
+    "double",
+    "string",
+]
 ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
 ros_binary_types = ["uint8[]", "char[]"]
-list_tokens = re.compile('<(.+?)>')
-bounded_array_tokens = re.compile(r'(.+)\[.*\]')
-ros_binary_types_list_braces = [("uint8[]", re.compile(r'uint8\[[^\]]*\]')),
-                                ("char[]", re.compile(r'char\[[^\]]*\]'))]
+list_tokens = re.compile("<(.+?)>")
+bounded_array_tokens = re.compile(r"(.+)\[.*\]")
+ros_binary_types_list_braces = [
+    ("uint8[]", re.compile(r"uint8\[[^\]]*\]")),
+    ("char[]", re.compile(r"char\[[^\]]*\]")),
+]
 
 binary_encoder = None
-binary_encoder_type = 'default'
+binary_encoder_type = "default"
 bson_only_mode = False
-
 
 
 # TODO(@jubeira): configure module with a node handle.
@@ -84,40 +110,58 @@ def configure(node_handle=None):
     global binary_encoder, binary_encoder_type, bson_only_mode
 
     if node_handle is not None:
-        binary_encoder_type = node_handle.get_parameter_or('binary_encoder',
-            Parameter('', value='default')).value
-        bson_only_mode = node_handle.get_parameter_or('bson_only_mode',
-            Parameter('', value=False)).value
+        binary_encoder_type = node_handle.get_parameter_or(
+            "binary_encoder", Parameter("", value="default")
+        ).value
+        bson_only_mode = node_handle.get_parameter_or(
+            "bson_only_mode", Parameter("", value=False)
+        ).value
 
     if binary_encoder is None:
-        if binary_encoder_type == 'bson' or bson_only_mode:
+        if binary_encoder_type == "bson" or bson_only_mode:
             binary_encoder = bson.Binary
-        elif binary_encoder_type == 'default' or binary_encoder_type == 'b64':
-             binary_encoder = standard_b64encode
+        elif binary_encoder_type == "default" or binary_encoder_type == "b64":
+            binary_encoder = standard_b64encode
         else:
-            print("Unknown encoder type '%s'"%binary_encoder_type)
+            print("Unknown encoder type '%s'" % binary_encoder_type)
             exit(0)
+
 
 def get_encoder():
     configure()
     return binary_encoder
 
+
 class InvalidMessageException(Exception):
     def __init__(self, inst):
-        Exception.__init__(self, "Unable to extract message values from %s instance" % type(inst).__name__)
+        Exception.__init__(
+            self,
+            "Unable to extract message values from %s instance" % type(inst).__name__,
+        )
 
 
 class NonexistentFieldException(Exception):
     def __init__(self, basetype, fields):
-        Exception.__init__(self, "Message type {} does not have a field {}".format(basetype, '.'.join(fields)))
+        Exception.__init__(
+            self,
+            "Message type {} does not have a field {}".format(basetype, ".".join(fields)),
+        )
 
 
 class FieldTypeMismatchException(Exception):
     def __init__(self, roottype, fields, expected_type, found_type):
         if roottype == expected_type:
-            Exception.__init__(self, f"Expected a JSON object for type {roottype} but received a {found_type}")
+            Exception.__init__(
+                self,
+                f"Expected a JSON object for type {roottype} but received a {found_type}",
+            )
         else:
-            Exception.__init__(self, "{} message requires a {} for field {}, but got a {}".format(roottype, expected_type, '.'.join(fields), found_type))
+            Exception.__init__(
+                self,
+                "{} message requires a {} for field {}, but got a {}".format(
+                    roottype, expected_type, ".".join(fields), found_type
+                ),
+            )
 
 
 def extract_values(inst):
@@ -126,12 +170,14 @@ def extract_values(inst):
         raise InvalidMessageException(inst=inst)
     return _from_inst(inst, rostype)
 
+
 def populate_instance(msg, inst):
-    """ Returns an instance of the provided class, with its fields populated
-    according to the values in msg """
+    """Returns an instance of the provided class, with its fields populated
+    according to the values in msg"""
     inst_type = msg_instance_type_repr(inst)
 
     return _to_inst(msg, inst_type, inst_type, inst)
+
 
 def msg_instance_type_repr(msg_inst):
     """Returns a string representation of a ROS2 message type from a message instance"""
@@ -141,8 +187,8 @@ def msg_instance_type_repr(msg_inst):
     msg_type = type(msg_inst)
     if msg_type in primitive_types or msg_type in list_types:
         return str(type(msg_inst))
-    inst_repr = str(msg_inst).split('.')
-    return '{}/{}'.format(inst_repr[0], inst_repr[2].split('(')[0])
+    inst_repr = str(msg_inst).split(".")
+    return "{}/{}".format(inst_repr[0], inst_repr[2].split("(")[0])
 
 
 def msg_class_type_repr(msg_class):
@@ -150,8 +196,8 @@ def msg_class_type_repr(msg_class):
     # The string representation of the class is <class '{package}.msg._{message}.{Message}'>
     # (e.g. <class 'std_msgs.msg._string.String'>).
     # This has to be converted to {package}/msg/{Message} (e.g. std_msgs/msg/String).
-    class_repr = str(msg_class).split('\'')[1].split('.')
-    return f'{class_repr[0]}/{class_repr[1]}/{class_repr[3]}'
+    class_repr = str(msg_class).split("'")[1].split(".")
+    return f"{class_repr[0]}/{class_repr[1]}/{class_repr[3]}"
 
 
 def _from_inst(inst, rostype):
@@ -160,7 +206,7 @@ def _from_inst(inst, rostype):
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
             encoded = get_encoder()(inst)
-            return encoded.decode('ascii')
+            return encoded.decode("ascii")
 
     # Check for time or duration
     if rostype in ros_time_types:
@@ -169,13 +215,12 @@ def _from_inst(inst, rostype):
         except AttributeError:
             return {"secs": inst.secs, "nsecs": inst.nsecs}
 
-
     if bson_only_mode is None:
-        bson_only_mode = rospy.get_param('~bson_only_mode', False)
+        bson_only_mode = rospy.get_param("~bson_only_mode", False)
     # Check for primitive types
     if rostype in ros_primitive_types:
-        #JSON does not support Inf and NaN. They are mapped to None and encoded as null
-        if (not bson_only_mode) and (rostype in type_map.get('float')):
+        # JSON does not support Inf and NaN. They are mapped to None and encoded as null
+        if (not bson_only_mode) and (rostype in type_map.get("float")):
             if math.isnan(inst) or math.isinf(inst):
                 return None
         return inst
@@ -200,7 +245,7 @@ def _from_list_inst(inst, rostype):
         rostype = re.search(bounded_array_tokens, rostype).group(1)
 
     # Shortcut for primitives
-    if rostype in ros_primitive_types and rostype not in type_map.get('float'):
+    if rostype in ros_primitive_types and rostype not in type_map.get("float"):
         return list(inst)
 
     # Call to _to_inst for every element of the list
@@ -215,6 +260,7 @@ def _from_object_inst(inst, rostype):
         field_inst = getattr(inst, field_name)
         msg[field_name] = _from_inst(field_inst, field_rostype)
     return msg
+
 
 def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
     # Check if it's uint8[], and if it's a string, try to b64decode
@@ -275,7 +321,7 @@ def _to_time_inst(msg, rostype, inst=None):
 
 def _to_primitive_inst(msg, rostype, roottype, stack):
     # Typecheck the msg
-    if isinstance(msg, int) and rostype in type_map['float']:
+    if isinstance(msg, int) and rostype in type_map["float"]:
         # probably wrong parsing,
         # fix that by casting the int to the expected float
         msg = float(msg)
@@ -333,8 +379,7 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
         field_rostype = inst_fields[field_name]
         field_inst = getattr(inst, field_name)
 
-        field_value = _to_inst(msg[field_name], field_rostype,
-                    roottype, field_inst, field_stack)
+        field_value = _to_inst(msg[field_name], field_rostype, roottype, field_inst, field_stack)
 
         setattr(inst, field_name, field_value)
 

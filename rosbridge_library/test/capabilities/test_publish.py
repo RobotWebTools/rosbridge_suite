@@ -1,20 +1,20 @@
 #!/usr/bin/env python
-import rospy
-import rostest
 import unittest
+from json import dumps, loads
 from time import sleep
 
-from rosbridge_library.protocol import Protocol
-from rosbridge_library.protocol import InvalidArgumentException, MissingArgumentException
+import rospy
+import rostest
 from rosbridge_library.capabilities.publish import Publish
-
+from rosbridge_library.protocol import (
+    InvalidArgumentException,
+    MissingArgumentException,
+    Protocol,
+)
 from std_msgs.msg import String
-
-from json import dumps, loads
 
 
 class TestAdvertise(unittest.TestCase):
-
     def setUp(self):
         rospy.init_node("test_advertise")
 
@@ -54,8 +54,7 @@ class TestAdvertise(unittest.TestCase):
         self.assertEqual(received["msg"].data, msg["data"])
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_publish'
-if __name__ == '__main__':
+PKG = "rosbridge_library"
+NAME = "test_publish"
+if __name__ == "__main__":
     rostest.unitrun(PKG, NAME, TestAdvertise)
-

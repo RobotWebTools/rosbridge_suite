@@ -30,7 +30,10 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from threading import Thread, Condition
+import sys
+import traceback
+from collections import deque
+from threading import Condition, Thread
 from time import time
 
 """ Sits between incoming messages from a subscription, and the outgoing
@@ -41,7 +44,7 @@ of handler
 """
 
 
-class MessageHandler():
+class MessageHandler:
     def __init__(self, previous_handler=None, publish=None):
         if previous_handler:
             self.last_publish = previous_handler.last_publish
@@ -77,12 +80,11 @@ class MessageHandler():
         else:
             return QueueMessageHandler(self)
 
-    def finish(self):
+    def finish(self, block=True):
         pass
 
 
 class ThrottleMessageHandler(MessageHandler):
-
     def handle_message(self, msg):
         if self.time_remaining() == 0:
             MessageHandler.handle_message(self, msg)
@@ -95,27 +97,26 @@ class ThrottleMessageHandler(MessageHandler):
         else:
             return QueueMessageHandler(self)
 
-    def finish(self):
+    def finish(self, block=True):
         pass
 
 
 class QueueMessageHandler(MessageHandler, Thread):
-
     def __init__(self, previous_handler):
         Thread.__init__(self)
         MessageHandler.__init__(self, previous_handler)
         self.daemon = True
-        self.queue = []
+        self.queue = deque(maxlen=self.queue_length)
         self.c = Condition()
         self.alive = True
         self.start()
 
     def handle_message(self, msg):
         with self.c:
+            if not self.alive:
+                return
             should_notify = len(self.queue) == 0
             self.queue.append(msg)
-            if len(self.queue) > self.queue_length:
-                del self.queue[0:len(self.queue) - self.queue_length]
             if should_notify:
                 self.c.notify()
 
@@ -128,37 +129,40 @@ class QueueMessageHandler(MessageHandler, Thread):
             return ThrottleMessageHandler(self)
         else:
             with self.c:
-                if len(self.queue) > self.queue_length:
-                    del self.queue[0:len(self.queue) - self.queue_length]
+                old_queue = self.queue
+                self.queue = deque(maxlen=self.queue_length)
+                while len(old_queue) > 0:
+                    self.queue.append(old_queue.popleft())
                 self.c.notify()
             return self
 
-    def finish(self):
-        """ If throttle was set to 0, this pushes all buffered messages """
+    def finish(self, block=True):
+        """If throttle was set to 0, this pushes all buffered messages"""
         # Notify the thread to finish
         with self.c:
             self.alive = False
             self.c.notify()
 
-        self.join()
+        if block:
+            self.join()
 
     def run(self):
         while self.alive:
+            msg = None
             with self.c:
-                while self.alive and (self.time_remaining() > 0 or len(self.queue) == 0):
-                    if len(self.queue) == 0:
-                        self.c.wait()
-                    else:
-                        self.c.wait(self.time_remaining())
+                if len(self.queue) == 0:
+                    self.c.wait()
+                else:
+                    self.c.wait(self.time_remaining())
                 if self.alive and self.time_remaining() == 0 and len(self.queue) > 0:
-                    try:
-                        MessageHandler.handle_message(self, self.queue[0])
-                    except Exception:
-                        pass
-                    del self.queue[0]
+                    msg = self.queue.popleft()
+            if msg is not None:
+                try:
+                    MessageHandler.handle_message(self, msg)
+                except Exception:
+                    traceback.print_exc(file=sys.stderr)
         while self.time_remaining() == 0 and len(self.queue) > 0:
             try:
                 MessageHandler.handle_message(self, self.queue[0])
             except Exception:
-                pass
-            del self.queue[0]
+                traceback.print_exc(file=sys.stderr)

@@ -261,7 +261,7 @@ message is dropped.
 
 Optional authentication information can be passed via the rosbridge protocol
 to authenticate a client connection. This information should come from some
-trusted third-party authenticator. 
+trusted third-party authenticator.
 
 Authentication is based on the MAC (message authentication code) scheme. The
 key to using MAC is that it does not tie users to a single "user database."
@@ -272,13 +272,13 @@ It simply requires some trusted third-party to provide the hash-keys.
 To send authentication credentials, use the auth command.
 
 ```json
-{ "op": "auth", 
-  "mac": <string>, 
-  "client": <string>, 
-  "dest": <string>, 
-  "rand": <string>, 
-  "t": <int>, 
-  "level": <string>, 
+{ "op": "auth",
+  "mac": <string>,
+  "client": <string>,
+  "dest": <string>,
+  "rand": <string>,
+  "t": <int>,
+  "level": <string>,
   "end": <int>
 }
 ```
@@ -292,15 +292,15 @@ To send authentication credentials, use the auth command.
  * **end** – end time of the client's session
 
    * Any server that enabled authentication should wait for
-     this request to come in first before accepting any other 
+     this request to come in first before accepting any other
      `op` code from the client.
-   * Once the request comes in, it would verify the information 
+   * Once the request comes in, it would verify the information
      (in a ROS system, using `rosauth`; however, the verification
-     method is not tied to ROS). 
+     method is not tied to ROS).
    * If the authentication is good, the connection would be kept
      and rosbridge would function as normal. If the authentication
-     is bad, the connection would be severed. 
-   * In the case that authentication is not enabled on the server, 
+     is bad, the connection would be severed.
+   * In the case that authentication is not enabled on the server,
      this `op` code can be ignored.
 
 ### 3.4 ROS messages

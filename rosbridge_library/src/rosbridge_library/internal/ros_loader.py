@@ -55,53 +55,49 @@ class InvalidTypeStringException(Exception):
 
 class InvalidPackageException(Exception):
     def __init__(self, package, original_exception):
-        Exception.__init__(self,
-           "Unable to load the manifest for package %s. Caused by: %s"
-           % (package, str(original_exception))
-       )
+        Exception.__init__(
+            self,
+            "Unable to load the manifest for package %s. Caused by: %s"
+            % (package, str(original_exception)),
+        )
 
 
 class InvalidModuleException(Exception):
     def __init__(self, modname, subname, original_exception):
-        Exception.__init__(self,
-           "Unable to import %s.%s from package %s. Caused by: %s"
-           % (modname, subname, modname, str(original_exception))
+        Exception.__init__(
+            self,
+            "Unable to import %s.%s from package %s. Caused by: %s"
+            % (modname, subname, modname, str(original_exception)),
         )
 
 
 class InvalidClassException(Exception):
     def __init__(self, modname, subname, classname, original_exception):
-        Exception.__init__(self,
-           "Unable to import %s class %s from package %s. Caused by %s"
-           % (subname, classname, modname, str(original_exception))
+        Exception.__init__(
+            self,
+            "Unable to import %s class %s from package %s. Caused by %s"
+            % (subname, classname, modname, str(original_exception)),
         )
 
 
 def get_message_class(typestring):
-    """ Loads the message type specified.
+    """Loads the message type specified.
 
-    Returns the loaded class, or throws exceptions on failure """
+    Returns the loaded class, or throws exceptions on failure"""
     return _get_msg_class(typestring)
 
 
 def get_service_class(typestring):
-    """ Loads the service type specified.
+    """Loads the service type specified.
 
-    Returns the loaded class, or None on failure """
+    Returns the loaded class, or None on failure"""
     return _get_srv_class(typestring)
 
 
 def get_message_instance(typestring):
-    """ If not loaded, loads the specified type.
-    Then returns an instance of it, or None. """
+    """If not loaded, loads the specified type.
+    Then returns an instance of it, or None."""
     cls = get_message_class(typestring)
-    return cls()
-
-
-def get_service_instance(typestring):
-    """ If not loaded, loads the specified type.
-    Then returns an instance of it, or None. """
-    cls = get_service_class(typestring)
     return cls()
 
 
@@ -116,30 +112,30 @@ def get_service_response_instance(typestring):
 
 
 def _get_msg_class(typestring):
-    """ If not loaded, loads the specified msg class then returns an instance
+    """If not loaded, loads the specified msg class then returns an instance
     of it
 
-    Throws various exceptions if loading the msg class fails """
+    Throws various exceptions if loading the msg class fails"""
     global _loaded_msgs, _msgs_lock
     return _get_class(typestring, "msg", _loaded_msgs, _msgs_lock)
 
 
 def _get_srv_class(typestring):
-    """ If not loaded, loads the specified srv class then returns an instance
+    """If not loaded, loads the specified srv class then returns an instance
     of it
 
-    Throws various exceptions if loading the srv class fails """
+    Throws various exceptions if loading the srv class fails"""
     global _loaded_srvs, _srvs_lock
     return _get_class(typestring, "srv", _loaded_srvs, _srvs_lock)
 
 
 def _get_class(typestring, subname, cache, lock):
-    """ If not loaded, loads the specified class then returns an instance
+    """If not loaded, loads the specified class then returns an instance
     of it.
 
     Loaded classes are cached in the provided cache dict
 
-    Throws various exceptions if loading the msg class fails """
+    Throws various exceptions if loading the msg class fails"""
 
     # First, see if we have this type string cached
     cls = _get_from_cache(cache, lock, typestring)
@@ -166,17 +162,17 @@ def _get_class(typestring, subname, cache, lock):
 
 
 def _load_class(modname, subname, classname):
-    """ Loads the manifest and imports the module that contains the specified
+    """Loads the manifest and imports the module that contains the specified
     type.
 
     Logic is similar to that of roslib.message.get_message_class, but we want
     more expressive exceptions.
 
-    Returns the loaded module, or None on failure """
+    Returns the loaded module, or None on failure"""
 
     # This assumes the module is already in the path.
     try:
-        pypkg = importlib.import_module(f'{modname}.{subname}')
+        pypkg = importlib.import_module(f"{modname}.{subname}")
     except Exception as exc:
         raise InvalidModuleException(modname, subname, exc)
 
@@ -187,7 +183,7 @@ def _load_class(modname, subname, classname):
 
 
 def _splittype(typestring):
-    """ Split the string the / delimiter and strip out empty strings
+    """Split the string the / delimiter and strip out empty strings
 
     Performs similar logic to roslib.names.package_resource_name but is a bit
     more forgiving about excess slashes
@@ -207,8 +203,8 @@ def _add_to_cache(cache, lock, key, value):
 
 
 def _get_from_cache(cache, lock, key):
-    """ Returns the value for the specified key from the cache.
-    Locks the lock before doing anything. Returns None if key not in cache """
+    """Returns the value for the specified key from the cache.
+    Locks the lock before doing anything. Returns None if key not in cache"""
     lock.acquire()
     ret = None
     if key in cache:

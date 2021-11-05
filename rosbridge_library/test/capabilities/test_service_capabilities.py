@@ -1,16 +1,18 @@
 #!/usr/bin/env python
+import unittest
+from json import dumps, loads
+
 import rospy
 import rostest
-import unittest
-
-from json import loads, dumps
-
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
-from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from rosbridge_library.capabilities.call_service import CallService
 from rosbridge_library.capabilities.service_response import ServiceResponse
-from rosbridge_library.protocol import Protocol
-from rosbridge_library.protocol import InvalidArgumentException, MissingArgumentException
+from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
+from rosbridge_library.protocol import (
+    InvalidArgumentException,
+    MissingArgumentException,
+    Protocol,
+)
 
 
 class TestServiceCapabilities(unittest.TestCase):
@@ -35,41 +37,38 @@ class TestServiceCapabilities(unittest.TestCase):
 
     def test_advertise_missing_arguments(self):
         advertise_msg = loads(dumps({"op": "advertise_service"}))
-        self.assertRaises(MissingArgumentException,
-                          self.advertise.advertise_service, advertise_msg)
+        self.assertRaises(MissingArgumentException, self.advertise.advertise_service, advertise_msg)
 
     def test_advertise_invalid_arguments(self):
-        advertise_msg = loads(dumps({"op": "advertise_service",
-                                     "type": 42,
-                                     "service": None}))
-        self.assertRaises(InvalidArgumentException,
-                          self.advertise.advertise_service, advertise_msg)
+        advertise_msg = loads(dumps({"op": "advertise_service", "type": 42, "service": None}))
+        self.assertRaises(InvalidArgumentException, self.advertise.advertise_service, advertise_msg)
 
     def test_response_missing_arguments(self):
         response_msg = loads(dumps({"op": "service_response"}))
-        self.assertRaises(MissingArgumentException,
-                          self.response.service_response, response_msg)
+        self.assertRaises(MissingArgumentException, self.response.service_response, response_msg)
 
         # this message has the optional fields, with correct types, but not the
         # required ones
-        response_msg = loads(dumps({"op": "service_response",
-                                    "id": "dummy_service",
-                                    "values": "none"}))
-        self.assertRaises(MissingArgumentException,
-                          self.response.service_response, response_msg)
+        response_msg = loads(
+            dumps({"op": "service_response", "id": "dummy_service", "values": "none"})
+        )
+        self.assertRaises(MissingArgumentException, self.response.service_response, response_msg)
 
     def test_response_invalid_arguments(self):
-        response_msg = loads(dumps({"op": "service_response",
-                                    "service": 5,
-                                    "result": "error"}))
-        self.assertRaises(InvalidArgumentException,
-                          self.response.service_response, response_msg)
+        response_msg = loads(dumps({"op": "service_response", "service": 5, "result": "error"}))
+        self.assertRaises(InvalidArgumentException, self.response.service_response, response_msg)
 
     def test_advertise_service(self):
         service_path = "/set_bool_1"
-        advertise_msg = loads(dumps({"op": "advertise_service",
-                                     "type": "std_srvs/SetBool",
-                                     "service": service_path}))
+        advertise_msg = loads(
+            dumps(
+                {
+                    "op": "advertise_service",
+                    "type": "std_srvs/SetBool",
+                    "service": service_path,
+                }
+            )
+        )
         self.advertise.advertise_service(advertise_msg)
 
         # This throws an exception if the timeout is exceeded (i.e. the service
@@ -78,26 +77,41 @@ class TestServiceCapabilities(unittest.TestCase):
 
     def test_call_advertised_service(self):
         service_path = "/set_bool_2"
-        advertise_msg = loads(dumps({"op": "advertise_service",
-                                     "type": "std_srvs/SetBool",
-                                     "service": service_path}))
+        advertise_msg = loads(
+            dumps(
+                {
+                    "op": "advertise_service",
+                    "type": "std_srvs/SetBool",
+                    "service": service_path,
+                }
+            )
+        )
         self.advertise.advertise_service(advertise_msg)
 
         # Call the service via rosbridge because rospy.ServiceProxy.call() is
         # blocking
         call_service = CallService(self.proto)
-        call_service.call_service(loads(dumps({"op": "call_service",
-                                               "id": "foo",
-                                               "service": service_path,
-                                               "args": [True]})))
+        call_service.call_service(
+            loads(
+                dumps(
+                    {
+                        "op": "call_service",
+                        "id": "foo",
+                        "service": service_path,
+                        "args": [True],
+                    }
+                )
+            )
+        )
 
         loop_iterations = 0
         while self.received_message is None:
             rospy.sleep(rospy.Duration(0.5))
             loop_iterations += 1
             if loop_iterations > 3:
-                self.fail("did not receive service call rosbridge message "
-                          "after waiting 2 seconds")
+                self.fail(
+                    "did not receive service call rosbridge message " "after waiting 2 seconds"
+                )
 
         self.assertFalse(self.received_message is None)
         self.assertTrue("op" in self.received_message)
@@ -105,12 +119,17 @@ class TestServiceCapabilities(unittest.TestCase):
         self.assertTrue("id" in self.received_message)
 
         # Now send the response
-        response_msg = loads(dumps({"op": "service_response",
-                                    "service": service_path,
-                                    "id": self.received_message["id"],
-                                    "values": {"success": True,
-                                               "message": ""},
-                                    "result": True}))
+        response_msg = loads(
+            dumps(
+                {
+                    "op": "service_response",
+                    "service": service_path,
+                    "id": self.received_message["id"],
+                    "values": {"success": True, "message": ""},
+                    "result": True,
+                }
+            )
+        )
         self.received_message = None
         self.response.service_response(response_msg)
 
@@ -119,8 +138,9 @@ class TestServiceCapabilities(unittest.TestCase):
             rospy.sleep(rospy.Duration(0.5))
             loop_iterations += 1
             if loop_iterations > 3:
-                self.fail("did not receive service response rosbridge message "
-                          "after waiting 2 seconds")
+                self.fail(
+                    "did not receive service response rosbridge message " "after waiting 2 seconds"
+                )
 
         self.assertFalse(self.received_message is None)
         # Rosbridge should forward the response message to the "client"
@@ -130,26 +150,41 @@ class TestServiceCapabilities(unittest.TestCase):
 
     def test_unadvertise_with_live_request(self):
         service_path = "/set_bool_3"
-        advertise_msg = loads(dumps({"op": "advertise_service",
-                                     "type": "std_srvs/SetBool",
-                                     "service": service_path}))
+        advertise_msg = loads(
+            dumps(
+                {
+                    "op": "advertise_service",
+                    "type": "std_srvs/SetBool",
+                    "service": service_path,
+                }
+            )
+        )
         self.advertise.advertise_service(advertise_msg)
 
         # Call the service via rosbridge because rospy.ServiceProxy.call() is
         # blocking
         call_service = CallService(self.proto)
-        call_service.call_service(loads(dumps({"op": "call_service",
-                                               "id": "foo",
-                                               "service": service_path,
-                                               "args": [True]})))
+        call_service.call_service(
+            loads(
+                dumps(
+                    {
+                        "op": "call_service",
+                        "id": "foo",
+                        "service": service_path,
+                        "args": [True],
+                    }
+                )
+            )
+        )
 
         loop_iterations = 0
         while self.received_message is None:
             rospy.sleep(rospy.Duration(0.5))
             loop_iterations += 1
             if loop_iterations > 3:
-                self.fail("did not receive service call rosbridge message "
-                          "after waiting 2 seconds")
+                self.fail(
+                    "did not receive service call rosbridge message " "after waiting 2 seconds"
+                )
 
         self.assertFalse(self.received_message is None)
         self.assertTrue("op" in self.received_message)
@@ -157,8 +192,7 @@ class TestServiceCapabilities(unittest.TestCase):
         self.assertTrue("id" in self.received_message)
 
         # Now send the response
-        response_msg = loads(dumps({"op": "unadvertise_service",
-                                    "service": service_path}))
+        response_msg = loads(dumps({"op": "unadvertise_service", "service": service_path}))
         self.received_message = None
         self.unadvertise.unadvertise_service(response_msg)
 
@@ -167,8 +201,9 @@ class TestServiceCapabilities(unittest.TestCase):
             rospy.sleep(rospy.Duration(0.5))
             loop_iterations += 1
             if loop_iterations > 3:
-                self.fail("did not receive service response rosbridge message "
-                          "after waiting 2 seconds")
+                self.fail(
+                    "did not receive service response rosbridge message " "after waiting 2 seconds"
+                )
 
         self.assertFalse(self.received_message is None)
         # Rosbridge should abort the existing service call with an error
@@ -177,8 +212,8 @@ class TestServiceCapabilities(unittest.TestCase):
         self.assertFalse(self.received_message["result"])
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_service_capabilities'
-if __name__ == '__main__':
+PKG = "rosbridge_library"
+NAME = "test_service_capabilities"
+if __name__ == "__main__":
     rospy.init_node(NAME)
     rostest.rosrun(PKG, NAME, TestServiceCapabilities)

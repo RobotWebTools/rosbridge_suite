@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>rosbridge_server</name>
-  <version>1.0.7</version>
+  <version>1.1.0</version>
   <description>A WebSocket interface to rosbridge.</description>
 
   <license>BSD</license>
@@ -15,6 +15,7 @@
   <maintainer email="jacob@foxglove.dev">Jacob Bandes-Storch</maintainer>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
 
   <exec_depend>python3-tornado</exec_depend>
   <exec_depend>python3-twisted</exec_depend>

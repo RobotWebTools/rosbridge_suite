@@ -31,67 +31,77 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import rospy
 import sys
 
-from twisted.internet import reactor
-from rosbridge_server import RosbridgeUdpSocket,RosbridgeUdpFactory
-
+import rospy
 from rosbridge_library.capabilities.advertise import Advertise
+from rosbridge_library.capabilities.advertise_service import AdvertiseService
+from rosbridge_library.capabilities.call_service import CallService
 from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.capabilities.subscribe import Subscribe
-from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
-from rosbridge_library.capabilities.call_service import CallService
-
 from std_msgs.msg import Int32
+from twisted.internet import reactor
+
+from rosbridge_server import RosbridgeUdpFactory, RosbridgeUdpSocket
+
 
 def shutdown_hook():
     reactor.stop()
 
+
 if __name__ == "__main__":
     rospy.init_node("rosbridge_websocket")
-    rospy.on_shutdown(shutdown_hook)    # register shutdown hook to stop the server
+    rospy.on_shutdown(shutdown_hook)  # register shutdown hook to stop the server
 
     ##################################################
     # Parameter handling                             #
     ##################################################
-     # get RosbridgeProtocol parameters
-    RosbridgeUdpSocket.fragment_timeout = rospy.get_param('~fragment_timeout',
-                                                          RosbridgeUdpSocket.fragment_timeout)
-    RosbridgeUdpSocket.delay_between_messages = rospy.get_param('~delay_between_messages',
-                                                                RosbridgeUdpSocket.delay_between_messages)
-    RosbridgeUdpSocket.max_message_size = rospy.get_param('~max_message_size',
-                                                          RosbridgeUdpSocket.max_message_size)
-    RosbridgeUdpSocket.unregister_timeout = rospy.get_param('~unregister_timeout',
-                                                          RosbridgeUdpSocket.unregister_timeout)
+    # get RosbridgeProtocol parameters
+    RosbridgeUdpSocket.fragment_timeout = rospy.get_param(
+        "~fragment_timeout", RosbridgeUdpSocket.fragment_timeout
+    )
+    RosbridgeUdpSocket.delay_between_messages = rospy.get_param(
+        "~delay_between_messages", RosbridgeUdpSocket.delay_between_messages
+    )
+    RosbridgeUdpSocket.max_message_size = rospy.get_param(
+        "~max_message_size", RosbridgeUdpSocket.max_message_size
+    )
+    RosbridgeUdpSocket.unregister_timeout = rospy.get_param(
+        "~unregister_timeout", RosbridgeUdpSocket.unregister_timeout
+    )
     if RosbridgeUdpSocket.max_message_size == "None":
         RosbridgeUdpSocket.max_message_size = None
 
     # Get the glob strings and parse them as arrays.
     RosbridgeUdpSocket.topics_glob = [
         element.strip().strip("'")
-        for element in rospy.get_param('~topics_glob', '')[1:-1].split(',')
-        if len(element.strip().strip("'")) > 0]
+        for element in rospy.get_param("~topics_glob", "")[1:-1].split(",")
+        if len(element.strip().strip("'")) > 0
+    ]
     RosbridgeUdpSocket.services_glob = [
         element.strip().strip("'")
-        for element in rospy.get_param('~services_glob', '')[1:-1].split(',')
-        if len(element.strip().strip("'")) > 0]
+        for element in rospy.get_param("~services_glob", "")[1:-1].split(",")
+        if len(element.strip().strip("'")) > 0
+    ]
     RosbridgeUdpSocket.params_glob = [
         element.strip().strip("'")
-        for element in rospy.get_param('~params_glob', '')[1:-1].split(',')
-        if len(element.strip().strip("'")) > 0]
+        for element in rospy.get_param("~params_glob", "")[1:-1].split(",")
+        if len(element.strip().strip("'")) > 0
+    ]
 
     # if authentication should be used
-    RosbridgeUdpSocket.authenticate = rospy.get_param('~authenticate', False)
-    port = rospy.get_param('~port', 9090)
-    interface = rospy.get_param('~interface', "")
+    RosbridgeUdpSocket.authenticate = rospy.get_param("~authenticate", False)
+    port = rospy.get_param("~port", 9090)
+    interface = rospy.get_param("~interface", "")
     # Publisher for number of connected clients
-    RosbridgeUdpSocket.client_count_pub = rospy.Publisher('client_count', Int32, queue_size=10, latch=True)
+    RosbridgeUdpSocket.client_count_pub = rospy.Publisher(
+        "client_count", Int32, queue_size=10, latch=True
+    )
     RosbridgeUdpSocket.client_count_pub.publish(0)
 
     if "--port" in sys.argv:
-        idx = sys.argv.index("--port")+1
+        idx = sys.argv.index("--port") + 1
         if idx < len(sys.argv):
             port = int(sys.argv[idx])
         else:
@@ -99,7 +109,7 @@ if __name__ == "__main__":
             sys.exit(-1)
 
     if "--interface" in sys.argv:
-        idx = sys.argv.index("--interface")+1
+        idx = sys.argv.index("--interface") + 1
         if idx < len(sys.argv):
             interface = int(sys.argv[idx])
         else:
@@ -131,7 +141,9 @@ if __name__ == "__main__":
             else:
                 RosbridgeUdpSocket.max_message_size = int(value)
         else:
-            print("--max_message_size argument provided without a value. (can be None or <Integer>)")
+            print(
+                "--max_message_size argument provided without a value. (can be None or <Integer>)"
+            )
             sys.exit(-1)
 
     if "--unregister_timeout" in sys.argv:
@@ -149,7 +161,9 @@ if __name__ == "__main__":
             if value == "None":
                 RosbridgeUdpSocket.topics_glob = []
             else:
-                RosbridgeUdpSocket.topics_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
+                RosbridgeUdpSocket.topics_glob = [
+                    element.strip().strip("'") for element in value[1:-1].split(",")
+                ]
         else:
             print("--topics_glob argument provided without a value. (can be None or a list)")
             sys.exit(-1)
@@ -161,7 +175,9 @@ if __name__ == "__main__":
             if value == "None":
                 RosbridgeUdpSocket.services_glob = []
             else:
-                RosbridgeUdpSocket.services_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
+                RosbridgeUdpSocket.services_glob = [
+                    element.strip().strip("'") for element in value[1:-1].split(",")
+                ]
         else:
             print("--services_glob argument provided without a value. (can be None or a list)")
             sys.exit(-1)
@@ -173,7 +189,9 @@ if __name__ == "__main__":
             if value == "None":
                 RosbridgeUdpSocket.params_glob = []
             else:
-                RosbridgeUdpSocket.params_glob = [element.strip().strip("'") for element in value[1:-1].split(',')]
+                RosbridgeUdpSocket.params_glob = [
+                    element.strip().strip("'") for element in value[1:-1].split(",")
+                ]
         else:
             print("--params_glob argument provided without a value. (can be None or a list)")
             sys.exit(-1)

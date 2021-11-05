@@ -2,6 +2,24 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.0 (2021-10-22)
+------------------
+* Fix test imports from rosbridge_test_msgs (`#668 <https://github.com/RobotWebTools/rosbridge_suite/issues/668>`_)
+* Move msg/srv from rosapi and rosbridge_library into separate packages; enable Rolling in CI (`#665 <https://github.com/RobotWebTools/rosbridge_suite/issues/665>`_)
+* Fix test_services.py (`#653 <https://github.com/RobotWebTools/rosbridge_suite/issues/653>`_)
+* Fix unused variables: flake8 --select=F841 (`#623 <https://github.com/RobotWebTools/rosbridge_suite/issues/623>`_)
+* Remove get_service_instance from ros_loader (`#647 <https://github.com/RobotWebTools/rosbridge_suite/issues/647>`_)
+* Fix test settings for rosbridge_library (`#643 <https://github.com/RobotWebTools/rosbridge_suite/issues/643>`_)
+* Fix DOS line endings (`#658 <https://github.com/RobotWebTools/rosbridge_suite/issues/658>`_)
+* Port `#464 <https://github.com/RobotWebTools/rosbridge_suite/issues/464>`_, `#478 <https://github.com/RobotWebTools/rosbridge_suite/issues/478>`_, `#496 <https://github.com/RobotWebTools/rosbridge_suite/issues/496>`_, and `#502 <https://github.com/RobotWebTools/rosbridge_suite/issues/502>`_ from ROS1 branch (`#663 <https://github.com/RobotWebTools/rosbridge_suite/issues/663>`_)
+* Add pre-commit, format with black and isort (`#648 <https://github.com/RobotWebTools/rosbridge_suite/issues/648>`_)
+* Contributors: Adrian Macneil, Christian Clauss, Domenic Rodriguez, Jacob Bandes-Storch, Kenji Miyake
+
+1.0.8 (2021-08-26)
+------------------
+* Fix various Python code style and lint issues
+* Contributors: Christian Clauss, Jacob Bandes-Storch
+
 1.0.7 (2021-08-18)
 ------------------
 * Fix typos discovered by codespell (`#600 <https://github.com/RobotWebTools/rosbridge_suite/issues/600>`_)

@@ -32,21 +32,25 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from threading import Timer
+
 from rclpy.duration import Duration
-from rclpy.qos import QoSProfile, QoSDurabilityPolicy
-from rosbridge_library.internal import ros_loader, message_conversion
+from rclpy.qos import QoSDurabilityPolicy, QoSProfile
+from rosbridge_library.internal import message_conversion, ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
-from rosbridge_library.internal.topics import TopicNotEstablishedException, TypeConflictException
+from rosbridge_library.internal.topics import (
+    TopicNotEstablishedException,
+    TypeConflictException,
+)
 
 
-class MultiPublisher():
-    """ Keeps track of the clients that are using a particular publisher.
+class MultiPublisher:
+    """Keeps track of the clients that are using a particular publisher.
 
     Provides an API to publish messages and register clients that are using
-    this publisher """
+    this publisher"""
 
     def __init__(self, topic, node_handle, msg_type=None, latched_client_id=None, queue_size=100):
-        """ Register a publisher on the specified topic.
+        """Register a publisher on the specified topic.
 
         Keyword arguments:
         topic    -- the name of the topic to register the publisher to
@@ -76,7 +80,7 @@ class MultiPublisher():
         # topic_type is a list of types or None at this point; only one type is supported.
         if topic_type is not None:
             if len(topic_type) > 1:
-                node_handle.get_logger().warning(f'More than one topic type detected: {topic_type}')
+                node_handle.get_logger().warning(f"More than one topic type detected: {topic_type}")
             topic_type = topic_type[0]
 
         # Use the established topic type if none was specified
@@ -100,25 +104,27 @@ class MultiPublisher():
         # Adding a lifespan solves the problem of late-joining subscribers
         # without the need of a custom message publisher implementation.
         publisher_qos = QoSProfile(
-            depth=queue_size, durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL)
+            depth=queue_size,
+            durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
+        )
 
         # For latched clients, no lifespan has to be specified (i.e. latch forever).
         # Otherwise we want to keep the messages for a second to prevent late-joining subscribers from
         # missing messages.
         if latched_client_id is None:
-            publisher_qos.lifespan=Duration(seconds=1)
+            publisher_qos.lifespan = Duration(seconds=1)
         else:
             publisher_qos.depth = 1
 
         self.publisher = node_handle.create_publisher(msg_class, topic, qos_profile=publisher_qos)
 
     def unregister(self):
-        """ Unregisters the publisher and clears the clients """
+        """Unregisters the publisher and clears the clients"""
         self.node_handle.destroy_publisher(self.publisher)
         self.clients.clear()
 
     def verify_type(self, msg_type):
-        """ Verify that the publisher publishes messages of the specified type.
+        """Verify that the publisher publishes messages of the specified type.
 
         Keyword arguments:
         msg_type -- the type to check this publisher against
@@ -130,12 +136,11 @@ class MultiPublisher():
 
         """
         if not ros_loader.get_message_class(msg_type) is self.msg_class:
-            raise TypeConflictException(self.topic,
-                                        msg_class_type_repr(self.msg_class), msg_type)
+            raise TypeConflictException(self.topic, msg_class_type_repr(self.msg_class), msg_type)
         return
 
     def publish(self, msg):
-        """ Publish a message using this publisher.
+        """Publish a message using this publisher.
 
         Keyword arguments:
         msg -- the dict (json) message to publish
@@ -156,7 +161,7 @@ class MultiPublisher():
         self.publisher.publish(inst)
 
     def register_client(self, client_id):
-        """ Register the specified client as a client of this publisher.
+        """Register the specified client as a client of this publisher.
 
         Keyword arguments:
         client_id -- the ID of the client using the publisher
@@ -165,7 +170,7 @@ class MultiPublisher():
         self.clients[client_id] = True
 
     def unregister_client(self, client_id):
-        """ Unregister the specified client from this publisher.
+        """Unregister the specified client from this publisher.
 
         If the specified client_id is not a client of this publisher, nothing
         happens.
@@ -178,12 +183,12 @@ class MultiPublisher():
             del self.clients[client_id]
 
     def has_clients(self):
-        """ Return true if there are clients to this publisher. """
+        """Return true if there are clients to this publisher."""
         return len(self.clients) != 0
 
 
-class PublisherManager():
-    """ The PublisherManager keeps track of ROS publishers
+class PublisherManager:
+    """The PublisherManager keeps track of ROS publishers
 
     It maintains a MultiPublisher instance for each registered topic
 
@@ -197,7 +202,7 @@ class PublisherManager():
         self.unregister_timeout = 10.0
 
     def register(self, client_id, topic, node_handle, msg_type=None, latch=False, queue_size=100):
-        """ Register a publisher on the specified topic.
+        """Register a publisher on the specified topic.
 
         Publishers are shared between clients, so a single MultiPublisher
         instance is created per topic, even if multiple clients register.
@@ -219,15 +224,28 @@ class PublisherManager():
         latched_client_id = client_id if latch else None
         if topic not in self._publishers:
             self._publishers[topic] = MultiPublisher(
-                topic, node_handle, msg_type=msg_type, latched_client_id=latched_client_id, queue_size=queue_size)
+                topic,
+                node_handle,
+                msg_type=msg_type,
+                latched_client_id=latched_client_id,
+                queue_size=queue_size,
+            )
         elif latch and self._publishers[topic].latched_client_id != client_id:
-            node_handle.get_logger().warn(f"Client ID {client_id} attempted to register topic [{topic}] as "
-                    "latched but this topic was previously registered.")
-            node_handle.get_logger().warn("Only a single registered latched publisher is supported at the time")
+            node_handle.get_logger().warn(
+                f"Client ID {client_id} attempted to register topic [{topic}] as "
+                "latched but this topic was previously registered."
+            )
+            node_handle.get_logger().warn(
+                "Only a single registered latched publisher is supported at the time"
+            )
         elif not latch and self._publishers[topic].latched_client_id:
-            node_handle.get_logger().warn(f"New non-latched publisher registration for topic [{topic}] which is "
-                    "already registered as latched. but this topic was previously registered.")
-            node_handle.get_logger().warn("Only a single registered latched publisher is supported at the time")
+            node_handle.get_logger().warn(
+                f"New non-latched publisher registration for topic [{topic}] which is "
+                "already registered as latched. but this topic was previously registered."
+            )
+            node_handle.get_logger().warn(
+                "Only a single registered latched publisher is supported at the time"
+            )
 
         if msg_type is not None:
             self._publishers[topic].verify_type(msg_type)
@@ -235,7 +253,7 @@ class PublisherManager():
         self._publishers[topic].register_client(client_id)
 
     def unregister(self, client_id, topic):
-        """ Unregister a client from the publisher for the given topic.
+        """Unregister a client from the publisher for the given topic.
             Will wait some time before actually unregistering, it is done in
             _unregister_impl
 
@@ -254,8 +272,9 @@ class PublisherManager():
         if topic in self.unregister_timers:
             self.unregister_timers[topic].cancel()
             del self.unregister_timers[topic]
-        self.unregister_timers[topic] = Timer(self.unregister_timeout, self._unregister_impl,
-                                              [topic])
+        self.unregister_timers[topic] = Timer(
+            self.unregister_timeout, self._unregister_impl, [topic]
+        )
         self.unregister_timers[topic].start()
 
     def _unregister_impl(self, topic):
@@ -265,16 +284,16 @@ class PublisherManager():
         del self.unregister_timers[topic]
 
     def unregister_all(self, client_id):
-        """ Unregisters a client from all publishers that they are registered
+        """Unregisters a client from all publishers that they are registered
         to.
 
         Keyword arguments:
-        client_id -- the ID of the client making this request """
+        client_id -- the ID of the client making this request"""
         for topic in self._publishers.keys():
             self.unregister(client_id, topic)
 
     def publish(self, client_id, topic, msg, node_handle, latch=False, queue_size=100):
-        """ Publish a message on the given topic.
+        """Publish a message on the given topic.
 
         Tries to create a publisher on the topic if one does not already exist.
 
