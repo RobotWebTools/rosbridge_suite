@@ -4,4 +4,7 @@
     "python.linting.flake8Enabled": true,
     "python.linting.banditEnabled": true,
     "python.linting.pylintEnabled": false,
+    "[python]": {
+        "editor.formatOnSave": true
+    },
 }
