@@ -1,0 +1,14 @@
+{
+    "python.formatting.provider": "black",
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.banditEnabled": true,
+    "python.linting.pylintEnabled": false,
+    "[python]": {
+        "editor.formatOnSave": true
+    },
+    "python.linting.banditArgs": [
+        "--skip",
+        "B101,B110,B311"
+    ],
+}
