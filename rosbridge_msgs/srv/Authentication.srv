@@ -2,9 +2,10 @@
 # connection requesting authentication.
 string client_connection_id
 
+# IP address of the client requesting authentication
 string remote_ip
 
-# List of key-value pairs sent as authentication arguments
+# List of name-value pairs sent as authentication arguments
 AuthenticationField[] fields
 
 ---

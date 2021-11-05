@@ -12,4 +12,5 @@ string ros_operation_name_arg
 
 ---
 
+# If the connection is authorized for the given operation
 bool authorized

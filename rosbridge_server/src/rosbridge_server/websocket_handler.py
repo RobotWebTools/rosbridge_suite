@@ -181,51 +181,6 @@ class RosbridgeWebSocket(WebSocketHandler):
 
 
     @log_exceptions
-    def check_authentication(self) -> (bool, int, [], str):
-        cls = self.__class__
-        if self.auth_client is None:
-            return (true, 200, None, None)
-        allowed = False
-        auth_req = HttpAuthentication.Request()
-        auth_req.client_connection_id = str(self.client_id)
-        h = self.request.headers
-        for (k,v) in sorted(h.get_all()):
-            auth_req.headers.append(HttpHeaderField(name=k, value=v))
-        try:
-            auth_future = self.auth_client.call_async(auth_req)
-            rclpy.spin_until_future_complete(cls.node_handle, auth_future, timeout_sec=30.0)
-        except Exception as e:
-            cls.node_handle.get_logger().error('Service call failed %r' % (e,))
-            return (false, 500, None, "Authentication service call failed")
-        else:
-            if not auth_future.done():
-                cls.node_handle.get_logger().error('Service call timed out while waiting for response from %s'
-                                                   % self.authentication_service)
-                return (false, 500, None, "Authentication service call timed out")
-            auth_response = auth_future.result()
-            allowed = auth_response.authenticated
-            auth_response_headers = auth_response.headers
-            auth_response_code = auth_response.status_code
-            have_server_error = False
-            server_error_msg = "Authentication service call failed."
-            if auth_response.client_connection_id:
-                # Set the client ID provided by the authentication service
-                self.client_id = auth_response.client_connection_id
-                # Check an upper bound on the client_id length
-                if len(auth_response.client_connection_id) > 4000:
-                    have_server_error = True
-                    server_error_msg += " Bad client_id response: %s" \
-                        % (auth_response.client_connection_id)
-            if allowed and auth_response_code and auth_response_code != 200:
-                have_server_error = True
-                server_error_msg += " Bad status_code: %s" % auth_response_code
-            if have_server_error:
-                return (false, 500, None, server_error_msg)
-            else:
-                return (allowed, auth_response_code, auth_response_headers, None)
-
-
-    @log_exceptions
     def on_message(self, message):
         cls = self.__class__
 
@@ -240,39 +195,14 @@ class RosbridgeWebSocket(WebSocketHandler):
             # no authentication required
             self.incoming_queue.push(message)
         else:
-            msg = json.loads(message)
-            if msg['op'] == 'auth':
-                # check the authorization information
-                auth_req = Authentication.Request(
-                    client_connection_id = str(self.client_id),
-                    remote_ip = self.request.remote_ip
-                )
-                if 'fields' in msg and isinstance(msg['fields'], dict):
-                    for k, v in msg['fields'].items():
-                        auth_req.fields.append(AuthenticationField(name=k, value=v))
-                try:
-                    auth_future = self.auth_client.call_async(auth_req)
-                    rclpy.spin_until_future_complete(cls.node_handle, auth_future, timeout_sec=30.0)
-                except Exception as e:
-                    cls.node_handle.get_logger().error('Authentication service call to %s failed %r'
-                                                       % (self.authentication_service, e))
-                else:
-                    if auth_future.done():
-                        auth_response = auth_future.result()
-                        self.authenticated = auth_response.authenticated
-                    else:
-                        cls.node_handle.get_logger().error('Authentication service call timed out while waiting for response from %s'
-                                                           % self.authentication_service)
-            else:
-                cls.node_handle.get_logger().warn('Authentication required for client: %s' % (self.client_id))
-    
-            if self.authenticated:
+            (success, failure_message) = self.check_authentication(message)
+            if success:
+                self.authenticated = True
                 return
             else:
-                # if we are here, no valid authentication was given
-                cls.node_handle.get_logger().warn('Authentication failed for client: %s' % (self.client_id))
+                generic_failure = 'Authentication failed for client: %s' % (self.client_id)
+                cls.node_handle.get_logger().warn(failure_message or generic_failure)
                 self.close()
-
 
 
     @log_exceptions
@@ -340,6 +270,41 @@ class RosbridgeWebSocket(WebSocketHandler):
     @log_exceptions
     def check_origin(self, origin):
         return True
+
+
+    @log_exceptions
+    def check_authentication(self, message) -> (bool, str):
+        cls = self.__class__
+        authenticated = False
+        failure_message = None
+        msg = json.loads(message)
+        if msg['op'] == 'auth':
+            # check the authorization information
+            auth_req = Authentication.Request(
+                client_connection_id = str(self.client_id),
+                remote_ip = self.request.remote_ip
+            )
+            if 'fields' in msg and isinstance(msg['fields'], dict):
+                for k, v in msg['fields'].items():
+                    auth_req.fields.append(AuthenticationField(name=k, value=v))
+            try:
+                auth_future = self.auth_client.call_async(auth_req)
+                rclpy.spin_until_future_complete(cls.node_handle, auth_future, timeout_sec=30.0)
+            except Exception as e:
+                cls.node_handle.get_logger().error('Authentication service call to %s failed %r'
+                                                   % (self.authentication_service, e))
+            else:
+                if auth_future.done():
+                    auth_response = auth_future.result()
+                    authenticated = auth_response.authenticated
+                else:
+                    cls.node_handle.get_logger().error('Authentication service call timed out while waiting for response from %s'
+                                                       % self.authentication_service)
+        else:
+            failure_message = 'Authentication required for client: %s' % (self.client_id)
+    
+        return (authenticated, failure_message)
+
 
     @log_exceptions
     def get_compression_options(self):
