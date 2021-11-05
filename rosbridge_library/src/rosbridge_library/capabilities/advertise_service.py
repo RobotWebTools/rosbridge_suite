@@ -46,9 +46,7 @@ class AdvertisedServiceHandler:
         }
         self.protocol.send(request_message)
 
-        self.protocol.log("warning", f"Waiting for future... {request_id}")
         res = await future
-        self.protocol.log("warning", f"Got future {request_id}")
         del self.request_futures[request_id]
         return res
 
@@ -56,7 +54,6 @@ class AdvertisedServiceHandler:
         """
         Called by the ServiceResponse capability to handle a service response from the external client.
         """
-        self.protocol.log("warning", f"Got serv response: {request_id}  {str(res)}")
         if request_id in self.request_futures:
             self.request_futures[request_id].set_result(res)
         else:
