@@ -129,7 +129,6 @@ class Capability:
     def authorization_check(self, msg):
         if self.auth_client is None:
             return True
-        self.protocol.log("info", "Authorize with %s" % (self.authorization_service))
         auth_req = Authorization.Request()
         auth_req.client_connection_id = str(self.protocol.client_id)
         auth_req.msg_id = str(msg.get("id", None))

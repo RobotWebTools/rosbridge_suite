@@ -92,8 +92,8 @@ class CallService(Capability):
         # Check if the client is authorized
         if not self.authorization_check(msg):
             self.protocol.log("warn",
-                              "Client %s not authorized for %s %s"
-                              % (self.protocol.client_id, msg["op"], service))
+                              "Client %s not authorized to call service %s"
+                              % (self.protocol.client_id, service))
             return
 
         # Check for deprecated service ID, eg. /rosbridge/topics#33

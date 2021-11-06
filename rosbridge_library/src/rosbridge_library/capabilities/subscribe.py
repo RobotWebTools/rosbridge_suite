@@ -265,8 +265,8 @@ class Subscribe(Capability):
         # Check if the client is authorized
         if not self.authorization_check(msg):
             self.protocol.log("warn",
-                              "Client %s not authorized for %s %s"
-                              % (self.protocol.client_id, msg["op"], topic))
+                              "Client %s not authorized to subscribe to topic %s"
+                              % (self.protocol.client_id, topic))
             return
 
         if topic not in self._subscriptions:
