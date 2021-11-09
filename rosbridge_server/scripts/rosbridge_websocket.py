@@ -106,8 +106,6 @@ class RosbridgeWebsocketNode(Node):
         # SSL options
         certfile = self.declare_parameter("certfile").value
         keyfile = self.declare_parameter("keyfile").value
-        # if authentication should be used
-        RosbridgeWebSocket.authenticate = self.declare_parameter("authenticate", False).value
 
         port = self.declare_parameter("port", 9090).value
 
@@ -150,7 +148,9 @@ class RosbridgeWebsocketNode(Node):
             if len(element.strip().strip("'")) > 0
         ]
 
+        # if authentication should be used
         RosbridgeWebSocket.authentication_service = self.declare_parameter("authentication_service", False).value
+        # if authorization should be used
         Capability.authorization_service = self.declare_parameter("authorization_service", False).value
 
         if "--port" in sys.argv:
