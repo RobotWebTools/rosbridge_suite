@@ -69,8 +69,8 @@ class Capability:
             self.auth_client = self.protocol.node_handle.create_client(Authorization, self.authorization_service)
             if not self.auth_client.wait_for_service(timeout_sec=5.0):
                 self.protocol.log("warn",
-                                  'Authorization service %s not available'
-                                  % self.authorization_service)
+                                  'Authorization service %s not available in %s'
+                                  % (self.authorization_service, type(self).__name__))
         else:
             self.auth_client = None
 
@@ -143,5 +143,8 @@ class Capability:
         else:
             if auth_future.done():
                 return auth_future.result().authorized
+            else:
+                self.protocol.log("warn", "Authorization service call timed out while waiting for response from %s" %
+                                  (self.authorization_service))
         return False
 
