@@ -98,10 +98,6 @@ class RosbridgeWebsocketNode(Node):
                 print("--websocket_ping_timeout argument provided without a value.")
                 sys.exit(-1)
 
-        application = Application(
-            [(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)], **tornado_settings
-        )
-
         # Server and SSL options
         certfile = self.declare_parameter("certfile").value
         keyfile = self.declare_parameter("keyfile").value
@@ -130,6 +126,14 @@ class RosbridgeWebsocketNode(Node):
             else:
                 print("--retry_startup_delay argument provided without a value.")
                 sys.exit(-1)
+
+        ##################################################
+        # Done with parameter handling                   #
+        ##################################################
+
+        application = Application(
+            [(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)], **tornado_settings
+        )
 
         connected = False
         while not connected and self.context.ok():
