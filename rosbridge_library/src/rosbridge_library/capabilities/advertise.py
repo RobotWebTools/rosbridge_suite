@@ -133,9 +133,10 @@ class Advertise(Capability):
 
         # Check if the client is authorized
         if not self.authorization_check(msg):
-            self.protocol.log("warn",
-                              "Client %s not authorized to advertise topic %s"
-                              % (self.protocol.client_id, topic))
+            self.protocol.log(
+                "warn",
+                "Client %s not authorized to advertise topic %s" % (self.protocol.client_id, topic),
+            )
             return
 
         # Create the Registration if one doesn't yet exist

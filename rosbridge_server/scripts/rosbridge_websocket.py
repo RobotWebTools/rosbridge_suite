@@ -38,13 +38,13 @@ import time
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSDurabilityPolicy, QoSProfile
-from rosbridge_library.capability import Capability
 from rosbridge_library.capabilities.advertise import Advertise
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.call_service import CallService
 from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.capabilities.subscribe import Subscribe
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
+from rosbridge_library.capability import Capability
 from std_msgs.msg import Int32
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop, PeriodicCallback
@@ -149,9 +149,13 @@ class RosbridgeWebsocketNode(Node):
         ]
 
         # if authentication should be used
-        RosbridgeWebSocket.authentication_service = self.declare_parameter("authentication_service", False).value
+        RosbridgeWebSocket.authentication_service = self.declare_parameter(
+            "authentication_service", False
+        ).value
         # if authorization should be used
-        Capability.authorization_service = self.declare_parameter("authorization_service", False).value
+        Capability.authorization_service = self.declare_parameter(
+            "authorization_service", False
+        ).value
 
         if "--port" in sys.argv:
             idx = sys.argv.index("--port") + 1

@@ -84,9 +84,11 @@ class Publish(Capability):
 
         # Check if the client is authorized
         if not self.authorization_check(msg):
-            self.protocol.log("warn",
-                              "Client %s not authorized to publish to topic %s"
-                              % (self.protocol.client_id, topic))
+            self.protocol.log(
+                "warn",
+                "Client %s not authorized to publish to topic %s"
+                % (self.protocol.client_id, topic),
+            )
             return
 
         # Register as a publishing client, propagating any exceptions

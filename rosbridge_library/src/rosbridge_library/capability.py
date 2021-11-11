@@ -30,13 +30,14 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import rclpy
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
     MissingArgumentException,
 )
 
-import rclpy
 from rosbridge_msgs.srv import Authorization
+
 
 class Capability:
     """Handles the operation-specific logic of a rosbridge message
@@ -66,14 +67,17 @@ class Capability:
         self.protocol = protocol
 
         if self.authorization_service is not None:
-            self.auth_client = self.protocol.node_handle.create_client(Authorization, self.authorization_service)
+            self.auth_client = self.protocol.node_handle.create_client(
+                Authorization, self.authorization_service
+            )
             if not self.auth_client.wait_for_service(timeout_sec=5.0):
-                self.protocol.log("warn",
-                                  'Authorization service %s not available in %s'
-                                  % (self.authorization_service, type(self).__name__))
+                self.protocol.log(
+                    "warn",
+                    "Authorization service %s not available in %s"
+                    % (self.authorization_service, type(self).__name__),
+                )
         else:
             self.auth_client = None
-
 
     def handle_message(self, message):
         """Handle an incoming message.
@@ -125,7 +129,6 @@ class Capability:
                         f"Expected field {fieldname} to be one of {fieldtypes}. Invalid value: {msg[fieldname]}"
                     )
 
-
     def authorization_check(self, msg):
         if self.auth_client is None:
             return True
@@ -136,7 +139,9 @@ class Capability:
         auth_req.ros_operation_name_arg = str(msg.get("topic", msg.get("service", None)))
         try:
             auth_future = self.auth_client.call_async(auth_req)
-            rclpy.spin_until_future_complete(self.protocol.node_handle, auth_future, timeout_sec=5.0)
+            rclpy.spin_until_future_complete(
+                self.protocol.node_handle, auth_future, timeout_sec=5.0
+            )
         except Exception as exc:
             self.protocol.log("warn", f"Unable to authorize ROS operation. Reason: {exc}")
             return False
@@ -144,7 +149,9 @@ class Capability:
             if auth_future.done():
                 return auth_future.result().authorized
             else:
-                self.protocol.log("warn", "Authorization service call timed out while waiting for response from %s" %
-                                  (self.authorization_service))
+                self.protocol.log(
+                    "warn",
+                    "Authorization service call timed out while waiting for response from %s"
+                    % (self.authorization_service),
+                )
         return False
-
