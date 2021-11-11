@@ -128,7 +128,7 @@ class AdvertiseService(Capability):
             )
 
         # Check if the client is authorized
-        if not self.authorization_check(msg):
+        if not self.authorization_check(message):
             self.protocol.log(
                 "warn",
                 "Client %s not authorized to advertise service %s"

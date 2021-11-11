@@ -282,7 +282,7 @@ class RosbridgeWebsocketNode(Node):
             else:
                 print("--authentication_service argument provided without a value.")
                 sys.exit(-1)
-        if RosbridgeWebSocket.authentication_service == False:
+        if RosbridgeWebSocket.authentication_service is False:
             RosbridgeWebSocket.authentication_service = None
 
         if "--authorization_service" in sys.argv:
@@ -292,7 +292,7 @@ class RosbridgeWebsocketNode(Node):
             else:
                 print("--authorization_service argument provided without a value.")
                 sys.exit(-1)
-        if Capability.authorization_service == False:
+        if Capability.authorization_service is False:
             Capability.authorization_service = None
 
         # To be able to access the list of topics and services, you must be able to access the rosapi services.

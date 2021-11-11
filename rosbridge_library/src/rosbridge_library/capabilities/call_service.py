@@ -90,7 +90,7 @@ class CallService(Capability):
             self.protocol.log("debug", "No service security glob, not checking service call.")
 
         # Check if the client is authorized
-        if not self.authorization_check(msg):
+        if not self.authorization_check(message):
             self.protocol.log(
                 "warn",
                 "Client %s not authorized to call service %s" % (self.protocol.client_id, service),
