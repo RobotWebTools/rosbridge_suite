@@ -154,7 +154,7 @@ class RosbridgeWebsocketNode(Node):
                 )
                 time.sleep(retry_startup_delay)
 
-    def protocol_paramater_handling(self):
+    def protocol_parameter_handling(self):
         RosbridgeWebSocket.use_compression = self.declare_parameter("use_compression", False).value
 
         # get RosbridgeProtocol parameters
