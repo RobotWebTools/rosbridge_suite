@@ -71,8 +71,86 @@ class RosbridgeWebsocketNode(Node):
         ##################################################
         # Parameter handling                             #
         ##################################################
-        retry_startup_delay = self.declare_parameter("retry_startup_delay", 2.0).value  # seconds.
 
+        self.protocol_parameter_handling()
+
+        # get tornado application parameters
+        tornado_settings = {}
+        tornado_settings["websocket_ping_interval"] = float(
+            self.declare_parameter("websocket_ping_interval", 0).value
+        )
+        tornado_settings["websocket_ping_timeout"] = float(
+            self.declare_parameter("websocket_ping_timeout", 30).value
+        )
+        if "--websocket_ping_interval" in sys.argv:
+            idx = sys.argv.index("--websocket_ping_interval") + 1
+            if idx < len(sys.argv):
+                tornado_settings["websocket_ping_interval"] = float(sys.argv[idx])
+            else:
+                print("--websocket_ping_interval argument provided without a value.")
+                sys.exit(-1)
+
+        if "--websocket_ping_timeout" in sys.argv:
+            idx = sys.argv.index("--websocket_ping_timeout") + 1
+            if idx < len(sys.argv):
+                tornado_settings["websocket_ping_timeout"] = float(sys.argv[idx])
+            else:
+                print("--websocket_ping_timeout argument provided without a value.")
+                sys.exit(-1)
+
+        application = Application(
+            [(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)], **tornado_settings
+        )
+
+        # Server and SSL options
+        certfile = self.declare_parameter("certfile").value
+        keyfile = self.declare_parameter("keyfile").value
+        port = self.declare_parameter("port", 9090).value
+        if "--port" in sys.argv:
+            idx = sys.argv.index("--port") + 1
+            if idx < len(sys.argv):
+                port = int(sys.argv[idx])
+            else:
+                print("--port argument provided without a value.")
+                sys.exit(-1)
+        address = self.declare_parameter("address", "").value
+        if "--address" in sys.argv:
+            idx = sys.argv.index("--address") + 1
+            if idx < len(sys.argv):
+                address = int(sys.argv[idx])
+            else:
+                print("--address argument provided without a value.")
+                sys.exit(-1)
+
+        retry_startup_delay = self.declare_parameter("retry_startup_delay", 2.0).value  # seconds.
+        if "--retry_startup_delay" in sys.argv:
+            idx = sys.argv.index("--retry_startup_delay") + 1
+            if idx < len(sys.argv):
+                retry_startup_delay = int(sys.argv[idx])
+            else:
+                print("--retry_startup_delay argument provided without a value.")
+                sys.exit(-1)
+
+        connected = False
+        while not connected and self.context.ok():
+            try:
+                ssl_options = None
+                if certfile is not None and keyfile is not None:
+                    ssl_options = {"certfile": certfile, "keyfile": keyfile}
+                sockets = bind_sockets(port, address)
+                actual_port = sockets[0].getsockname()[1]
+                server = HTTPServer(application, ssl_options=ssl_options)
+                server.add_sockets(sockets)
+                self.declare_parameter("actual_port", actual_port)
+                self.get_logger().info(f"Rosbridge WebSocket server started on port {actual_port}")
+                connected = True
+            except OSError as e:
+                self.get_logger().warn(
+                    "Unable to start server: {} " "Retrying in {}s.".format(e, retry_startup_delay)
+                )
+                time.sleep(retry_startup_delay)
+
+    def protocol_paramater_handling(self):
         RosbridgeWebSocket.use_compression = self.declare_parameter("use_compression", False).value
 
         # get RosbridgeProtocol parameters
@@ -93,23 +171,6 @@ class RosbridgeWebsocketNode(Node):
         ).value
 
         bson_only_mode = self.declare_parameter("bson_only_mode", False).value
-
-        # get tornado application parameters
-        tornado_settings = {}
-        tornado_settings["websocket_ping_interval"] = float(
-            self.declare_parameter("websocket_ping_interval", 0).value
-        )
-        tornado_settings["websocket_ping_timeout"] = float(
-            self.declare_parameter("websocket_ping_timeout", 30).value
-        )
-
-        # SSL options
-        certfile = self.declare_parameter("certfile").value
-        keyfile = self.declare_parameter("keyfile").value
-
-        port = self.declare_parameter("port", 9090).value
-
-        address = self.declare_parameter("address", "").value
 
         RosbridgeWebSocket.client_manager = ClientManager(self)
 
@@ -156,30 +217,6 @@ class RosbridgeWebsocketNode(Node):
         Capability.authorization_service = self.declare_parameter(
             "authorization_service", False
         ).value
-
-        if "--port" in sys.argv:
-            idx = sys.argv.index("--port") + 1
-            if idx < len(sys.argv):
-                port = int(sys.argv[idx])
-            else:
-                print("--port argument provided without a value.")
-                sys.exit(-1)
-
-        if "--address" in sys.argv:
-            idx = sys.argv.index("--address") + 1
-            if idx < len(sys.argv):
-                address = int(sys.argv[idx])
-            else:
-                print("--address argument provided without a value.")
-                sys.exit(-1)
-
-        if "--retry_startup_delay" in sys.argv:
-            idx = sys.argv.index("--retry_startup_delay") + 1
-            if idx < len(sys.argv):
-                retry_startup_delay = int(sys.argv[idx])
-            else:
-                print("--retry_startup_delay argument provided without a value.")
-                sys.exit(-1)
 
         if "--fragment_timeout" in sys.argv:
             idx = sys.argv.index("--fragment_timeout") + 1
@@ -259,22 +296,6 @@ class RosbridgeWebsocketNode(Node):
         if ("--bson_only_mode" in sys.argv) or bson_only_mode:
             RosbridgeWebSocket.bson_only_mode = bson_only_mode
 
-        if "--websocket_ping_interval" in sys.argv:
-            idx = sys.argv.index("--websocket_ping_interval") + 1
-            if idx < len(sys.argv):
-                tornado_settings["websocket_ping_interval"] = float(sys.argv[idx])
-            else:
-                print("--websocket_ping_interval argument provided without a value.")
-                sys.exit(-1)
-
-        if "--websocket_ping_timeout" in sys.argv:
-            idx = sys.argv.index("--websocket_ping_timeout") + 1
-            if idx < len(sys.argv):
-                tornado_settings["websocket_ping_timeout"] = float(sys.argv[idx])
-            else:
-                print("--websocket_ping_timeout argument provided without a value.")
-                sys.exit(-1)
-
         if "--authentication_service" in sys.argv:
             idx = sys.argv.index("--authentication_service") + 1
             if idx < len(sys.argv):
@@ -305,33 +326,6 @@ class RosbridgeWebsocketNode(Node):
         AdvertiseService.services_glob = RosbridgeWebSocket.services_glob
         UnadvertiseService.services_glob = RosbridgeWebSocket.services_glob
         CallService.services_glob = RosbridgeWebSocket.services_glob
-
-        ##################################################
-        # Done with parameter handling                   #
-        ##################################################
-
-        application = Application(
-            [(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)], **tornado_settings
-        )
-
-        connected = False
-        while not connected and self.context.ok():
-            try:
-                ssl_options = None
-                if certfile is not None and keyfile is not None:
-                    ssl_options = {"certfile": certfile, "keyfile": keyfile}
-                sockets = bind_sockets(port, address)
-                actual_port = sockets[0].getsockname()[1]
-                server = HTTPServer(application, ssl_options=ssl_options)
-                server.add_sockets(sockets)
-                self.declare_parameter("actual_port", actual_port)
-                self.get_logger().info(f"Rosbridge WebSocket server started on port {actual_port}")
-                connected = True
-            except OSError as e:
-                self.get_logger().warn(
-                    "Unable to start server: {} " "Retrying in {}s.".format(e, retry_startup_delay)
-                )
-                time.sleep(retry_startup_delay)
 
 
 def main(args=None):
