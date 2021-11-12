@@ -33,6 +33,9 @@ rosbridge_suite is released with a BSD license. For full terms and conditions, s
 ### Authors
 See the [AUTHORS](AUTHORS.md) file for a full list of contributors.
 
+### Quality Declaration
+This package claims to be in the **Quality Level 3** category, see the [Quality Declaration](/QUALITY_DECLARATION.md) for more details.
+
 ### Troubleshooting
 
 See the [TROUBLESHOOTING](TROUBLESHOOTING.md) doc for common problems and solutions.
