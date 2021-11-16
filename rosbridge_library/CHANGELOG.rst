@@ -2,6 +2,15 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.130 (2021-11-16)
+---------------------
+* bump version in package.xml to 0.11.130 (ER modifications)
+  This allows update from binary deb package over 0.11.x.  
+  - bump version to 0.11.130 (changes over 0.11.13)
+  - add modifications information to description
+  - compatible with 0.11.x
+  - without future bug fixes (0.11.14 and later)
+
 0.11.13 (2020-12-08)
 --------------------
 * fix python-future dependency (`#542 <https://github.com/RobotWebTools/rosbridge_suite/issues/542>`_)
