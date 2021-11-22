@@ -29,6 +29,10 @@ from std_msgs.msg import (
 )
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_cbor_conversion'
+
+
 class TestCBORConversion(unittest.TestCase):
     def test_string(self):
         msg = String(data="foo")
@@ -154,7 +158,5 @@ class TestCBORConversion(unittest.TestCase):
                 self.assertEqual(type(key), str)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_cbor_conversion'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestCBORConversion)

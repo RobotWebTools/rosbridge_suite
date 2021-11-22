@@ -13,10 +13,14 @@ from rosbridge_library.protocol import Protocol
 from rosbridge_library.protocol import InvalidArgumentException, MissingArgumentException
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_subscribe'
+
+
 class TestSubscribe(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_subscribe")
+        rospy.init_node(NAME)
 
     def dummy_cb(self, msg):
         pass
@@ -116,8 +120,6 @@ class TestSubscribe(unittest.TestCase):
         self.assertEqual(received["msg"]["msg"]["data"], msg.data)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_subscribe'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestSubscribe)
 

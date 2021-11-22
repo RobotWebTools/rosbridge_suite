@@ -14,10 +14,14 @@ from rosbridge_library.internal.message_conversion import *
 from std_msgs.msg import String, Int32
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_multi_subscriber'
+
+
 class TestMultiSubscriber(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_multi_subscriber")
+        rospy.init_node(NAME)
 
     def is_topic_published(self, topicname):
         return topicname in dict(rospy.get_published_topics()).keys()
@@ -181,8 +185,6 @@ class TestMultiSubscriber(unittest.TestCase):
         self.assertEqual(msg.data, received["msg2"]["data"])
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_multi_subscriber'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestMultiSubscriber)
 

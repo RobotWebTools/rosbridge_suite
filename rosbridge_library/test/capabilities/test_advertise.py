@@ -16,10 +16,15 @@ from rosbridge_library.internal import ros_loader
 from json import loads, dumps
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_advertise'
+
+
 class TestAdvertise(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_advertise")
+        rospy.init_node(NAME)
+
         manager.unregister_timeout = 1.0
 
     def is_topic_published(self, topicname):
@@ -135,8 +140,6 @@ class TestAdvertise(unittest.TestCase):
         self.assertFalse(self.is_topic_published(topic))
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_advertise'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestAdvertise)
 

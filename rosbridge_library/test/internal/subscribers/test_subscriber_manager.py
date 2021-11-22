@@ -13,10 +13,14 @@ from rosbridge_library.internal.message_conversion import FieldTypeMismatchExcep
 from std_msgs.msg import String, Int32
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_subscriber_manager'
+
+
 class TestSubscriberManager(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_subscriber_manager")
+        rospy.init_node(NAME)
 
     def is_topic_published(self, topicname):
         return topicname in dict(rospy.get_published_topics()).keys()
@@ -184,8 +188,6 @@ class TestSubscriberManager(unittest.TestCase):
         self.assertEqual(msg.data, received["msg"]["data"])
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_subscriber_manager'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestSubscriberManager)
 

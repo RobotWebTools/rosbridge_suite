@@ -13,10 +13,14 @@ from rosbridge_library.internal.message_conversion import *
 from std_msgs.msg import String, Int32
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_multi_unregistering'
+
+
 class TestMultiUnregistering(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_multi_unregistering")
+        rospy.init_node(NAME)
 
     def test_publish_once(self):
         """ Make sure that publishing works """
@@ -83,7 +87,5 @@ class TestMultiUnregistering(unittest.TestCase):
         self.assertEqual(received["msg"].data, msg["data"])
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_multi_unregistering'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestMultiUnregistering)

@@ -13,10 +13,14 @@ from rosbridge_library.internal.message_conversion import *
 from std_msgs.msg import String, Int32
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_multi_publisher'
+
+
 class TestMultiPublisher(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_multi_publisher")
+        rospy.init_node(NAME)
 
     def is_topic_published(self, topicname):
         return topicname in dict(rospy.get_published_topics()).keys()
@@ -117,8 +121,6 @@ class TestMultiPublisher(unittest.TestCase):
         self.assertRaises(FieldTypeMismatchException, p.publish, msg)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_multi_publisher'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestMultiPublisher)
 

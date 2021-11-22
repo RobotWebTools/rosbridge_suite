@@ -13,10 +13,14 @@ from rosbridge_library.internal.message_conversion import *
 from std_msgs.msg import String, Int32
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_publisher_consistency_listener'
+
+
 class TestPublisherConsistencyListener(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_publisher_consistency_listener")
+        rospy.init_node(NAME)
 
     def test_listener_timeout(self):
         """ See whether the listener can correctly time out """
@@ -170,8 +174,6 @@ class TestPublisherConsistencyListener(unittest.TestCase):
         self.assertEqual(received["msgs"], msgs)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_publisher_consistency_listener'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestPublisherConsistencyListener)
 

@@ -12,10 +12,15 @@ from rosbridge_library.internal.message_conversion import FieldTypeMismatchExcep
 from std_msgs.msg import String, Int32
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_publisher_manager'
+
+
 class TestPublisherManager(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_publisher_manager")
+        rospy.init_node(NAME)
+
         manager.unregister_timeout = 1.0
 
     def is_topic_published(self, topicname):
@@ -210,8 +215,6 @@ class TestPublisherManager(unittest.TestCase):
         self.assertRaises(FieldTypeMismatchException, manager.publish, client, topic, msg)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_publisher_manager'
 if __name__ == '__main__':
     rostest.unitrun(PKG, NAME, TestPublisherManager)
 

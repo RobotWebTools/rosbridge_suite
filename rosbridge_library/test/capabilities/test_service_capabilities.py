@@ -13,8 +13,15 @@ from rosbridge_library.protocol import Protocol
 from rosbridge_library.protocol import InvalidArgumentException, MissingArgumentException
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_service_capabilities'
+
+
 class TestServiceCapabilities(unittest.TestCase):
+
     def setUp(self):
+        rospy.init_node(NAME)
+
         self.proto = Protocol(self._testMethodName)
         # change the log function so we can verify errors are logged
         self.proto.log = self.mock_log
@@ -177,8 +184,5 @@ class TestServiceCapabilities(unittest.TestCase):
         self.assertFalse(self.received_message["result"])
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_service_capabilities'
 if __name__ == '__main__':
-    rospy.init_node(NAME)
-    rostest.rosrun(PKG, NAME, TestServiceCapabilities)
+    rostest.unitrun(PKG, NAME, TestServiceCapabilities)
