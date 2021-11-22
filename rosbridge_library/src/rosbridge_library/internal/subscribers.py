@@ -110,6 +110,13 @@ class MultiSubscriber:
             qos_profile = publishers_info[0].qos_profile
             qos_profile.history = HistoryPolicy.KEEP_LAST
             qos_profile.depth = 10
+
+            # For fixing errors in Foxy and rmw_fastrtps
+            from rclpy.duration import Duration
+
+            qos_profile.deadline = Duration(nanoseconds=0)
+            qos_profile.lifespan = Duration(nanoseconds=0)
+            qos_profile.liveliness_lease_duration = Duration(nanoseconds=0)
         else:
             qos_profile = default_qos_profile
 
