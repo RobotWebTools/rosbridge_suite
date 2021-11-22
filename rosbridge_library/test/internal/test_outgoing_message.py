@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import rostest
+import rosunit
 import sys
 import unittest
 
@@ -34,4 +34,4 @@ class TestOutgoingMessage(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestOutgoingMessage)
+    rosunit.unitrun(PKG, NAME, TestOutgoingMessage)

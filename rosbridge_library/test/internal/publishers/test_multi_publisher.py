@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import rospy
-import rostest
+import rosunit
 import unittest
 
 from time import sleep, time
@@ -122,5 +122,5 @@ class TestMultiPublisher(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestMultiPublisher)
+    rosunit.unitrun(PKG, NAME, TestMultiPublisher)
 

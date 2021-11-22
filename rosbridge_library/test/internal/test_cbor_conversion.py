@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import rostest
+import rosunit
 import sys
 import unittest
 
@@ -159,4 +159,4 @@ class TestCBORConversion(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestCBORConversion)
+    rosunit.unitrun(PKG, NAME, TestCBORConversion)

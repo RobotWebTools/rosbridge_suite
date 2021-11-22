@@ -2,7 +2,7 @@
 from __future__ import print_function
 import sys
 import rospy
-import rostest
+import rosunit
 import unittest
 import time
 import random
@@ -209,5 +209,5 @@ class TestServices(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestServices)
+    rosunit.unitrun(PKG, NAME, TestServices)
 

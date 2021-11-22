@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import rospy
-import rostest
+import rosunit
 import unittest
 
 from rosbridge_library.internal import pngcompression
@@ -32,5 +32,5 @@ class TestCompression(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestCompression)
+    rosunit.unitrun(PKG, NAME, TestCompression)
 

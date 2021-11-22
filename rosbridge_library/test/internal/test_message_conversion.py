@@ -2,7 +2,7 @@
 from __future__ import print_function
 import sys
 import rospy
-import rostest
+import rosunit
 import unittest
 from json import loads, dumps
 
@@ -283,4 +283,4 @@ class TestMessageConversion(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestMessageConversion)
+    rosunit.unitrun(PKG, NAME, TestMessageConversion)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import rospy
-import rostest
+import rosunit
 import unittest
 import time
 
@@ -378,4 +378,4 @@ class TestMessageHandlers(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestMessageHandlers)
+    rosunit.unitrun(PKG, NAME, TestMessageHandlers)

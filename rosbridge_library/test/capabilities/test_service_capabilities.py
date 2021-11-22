@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-import rostest
+import rosunit
 import unittest
 
 from json import loads, dumps
@@ -185,4 +185,4 @@ class TestServiceCapabilities(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestServiceCapabilities)
+    rosunit.unitrun(PKG, NAME, TestServiceCapabilities)

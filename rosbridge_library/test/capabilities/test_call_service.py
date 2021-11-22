@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import rospy
-import rostest
+import rosunit
 import unittest
 import time
 
@@ -103,5 +103,5 @@ class TestCallService(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestCallService)
+    rosunit.unitrun(PKG, NAME, TestCallService)
 

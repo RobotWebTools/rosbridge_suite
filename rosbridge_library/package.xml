@@ -50,6 +50,7 @@
   <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-bson</exec_depend>
 
   <test_depend>rostest</test_depend>
+  <test_depend>rosunit</test_depend>
   <test_depend>actionlib_msgs</test_depend>
   <test_depend>diagnostic_msgs</test_depend>
   <test_depend>nav_msgs</test_depend>

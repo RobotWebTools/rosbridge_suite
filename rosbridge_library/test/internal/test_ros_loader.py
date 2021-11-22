@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import rospy
-import rostest
+import rosunit
 import unittest
 
 from rosbridge_library.internal import ros_loader
@@ -219,5 +219,5 @@ class TestROSLoader(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestROSLoader)
+    rosunit.unitrun(PKG, NAME, TestROSLoader)
 
