@@ -17,7 +17,7 @@ NAME = 'test_multi_unregistering'
 class TestMultiUnregistering(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node(NAME)
+        rospy.init_node(NAME, log_level=rospy.DEBUG)
 
     def test_publish_once(self):
         """ Make sure that publishing works """
@@ -51,21 +51,28 @@ class TestMultiUnregistering(unittest.TestCase):
 
         rospy.Subscriber(topic, ros_loader.get_message_class(msg_type), cb)
         p = MultiPublisher(topic, msg_type)
+        rospy.logerr("Publish 1")
         p.publish(msg)
 
         sleep(1)  # Time to publish and receive
 
         self.assertEqual(received["msg"].data, msg["data"])
 
+        rospy.logerr("Unregister 1")
         p.unregister()
+        rospy.logerr("Sleep 5 start")
         sleep(5)  # Time to unregister
+        rospy.logerr("Sleep 5 end")
 
         received["msg"] = None  # Reset received
         self.assertIsNone(received["msg"])
         p = MultiPublisher(topic, msg_type)
+        rospy.logerr("Publish 2")
         p.publish(msg)
 
+        rospy.logerr("Sleep 1 start")
         sleep(1)   # Time to publish and receive
+        rospy.logerr("Sleep 1 end")
 
         self.assertEqual(received["msg"].data, msg["data"])
 
