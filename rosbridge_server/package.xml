@@ -1,4 +1,7 @@
 <?xml version="1.0"?>
+<?xml-model
+  href="http://download.ros.org/schema/package_format3.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rosbridge_server</name>
   <version>0.11.13</version>
@@ -15,6 +18,10 @@
   <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
+
+  <buildtool_depend condition="$ROS_PYTHON_VERSION == 2">python-setuptools</buildtool_depend>
+  <buildtool_depend condition="$ROS_PYTHON_VERSION == 3">python3-setuptools</buildtool_depend>
+
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-autobahn</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-autobahn</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-backports.ssl-match-hostname</exec_depend>
@@ -27,5 +34,6 @@
   <exec_depend>rosapi</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>rosauth</exec_depend>
+
   <test_depend>rostest</test_depend>
 </package>
