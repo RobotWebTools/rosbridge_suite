@@ -19,7 +19,7 @@ generate_test_description = common.generate_test_description
 
 class TestCallService(unittest.TestCase):
     @websocket_test
-    async def test_one_call(self, node: Node, ws_client):
+    async def test_one_call(self, node: Node, make_client):
         def service_cb(req, res):
             self.assertTrue(req.data)
             res.success = True
@@ -28,6 +28,7 @@ class TestCallService(unittest.TestCase):
 
         service = node.create_service(SetBool, "/test_service", service_cb)
 
+        ws_client = await make_client()
         responses_future, ws_client.message_handler = expect_messages(
             1, "WebSocket", node.get_logger()
         )
