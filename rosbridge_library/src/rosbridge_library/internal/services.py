@@ -32,7 +32,6 @@
 
 from threading import Thread
 
-from rclpy import spin_until_future_complete
 from rclpy.expand_topic_name import expand_topic_name
 from rosbridge_library.internal.message_conversion import (
     extract_values,
@@ -123,12 +122,11 @@ def call_service(node_handle, service, args=None):
 
     client = node_handle.create_client(service_class, service)
 
-    future = client.call_async(inst)
-    spin_until_future_complete(node_handle, future)
-    if future.result() is not None:
+    result = client.call(inst)
+    if result is not None:
         # Turn the response into JSON and pass to the callback
-        json_response = extract_values(future.result())
+        json_response = extract_values(result)
     else:
-        raise Exception(future.exception())
+        raise Exception(result)
 
     return json_response
