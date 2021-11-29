@@ -19,7 +19,8 @@ generate_test_description = common.generate_test_description
 
 class TestWebsocketSmoke(unittest.TestCase):
     @websocket_test
-    async def test_smoke(self, node: Node, ws_client):
+    async def test_smoke(self, node: Node, make_client):
+        ws_client = await make_client()
         # For consistency, the number of messages must not exceed the the protocol
         # Subscriber queue_size.
         NUM_MSGS = 10

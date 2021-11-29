@@ -19,7 +19,8 @@ generate_test_description = common.generate_test_description
 
 class TestAdvertiseService(unittest.TestCase):
     @websocket_test
-    async def test_two_concurrent_calls(self, node: Node, ws_client):
+    async def test_two_concurrent_calls(self, node: Node, make_client):
+        ws_client = await make_client()
         ws_client.sendJson(
             {
                 "op": "advertise_service",

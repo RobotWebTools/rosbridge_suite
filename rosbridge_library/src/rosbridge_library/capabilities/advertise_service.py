@@ -45,9 +45,10 @@ class AdvertisedServiceHandler:
         }
         self.protocol.send(request_message)
 
-        res = await future
-        del self.request_futures[request_id]
-        return res
+        try:
+            return await future
+        finally:
+            del self.request_futures[request_id]
 
     def handle_response(self, request_id, res):
         """
@@ -75,6 +76,8 @@ class AdvertisedServiceHandler:
                 f"Service {self.service_name} was unadvertised with a service call in progress, "
                 f"aborting service calls with request IDs {incomplete_ids}",
             )
+            for future in self.request_futures.values():
+                future.set_exception(RuntimeError(f"Service {self.service_name} was unadvertised"))
         self.protocol.node_handle.destroy_service(self.service_handle)
 
 
@@ -128,9 +131,7 @@ class AdvertiseService(Capability):
             self.protocol.log(
                 "warn", "Duplicate service advertised. Overwriting %s." % service_name
             )
-            self.protocol.external_service_list[service_name].service_handle.shutdown(
-                "Duplicate advertiser."
-            )
+            self.protocol.external_service_list[service_name].graceful_shutdown()
             del self.protocol.external_service_list[service_name]
 
         # setup and store the service information
