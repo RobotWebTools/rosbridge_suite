@@ -1,7 +1,7 @@
 import fnmatch
-import time
-from threading import Lock
 
+import rclpy
+from rclpy.callback_groups import ReentrantCallbackGroup
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.internal.ros_loader import get_service_class
@@ -10,18 +10,18 @@ from rosbridge_library.internal.ros_loader import get_service_class
 class AdvertisedServiceHandler:
 
     id_counter = 1
-    responses = {}
 
     def __init__(self, service_name, service_type, protocol):
-        self.active_requests = 0
-        self.shutdown_requested = False
-        self.lock = Lock()
+        self.request_futures = {}
         self.service_name = service_name
         self.service_type = service_type
         self.protocol = protocol
         # setup the service
         self.service_handle = protocol.node_handle.create_service(
-            get_service_class(service_type), service_name, self.handle_request
+            get_service_class(service_type),
+            service_name,
+            self.handle_request,
+            callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
         )
 
     def next_id(self):
@@ -29,11 +29,12 @@ class AdvertisedServiceHandler:
         self.id_counter += 1
         return id
 
-    def handle_request(self, req):
-        with self.lock:
-            self.active_requests += 1
+    async def handle_request(self, req, res):
         # generate a unique ID
         request_id = "service_request:" + self.service_name + ":" + str(self.next_id())
+
+        future = rclpy.task.Future()
+        self.request_futures[request_id] = future
 
         # build a request to send to the external client
         request_message = {
@@ -44,29 +45,22 @@ class AdvertisedServiceHandler:
         }
         self.protocol.send(request_message)
 
-        # wait for a response
-        while request_id not in self.responses.keys():
-            with self.lock:
-                if self.shutdown_requested:
-                    break
-            time.sleep(0)
+        res = await future
+        del self.request_futures[request_id]
+        return res
 
-        with self.lock:
-            self.active_requests -= 1
+    def handle_response(self, request_id, res):
+        """
+        Called by the ServiceResponse capability to handle a service response from the external client.
+        """
+        if request_id in self.request_futures:
+            self.request_futures[request_id].set_result(res)
+        else:
+            self.protocol.log(
+                "warning", f"Received service response for unrecognized id: {request_id}"
+            )
 
-            if self.shutdown_requested:
-                self.protocol.log(
-                    "warning",
-                    "Service %s was unadvertised with a service call in progress, "
-                    "aborting service call with request ID %s" % (self.service_name, request_id),
-                )
-                return None
-
-        resp = self.responses[request_id]
-        del self.responses[request_id]
-        return resp
-
-    def graceful_shutdown(self, timeout):
+    def graceful_shutdown(self):
         """
         Signal the AdvertisedServiceHandler to shutdown
 
@@ -74,11 +68,13 @@ class AdvertisedServiceHandler:
         time to stop any active service requests, ending their busy wait
         loops.
         """
-        with self.lock:
-            self.shutdown_requested = True
-        start_time = time.clock()
-        while time.clock() - start_time < timeout:
-            time.sleep(0)
+        if self.request_futures:
+            incomplete_ids = ", ".join(self.request_futures.keys())
+            self.protocol.log(
+                "warning",
+                f"Service {self.service_name} was unadvertised with a service call in progress, "
+                f"aborting service calls with request IDs {incomplete_ids}",
+            )
         self.protocol.node_handle.destroy_service(self.service_handle)
 
 
