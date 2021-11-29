@@ -103,7 +103,8 @@ async def connect_to_server(node: Node) -> TestClientProtocol:
 
 
 def run_websocket_test(
-    node_name: str, test_fn: Callable[[Node, TestClientProtocol], Awaitable[None]]
+    node_name: str,
+    test_fn: Callable[[Node, Callable[[], Awaitable[TestClientProtocol]]], Awaitable[None]],
 ):
     context = rclpy.Context()
     rclpy.init(context=context)
@@ -112,8 +113,7 @@ def run_websocket_test(
     executor.add_node(node)
 
     async def task():
-        ws_client = await connect_to_server(node)
-        await test_fn(node, ws_client)
+        await test_fn(node, lambda: connect_to_server(node))
         reactor.callFromThread(reactor.stop)
 
     future = executor.create_task(task)
@@ -142,7 +142,8 @@ def sleep(node: Node, duration: float) -> Awaitable[None]:
 
 def websocket_test(test_fn):
     """
-    Decorator for tests which use a ROS node and WebSocket server and client
+    Decorator for tests which use a ROS node and WebSocket server and client.
+    Multiple tests per file are not supported because the Twisted reactor cannot be run multiple times.
     """
 
     @functools.wraps(test_fn)
