@@ -19,6 +19,7 @@
   <maintainer email="jacob@foxglove.dev">Jacob Bandes-Storch</maintainer>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
 
   <build_depend>python3-pil</build_depend>
   <build_depend>python3-bson</build_depend>
