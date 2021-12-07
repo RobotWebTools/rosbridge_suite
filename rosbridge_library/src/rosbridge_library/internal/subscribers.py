@@ -33,6 +33,8 @@
 
 from threading import Lock
 
+from rclpy.qos import QoSDurabilityPolicy, QoSProfile
+
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
@@ -107,9 +109,16 @@ class MultiSubscriber:
         self.topic = topic
         self.msg_class = msg_class
         self.node_handle = node_handle
-        # TODO(@jubeira): add support for other QoS.
+
+        # Some publishers (like /tf_static) publish messages with qos profiles that are incompatible
+        # with the default qos profile. This qos profile indicates we are ok receiving any message types.
+        qos = QoSProfile(
+            depth=10,
+            durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
+        )
+        node_handle.get_logger().info(topic)
         self.subscriber = node_handle.create_subscription(
-            msg_class, topic, self.callback, 10, raw=raw
+            msg_class, topic, self.callback, raw=raw, qos_profile=qos
         )
         self.new_subscriber = None
         self.new_subscriptions = {}
