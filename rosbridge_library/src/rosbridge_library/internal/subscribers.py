@@ -33,6 +33,7 @@
 
 from threading import Lock
 
+from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
@@ -107,9 +108,13 @@ class MultiSubscriber:
         self.topic = topic
         self.msg_class = msg_class
         self.node_handle = node_handle
-        # TODO(@jubeira): add support for other QoS.
+
+        qos = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
         self.subscriber = node_handle.create_subscription(
-            msg_class, topic, self.callback, 10, raw=raw
+            msg_class, topic, self.callback, qos, raw=raw
         )
         self.new_subscriber = None
         self.new_subscriptions = {}
