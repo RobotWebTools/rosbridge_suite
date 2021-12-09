@@ -3,7 +3,7 @@ import sys
 import unittest
 
 from rclpy.node import Node
-from rclpy.qos import QoSProfile
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 from rclpy.qos import DurabilityPolicy
 from rclpy.qos import HistoryPolicy
 from std_msgs.msg import String
@@ -18,21 +18,17 @@ log.startLogging(sys.stderr)
 
 generate_test_description = common.generate_test_description
 
-class TestTransientLocalPublisher(unittest.TestCase):
+
+class TestBestEffortPublisher(unittest.TestCase):
     @websocket_test
-    async def test_transient_local_publisher(self, node: Node, make_client):
+    async def test_best_effort_publisher(self, node: Node, make_client):
         qos = QoSProfile(
-            depth=1,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
-            history=HistoryPolicy.KEEP_LAST
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.SYSTEM_DEFAULT,
         )
         pub_a = node.create_publisher(String, "/a_topic", qos_profile=qos)
 
-        await sleep(node, 1)
-
-        pub_a.publish(String(data="hello"))
-
-        await sleep(node, 1)
+        await sleep(node, 1)  # wait for publisher to be set up
 
         ws_client1 = await make_client()
         ws_client1.sendJson(
@@ -42,6 +38,10 @@ class TestTransientLocalPublisher(unittest.TestCase):
                 "type": "std_msgs/String",
             }
         )
+
+        await sleep(node, 1)  # wait for subscriber to be set up
+
+        pub_a.publish(String(data="hello"))
 
         ws1_completed_future, ws_client1.message_handler = expect_messages(
             1, "WebSocket 1", node.get_logger()

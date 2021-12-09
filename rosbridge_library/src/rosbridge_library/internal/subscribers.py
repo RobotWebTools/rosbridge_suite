@@ -33,7 +33,7 @@
 
 from threading import Lock
 
-from rclpy.qos import DurabilityPolicy, QoSProfile
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
@@ -111,8 +111,23 @@ class MultiSubscriber:
 
         qos = QoSProfile(
             depth=10,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.VOLATILE,
+            reliability=ReliabilityPolicy.RELIABLE,
         )
+        infos = node_handle.get_publishers_info_by_topic(topic)
+
+        # Certain combinations of publisher and subscriber QoS parameters are
+        # incompatible. Here we make a "best effort" attempt to match existing
+        # publishers for the requested topic. This is not perfect because more
+        # publishers may come online after our subscriber is set up, but we try
+        # to provide sane defaults. For more information, see:
+        # - https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html
+        # - https://github.com/RobotWebTools/rosbridge_suite/issues/551
+        if any(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
+            qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
+        if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+            qos.reliability = ReliabilityPolicy.BEST_EFFORT
+
         self.subscriber = node_handle.create_subscription(
             msg_class, topic, self.callback, qos, raw=raw
         )
