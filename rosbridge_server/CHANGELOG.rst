@@ -2,6 +2,17 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Allow subscribing to any qos profile when creating a subscriber (`#690 <https://github.com/RobotWebTools/rosbridge_suite/issues/690>`_)
+* Fix and add test for multiple subscribers to same topic (`#687 <https://github.com/RobotWebTools/rosbridge_suite/issues/687>`_)
+* Delete unsupported TCP and UDP server implementations in ROS 2 branch (`#685 <https://github.com/RobotWebTools/rosbridge_suite/issues/685>`_)
+* Fix error when advertising duplicate service (`#683 <https://github.com/RobotWebTools/rosbridge_suite/issues/683>`_)
+* Fix incoming service calls (`#669 <https://github.com/RobotWebTools/rosbridge_suite/issues/669>`_)
+* Replace busy wait in AdvertiseService with async handler (`#666 <https://github.com/RobotWebTools/rosbridge_suite/issues/666>`_)
+* Refactor smoke test to make WebSocket test harness reusable (`#675 <https://github.com/RobotWebTools/rosbridge_suite/issues/675>`_)
+* Contributors: Domenic Rodriguez, Jacob Bandes-Storch, Roman Shtylman
+
 1.1.0 (2021-10-22)
 ------------------
 * Exit cleanly on SIGINT; remove sleep in test (`#667 <https://github.com/RobotWebTools/rosbridge_suite/issues/667>`_)

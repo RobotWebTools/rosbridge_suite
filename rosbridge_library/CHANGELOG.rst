@@ -2,6 +2,15 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Allow subscribing to any qos profile when creating a subscriber (`#690 <https://github.com/RobotWebTools/rosbridge_suite/issues/690>`_)
+* Fix and add test for multiple subscribers to same topic (`#687 <https://github.com/RobotWebTools/rosbridge_suite/issues/687>`_)
+* Fix error when advertising duplicate service (`#683 <https://github.com/RobotWebTools/rosbridge_suite/issues/683>`_)
+* Fix incoming service calls (`#669 <https://github.com/RobotWebTools/rosbridge_suite/issues/669>`_)
+* Replace busy wait in AdvertiseService with async handler (`#666 <https://github.com/RobotWebTools/rosbridge_suite/issues/666>`_)
+* Contributors: Domenic Rodriguez, Jacob Bandes-Storch, Roman Shtylman
+
 1.1.0 (2021-10-22)
 ------------------
 * Fix test imports from rosbridge_test_msgs (`#668 <https://github.com/RobotWebTools/rosbridge_suite/issues/668>`_)
