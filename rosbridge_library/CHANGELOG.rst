@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2021-12-09)
+------------------
 * Allow subscribing to any qos profile when creating a subscriber (`#690 <https://github.com/RobotWebTools/rosbridge_suite/issues/690>`_)
 * Fix and add test for multiple subscribers to same topic (`#687 <https://github.com/RobotWebTools/rosbridge_suite/issues/687>`_)
 * Fix error when advertising duplicate service (`#683 <https://github.com/RobotWebTools/rosbridge_suite/issues/683>`_)

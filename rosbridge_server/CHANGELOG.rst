@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2021-12-09)
+------------------
 * Allow subscribing to any qos profile when creating a subscriber (`#690 <https://github.com/RobotWebTools/rosbridge_suite/issues/690>`_)
 * Fix and add test for multiple subscribers to same topic (`#687 <https://github.com/RobotWebTools/rosbridge_suite/issues/687>`_)
 * Delete unsupported TCP and UDP server implementations in ROS 2 branch (`#685 <https://github.com/RobotWebTools/rosbridge_suite/issues/685>`_)
