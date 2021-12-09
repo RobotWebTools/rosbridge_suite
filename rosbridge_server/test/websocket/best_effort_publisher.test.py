@@ -3,9 +3,7 @@ import sys
 import unittest
 
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy
-from rclpy.qos import DurabilityPolicy
-from rclpy.qos import HistoryPolicy
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import String
 from twisted.python import log
 

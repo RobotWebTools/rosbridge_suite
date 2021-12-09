@@ -5,7 +5,10 @@
     "python.linting.banditEnabled": true,
     "python.linting.pylintEnabled": false,
     "[python]": {
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        }
     },
     "python.linting.banditArgs": [
         "--skip",
