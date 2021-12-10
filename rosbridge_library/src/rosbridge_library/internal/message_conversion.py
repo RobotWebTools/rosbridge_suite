@@ -52,7 +52,7 @@ type_map = {
     "bool": ["bool", "boolean"],
     "int": [
         "int8",
-        "byte",
+        "octet",
         "uint8",
         "char",
         "int16",
@@ -74,7 +74,7 @@ ros_time_types = ["builtin_interfaces/Time", "builtin_interfaces/Duration"]
 ros_primitive_types = [
     "bool",
     "boolean",
-    "byte",
+    "octet",
     "char",
     "int8",
     "uint8",
@@ -223,6 +223,11 @@ def _from_inst(inst, rostype):
         if (not bson_only_mode) and (rostype in type_map.get("float")):
             if math.isnan(inst) or math.isinf(inst):
                 return None
+
+        # JSON does not support byte array. They are converted to int
+        if (not bson_only_mode) and (rostype == "octet"):
+            return int.from_bytes(inst, "little")
+
         return inst
 
     # Check if it's a list or tuple
@@ -325,6 +330,10 @@ def _to_primitive_inst(msg, rostype, roottype, stack):
         # probably wrong parsing,
         # fix that by casting the int to the expected float
         msg = float(msg)
+
+    # Convert to byte
+    if rostype == "octet" and isinstance(msg, int):
+        return bytes([msg])
 
     msgtype = type(msg)
     if msgtype in primitive_types and rostype in type_map[msgtype.__name__]:
