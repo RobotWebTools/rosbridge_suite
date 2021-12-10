@@ -188,17 +188,15 @@ class TestMessageConversion(unittest.TestCase):
         msg = {"sec": 3, "nanosec": 5}
         self.do_test(msg, "builtin_interfaces/Time")
 
-        # TODO: enable this test
-        # msg = {"times": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
-        # self.do_test(msg, "rosbridge_test_msgs/TestTimeArray")
+        msg = {"times": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
+        self.do_test(msg, "rosbridge_test_msgs/TestTimeArray")
 
     def test_duration_msg(self):
         msg = {"sec": 3, "nanosec": 5}
         self.do_test(msg, "builtin_interfaces/Duration")
 
-        # TODO: enable this test
-        # msg = {"durations": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
-        # self.do_test(msg, "rosbridge_test_msgs/TestDurationArray")
+        msg = {"durations": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
+        self.do_test(msg, "rosbridge_test_msgs/TestDurationArray")
 
     def test_header_msg(self):
         msg = {
