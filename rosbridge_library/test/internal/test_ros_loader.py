@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 import unittest
 
-import rospy
-import rostest
 from rosbridge_library.internal import ros_loader
+from rosidl_runtime_py.utilities import get_message
 
 
 class TestROSLoader(unittest.TestCase):
-    def setUp(self):
-        rospy.init_node("test_ros_loader")
-
     def test_bad_msgnames(self):
         bad = [
             "",
@@ -20,9 +16,6 @@ class TestROSLoader(unittest.TestCase):
             "/////",
             "bad",
             "stillbad",
-            "not/better/still",
-            "not//better//still",
-            "not///better///still",
             "better/",
             "better//",
             "better///",
@@ -37,9 +30,7 @@ class TestROSLoader(unittest.TestCase):
                 ros_loader.InvalidTypeStringException, ros_loader.get_message_class, x
             )
             self.assertRaises(
-                ros_loader.InvalidTypeStringException,
-                ros_loader.get_message_instance,
-                x,
+                ros_loader.InvalidTypeStringException, ros_loader.get_message_instance, x
             )
 
     def test_irregular_msgnames(self):
@@ -64,7 +55,6 @@ class TestROSLoader(unittest.TestCase):
             "std_msgs/Byte",
             "std_msgs/ByteMultiArray",
             "std_msgs/ColorRGBA",
-            "std_msgs/Duration",
             "std_msgs/Empty",
             "std_msgs/Float32",
             "std_msgs/Float32MultiArray",
@@ -81,7 +71,6 @@ class TestROSLoader(unittest.TestCase):
             "std_msgs/MultiArrayDimension",
             "std_msgs/MultiArrayLayout",
             "std_msgs/String",
-            "std_msgs/Time",
             "std_msgs/UInt16",
             "std_msgs/UInt16MultiArray",
             "std_msgs/UInt32MultiArray",
@@ -95,7 +84,7 @@ class TestROSLoader(unittest.TestCase):
             self.assertNotEqual(ros_loader.get_message_class(x), None)
             inst = ros_loader.get_message_instance(x)
             self.assertNotEqual(inst, None)
-            self.assertEqual(x, inst._type)
+            self.assertEqual(get_message(x), type(inst))
 
     def test_msg_cache(self):
         stdmsgs = [
@@ -103,7 +92,6 @@ class TestROSLoader(unittest.TestCase):
             "std_msgs/Byte",
             "std_msgs/ByteMultiArray",
             "std_msgs/ColorRGBA",
-            "std_msgs/Duration",
             "std_msgs/Empty",
             "std_msgs/Float32",
             "std_msgs/Float32MultiArray",
@@ -120,7 +108,6 @@ class TestROSLoader(unittest.TestCase):
             "std_msgs/MultiArrayDimension",
             "std_msgs/MultiArrayLayout",
             "std_msgs/String",
-            "std_msgs/Time",
             "std_msgs/UInt16",
             "std_msgs/UInt16MultiArray",
             "std_msgs/UInt32MultiArray",
@@ -134,7 +121,7 @@ class TestROSLoader(unittest.TestCase):
             self.assertNotEqual(ros_loader.get_message_class(x), None)
             inst = ros_loader.get_message_instance(x)
             self.assertNotEqual(inst, None)
-            self.assertEqual(x, inst._type)
+            self.assertEqual(get_message(x), type(inst))
             self.assertTrue(x in ros_loader._loaded_msgs)
 
     def test_assorted_msgnames(self):
@@ -156,7 +143,7 @@ class TestROSLoader(unittest.TestCase):
             self.assertNotEqual(ros_loader.get_message_class(x), None)
             inst = ros_loader.get_message_instance(x)
             self.assertNotEqual(inst, None)
-            self.assertEqual(x, inst._type)
+            self.assertEqual(get_message(x), type(inst))
 
     def test_invalid_msgnames_primitives(self):
         invalid = [
@@ -189,16 +176,13 @@ class TestROSLoader(unittest.TestCase):
         nonexistent = [
             "wangle_msgs/Jam",
             "whistleblower_msgs/Document",
-            "sexual_harrassment_msgs/UnwantedAdvance",
             "coercion_msgs/Bribe",
             "airconditioning_msgs/Cold",
             "pr2thoughts_msgs/Escape",
         ]
         for x in nonexistent:
-            self.assertRaises(ros_loader.InvalidPackageException, ros_loader.get_message_class, x)
-            self.assertRaises(
-                ros_loader.InvalidPackageException, ros_loader.get_message_instance, x
-            )
+            self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_message_class, x)
+            self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_message_instance, x)
 
     def test_packages_without_msgs(self):
         no_msgs = [
@@ -206,7 +190,6 @@ class TestROSLoader(unittest.TestCase):
             "roslib/Duration",
             "roslib/Header",
             "std_srvs/ConflictedMsg",
-            "topic_tools/MessageMessage",
         ]
         for x in no_msgs:
             self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_message_class, x)
@@ -214,12 +197,9 @@ class TestROSLoader(unittest.TestCase):
 
     def test_nonexistent_msg_classnames(self):
         nonexistent = [
-            "roscpp/Time",
-            "roscpp/Duration",
-            "roscpp/Header",
-            "rospy/Time",
-            "rospy/Duration",
-            "rospy/Header",
+            "rcl_interfaces/Time",
+            "rcl_interfaces/Duration",
+            "rcl_interfaces/Header",
             "std_msgs/Spool",
             "geometry_msgs/Tetrahedron",
             "sensor_msgs/TelepathyUnit",
@@ -238,9 +218,9 @@ class TestROSLoader(unittest.TestCase):
             "/////",
             "bad",
             "stillbad",
-            "not/better/still",
-            "not//better//still",
-            "not///better///still",
+            "not/better/even/still",
+            "not//better//even//still",
+            "not///better///even///still",
             "better/",
             "better//",
             "better///",
@@ -255,77 +235,58 @@ class TestROSLoader(unittest.TestCase):
                 ros_loader.InvalidTypeStringException, ros_loader.get_service_class, x
             )
             self.assertRaises(
-                ros_loader.InvalidTypeStringException,
-                ros_loader.get_service_instance,
-                x,
+                ros_loader.InvalidTypeStringException, ros_loader.get_service_request_instance, x
             )
             self.assertRaises(
-                ros_loader.InvalidTypeStringException,
-                ros_loader.get_service_request_instance,
-                x,
-            )
-            self.assertRaises(
-                ros_loader.InvalidTypeStringException,
-                ros_loader.get_service_response_instance,
-                x,
+                ros_loader.InvalidTypeStringException, ros_loader.get_service_response_instance, x
             )
 
     def test_irregular_servicenames(self):
         irregular = [
-            "roscpp//GetLoggers",
-            "/roscpp/GetLoggers/",
-            "/roscpp/GetLoggers",
-            "//roscpp/GetLoggers",
-            "/roscpp//GetLoggers",
-            "roscpp/GetLoggers//",
-            "/roscpp/GetLoggers//",
-            "roscpp/GetLoggers/",
-            "roscpp//GetLoggers//",
+            "rcl_interfaces//GetParameters",
+            "/rcl_interfaces/GetParameters/",
+            "/rcl_interfaces/GetParameters",
+            "//rcl_interfaces/GetParameters",
+            "/rcl_interfaces//GetParameters",
+            "rcl_interfaces/GetParameters//",
+            "/rcl_interfaces/GetParameters//",
+            "rcl_interfaces/GetParameters/",
+            "rcl_interfaces//GetParameters//",
         ]
         for x in irregular:
             self.assertNotEqual(ros_loader.get_service_class(x), None)
-            self.assertNotEqual(ros_loader.get_service_instance(x), None)
             self.assertNotEqual(ros_loader.get_service_request_instance(x), None)
             self.assertNotEqual(ros_loader.get_service_response_instance(x), None)
 
     def test_common_servicenames(self):
         common = [
-            "roscpp/GetLoggers",
-            "roscpp/SetLoggerLevel",
+            "rcl_interfaces/GetParameters",
+            "rcl_interfaces/SetParameters",
             "std_srvs/Empty",
             "nav_msgs/GetMap",
             "nav_msgs/GetPlan",
             "sensor_msgs/SetCameraInfo",
-            "topic_tools/MuxAdd",
-            "topic_tools/MuxSelect",
             "tf2_msgs/FrameGraph",
-            "rospy_tutorials/BadTwoInts",
-            "rospy_tutorials/AddTwoInts",
+            "example_interfaces/AddTwoInts",
         ]
         for x in common:
             self.assertNotEqual(ros_loader.get_service_class(x), None)
-            self.assertNotEqual(ros_loader.get_service_instance(x), None)
             self.assertNotEqual(ros_loader.get_service_request_instance(x), None)
             self.assertNotEqual(ros_loader.get_service_response_instance(x), None)
-            self.assertEqual(x, ros_loader.get_service_instance(x)._type)
 
     def test_srv_cache(self):
         common = [
-            "roscpp/GetLoggers",
-            "roscpp/SetLoggerLevel",
+            "rcl_interfaces/GetParameters",
+            "rcl_interfaces/SetParameters",
             "std_srvs/Empty",
             "nav_msgs/GetMap",
             "nav_msgs/GetPlan",
             "sensor_msgs/SetCameraInfo",
-            "topic_tools/MuxAdd",
-            "topic_tools/MuxSelect",
             "tf2_msgs/FrameGraph",
-            "rospy_tutorials/BadTwoInts",
-            "rospy_tutorials/AddTwoInts",
+            "example_interfaces/AddTwoInts",
         ]
         for x in common:
             self.assertNotEqual(ros_loader.get_service_class(x), None)
-            self.assertNotEqual(ros_loader.get_service_instance(x), None)
             self.assertNotEqual(ros_loader.get_service_request_instance(x), None)
             self.assertNotEqual(ros_loader.get_service_response_instance(x), None)
             self.assertTrue(x in ros_loader._loaded_srvs)
@@ -334,16 +295,11 @@ class TestROSLoader(unittest.TestCase):
         no_msgs = ["roslib/A", "roslib/B", "roslib/C", "std_msgs/CuriousSrv"]
         for x in no_msgs:
             self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_service_class, x)
-            self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_service_instance, x)
             self.assertRaises(
-                ros_loader.InvalidModuleException,
-                ros_loader.get_service_request_instance,
-                x,
+                ros_loader.InvalidModuleException, ros_loader.get_service_request_instance, x
             )
             self.assertRaises(
-                ros_loader.InvalidModuleException,
-                ros_loader.get_service_response_instance,
-                x,
+                ros_loader.InvalidModuleException, ros_loader.get_service_response_instance, x
             )
 
     def test_nonexistent_service_packagenames(self):
@@ -354,45 +310,25 @@ class TestROSLoader(unittest.TestCase):
             "revenge_srvs/BackStab",
         ]
         for x in nonexistent:
-            self.assertRaises(ros_loader.InvalidPackageException, ros_loader.get_service_class, x)
+            self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_service_class, x)
             self.assertRaises(
-                ros_loader.InvalidPackageException, ros_loader.get_service_instance, x
+                ros_loader.InvalidModuleException, ros_loader.get_service_request_instance, x
             )
             self.assertRaises(
-                ros_loader.InvalidPackageException,
-                ros_loader.get_service_request_instance,
-                x,
-            )
-            self.assertRaises(
-                ros_loader.InvalidPackageException,
-                ros_loader.get_service_response_instance,
-                x,
+                ros_loader.InvalidModuleException, ros_loader.get_service_response_instance, x
             )
 
     def test_nonexistent_service_classnames(self):
         nonexistent = [
-            "std_srvs/KillAllHumans",
+            "std_srvs/Reboot",
             "std_srvs/Full",
-            "rospy_tutorials/SubtractTwoInts",
             "nav_msgs/LoseMap",
-            "topic_tools/TellMeWhatThisTopicIsActuallyAbout",
         ]
         for x in nonexistent:
             self.assertRaises(ros_loader.InvalidClassException, ros_loader.get_service_class, x)
-            self.assertRaises(ros_loader.InvalidClassException, ros_loader.get_service_instance, x)
             self.assertRaises(
-                ros_loader.InvalidClassException,
-                ros_loader.get_service_request_instance,
-                x,
+                ros_loader.InvalidClassException, ros_loader.get_service_request_instance, x
             )
             self.assertRaises(
-                ros_loader.InvalidClassException,
-                ros_loader.get_service_response_instance,
-                x,
+                ros_loader.InvalidClassException, ros_loader.get_service_response_instance, x
             )
-
-
-PKG = "rosbridge_library"
-NAME = "test_ros_loader"
-if __name__ == "__main__":
-    rostest.unitrun(PKG, NAME, TestROSLoader)
