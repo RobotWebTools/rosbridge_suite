@@ -78,7 +78,6 @@ class TestMessageConversion(unittest.TestCase):
                 self.assertEqual(c._to_primitive_inst(msg, rostype, rostype, []), msg)
                 self.assertEqual(c._to_inst(msg, rostype, rostype), msg)
 
-    @unittest.skip
     def test_byte_primitives(self):
         # Test raw primitives
         for msg in range(0, 200):
@@ -172,7 +171,6 @@ class TestMessageConversion(unittest.TestCase):
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt16")
             self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt32")
 
-    @unittest.skip
     def test_byte_base_msg(self):
         int8s = range(0, 256)
         for int8 in int8s:
