@@ -240,7 +240,6 @@ class TestMessageConversion(unittest.TestCase):
             c.populate_instance(msg, inst2)
             self.assertEqual(inst, inst2)
 
-    @unittest.skip
     def test_int8array(self):
         def test_int8_msg(rostype, data):
             msg = {"data": data}
