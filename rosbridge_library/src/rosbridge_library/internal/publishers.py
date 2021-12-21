@@ -34,7 +34,7 @@
 from threading import Timer
 
 from rclpy.duration import Duration
-from rclpy.qos import QoSDurabilityPolicy, QoSProfile
+from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.internal import message_conversion, ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.topics import (
@@ -105,7 +105,7 @@ class MultiPublisher:
         # without the need of a custom message publisher implementation.
         publisher_qos = QoSProfile(
             depth=queue_size,
-            durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
         )
 
         # For latched clients, no lifespan has to be specified (i.e. latch forever).

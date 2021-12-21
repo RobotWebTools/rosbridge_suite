@@ -37,7 +37,7 @@ import time
 
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSDurabilityPolicy, QoSProfile
+from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.capabilities.advertise import Advertise
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.call_service import CallService
@@ -102,9 +102,15 @@ class RosbridgeWebsocketNode(Node):
             self.declare_parameter("websocket_ping_timeout", 30).value
         )
 
-        # SSL options
-        certfile = self.declare_parameter("certfile").value
-        keyfile = self.declare_parameter("keyfile").value
+        # SSL options, cannot set default to None - rclpy throws warning
+        certfile = self.declare_parameter("certfile", "").value
+        keyfile = self.declare_parameter("keyfile", "").value
+        # if not set, set to None
+        if certfile == "":
+            certfile = None
+        if keyfile == "":
+            keyfile = None
+
         # if authentication should be used
         RosbridgeWebSocket.authenticate = self.declare_parameter("authenticate", False).value
 
@@ -118,7 +124,7 @@ class RosbridgeWebsocketNode(Node):
         # QoS profile with transient local durability (latched topic in ROS 1).
         client_count_qos_profile = QoSProfile(
             depth=10,
-            durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
         )
 
         RosbridgeWebSocket.client_count_pub = self.create_publisher(
