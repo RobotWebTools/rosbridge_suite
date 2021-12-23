@@ -47,5 +47,7 @@ jobs:
           required-ros-distributions: ${{ matrix.ros_distribution }}
 
       - uses: ros-tooling/action-ros-ci@v0.2
+        env:
+          SETUPTOOLS_USE_DISTUTILS: stdlib
         with:
           target-ros1-distro: ${{ matrix.ros_distribution }}
