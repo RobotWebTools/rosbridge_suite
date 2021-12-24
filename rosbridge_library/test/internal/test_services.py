@@ -2,7 +2,7 @@
 from __future__ import print_function
 import sys
 import rospy
-import rostest
+import rosunit
 import unittest
 import time
 import random
@@ -17,6 +17,10 @@ if sys.version_info >= (3, 0):
     string_types = (str,)
 else:
     string_types = (str, unicode)  # noqa: F821
+
+
+PKG = 'rosbridge_library'
+NAME = 'test_services'
 
 
 def populate_random_args(d):
@@ -88,7 +92,7 @@ class ServiceTester:
 class TestServices(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_services")
+        rospy.init_node(NAME)
 
     def msgs_equal(self, msg1, msg2):
         if type(msg1) in string_types and type(msg2) in string_types:
@@ -204,8 +208,6 @@ class TestServices(unittest.TestCase):
             t.validate(self.msgs_equal)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_services'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestServices)
+    rosunit.unitrun(PKG, NAME, TestServices)
 

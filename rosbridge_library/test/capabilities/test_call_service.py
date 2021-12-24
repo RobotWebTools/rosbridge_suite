@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import rospy
-import rostest
+import rosunit
 import unittest
 import time
 
@@ -16,10 +16,14 @@ from rosbridge_library.protocol import Protocol
 from rosbridge_library.protocol import InvalidArgumentException, MissingArgumentException
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_call_service'
+
+
 class TestCallService(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_call_service")
+        rospy.init_node(NAME)
 
     def test_missing_arguments(self):
         proto = Protocol("test_missing_arguments")
@@ -98,8 +102,6 @@ class TestCallService(unittest.TestCase):
         self.assertFalse(received["msg"]["result"])
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_call_service'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestCallService)
+    rosunit.unitrun(PKG, NAME, TestCallService)
 

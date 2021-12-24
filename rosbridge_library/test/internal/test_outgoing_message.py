@@ -1,10 +1,14 @@
 #!/usr/bin/env python
-import rostest
+import rosunit
 import sys
 import unittest
 
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
 from std_msgs.msg import String
+
+
+PKG = 'rosbridge_library'
+NAME = 'test_outgoing_message'
 
 
 class TestOutgoingMessage(unittest.TestCase):
@@ -29,7 +33,5 @@ class TestOutgoingMessage(unittest.TestCase):
         self.assertTrue(result is again)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_outgoing_message'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestOutgoingMessage)
+    rosunit.unitrun(PKG, NAME, TestOutgoingMessage)

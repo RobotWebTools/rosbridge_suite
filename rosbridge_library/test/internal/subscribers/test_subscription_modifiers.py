@@ -1,17 +1,21 @@
 #!/usr/bin/env python
 import sys
 import rospy
-import rostest
+import rosunit
 import unittest
 import time
 
 from rosbridge_library.internal import subscription_modifiers as subscribe
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_message_handlers'
+
+
 class TestMessageHandlers(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_message_handlers")
+        rospy.init_node(NAME)
 
     def dummy_cb(self, msg):
         pass
@@ -373,7 +377,5 @@ class TestMessageHandlers(unittest.TestCase):
 #        handler = self.help_test_throttle(handler, 50)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_message_handlers'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestMessageHandlers)
+    rosunit.unitrun(PKG, NAME, TestMessageHandlers)

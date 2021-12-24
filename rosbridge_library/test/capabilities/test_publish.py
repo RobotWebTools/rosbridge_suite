@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import rospy
-import rostest
+import rosunit
 import unittest
 from time import sleep
 
@@ -16,10 +16,14 @@ from std_msgs.msg import String
 from json import dumps, loads
 
 
-class TestAdvertise(unittest.TestCase):
+PKG = 'rosbridge_library'
+NAME = 'test_publish'
+
+
+class TestPublish(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_advertise")
+        rospy.init_node(NAME)
 
     def test_missing_arguments(self):
         proto = Protocol("hello")
@@ -57,8 +61,6 @@ class TestAdvertise(unittest.TestCase):
         self.assertEqual(received["msg"].data, msg["data"])
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_publish'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestAdvertise)
+    rosunit.unitrun(PKG, NAME, TestPublish)
 

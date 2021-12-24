@@ -2,7 +2,7 @@
 from __future__ import print_function
 import sys
 import rospy
-import rostest
+import rosunit
 import unittest
 from json import loads, dumps
 
@@ -21,10 +21,14 @@ else:
     string_types = (str, unicode)  # noqa: F821
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_message_conversion'
+
+
 class TestMessageConversion(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_message_conversion")
+        rospy.init_node(NAME)
 
     def validate_instance(self, inst1):
         """ Serializes and deserializes the inst to typecheck and ensure that
@@ -278,7 +282,5 @@ class TestMessageConversion(unittest.TestCase):
             self.assertEqual(ret, str_int8s)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_message_conversion'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestMessageConversion)
+    rosunit.unitrun(PKG, NAME, TestMessageConversion)

@@ -1,16 +1,20 @@
 #!/usr/bin/env python
 import sys
 import rospy
-import rostest
+import rosunit
 import unittest
 
 from rosbridge_library.internal import ros_loader
 
 
+PKG = 'rosbridge_library'
+NAME = 'test_ros_loader'
+
+
 class TestROSLoader(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_ros_loader")
+        rospy.init_node(NAME)
 
     def test_bad_msgnames(self):
         bad = ["", "/", "//", "///", "////", "/////", "bad", "stillbad",
@@ -213,8 +217,7 @@ class TestROSLoader(unittest.TestCase):
             self.assertRaises(ros_loader.InvalidClassException,
                               ros_loader.get_service_response_instance, x)
 
-PKG = 'rosbridge_library'
-NAME = 'test_ros_loader'
+
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestROSLoader)
+    rosunit.unitrun(PKG, NAME, TestROSLoader)
 

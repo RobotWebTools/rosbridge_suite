@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import rostest
+import rosunit
 import sys
 import unittest
 
@@ -27,6 +27,10 @@ from std_msgs.msg import (
     Empty,
     MultiArrayLayout, MultiArrayDimension,
 )
+
+
+PKG = 'rosbridge_library'
+NAME = 'test_cbor_conversion'
 
 
 class TestCBORConversion(unittest.TestCase):
@@ -154,7 +158,5 @@ class TestCBORConversion(unittest.TestCase):
                 self.assertEqual(type(key), str)
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_cbor_conversion'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestCBORConversion)
+    rosunit.unitrun(PKG, NAME, TestCBORConversion)

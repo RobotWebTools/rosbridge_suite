@@ -1,22 +1,24 @@
 #!/usr/bin/env python
-import sys
+
+import os
 import rospy
-import rostest
+import rosunit
 import unittest
 
-from time import sleep, time
+from time import sleep
 
-from rosbridge_library.internal.publishers import *
-from rosbridge_library.internal.topics import *
+from rosbridge_library.internal.publishers import MultiPublisher
 from rosbridge_library.internal import ros_loader
-from rosbridge_library.internal.message_conversion import *
-from std_msgs.msg import String, Int32
+
+
+PKG = 'rosbridge_library'
+NAME = 'test_multi_unregistering'
 
 
 class TestMultiUnregistering(unittest.TestCase):
 
     def setUp(self):
-        rospy.init_node("test_multi_unregistering")
+        rospy.init_node(NAME, log_level=rospy.DEBUG)
 
     def test_publish_once(self):
         """ Make sure that publishing works """
@@ -25,6 +27,7 @@ class TestMultiUnregistering(unittest.TestCase):
         msg = {"data": "why halo thar"}
 
         received = {"msg": None}
+
         def cb(msg):
             received["msg"] = msg
 
@@ -32,11 +35,44 @@ class TestMultiUnregistering(unittest.TestCase):
         p = MultiPublisher(topic, msg_type)
         p.publish(msg)
 
-        sleep(1)
+        sleep(1)  # Time to publish and receive
 
         self.assertEqual(received["msg"].data, msg["data"])
 
+    @unittest.skipIf(os.environ.get("ROS_DISTRO", "") == "melodic", "Don't run new test on melodic")
     def test_publish_twice(self):
+        """ Make sure that publishing works """
+        topic = "/test_publish_twice"
+        msg_type = "std_msgs/String"
+        msg = {"data": "why halo thar"}
+
+        received = {"msg": None}
+
+        def cb(msg):
+            received["msg"] = msg
+
+        rospy.Subscriber(topic, ros_loader.get_message_class(msg_type), cb)
+        p = MultiPublisher(topic, msg_type)
+        p.publish(msg)
+
+        sleep(1)  # Time to publish and receive
+
+        self.assertEqual(received["msg"].data, msg["data"])
+
+        p.unregister()
+        sleep(5)  # Time to unregister
+
+        received["msg"] = None  # Reset received
+        self.assertIsNone(received["msg"])
+        p = MultiPublisher(topic, msg_type)
+        p.publish(msg)
+
+        sleep(1)   # Time to publish and receive
+
+        self.assertEqual(received["msg"].data, msg["data"])
+
+    @unittest.skipUnless(os.environ.get("ROS_DISTRO", "") == "melodic", "Run old test only on melodic")
+    def test_publish_twice_old(self):
         """ Make sure that publishing works """
         topic = "/test_publish_twice"
         msg_type = "std_msgs/String"
@@ -83,7 +119,5 @@ class TestMultiUnregistering(unittest.TestCase):
         self.assertEqual(received["msg"].data, msg["data"])
 
 
-PKG = 'rosbridge_library'
-NAME = 'test_multi_unregistering'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestMultiUnregistering)
+    rosunit.unitrun(PKG, NAME, TestMultiUnregistering)
