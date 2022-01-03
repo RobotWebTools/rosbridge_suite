@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.2 (2022-01-03)
+------------------
 * [694] update DurabilityPolicy api that are being deprecated (`#695 <https://github.com/RobotWebTools/rosbridge_suite/issues/695>`_)
 * Contributors: Evan Flynn
 

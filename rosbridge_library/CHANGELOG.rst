@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.2 (2022-01-03)
+------------------
 * [694] update DurabilityPolicy api that are being deprecated (`#695 <https://github.com/RobotWebTools/rosbridge_suite/issues/695>`_)
 * Fix byte behavior (`#693 <https://github.com/RobotWebTools/rosbridge_suite/issues/693>`_)
 * Fix test_message_conversion.py (`#645 <https://github.com/RobotWebTools/rosbridge_suite/issues/645>`_)
