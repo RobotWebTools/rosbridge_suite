@@ -42,7 +42,7 @@ See the [TROUBLESHOOTING](TROUBLESHOOTING.md) doc for common problems and soluti
 
 ### Release process
 
-Releasing requires push access to [RobotWebTools/rosbridge_suite](https://github.com/RobotWebTools/rosbridge_suite) as well as [ros2-gbp/rosbridge_suite-release](https://github.com/ros2-gbp/rosbridge_suite-release). For more details on hwo the release process works, see the [bloom tutorial](https://docs.ros.org/en/galactic/How-To-Guides/Releasing-a-ROS-2-package-with-bloom.html).
+Releasing requires push access to [RobotWebTools/rosbridge_suite](https://github.com/RobotWebTools/rosbridge_suite) as well as [ros2-gbp/rosbridge_suite-release](https://github.com/ros2-gbp/rosbridge_suite-release). For more details on how the release process works, see the [bloom tutorial](https://docs.ros.org/en/galactic/How-To-Guides/Releasing-a-ROS-2-package-with-bloom.html).
 
 1. Run `catkin_generate_changelog` to update CHANGELOG.rst files.
 2. Manually edit and clean up the changelogs. Commit the changes.
