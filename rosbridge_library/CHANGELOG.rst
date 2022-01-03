@@ -2,6 +2,15 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [694] update DurabilityPolicy api that are being deprecated (`#695 <https://github.com/RobotWebTools/rosbridge_suite/issues/695>`_)
+* Fix byte behavior (`#693 <https://github.com/RobotWebTools/rosbridge_suite/issues/693>`_)
+* Fix test_message_conversion.py (`#645 <https://github.com/RobotWebTools/rosbridge_suite/issues/645>`_)
+* Fix test_ros_loader.py (`#644 <https://github.com/RobotWebTools/rosbridge_suite/issues/644>`_)
+* Fix CI test configuration and temporarily disable rosbridge_library test (`#686 <https://github.com/RobotWebTools/rosbridge_suite/issues/686>`_)
+* Contributors: Evan Flynn, Jacob Bandes-Storch, Kenji Miyake
+
 1.1.1 (2021-12-09)
 ------------------
 * Allow subscribing to any qos profile when creating a subscriber (`#690 <https://github.com/RobotWebTools/rosbridge_suite/issues/690>`_)

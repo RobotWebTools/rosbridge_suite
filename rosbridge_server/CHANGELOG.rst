@@ -2,6 +2,11 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [694] update DurabilityPolicy api that are being deprecated (`#695 <https://github.com/RobotWebTools/rosbridge_suite/issues/695>`_)
+* Contributors: Evan Flynn
+
 1.1.1 (2021-12-09)
 ------------------
 * Allow subscribing to any qos profile when creating a subscriber (`#690 <https://github.com/RobotWebTools/rosbridge_suite/issues/690>`_)
