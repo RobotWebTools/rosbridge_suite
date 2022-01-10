@@ -248,8 +248,13 @@ def _from_list_inst(inst, rostype):
         rostype = re.search(bounded_array_tokens, rostype).group(1)
 
     # Shortcut for primitives
-    if rostype in ros_primitive_types and rostype not in type_map.get("float"):
-        return list(inst)
+    if rostype in ros_primitive_types:
+        # Convert to Built-in integer types to dump as JSON
+        if isinstance(inst, np.ndarray) and rostype in type_map.get("int"):
+            return inst.tolist()
+
+        if rostype not in type_map.get("float"):
+            return list(inst)
 
     # Call to _to_inst for every element of the list
     return [_from_inst(x, rostype) for x in inst]
