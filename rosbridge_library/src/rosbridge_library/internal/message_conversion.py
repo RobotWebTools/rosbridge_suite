@@ -61,8 +61,6 @@ type_map = {
         "uint32",
         "int64",
         "uint64",
-        "float32",
-        "float64",
     ],
     "float": ["float32", "float64", "double", "float"],
     "str": ["string"],
