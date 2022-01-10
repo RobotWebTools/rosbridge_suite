@@ -353,8 +353,9 @@ def _to_list_inst(msg, rostype, roottype, inst, stack):
     if len(msg) == 0:
         return []
 
-    if isinstance(inst, np.ndarray):
-        return list(inst.astype(float))
+    # Special mappings for numeric types https://design.ros2.org/articles/idl_interface_definition.html
+    if isinstance(inst, array.array) or isinstance(inst, np.ndarray):
+        return msg
 
     # Remove the list indicators from the rostype
     try:
