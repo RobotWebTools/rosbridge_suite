@@ -302,10 +302,8 @@ class Protocol:
                 return bson.BSON.encode(msg)
             else:
                 return json.dumps(msg)
-        except Exception:
-            if cid is not None:
-                # Only bother sending the log message if there's an id
-                self.log("error", "Unable to serialize %s message to client" % msg["op"], cid)
+        except Exception as e:
+            self.log("error", f"Unable to serialize message '{msg}': {e}")
             return None
 
     def deserialize(self, msg, cid=None):
