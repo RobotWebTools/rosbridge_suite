@@ -54,12 +54,12 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     def recvall(self,n):
         # http://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data
         # Helper function to recv n bytes or return None if EOF is hit
-        data = ''
+        data = bytearray()
         while len(data) < n:
             packet = self.request.recv(n - len(data))
             if not packet:
                 return None
-            data += packet.decode()
+            data.extend(packet)
         return data
 
     def recv_bson(self):
@@ -125,4 +125,10 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Callback from rosbridge
         """
-        self.request.sendall(message.encode())
+        if self.bson_only_mode:
+            self.request.sendall(message)
+        elif message is not None:
+            self.request.sendall(message.encode())
+        else:
+            rospy.logerr("send_message called with no message or message is None, not sending")
+
