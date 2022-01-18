@@ -50,7 +50,9 @@ def extract_cbor_values(msg):
     Typed arrays will be tagged and packed into byte arrays.
     """
     out = {}
-    for slot, slot_type in zip(msg.__slots__, msg._slot_types):
+    #for slot, slot_type in zip(msg.__slots__, msg._slot_types):
+    for slot, slot_type in msg.get_fields_and_field_types().items():
+
         val = getattr(msg, slot)
 
         # string
