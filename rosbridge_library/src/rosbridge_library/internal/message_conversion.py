@@ -61,8 +61,6 @@ type_map = {
         "uint32",
         "int64",
         "uint64",
-        "float32",
-        "float64",
     ],
     "float": ["float32", "float64", "double", "float"],
     "str": ["string"],
@@ -91,7 +89,7 @@ ros_primitive_types = [
     "string",
 ]
 ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
-ros_binary_types = ["uint8[]", "char[]"]
+ros_binary_types = ["uint8[]", "char[]", "sequence<uint8>", "sequence<char>"]
 list_tokens = re.compile("<(.+?)>")
 bounded_array_tokens = re.compile(r"(.+)\[.*\]")
 ros_binary_types_list_braces = [
@@ -250,8 +248,13 @@ def _from_list_inst(inst, rostype):
         rostype = re.search(bounded_array_tokens, rostype).group(1)
 
     # Shortcut for primitives
-    if rostype in ros_primitive_types and rostype not in type_map.get("float"):
-        return list(inst)
+    if rostype in ros_primitive_types:
+        # Convert to Built-in integer types to dump as JSON
+        if isinstance(inst, np.ndarray) and rostype in type_map.get("int"):
+            return inst.tolist()
+
+        if rostype not in type_map.get("float"):
+            return list(inst)
 
     # Call to _to_inst for every element of the list
     return [_from_inst(x, rostype) for x in inst]
@@ -293,10 +296,11 @@ def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
 
 
 def _to_binary_inst(msg):
-    try:
-        return standard_b64decode(msg) if isinstance(msg, str) else bytes(bytearray(msg))
-    except Exception:
+    if isinstance(msg, str):
+        return list(standard_b64decode(msg))
+    if isinstance(msg, list):
         return msg
+    return bytes(bytearray(msg))
 
 
 def _to_time_inst(msg, rostype, inst=None):
@@ -352,8 +356,9 @@ def _to_list_inst(msg, rostype, roottype, inst, stack):
     if len(msg) == 0:
         return []
 
-    if isinstance(inst, np.ndarray):
-        return list(inst.astype(float))
+    # Special mappings for numeric types https://design.ros2.org/articles/idl_interface_definition.html
+    if isinstance(inst, array.array) or isinstance(inst, np.ndarray):
+        return msg
 
     # Remove the list indicators from the rostype
     try:
