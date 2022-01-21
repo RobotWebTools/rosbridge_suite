@@ -175,7 +175,7 @@ class TestSubscribe(unittest.TestCase):
         It gathers all their boilerplate code.
         """
         proto = Protocol(test_name)
-        topic = f"/{test_name}_works"
+        topic = "/" + test_name + "_works"
         
         # Tricks to capture messages on the subscribed topic
         outgoing_messages = list()
@@ -207,7 +207,7 @@ class TestSubscribe(unittest.TestCase):
 
         # Publish a message on the same topic in ROS (through the bridge)
         msg = String()
-        msg.data = "test that {test_name} works"
+        msg.data = "test that " + test_name + " works"
         p = rospy.Publisher(topic, String, queue_size=5)
         time.sleep(0.25)
         p.publish(msg)
