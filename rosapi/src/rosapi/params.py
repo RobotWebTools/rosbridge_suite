@@ -70,7 +70,11 @@ def init(parent_node_name):
     global _node, _parent_node_name
     # TODO(@jubeira): remove this node; use rosapi node with MultiThreadedExecutor or
     # async / await to prevent the service calls from blocking.
-    _node = rclpy.create_node("rosapi_params")
+    parent_node_basename = parent_node_name.split("/")[-1]
+    param_node_name = f"{parent_node_basename}_params"
+    _node = rclpy.create_node(
+        param_node_name, cli_args=["--ros-args", "-r", f"__node:={param_node_name}"]
+    )
     _parent_node_name = get_absolute_node_name(parent_node_name)
 
 
