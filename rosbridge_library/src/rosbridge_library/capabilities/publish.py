@@ -44,7 +44,7 @@ class Publish(Capability):
     topics_glob = None
 
     def __init__(self, protocol):
-        # Call superclas constructor
+        # Call superclass constructor
         Capability.__init__(self, protocol)
 
         # Register the operations that this capability provides
