@@ -114,7 +114,6 @@ class IncomingQueue(threading.Thread):
 
 
 class RosbridgeWebSocket(WebSocketHandler):
-    client_id_seed = 0
     clients_connected = 0
     use_compression = False
 
@@ -139,17 +138,16 @@ class RosbridgeWebSocket(WebSocketHandler):
             "bson_only_mode": cls.bson_only_mode,
         }
         try:
+            self.client_id = uuid.uuid4()
             self.protocol = RosbridgeProtocol(
-                cls.client_id_seed, cls.node_handle, parameters=parameters
+                self.client_id, cls.node_handle, parameters=parameters
             )
             self.incoming_queue = IncomingQueue(self.protocol)
             self.incoming_queue.start()
             self.protocol.outgoing = self.send_message
             self.set_nodelay(True)
             self._write_lock = threading.RLock()
-            cls.client_id_seed += 1
             cls.clients_connected += 1
-            self.client_id = uuid.uuid4()
             if cls.client_manager:
                 cls.client_manager.add_client(self.client_id, self.request.remote_ip)
         except Exception as exc:
