@@ -150,5 +150,4 @@ def extract_cbor_values(msg):
             else:
                 out[slot] = extract_cbor_values(val)
         return out
-        
-        
+
