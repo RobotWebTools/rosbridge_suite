@@ -11,6 +11,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/GetActionServers.srv
   srv/GetParam.srv
   srv/GetParamNames.srv
+  srv/GetROSVersion.srv
   srv/GetTime.srv
   srv/HasParam.srv
   srv/MessageDetails.srv
