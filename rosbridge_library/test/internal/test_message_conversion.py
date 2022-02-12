@@ -195,6 +195,15 @@ class TestMessageConversion(unittest.TestCase):
         msg = {"times": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
         self.do_test(msg, "rosbridge_test_msgs/TestTimeArray")
 
+        # For ROS1 compatibility
+        inst1 = c._to_inst(
+            {"sec": 3, "nanosec": 5}, "builtin_interfaces/Time", "builtin_interfaces/Time"
+        )
+        inst2 = c._to_inst(
+            {"secs": 3, "nsecs": 5}, "builtin_interfaces/Time", "builtin_interfaces/Time"
+        )
+        self.assertEqual(inst1, inst2)
+
     def test_duration_msg(self):
         msg = {"sec": 3, "nanosec": 5}
         self.do_test(msg, "builtin_interfaces/Duration")
