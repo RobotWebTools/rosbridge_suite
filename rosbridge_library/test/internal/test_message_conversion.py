@@ -185,6 +185,10 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(x, "std_msgs/String")
 
     def test_time_msg(self):
+        now_inst = c._to_inst("now", "builtin_interfaces/Time", "builtin_interfaces/Time")
+        self.assertTrue("sec" in now_inst)
+        self.assertTrue("nanosec" in now_inst)
+
         msg = {"sec": 3, "nanosec": 5}
         self.do_test(msg, "builtin_interfaces/Time")
 
