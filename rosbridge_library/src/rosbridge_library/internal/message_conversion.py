@@ -318,9 +318,11 @@ def _to_time_inst(msg, rostype, inst=None):
     for field in ["sec", "secs"]:
         if field in msg:
             setattr(inst, "sec", msg[field])
+            break
     for field in ["nanosec", "nsecs"]:
         if field in msg:
             setattr(inst, "nanosec", msg[field])
+            break
 
     return inst
 
