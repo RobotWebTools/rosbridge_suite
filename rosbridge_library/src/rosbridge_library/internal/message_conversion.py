@@ -37,9 +37,9 @@ import re
 from base64 import standard_b64decode, standard_b64encode
 
 import numpy as np
-import rclpy
 from rcl_interfaces.msg import Parameter
 from rclpy.clock import ROSClock
+from rclpy.time import Duration, Time
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.util import bson
 
@@ -208,10 +208,7 @@ def _from_inst(inst, rostype):
 
     # Check for time or duration
     if rostype in ros_time_types:
-        try:
-            return {"sec": inst.sec, "nanosec": inst.nanosec}
-        except AttributeError:
-            return {"secs": inst.secs, "nsecs": inst.nsecs}
+        return {"sec": inst.sec, "nanosec": inst.nanosec}
 
     if bson_only_mode is None:
         bson_only_mode = rospy.get_param("~bson_only_mode", False)
@@ -306,24 +303,26 @@ def _to_binary_inst(msg):
 def _to_time_inst(msg, rostype, inst=None):
     # Create an instance if we haven't been provided with one
 
-    if rostype == "time" and msg == "now":
+    if rostype == "builtin_interfaces/Time" and msg == "now":
         return ROSClock().now().to_msg()
 
     if inst is None:
-        if rostype == "time":
-            inst = rclpy.time.Time().to_msg()
-        elif rostype == "duration":
-            inst = rclpy.duration.Duration().to_msg()
+        if rostype == "builtin_interfaces/Time":
+            inst = Time().to_msg()
+        elif rostype == "builtin_interfaces/Duration":
+            inst = Duration().to_msg()
         else:
             return None
 
     # Copy across the fields, try ROS1 and ROS2 fieldnames
-    for field in ["secs", "nsecs", "sec", "nanosec"]:
-        try:
-            if field in msg:
-                setattr(inst, field, msg[field])
-        except TypeError:
-            continue
+    for field in ["sec", "secs"]:
+        if field in msg:
+            setattr(inst, "sec", msg[field])
+            break
+    for field in ["nanosec", "nsecs"]:
+        if field in msg:
+            setattr(inst, "nanosec", msg[field])
+            break
 
     return inst
 

@@ -185,20 +185,31 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(x, "std_msgs/String")
 
     def test_time_msg(self):
+        now_inst = c._to_inst("now", "builtin_interfaces/Time", "builtin_interfaces/Time")
+        self.assertTrue("sec" in now_inst.get_fields_and_field_types())
+        self.assertTrue("nanosec" in now_inst.get_fields_and_field_types())
+
         msg = {"sec": 3, "nanosec": 5}
         self.do_test(msg, "builtin_interfaces/Time")
 
-        # TODO: enable this test
-        # msg = {"times": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
-        # self.do_test(msg, "rosbridge_test_msgs/TestTimeArray")
+        msg = {"times": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
+        self.do_test(msg, "rosbridge_test_msgs/TestTimeArray")
+
+        # For ROS1 compatibility
+        inst1 = c._to_inst(
+            {"sec": 3, "nanosec": 5}, "builtin_interfaces/Time", "builtin_interfaces/Time"
+        )
+        inst2 = c._to_inst(
+            {"secs": 3, "nsecs": 5}, "builtin_interfaces/Time", "builtin_interfaces/Time"
+        )
+        self.assertEqual(inst1, inst2)
 
     def test_duration_msg(self):
         msg = {"sec": 3, "nanosec": 5}
         self.do_test(msg, "builtin_interfaces/Duration")
 
-        # TODO: enable this test
-        # msg = {"durations": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
-        # self.do_test(msg, "rosbridge_test_msgs/TestDurationArray")
+        msg = {"durations": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
+        self.do_test(msg, "rosbridge_test_msgs/TestDurationArray")
 
     def test_header_msg(self):
         msg = {
