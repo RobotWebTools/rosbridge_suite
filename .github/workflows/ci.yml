@@ -36,7 +36,7 @@ jobs:
         with:
           path: ros_ws/src
 
-      - uses: ros-tooling/setup-ros@v0.2
+      - uses: ros-tooling/setup-ros@0.3.0
 
       - uses: ros-tooling/action-ros-ci@v0.2
         with:
