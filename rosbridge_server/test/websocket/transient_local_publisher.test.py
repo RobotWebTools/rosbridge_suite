@@ -32,7 +32,7 @@ class TestTransientLocalPublisher(unittest.TestCase):
         pub_a.publish(String(data="hello"))
 
         await sleep(node, 1)
- 
+
         for num in range(3):
             ws_client = await make_client()
             ws_client.sendJson(
