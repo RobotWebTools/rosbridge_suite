@@ -97,7 +97,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         self.request.settimeout(cls.socket_timeout)
         while True:
             try:
-                if self.bson_only_mode: # is False
+                if self.bson_only_mode:
                     if self.recv_bson() == None:
                         break
                     continue
