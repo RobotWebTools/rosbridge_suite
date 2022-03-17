@@ -1,13 +1,11 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>rosbridge_library</name>
-  <version>0.11.130</version>
+  <version>0.11.13</version>
   <description>
     The core rosbridge package, responsible for interpreting JSON and performing
     the appropriate ROS action, like subscribe, publish, call service, and
     interact with params.
-    Extend-Robotics modifications over 0.11.13 allowing reconnection.
-    (compatible with 0.11.x) but without future bug fixes (0.11.14 and later).
   </description>
 
   <license>BSD</license>
