@@ -18,6 +18,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/TestTimeArray.msg
   msg/TestUInt8.msg
   msg/TestUInt8FixedSizeArray16.msg
+  msg/TestFloat32Array.msg
+  msg/TestFloat32BoundedArray.msg
   srv/AddTwoInts.srv
   srv/SendBytes.srv
   srv/TestArrayRequest.srv
