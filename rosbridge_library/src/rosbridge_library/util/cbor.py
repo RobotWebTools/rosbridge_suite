@@ -345,7 +345,7 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
         exp = (hibyte >> 2) & 0x1F
         mant = ((hibyte & 0x03) << 8) | lowbyte
         if exp == 0:
-            val = mant * (2.0 ** -24)
+            val = mant * (2.0**-24)
         elif exp == 31:
             if mant == 0:
                 val = float("Inf")
