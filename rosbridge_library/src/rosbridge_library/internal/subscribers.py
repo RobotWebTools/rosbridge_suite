@@ -101,21 +101,6 @@ class MultiSubscriber:
         if topic_type is not None and topic_type != msg_type_string:
             raise TypeConflictException(topic, topic_type, msg_type_string)
 
-        # Create the subscriber and associated member variables
-        # Subscriptions is initialized with the current client to start with.
-        self.subscriptions = {client_id: callback}
-        self.lock = Lock()
-        self.topic = topic
-        self.msg_class = msg_class
-        self.node_handle = node_handle
-
-        qos = QoSProfile(
-            depth=10,
-            durability=DurabilityPolicy.VOLATILE,
-            reliability=ReliabilityPolicy.RELIABLE,
-        )
-        infos = node_handle.get_publishers_info_by_topic(topic)
-
         # Certain combinations of publisher and subscriber QoS parameters are
         # incompatible. Here we make a "best effort" attempt to match existing
         # publishers for the requested topic. This is not perfect because more
@@ -123,10 +108,26 @@ class MultiSubscriber:
         # to provide sane defaults. For more information, see:
         # - https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html
         # - https://github.com/RobotWebTools/rosbridge_suite/issues/551
+        qos = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.VOLATILE,
+            reliability=ReliabilityPolicy.RELIABLE,
+        )
+
+        infos = node_handle.get_publishers_info_by_topic(topic)
         if any(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
             qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
         if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
             qos.reliability = ReliabilityPolicy.BEST_EFFORT
+
+        # Create the subscriber and associated member variables
+        # Subscriptions is initialized with the current client to start with.
+        self.subscriptions = {client_id: callback}
+        self.lock = Lock()
+        self.msg_class = msg_class
+        self.node_handle = node_handle
+        self.topic = topic
+        self.qos = qos
 
         self.subscriber = node_handle.create_subscription(
             msg_class, topic, self.callback, qos, raw=raw
@@ -171,7 +172,7 @@ class MultiSubscriber:
             self.new_subscriptions.update({client_id: callback})
             if self.new_subscriber is None:
                 self.new_subscriber = self.node_handle.create_subscription(
-                    self.msg_class, self.topic, self._new_sub_callback, 10
+                    self.msg_class, self.topic, self._new_sub_callback, self.qos
                 )
 
     def unsubscribe(self, client_id):
@@ -182,7 +183,10 @@ class MultiSubscriber:
 
         """
         with self.lock:
-            del self.subscriptions[client_id]
+            if client_id in self.new_subscriptions:
+                del self.new_subscriptions[client_id]
+            else:
+                del self.subscriptions[client_id]
 
     def has_subscribers(self):
         """Return true if there are subscribers"""
