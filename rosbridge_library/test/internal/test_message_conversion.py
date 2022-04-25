@@ -282,3 +282,27 @@ class TestMessageConversion(unittest.TestCase):
             b64str_int8s = standard_b64encode(bytes(int8s)).decode("ascii")
             ret = test_int8_msg(rostype, b64str_int8s)
             np.testing.assert_array_equal(ret, np.array(int8s))
+
+    def test_float32array(self):
+        def test_float32_msg(rostype, data):
+            msg = {"data": data}
+            inst = ros_loader.get_message_instance(rostype)
+            c.populate_instance(msg, inst)
+            self.validate_instance(inst)
+            return inst.data
+
+        for msgtype in ["TestFloat32Array"]:
+            rostype = "rosbridge_test_msgs/" + msgtype
+
+            # From List[float]
+            floats = list(map(float, range(0, 256)))
+            ret = test_float32_msg(rostype, floats)
+            np.testing.assert_array_equal(ret, np.array(floats))
+
+        for msgtype in ["TestFloat32BoundedArray"]:
+            rostype = "rosbridge_test_msgs/" + msgtype
+
+            # From List[float]
+            floats = list(map(float, range(0, 16)))
+            ret = test_float32_msg(rostype, floats)
+            np.testing.assert_array_equal(ret, np.array(floats))
