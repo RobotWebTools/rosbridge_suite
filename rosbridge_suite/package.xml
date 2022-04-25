@@ -19,7 +19,7 @@
 
   <author email="jonathan.c.mace@gmail.com">Jonathan Mace</author>
   <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
-  <maintainer email="jacob@foxglove.dev">Jacob Bandes-Storch</maintainer>
+  <maintainer email="ros-tooling@foxglove.dev">Foxglove</maintainer>
 
   <buildtool_depend>ament_cmake_core</buildtool_depend>
 
