@@ -247,7 +247,9 @@ def _from_list_inst(inst, rostype):
     # Shortcut for primitives
     if rostype in ros_primitive_types:
         # Convert to Built-in integer types to dump as JSON
-        if isinstance(inst, np.ndarray) and (rostype in type_map.get("int") or rostype in type_map.get("float")):
+        if isinstance(inst, np.ndarray) and (
+            rostype in type_map.get("int") or rostype in type_map.get("float")
+        ):
             return inst.tolist()
 
         if rostype not in type_map.get("float"):
