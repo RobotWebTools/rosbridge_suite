@@ -33,23 +33,24 @@ class TestTransientLocalPublisher(unittest.TestCase):
 
         await sleep(node, 1)
 
-        ws_client1 = await make_client()
-        ws_client1.sendJson(
-            {
-                "op": "subscribe",
-                "topic": "/a_topic",
-                "type": "std_msgs/String",
-            }
-        )
+        for num in range(3):
+            ws_client = await make_client()
+            ws_client.sendJson(
+                {
+                    "op": "subscribe",
+                    "topic": "/a_topic",
+                    "type": "std_msgs/String",
+                }
+            )
 
-        ws1_completed_future, ws_client1.message_handler = expect_messages(
-            1, "WebSocket 1", node.get_logger()
-        )
-        ws1_completed_future.add_done_callback(lambda _: node.executor.wake())
+            ws_completed_future, ws_client.message_handler = expect_messages(
+                1, "WebSocket " + str(num), node.get_logger()
+            )
+            ws_completed_future.add_done_callback(lambda _: node.executor.wake())
 
-        self.assertEqual(
-            await ws1_completed_future,
-            [{"op": "publish", "topic": "/a_topic", "msg": {"data": "hello"}}],
-        )
+            self.assertEqual(
+                await ws_completed_future,
+                [{"op": "publish", "topic": "/a_topic", "msg": {"data": "hello"}}],
+            )
 
         node.destroy_publisher(pub_a)
