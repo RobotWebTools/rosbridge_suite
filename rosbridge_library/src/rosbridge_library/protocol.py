@@ -105,7 +105,7 @@ class Protocol:
             self.fragment_size = self.parameters["max_message_size"]
             self.delay_between_messages = self.parameters["delay_between_messages"]
             self.bson_only_mode = self.parameters.get("bson_only_mode", False)
-        
+
         self.buffer = bytes() if self.bson_only_mode else ""
 
     # added default message = None to allow recalling incoming until buffer is empty without giving a parameter
@@ -120,7 +120,7 @@ class Protocol:
         msg = None
 
         if self.bson_only_mode:
-            #Error in handler. No utf-8 allowed in bson_only_mode
+            # Error in handler. No utf-8 allowed in bson_only_mode
             if isinstance(message, str):
                 raise Exception()
 
@@ -129,14 +129,14 @@ class Protocol:
             else:
                 self.buffer = message
 
-            #see if we have a whole BSON message
+            # see if we have a whole BSON message
             if len(self.buffer) >= 4:
                 bson_len = struct.unpack_from("i", self.buffer)[0]
                 if len(self.buffer) < bson_len:
                     return
             else:
                 return
-            
+
             if len(self.buffer) > bson_len:
                 message_bson = self.buffer[:bson_len]
                 self.buffer = self.buffer[bson_len:]
