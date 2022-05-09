@@ -30,6 +30,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import struct
 import time
 
 from rosbridge_library.capabilities.fragmentation import Fragmentation
@@ -104,39 +105,70 @@ class Protocol:
             self.fragment_size = self.parameters["max_message_size"]
             self.delay_between_messages = self.parameters["delay_between_messages"]
             self.bson_only_mode = self.parameters.get("bson_only_mode", False)
+        
+        self.buffer = bytes() if self.bson_only_mode else ""
 
-    # added default message_string="" to allow recalling incoming until buffer is empty without giving a parameter
+    # added default message = None to allow recalling incoming until buffer is empty without giving a parameter
     # --> allows to get rid of (..or minimize) delay between client-side sends
-    def incoming(self, message_string=""):
+    def incoming(self, message=None):
         """Process an incoming message from the client
 
         Keyword arguments:
-        message_string -- the wire-level message sent by the client
+        message -- the wire-level message sent by the client. May be bytes or utf-8.
 
         """
-        if len(self.buffer) > 0:
-            self.buffer = self.buffer + message_string
-        else:
-            self.buffer = message_string
         msg = None
 
-        # take care of having multiple JSON-objects in receiving buffer
-        # ..first, try to load the whole buffer as a JSON-object
-        try:
-            msg = self.deserialize(self.buffer)
-            self.buffer = ""
+        if self.bson_only_mode:
+            #Error in handler. No utf-8 allowed in bson_only_mode
+            if isinstance(message, str):
+                raise Exception()
 
-        # if loading whole object fails try to load part of it (from first opening bracket "{" to next closing bracket "}"
-        # .. this causes Exceptions on "inner" closing brackets --> so I suppressed logging of deserialization errors
-        except Exception:
-            if self.bson_only_mode:
+            if len(self.buffer) > 0:
+                self.buffer = self.buffer + message
+            else:
+                self.buffer = message
+
+            #see if we have a whole BSON message
+            if len(self.buffer) >= 4:
+                bson_len = struct.unpack_from("i", self.buffer)[0]
+                if len(self.buffer) < bson_len:
+                    return
+            else:
+                return
+            
+            if len(self.buffer) > bson_len:
+                message_bson = self.buffer[:bson_len]
+                self.buffer = self.buffer[bson_len:]
+            else:
+                message_bson = self.buffer
+                self.buffer = bytes()
+
+            try:
+                msg = self.deserialize(message_bson)
+            except Exception:
                 # Since BSON should be used in conjunction with a network handler
                 # that receives exactly one full BSON message.
                 # This will then be passed to self.deserialize and shouldn't cause any
                 # exceptions because of fragmented messages (broken or invalid messages might still be sent tough)
                 self.log("error", "Exception in deserialization of BSON")
+        else:
+            message_string = message.decode("utf-8") if isinstance(message, bytes) else message
 
+            if len(self.buffer) > 0:
+                self.buffer = self.buffer + message_string
             else:
+                self.buffer = message_string
+
+            # take care of having multiple JSON-objects in receiving buffer
+            # ..first, try to load the whole buffer as a JSON-object
+            try:
+                msg = self.deserialize(self.buffer)
+                self.buffer = ""
+
+            # if loading whole object fails try to load part of it (from first opening bracket "{" to next closing bracket "}"
+            # .. this causes Exceptions on "inner" closing brackets --> so I suppressed logging of deserialization errors
+            except Exception:
                 # TODO: handling of partial/multiple/broken json data in incoming buffer
                 # this way is problematic when json contains nested json-objects ( e.g. { ... { "config": [0,1,2,3] } ...  } )
                 # .. if outer json is not fully received, stepping through opening brackets will find { "config" : ... } as a valid json object
