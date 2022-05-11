@@ -193,7 +193,7 @@ class MultiSubscriber:
         with self.lock:
             return len(self.subscriptions) + len(self.new_subscriptions) != 0
 
-    def callback(self, msg, callbacks=None):
+    def callback(self, msg):
         """Callback for incoming messages on the rclpy subscription.
 
         Passes the message to registered subscriber callbacks.
@@ -206,9 +206,8 @@ class MultiSubscriber:
         outgoing = OutgoingMessage(msg)
 
         # Get the callbacks to call
-        if not callbacks:
-            with self.lock:
-                callbacks = self.subscriptions.values()
+        with self.lock:
+            callbacks = self.subscriptions.values()
 
         # Pass the JSON to each of the callbacks
         for callback in callbacks:
@@ -229,12 +228,15 @@ class MultiSubscriber:
         the subscriptions dictionary is updated with the newly incorporated
         subscriptors.
         """
+        # transfer new subscriptions to the "regular" ones
         with self.lock:
-            self.callback(msg, self.new_subscriptions.values())
             self.subscriptions.update(self.new_subscriptions)
             self.new_subscriptions = {}
             self.node_handle.destroy_subscription(self.new_subscriber)
             self.new_subscriber = None
+
+        # send msg to client
+        self.callback(msg)
 
 
 class SubscriberManager:
