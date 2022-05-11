@@ -2,7 +2,6 @@
 import struct
 import unittest
 
-import rostest
 from rosbridge_library.internal.cbor_conversion import (
     TAGGED_ARRAY_FORMATS,
     extract_cbor_values,
@@ -13,9 +12,10 @@ try:
 except ImportError:
     from rosbridge_library.util.cbor import Tag
 
-from std_msgs.msg import (
+from example_interfaces.msg import (
     Bool,
-    Duration,
+    Byte,
+    ByteMultiArray,
     Float32,
     Float32MultiArray,
     Float64,
@@ -30,8 +30,9 @@ from std_msgs.msg import (
     Int64MultiArray,
     MultiArrayDimension,
     MultiArrayLayout,
+    Char,
     String,
-    Time,
+    WString,
     UInt8,
     UInt8MultiArray,
     UInt16,
@@ -51,6 +52,13 @@ class TestCBORConversion(unittest.TestCase):
         self.assertEqual(extracted["data"], msg.data)
         self.assertEqual(type(extracted["data"]), str)
 
+    def test_wstring(self):
+        msg = WString(data="foo")
+        extracted = extract_cbor_values(msg)
+
+        self.assertEqual(extracted["data"], msg.data)
+        self.assertEqual(type(extracted["data"]), str)
+
     def test_bool(self):
         for val in [True, False]:
             msg = Bool(data=val)
@@ -58,6 +66,20 @@ class TestCBORConversion(unittest.TestCase):
 
             self.assertEqual(extracted["data"], msg.data, f"val={val}")
             self.assertEqual(type(extracted["data"]), bool, f"val={val}")
+
+    def test_byte(self):
+        msg = Byte(data=b'\x01')
+        extracted = extract_cbor_values(msg)
+
+        self.assertEqual(extracted["data"], msg.data)
+        self.assertEqual(type(extracted["data"]), bytes)
+
+    def test_char(self):
+        msg = Char(data=1)
+        extracted = extract_cbor_values(msg)
+
+        self.assertEqual(extracted["data"], msg.data)
+        self.assertEqual(type(extracted["data"]), int)
 
     def test_numbers(self):
         for msg_type in [Int8, Int16, Int32, Int64]:
@@ -81,17 +103,16 @@ class TestCBORConversion(unittest.TestCase):
             self.assertEqual(extracted["data"], msg.data, f"type={msg_type}")
             self.assertEqual(type(extracted["data"]), float, f"type={msg_type}")
 
-    def test_time(self):
-        for msg_type in [Time, Duration]:
-            msg = msg_type()
-            extracted = extract_cbor_values(msg)
-
-            self.assertEqual(extracted["data"]["secs"], msg.data.secs, f"type={msg_type}")
-            self.assertEqual(extracted["data"]["nsecs"], msg.data.nsecs, f"type={msg_type}")
-            self.assertEqual(type(extracted["data"]["secs"]), int, f"type={msg_type}")
-            self.assertEqual(type(extracted["data"]["nsecs"]), int, f"type={msg_type}")
-
     def test_byte_array(self):
+        msg = ByteMultiArray(data=[b'\x00', b'\x01', b'\x02'])
+        extracted = extract_cbor_values(msg)
+
+        data = extracted["data"]
+        self.assertEqual(type(data), list)
+        for i, val in enumerate(msg.data):
+            self.assertEqual(data[i], val)
+
+    def test_byte_stream(self):
         msg = UInt8MultiArray(data=[0, 1, 2])
         extracted = extract_cbor_values(msg)
 
@@ -120,7 +141,7 @@ class TestCBORConversion(unittest.TestCase):
             self.assertEqual(type(tag.value), bytes, f"type={msg_type}")
 
             # This is as consistent as the message defs..
-            array_type = msg._slot_types[1]
+            array_type = msg._fields_and_field_types['data']
 
             expected_tag = TAGGED_ARRAY_FORMATS[array_type][0]
             self.assertEqual(tag.tag, expected_tag, f"type={msg_type}")
@@ -129,7 +150,7 @@ class TestCBORConversion(unittest.TestCase):
             fmt_to_length = fmt.format(len(msg.data))
             unpacked = list(struct.unpack(fmt_to_length, tag.value))
 
-            self.assertEqual(unpacked, msg.data, f"type={msg_type}")
+            self.assertEqual(unpacked, list(msg.data), f"type={msg_type}")
 
     def test_nested_messages(self):
         msg = UInt8MultiArray(
@@ -167,9 +188,3 @@ class TestCBORConversion(unittest.TestCase):
         keys = extracted.keys()
         for key in keys:
             self.assertEqual(type(key), str)
-
-
-PKG = "rosbridge_library"
-NAME = "test_cbor_conversion"
-if __name__ == "__main__":
-    rostest.unitrun(PKG, NAME, TestCBORConversion)
