@@ -191,7 +191,7 @@ class MultiSubscriber:
     def has_subscribers(self):
         """Return true if there are subscribers"""
         with self.lock:
-            return len(self.subscriptions) != 0
+            return len(self.subscriptions) + len(self.new_subscriptions) != 0
 
     def callback(self, msg, callbacks=None):
         """Callback for incoming messages on the rclpy subscription.
