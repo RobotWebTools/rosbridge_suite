@@ -8,8 +8,6 @@ except ImportError:
 
 LIST_TYPES = [list, tuple]
 INT_TYPES = [
-    "byte",
-    "char",
     "int8",
     "uint8",
     "int16",
@@ -19,26 +17,25 @@ INT_TYPES = [
     "int64",
     "uint64",
 ]
-FLOAT_TYPES = ["float32", "float64"]
-STRING_TYPES = ["string"]
-BOOL_TYPES = ["bool"]
-TIME_TYPES = ["time", "duration"]
-BOOL_ARRAY_TYPES = ["bool[]"]
-BYTESTREAM_TYPES = ["uint8[]", "char[]"]
+FLOAT_TYPES = ["float", "double"]
+STRING_TYPES = ["string", "wstring"]
+BOOL_TYPES = ["boolean"]
+BOOL_ARRAY_TYPES = ["sequence<boolean>"]
+BYTE_ARRAY_TYPES = ["sequence<octet>"]
+BYTESTREAM_TYPES = ["octet", "sequence<uint8>"]
 
 # Typed array tags according to <https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00>
 # Always encode to little-endian variant, for now.
 TAGGED_ARRAY_FORMATS = {
-    "uint16[]": (69, "<{}H"),
-    "uint32[]": (70, "<{}I"),
-    "uint64[]": (71, "<{}Q"),
-    "byte[]": (72, "{}b"),
-    "int8[]": (72, "{}b"),
-    "int16[]": (77, "<{}h"),
-    "int32[]": (78, "<{}i"),
-    "int64[]": (79, "<{}q"),
-    "float32[]": (85, "<{}f"),
-    "float64[]": (86, "<{}d"),
+    "sequence<uint16>": (69, "<{}H"),
+    "sequence<uint32>": (70, "<{}I"),
+    "sequence<uint64>": (71, "<{}Q"),
+    "sequence<int8>": (72, "{}b"),
+    "sequence<int16>": (77, "<{}h"),
+    "sequence<int32>": (78, "<{}i"),
+    "sequence<int64>": (79, "<{}q"),
+    "sequence<float>": (85, "<{}f"),
+    "sequence<double>": (86, "<{}d"),
 }
 
 
@@ -50,7 +47,8 @@ def extract_cbor_values(msg):
     Typed arrays will be tagged and packed into byte arrays.
     """
     out = {}
-    for slot, slot_type in zip(msg.__slots__, msg._slot_types):
+
+    for slot, slot_type in msg.get_fields_and_field_types().items():
         val = getattr(msg, slot)
 
         # string
@@ -69,16 +67,13 @@ def extract_cbor_values(msg):
         elif slot_type in FLOAT_TYPES:
             out[slot] = float(val)
 
-        # time/duration
-        elif slot_type in TIME_TYPES:
-            out[slot] = {
-                "secs": int(val.secs),
-                "nsecs": int(val.nsecs),
-            }
-
-        # byte array
+        # byte stream
         elif slot_type in BYTESTREAM_TYPES:
             out[slot] = bytes(val)
+
+        # byte array
+        elif slot_type in BYTE_ARRAY_TYPES:
+            out[slot] = [bytes(i) for i in val]
 
         # bool array
         elif slot_type in BOOL_ARRAY_TYPES:
