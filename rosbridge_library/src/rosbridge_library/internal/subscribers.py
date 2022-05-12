@@ -137,6 +137,8 @@ class MultiSubscriber:
 
     def unregister(self):
         self.node_handle.destroy_subscription(self.subscriber)
+        if self.new_subscriber:
+            self.node_handle.destroy_subscription(self.new_subscriber)
         with self.lock:
             self.subscriptions.clear()
 
