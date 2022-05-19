@@ -20,7 +20,7 @@ log.startLogging(sys.stderr)
 
 generate_test_description = common.generate_test_description
 
-class TestWebsocketSmoke(unittest.TestCase):
+class TestWebsocketRapidDisconnectSmoke(unittest.TestCase):
     def pub_sub_many(self, node: Node, duration: float, topic: str, sub_ws_clients, publisher, content) -> Awaitable[bool]:
         """
         Async-compatible function to publish and subscribe many times using a ROS timer.
@@ -48,30 +48,39 @@ class TestWebsocketSmoke(unittest.TestCase):
                     }
                 )
             else:
-                sub_ws_clients[math.floor(self.count/2)].dropConnection(True)
+                sub_ws_clients[math.floor(self.count/2)].sendClose()
+                #sub_ws_clients[math.floor(self.count/2)].dropConnection(True)
 
         def pub_callback():
             publisher.publish(String(data=content))
 
-        pub_timer = node.create_timer(duration * 2, pub_callback)
-        timer = node.create_timer(duration, sub_callback)
+        pub_timer = node.create_timer(duration, pub_callback)
+        timer = node.create_timer(duration * 2, sub_callback)
         return future
 
 
     @websocket_test
-    async def test_smoke(self, node: Node, make_client):
+    async def test_rapid_disconnect_smoke(self, node: Node, make_client):
         # Make a single publisher that pushes lots of data
         WARMUP_DELAY = 1.0  # seconds
         NUM_MSGS = 10
-        MSG_SIZE = 10000
+        MSG_SIZE = 100
         A_TOPIC = "/a_topic"
         A_STRING = "A" * MSG_SIZE
         pub_a = node.create_publisher(String, A_TOPIC, NUM_MSGS)
 
         sub_ws_clients = []
-        for _ in range(7):
+        for _ in range(30):
             sub_ws_clients.append(await make_client())
         result = await self.pub_sub_many(node, 0.0001, A_TOPIC, sub_ws_clients, pub_a, A_STRING)
+        node.get_logger().info('Rapid disconnect test result finished')
+        self.assertTrue(result)
+
+        sub_ws_clients = []
+        for _ in range(30):
+            sub_ws_clients.append(await make_client())
+        result = await self.pub_sub_many(node, 0.0001, A_TOPIC, sub_ws_clients, pub_a, A_STRING)
+        node.get_logger().info('Rapid disconnect test result finished 2')
         self.assertTrue(result)
 
         node.destroy_publisher(pub_a)
