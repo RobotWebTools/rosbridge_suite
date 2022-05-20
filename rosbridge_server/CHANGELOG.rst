@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.0 (2022-05-20)
+------------------
 * Fixed multiple subscriber on transient_local topic (`#723 <https://github.com/RobotWebTools/rosbridge_suite/issues/723>`_)
 * use uuid to ensure client id uniqueness (`#713 <https://github.com/RobotWebTools/rosbridge_suite/issues/713>`_)
 * Contributors: Jacob Bandes-Storch, Will, p0rys
