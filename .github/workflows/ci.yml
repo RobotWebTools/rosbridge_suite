@@ -25,6 +25,8 @@ jobs:
             os: ubuntu-20.04
           - ros: galactic
             os: ubuntu-20.04
+          - ros: humble
+            os: ubuntu-22.04
           - ros: rolling
             os: ubuntu-22.04
 
