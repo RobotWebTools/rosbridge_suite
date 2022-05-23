@@ -26,7 +26,7 @@ jobs:
           - ros: galactic
             os: ubuntu-20.04
           - ros: rolling
-            os: ubuntu-20.04
+            os: ubuntu-22.04
 
     name: ROS 2 ${{ matrix.ros }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
