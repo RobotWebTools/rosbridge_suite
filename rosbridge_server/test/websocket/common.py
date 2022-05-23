@@ -43,14 +43,14 @@ class TestClientProtocol(WebSocketClientProtocol):
 
 def _generate_node():
     try:
-        node = launch_ros.actions.Node(
+        return launch_ros.actions.Node(
             executable="rosbridge_websocket",
             package="rosbridge_server",
             parameters=[{"port": 0}],
         )
     except TypeError:
         # Deprecated keyword arg node_executable: https://github.com/ros2/launch_ros/pull/140
-        node = launch_ros.actions.Node(
+        return launch_ros.actions.Node(
             node_executable="rosbridge_websocket",
             package="rosbridge_server",
             parameters=[{"port": 0}],
@@ -65,7 +65,6 @@ try:
         Generate a launch description that runs the websocket server. Re-export this from a test file and use add_launch_test() to run the test.
         """
         return launch.LaunchDescription([_generate_node(), ReadyToTest()])
-
 
 except ImportError:
 
