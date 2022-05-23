@@ -41,10 +41,7 @@ class TestClientProtocol(WebSocketClientProtocol):
         self.message_handler(json.loads(payload))
 
 
-def generate_test_description(ready_fn) -> launch.LaunchDescription:
-    """
-    Generate a launch description that runs the websocket server. Re-export this from a test file and use add_launch_test() to run the test.
-    """
+def _generate_node():
     try:
         node = launch_ros.actions.Node(
             executable="rosbridge_websocket",
@@ -59,12 +56,26 @@ def generate_test_description(ready_fn) -> launch.LaunchDescription:
             parameters=[{"port": 0}],
         )
 
-    return launch.LaunchDescription(
-        [
-            node,
-            launch.actions.OpaqueFunction(function=lambda context: ready_fn()),
-        ]
-    )
+
+try:
+    from launch_testing.actions import ReadyToTest
+
+    def generate_test_description() -> launch.LaunchDescription:
+        """
+        Generate a launch description that runs the websocket server. Re-export this from a test file and use add_launch_test() to run the test.
+        """
+        return launch.LaunchDescription([_generate_node(), ReadyToTest()])
+
+
+except ImportError:
+
+    def generate_test_description(ready_fn) -> launch.LaunchDescription:
+        """
+        Generate a launch description that runs the websocket server. Re-export this from a test file and use add_launch_test() to run the test.
+        """
+        return launch.LaunchDescription(
+            [_generate_node(), launch.actions.OpaqueFunction(function=lambda context: ready_fn())]
+        )
 
 
 async def get_server_port(node: Node) -> int:
