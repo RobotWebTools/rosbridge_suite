@@ -9,7 +9,8 @@ except ImportError:
 
 class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     """
-    TCP Socket server for rosbridge
+    TCP Socket server for rosbridge.
+    An instance of this class is created for each request.
     """
 
     busy = False
@@ -31,6 +32,10 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     bson_only_mode = False
 
     def setup(self):
+        """
+        Called before the handle() method to perform any initialization 
+        actions required. The default implementation does nothing.
+        """
         cls = self.__class__
         parameters = {
             "fragment_timeout": cls.fragment_timeout,
@@ -54,12 +59,12 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     def recvall(self,n):
         # http://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data
         # Helper function to recv n bytes or return None if EOF is hit
-        data = ''
+        data = bytearray()
         while len(data) < n:
             packet = self.request.recv(n - len(data))
             if not packet:
                 return None
-            data += packet.decode()
+            data.extend(packet)
         return data
 
     def recv_bson(self):
@@ -86,33 +91,37 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
 
     def handle(self):
         """
-        Listen for TCP messages
+        Listen for TCP messages and do all the work to service a request.
         """
         cls = self.__class__
         self.request.settimeout(cls.socket_timeout)
-        while 1:
+        while True:
             try:
-              if self.bson_only_mode:
-                  if self.recv_bson() == None:
-                      break
-                  continue
+                if self.bson_only_mode:
+                    if self.recv_bson() == None:
+                        break
+                    continue
 
-              # non-BSON handling
-              data = self.request.recv(cls.incoming_buffer)
-              # Exit on empty string
-              if data.strip() == '':
-                  break
-              elif len(data.strip()) > 0:
-                  self.protocol.incoming(data.decode().strip(''))
-              else:
-                  pass
+                # non-BSON handling
+                bytes = self.request.recv(cls.incoming_buffer)
+
+                # Exit on empty message because socket was closed
+                if len(bytes) == 0:
+                    break
+                else:
+                    string_encoded = bytes.decode().strip()
+                    if len(string_encoded) > 0:
+                        self.protocol.incoming(string_encoded)
+
             except Exception as e:
                 pass
                 self.protocol.log("debug", "socket connection timed out! (ignore warning if client is only listening..)")
 
     def finish(self):
         """
-        Called when TCP connection finishes
+        Called when TCP connection finishes.
+        Called after the handle() method to perform any clean-up actions required.
+        If setup() raises an exception, this function will not be called.
         """
         cls = self.__class__
         cls.clients_connected -= 1
@@ -125,4 +134,10 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Callback from rosbridge
         """
-        self.request.sendall(message.encode())
+        if self.bson_only_mode:
+            self.request.sendall(message)
+        elif message is not None:
+            self.request.sendall(message.encode())
+        else:
+            rospy.logerr("send_message called with no message or message is None, not sending")
+
