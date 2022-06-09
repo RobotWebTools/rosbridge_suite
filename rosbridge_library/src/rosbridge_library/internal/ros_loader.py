@@ -108,7 +108,20 @@ def _get_msg_class(typestring):
 
     Throws various exceptions if loading the msg class fails"""
     global _loaded_msgs, _msgs_lock
-    return _get_class(typestring, "msg", _loaded_msgs, _msgs_lock)
+    try:
+        # The type string starts with the package and ends with the
+        # class and contains module subnames in between. For
+        # compatibility with ROS1 style types, we fall back to use a
+        # standard "msg" subname.
+        splits = [x for x in typestring.split("/") if x]
+        if len(splits) > 2:
+            subname = ".".join(splits[1:-1])
+        else:
+            subname = "msg"
+
+        return _get_class(typestring, subname, _loaded_msgs, _msgs_lock)
+    except (InvalidModuleException, InvalidClassException):
+        return _get_class(typestring, "msg", _loaded_msgs, _msgs_lock)
 
 
 def _get_srv_class(typestring):
@@ -117,7 +130,20 @@ def _get_srv_class(typestring):
 
     Throws various exceptions if loading the srv class fails"""
     global _loaded_srvs, _srvs_lock
-    return _get_class(typestring, "srv", _loaded_srvs, _srvs_lock)
+    try:
+        # The type string starts with the package and ends with the
+        # class and contains module subnames in between. For
+        # compatibility with ROS1 style types, we fall back to use a
+        # standard "srv" subname.
+        splits = [x for x in typestring.split("/") if x]
+        if len(splits) > 2:
+            subname = ".".join(splits[1:-1])
+        else:
+            subname = "srv"
+
+        return _get_class(typestring, subname, _loaded_srvs, _srvs_lock)
+    except (InvalidModuleException, InvalidClassException):
+        return _get_class(typestring, "srv", _loaded_srvs, _srvs_lock)
 
 
 def _get_class(typestring, subname, cache, lock):
