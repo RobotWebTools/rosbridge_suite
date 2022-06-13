@@ -2,6 +2,13 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix bson support for python3 (`#545 <https://github.com/RobotWebTools/rosbridge_suite/issues/545>`_)
+* Small fixes (`#681 <https://github.com/RobotWebTools/rosbridge_suite/issues/681>`_)
+* Check if key exists before accessing the dict in SubscriberManager::unsubscribe(), patches https://github.com/RobotWebTools/rosbridge_suite/issues/580 (`#638 <https://github.com/RobotWebTools/rosbridge_suite/issues/638>`_)
+* Contributors: Matthijs van der Burgh, Nick Paul, Steve Golton
+
 0.11.13 (2020-12-08)
 --------------------
 * fix python-future dependency (`#542 <https://github.com/RobotWebTools/rosbridge_suite/issues/542>`_)

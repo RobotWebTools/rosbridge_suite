@@ -2,6 +2,13 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix ROS 1 RosbridgeTcpSocket endless loop (`#722 <https://github.com/RobotWebTools/rosbridge_suite/issues/722>`_)
+* Fix bson support for python3 (`#545 <https://github.com/RobotWebTools/rosbridge_suite/issues/545>`_)
+* Small fixes (`#681 <https://github.com/RobotWebTools/rosbridge_suite/issues/681>`_)
+* Contributors: Matthijs van der Burgh, Nick Paul, curiosus42
+
 0.11.13 (2020-12-08)
 --------------------
 
