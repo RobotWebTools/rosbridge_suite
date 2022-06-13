@@ -2,8 +2,8 @@
 Changelog for package rosbridge_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.14 (2022-06-13)
+--------------------
 * Small fixes (`#681 <https://github.com/RobotWebTools/rosbridge_suite/issues/681>`_)
 * Contributors: Matthijs van der Burgh
 

@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.14 (2022-06-13)
+--------------------
 * Fix ROS 1 RosbridgeTcpSocket endless loop (`#722 <https://github.com/RobotWebTools/rosbridge_suite/issues/722>`_)
 * Fix bson support for python3 (`#545 <https://github.com/RobotWebTools/rosbridge_suite/issues/545>`_)
 * Small fixes (`#681 <https://github.com/RobotWebTools/rosbridge_suite/issues/681>`_)
