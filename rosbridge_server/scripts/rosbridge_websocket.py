@@ -124,6 +124,15 @@ class RosbridgeWebsocketNode(Node):
                 print("--address argument provided without a value.")
                 sys.exit(-1)
 
+        url_path = self.declare_parameter("url_path", "/").value
+        if "--url_path" in sys.argv:
+            idx = sys.argv.index("--url_path") + 1
+            if idx < len(sys.argv):
+                url_path = str(sys.argv[idx])
+            else:
+                print("--url_path argument provided without a value.")
+                sys.exit(-1)
+
         retry_startup_delay = self.declare_parameter("retry_startup_delay", 2.0).value  # seconds.
         if "--retry_startup_delay" in sys.argv:
             idx = sys.argv.index("--retry_startup_delay") + 1
@@ -137,9 +146,12 @@ class RosbridgeWebsocketNode(Node):
         # Done with parameter handling                   #
         ##################################################
 
-        application = Application(
-            [(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)], **tornado_settings
-        )
+        if url_path != "/":
+            application = Application([(rf"{url_path}", RosbridgeWebSocket)], **tornado_settings)
+        else:
+            application = Application(
+                [(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)], **tornado_settings
+            )
 
         connected = False
         while not connected and self.context.ok():
