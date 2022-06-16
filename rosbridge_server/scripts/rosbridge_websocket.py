@@ -146,12 +146,11 @@ class RosbridgeWebsocketNode(Node):
         # Done with parameter handling                   #
         ##################################################
 
+        handlers = [(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)]
         if url_path != "/":
-            application = Application([(rf"{url_path}", RosbridgeWebSocket)], **tornado_settings)
-        else:
-            application = Application(
-                [(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)], **tornado_settings
-            )
+            handlers = [(rf"{url_path}", RosbridgeWebSocket)]
+
+        application = Application(handlers, **tornado_settings)
 
         connected = False
         while not connected and self.context.ok():
