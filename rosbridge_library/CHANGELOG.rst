@@ -2,6 +2,14 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2022-05-20)
+------------------
+* Fixed float arrays conversion (`#730 <https://github.com/RobotWebTools/rosbridge_suite/issues/730>`_)
+* Fixed multiple subscriber on transient_local topic (`#723 <https://github.com/RobotWebTools/rosbridge_suite/issues/723>`_)
+* Fix translation of time and time arrays (`#691 <https://github.com/RobotWebTools/rosbridge_suite/issues/691>`_)
+* Fix array behavior (`#692 <https://github.com/RobotWebTools/rosbridge_suite/issues/692>`_)
+* Contributors: Jacob Bandes-Storch, José Castelo, Kenji Miyake, Will, p0rys
+
 1.1.2 (2022-01-03)
 ------------------
 * [694] update DurabilityPolicy api that are being deprecated (`#695 <https://github.com/RobotWebTools/rosbridge_suite/issues/695>`_)

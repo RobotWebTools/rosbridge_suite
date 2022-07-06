@@ -2,6 +2,12 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2022-05-20)
+------------------
+* Fixed multiple subscriber on transient_local topic (`#723 <https://github.com/RobotWebTools/rosbridge_suite/issues/723>`_)
+* use uuid to ensure client id uniqueness (`#713 <https://github.com/RobotWebTools/rosbridge_suite/issues/713>`_)
+* Contributors: Jacob Bandes-Storch, Will, p0rys
+
 1.1.2 (2022-01-03)
 ------------------
 * [694] update DurabilityPolicy api that are being deprecated (`#695 <https://github.com/RobotWebTools/rosbridge_suite/issues/695>`_)

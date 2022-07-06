@@ -2,6 +2,12 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2022-05-20)
+------------------
+* Added `/rosapi/get_ros_version` service (`#708 <https://github.com/RobotWebTools/rosbridge_suite/issues/708>`_)
+* Fixed node name collision with websocket launch file (`#707 <https://github.com/RobotWebTools/rosbridge_suite/issues/707>`_)
+* Contributors: Jacob Bandes-Storch, Kedus Mathewos, rob-clarke
+
 1.1.2 (2022-01-03)
 ------------------
 
