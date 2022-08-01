@@ -8,7 +8,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v5
+      - uses: actions/stale@v5.1.1
         with:
           operations-per-run: 250
 
@@ -16,6 +16,7 @@ jobs:
           stale-issue-label: stale
           days-before-issue-stale: 180
           days-before-issue-close: 30
+          close-issue-reason: not_planned
 
           stale-pr-message: "This PR has been marked as stale because there has been no activity in the past 6 months. Please add a comment to keep it open. Thank you for your contribution."
           stale-pr-label: stale
