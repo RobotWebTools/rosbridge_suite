@@ -123,6 +123,8 @@ def call_service(node_handle, service, args=None):
     client = node_handle.create_client(service_class, service)
 
     result = client.call(inst)
+
+    node_handle.destroy_client(client)
     if result is not None:
         # Turn the response into JSON and pass to the callback
         json_response = extract_values(result)
