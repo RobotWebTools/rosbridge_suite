@@ -28,6 +28,7 @@ def generate_launch_description():
 
    launch_description.append(
       launch_ros.actions.Node(
+         prefix=['stdbuf -o L'], # Need this with distro Dashing/Eloquent so that get_logger().info appears on the screen
          package='rosbridge_server',
          node_executable='rosbridge_tcp',
          node_name='rosbridge_tcp',
@@ -53,6 +54,7 @@ def generate_launch_description():
    )
    launch_description.append(
       launch_ros.actions.Node(
+         prefix=['stdbuf -o L'], # Need this with distro Dashing/Eloquent so that get_logger().info appears on the screen
          package='rosapi',
          node_executable='rosapi_node',
          node_name='rosapi',

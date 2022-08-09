@@ -286,7 +286,7 @@ def main(args=None):
 
         # loginfo("Rosbridge TCP server started on port %d", port)
             sys.stdout.flush()
-            rosbridge_tcpsocket_node.get_logger().info("Rosbridge TCP server started on port " + str(port))
+            rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP server started on {host}:{port}")
 
             loaded = True
             server.serve_forever()
