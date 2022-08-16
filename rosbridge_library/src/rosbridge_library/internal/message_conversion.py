@@ -359,6 +359,7 @@ def _to_list_inst(msg, rostype, roottype, inst, stack):
 
     # Special mappings for numeric types https://design.ros2.org/articles/idl_interface_definition.html
     if isinstance(inst, array.array):
+        del inst[:]
         inst.extend(msg)
         return inst
     if isinstance(inst, np.ndarray):
