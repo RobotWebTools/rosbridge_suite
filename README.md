@@ -1,6 +1,12 @@
 rosbridge_suite
 ===============
 
+[![ROS Foxy version](https://img.shields.io/ros/v/foxy/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#foxy)
+[![ROS Galactic version](https://img.shields.io/ros/v/galactic/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#galactic)
+[![ROS Humble version](https://img.shields.io/ros/v/humble/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#humble)
+[![ROS Rolling version](https://img.shields.io/ros/v/rolling/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#rolling)
+
+
 #### Server Implementations of the rosbridge v2 Protocol
 
 rosbridge provides a JSON interface to ROS, allowing any client to send JSON to publish or subscribe to ROS topics, call ROS services, and more. rosbridge supports a variety of transport layers, including WebSockets and TCP. For information on the protocol itself, see the [rosbridge protocol specification](ROSBRIDGE_PROTOCOL.md).
