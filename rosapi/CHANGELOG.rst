@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.0 (2022-08-16)
+------------------
 * Fixed /get_param service for arrays (`#776 <https://github.com/RobotWebTools/rosbridge_suite/issues/776>`_)
 * Contributors: p0rys
 

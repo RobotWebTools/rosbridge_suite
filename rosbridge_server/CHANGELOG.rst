@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.0 (2022-08-16)
+------------------
 * Add url_path config option (`#709 <https://github.com/RobotWebTools/rosbridge_suite/issues/709>`_)
 * Contributors: Matthijs van der Burgh, Sirawat S
 
