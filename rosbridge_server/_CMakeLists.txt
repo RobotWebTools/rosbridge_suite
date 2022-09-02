@@ -18,6 +18,7 @@ install(PROGRAMS
 
 install(FILES
   launch/rosbridge_websocket_launch.xml
+  launch/rosbridge_websocket_launch.py
   DESTINATION share/${PROJECT_NAME}/launch
 )
 
