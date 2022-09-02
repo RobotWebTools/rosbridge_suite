@@ -18,9 +18,6 @@
   <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
   <maintainer email="ros-tooling@foxglove.dev">Foxglove</maintainer>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>ament_cmake_ros</buildtool_depend>
-
   <build_depend>python3-pil</build_depend>
   <build_depend>python3-bson</build_depend>
 
@@ -29,14 +26,18 @@
   <exec_depend>rosidl_default_runtime</exec_depend>
   <exec_depend>python3-bson</exec_depend>
 
-  <test_depend>rosbridge_test_msgs</test_depend>
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
   <test_depend>actionlib_msgs</test_depend>
-  <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>builtin_interfaces</test_depend>
   <test_depend>diagnostic_msgs</test_depend>
   <test_depend>example_interfaces</test_depend>
   <test_depend>geometry_msgs</test_depend>
   <test_depend>nav_msgs</test_depend>
+  <test_depend>rosbridge_test_msgs</test_depend>
   <test_depend>sensor_msgs</test_depend>
   <test_depend>std_msgs</test_depend>
   <test_depend>std_srvs</test_depend>
@@ -46,6 +47,6 @@
   <test_depend>visualization_msgs</test_depend>
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>ament_python</build_type>
   </export>
 </package>
