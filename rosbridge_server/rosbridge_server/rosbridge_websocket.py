@@ -133,7 +133,9 @@ class RosbridgeWebsocketNode(Node):
                 print("--url_path argument provided without a value.")
                 sys.exit(-1)
 
-        retry_startup_delay = self.declare_parameter("retry_startup_delay", 2.0).value  # seconds.
+        retry_startup_delay = self.declare_parameter(
+            "retry_startup_delay", 2.0
+        ).value  # seconds.
         if "--retry_startup_delay" in sys.argv:
             idx = sys.argv.index("--retry_startup_delay") + 1
             if idx < len(sys.argv):
@@ -163,16 +165,21 @@ class RosbridgeWebsocketNode(Node):
                 server = HTTPServer(application, ssl_options=ssl_options)
                 server.add_sockets(sockets)
                 self.declare_parameter("actual_port", actual_port)
-                self.get_logger().info(f"Rosbridge WebSocket server started on port {actual_port}")
+                self.get_logger().info(
+                    f"Rosbridge WebSocket server started on port {actual_port}"
+                )
                 connected = True
             except OSError as e:
                 self.get_logger().warn(
-                    "Unable to start server: {} " "Retrying in {}s.".format(e, retry_startup_delay)
+                    "Unable to start server: {} "
+                    "Retrying in {}s.".format(e, retry_startup_delay)
                 )
                 time.sleep(retry_startup_delay)
 
     def protocol_parameter_handling(self):
-        RosbridgeWebSocket.use_compression = self.declare_parameter("use_compression", False).value
+        RosbridgeWebSocket.use_compression = self.declare_parameter(
+            "use_compression", False
+        ).value
 
         # get RosbridgeProtocol parameters
         RosbridgeWebSocket.fragment_timeout = self.declare_parameter(
@@ -252,7 +259,9 @@ class RosbridgeWebsocketNode(Node):
                 value = sys.argv[idx]
                 RosbridgeWebSocket.max_message_size = int(value)
             else:
-                print("--max_message_size argument provided without a value. (can be <Integer>)")
+                print(
+                    "--max_message_size argument provided without a value. (can be <Integer>)"
+                )
                 sys.exit(-1)
 
         if "--unregister_timeout" in sys.argv:
@@ -274,7 +283,9 @@ class RosbridgeWebsocketNode(Node):
                         element.strip().strip("'") for element in value[1:-1].split(",")
                     ]
             else:
-                print("--topics_glob argument provided without a value. (can be None or a list)")
+                print(
+                    "--topics_glob argument provided without a value. (can be None or a list)"
+                )
                 sys.exit(-1)
 
         if "--services_glob" in sys.argv:
@@ -288,7 +299,9 @@ class RosbridgeWebsocketNode(Node):
                         element.strip().strip("'") for element in value[1:-1].split(",")
                     ]
             else:
-                print("--services_glob argument provided without a value. (can be None or a list)")
+                print(
+                    "--services_glob argument provided without a value. (can be None or a list)"
+                )
                 sys.exit(-1)
 
         if "--params_glob" in sys.argv:
@@ -302,7 +315,9 @@ class RosbridgeWebsocketNode(Node):
                         element.strip().strip("'") for element in value[1:-1].split(",")
                     ]
             else:
-                print("--params_glob argument provided without a value. (can be None or a list)")
+                print(
+                    "--params_glob argument provided without a value. (can be None or a list)"
+                )
                 sys.exit(-1)
 
         if ("--bson_only_mode" in sys.argv) or bson_only_mode:
