@@ -122,11 +122,11 @@ def get_action_result_instance(typestring):
     return cls.Result()
 
 def get_action_cancel_instance():
-    cls = get_message_class('actionlib_msgs/GoalID')
+    cls = get_service_class('action_msgs/srv/CancelGoal')
     return cls()
 
 def get_action_status_instance():
-    cls = get_message_class('actionlib_msgs/GoalStatusArray')
+    cls = get_message_class('action_msgs/msg/GoalStatus')
     return cls()
 
 
