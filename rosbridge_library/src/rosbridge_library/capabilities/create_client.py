@@ -37,6 +37,7 @@ from threading import Lock
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.actions import ActionCaller
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
+from rosbridge_library.internal.message_conversion import extract_values
 
 try:
     from cbor import dumps as encode_cbor
@@ -65,7 +66,7 @@ class createActionClient(Capability):
         (False, "queue_length", int),
         (False, "compression", str),
     ]
-    #destroyclient_msg_fields = [(True, "topic", str)]
+    #destroyclient_msg_fields = [(True, "action_type", str)]
 
     actions_glob = None
 
@@ -92,7 +93,7 @@ class createActionClient(Capability):
         args = msg.get("args", [])
 
         if createActionClient.actions_glob is not None and createActionClient.actions_glob:
-            self.protocol.log("info", "Topic security glob enabled, checking topic: " + action_type)
+            self.protocol.log("info", "Action security glob enabled, checking action: " + action_type)
             match = False
             for glob in createActionClient.actions_glob:
                 if fnmatch.fnmatch(action_type, glob):
@@ -105,35 +106,67 @@ class createActionClient(Capability):
             if not match:
                 self.protocol.log(
                     "warn",
-                    "No match found for topic, cancelling subscription to: " + action_type,
+                    "No match found for action, cancelling subscription to: " + action_type,
                 )
                 return
         else:
-            self.protocol.log("info", "No topic security glob, not checking subscription.")
+            self.protocol.log("info", "No action security glob, not checking subscription.")
 
         if action_type not in self._actionclients:
-            client_id = self.protocol.client_id
+            client_id = msg.get("id", None)
+            self.protocol.node_handle.get_logger().info(f" client id : = {client_id, cid} ")
             s_cb = partial(self._success, client_id, action_type)
             e_cb = partial(self._failure, client_id, action_type)
             f_cb = partial(self._feedback, client_id, action_type)
             self._actionclients[action_type] = ActionCaller(
                 action_type, action_name, args, s_cb, e_cb, f_cb, self.protocol.node_handle
             )
+            self.protocol.log("info", "created client")
 
         # Register the subscriber
        
         self._actionclients[action_type].run(args)
     
     def _success(self, cid, action_type, message):
-        self.protocol.log("info", "success callback")
+        self.protocol.node_handle.get_logger().info(f"sucess callback msg =  {message}")
+        outgoing_message = {
+            "op": "service_response",
+            "type": action_type,
+            "return_type":'result',
+            "values": message,
+            "result": True,
+        }
+        if cid is not None:
+            outgoing_message["id"] = cid
+        # TODO: fragmentation, compression
+        self.protocol.send(outgoing_message)
 
     def _failure(self, cid, action_type, exc):
         self.protocol.log("error", "call_service %s: %s" % (type(exc).__name__, str(exc)), cid)
-        # send response with result: false
+        outgoing_message = {
+            "op": "service_response",
+            "type": action_type,
+            "values": str(exc),
+            "result": False,
+        }
+        if cid is not None:
+            outgoing_message["id"] = cid
+        # TODO: fragmentation, compression
+        self.protocol.send(outgoing_message)
     
     def _feedback(self, cid, action_type, message):
-        self.protocol.log("info", "feedback callback ")
-        
+        self.protocol.node_handle.get_logger().info(f"feedback callback msg =  {message}")
+        outgoing_message = {
+            "op": "service_response",
+            "type": action_type,
+            "return_type":'feedback',
+            "values": extract_values(message),
+            "result": True,
+        }
+        if cid is not None:
+            outgoing_message["id"] = cid
+        # TODO: fragmentation, compression
+        self.protocol.send(outgoing_message)
 
     def finish(self):
         #for clients in self._actionclients.values():
@@ -141,21 +174,6 @@ class createActionClient(Capability):
         self._actionclients.clear()
         self.protocol.unregister_operation("createClient")
 
-rclpy.init()
-node_ = rclpy.node.Node("test_node")
-proto = Protocol("test_call_service_works", node_ )
-s = createActionClient(proto)
-msg = loads(dumps({"op": "createClient", "action_name": "/fibonacci", "action_type": "action_tutorials_interfaces/action/Fibonacci", "args": {"order": 10}}))
-
-received = {"msg": None, "arrived": False}
-
-def cb(msg, cid=None):
-    received["msg"] = msg
-    received["arrived"] = True
-
-proto.send = cb
-
-s.createClient(msg)
 
 
 
