@@ -47,10 +47,16 @@ class ActionCaller(Thread):
         self.feedback = feedback_callback
         self.node_handle = node_handle
 
+        if self.action_type is None:
+            raise InvalidActionException(action_type)
+        
+        action_class = get_action_class(action_type)
+        self.client = ActionClient(node_handle, action_class, action_name)
+
     def run(self, args):
         try:
             # Call the action and pass the result to the success handler
-            self.success(self.call_action(self.node_handle, self.action_type, self.action_name, args))
+            self.success(self.call_action(args))
         except Exception as e:
             # On error, just pass the exception to the error handler
             self.error(e)
@@ -63,67 +69,46 @@ class ActionCaller(Thread):
 
         Propagates any exceptions that may be raised."""
         msg = {}
-        print(f"dfdd : {args}")
         if isinstance(args, dict):
             msg = args    
         elif isinstance(args, list):
-            msg = dict(zip(inst.get_fields_and_field_types().keys(), args))
-    
+            msg = dict(zip(inst.get_fields_and_field_types().keys(), args))    
 
         # Populate the provided instance, propagating any exceptions
         populate_instance(msg, inst)
 
 
-    def call_action(self,node_handle, action_type, action_name, args=None):
-        # Given the action name, fetch the type and class of the action,
-        # and a request instance
-
-        # This should be equivalent to rospy.resolve_name.
-        #action = expand_topic_name(action, node_handle.get_name(), node_handle.get_namespace())
-
+    def call_action(self,  args):
         
-        node_handle.get_logger().info(f" action server  {action_name} : {action_type} ")
-    
-        if action_type is None:
-            raise InvalidActionException(action_type)
-        # action_type is a tuple of types at this point; only one type is supported.
-        #if len(action_type) > 1:
-        #   node_handle.get_logger().warning(f"More than one action type detected: {action_type}")
-        #action_type = action_type[0]
+        self.node_handle.get_logger().info(f" action server  {self.action_name} : {self.action_type} ")
 
-        action_class = get_action_class(action_type)
-        inst = get_action_goal_instance(action_type)
-        node_handle.get_logger().info(f"goal_instance {inst} ")
+        while not self.client.wait_for_server(timeout_sec=1.0):
+            self.node_handle.get_logger().info(f" server for {self.action_name}  not available, waiting...")
+       
+
+        inst = get_action_goal_instance(self.action_type)
+        #self.node_handle.get_logger().info(f"goal_instance {inst} ")
         # Populate the instance with the provided args
         self.args_to_action_goal_instance(inst, args)
 
-        client = ActionClient(node_handle, action_class, action_name)
-        node_handle.get_logger().info(f"Waiting for {action_name} action server")
-        while not client.wait_for_server(timeout_sec=1.0):
-            node_handle.get_logger().info(f" {action_name} action server not available, waiting...")
-
-
-        send_goal_future = client.send_goal_async(inst, self.feedback)
-        rclpy.spin_until_future_complete(node_handle, send_goal_future)
+        send_goal_future = self.client.send_goal_async(inst, self.feedback)
+        rclpy.spin_until_future_complete(self.node_handle, send_goal_future)
         goal_handle = send_goal_future.result()
 
         if not goal_handle.accepted:
             raise  Exception('Action Goal was rejected!')
-        
-        
-
+        self.node_handle.get_logger().info(f"goal status == ACCEPTED .")
         result_future = goal_handle.get_result_async()
         goal_status = get_action_status_instance()
-        node_handle.get_logger().info(f"goal status {goal_status} .")
+        #self.node_handle.get_logger().info(f"goal status {goal_status} .")
         while result_future:
             #node_handle.get_logger().info(f" executing ")
-            rclpy.spin_until_future_complete(node_handle, result_future, timeout_sec=0.1)
-           
+            rclpy.spin_until_future_complete(self.node_handle, result_future, timeout_sec=0.1)
             if result_future.result():
                 break
         
         status = result_future.result().status
-        node_handle.get_logger().info(f"Action  status =  {status}")    
+       # self.node_handle.get_logger().info(f"Action  status =  {status}")    
         #node_handle.get_logger().info(f" result : = {result_future.result()} ")
 
         if status == goal_status.STATUS_SUCCEEDED:
@@ -134,4 +119,6 @@ class ActionCaller(Thread):
 
         return json_response
 
-
+    def unregister(self):
+        self.client.destroy()
+        
