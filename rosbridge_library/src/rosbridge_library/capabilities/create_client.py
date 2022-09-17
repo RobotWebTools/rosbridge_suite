@@ -124,11 +124,10 @@ class createActionClient(Capability):
             self.protocol.log("info", "created client")
 
         # Register the subscriber
-       
-        self._actionclients[action_type].run(args)
+        self._actionclients[action_type].args = args
+        self._actionclients[action_type].start()
     
     def _success(self, cid, action_type, message):
-        self.protocol.node_handle.get_logger().info(f"sucess callback msg =  {message}")
         outgoing_message = {
             "op": "service_response",
             "type": action_type,
@@ -142,7 +141,6 @@ class createActionClient(Capability):
         self.protocol.send(outgoing_message)
 
     def _failure(self, cid, action_type, exc):
-        self.protocol.log("error", "call_service %s: %s" % (type(exc).__name__, str(exc)), cid)
         outgoing_message = {
             "op": "service_response",
             "type": action_type,
@@ -155,7 +153,6 @@ class createActionClient(Capability):
         self.protocol.send(outgoing_message)
     
     def _feedback(self, cid, action_type, message):
-        self.protocol.node_handle.get_logger().info(f"feedback callback msg =  {message}")
         outgoing_message = {
             "op": "service_response",
             "type": action_type,

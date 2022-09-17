@@ -53,10 +53,10 @@ class ActionCaller(Thread):
         action_class = get_action_class(action_type)
         self.client = ActionClient(node_handle, action_class, action_name)
 
-    def run(self, args):
+    def run(self):
         try:
             # Call the action and pass the result to the success handler
-            self.success(self.call_action(args))
+            self.success(self.call_action(self.args))
         except Exception as e:
             # On error, just pass the exception to the error handler
             self.error(e)
