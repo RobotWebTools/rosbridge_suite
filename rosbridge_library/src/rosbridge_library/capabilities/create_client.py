@@ -66,7 +66,7 @@ class createActionClient(Capability):
         (False, "queue_length", int),
         (False, "compression", str),
     ]
-    #destroyclient_msg_fields = [(True, "action_type", str)]
+    destroyclient_msg_fields = [(True, "action_type", str)]
 
     actions_glob = None
 
@@ -76,7 +76,7 @@ class createActionClient(Capability):
 
         # Register the operations that this capability provides
         protocol.register_operation("createClient", self.createClient)
-        #protocol.register_operation("destroyClient", self.destroyClient)
+        protocol.register_operation("destroyClient", self.destroyClient)
 
         self._actionclients = {}
 
@@ -99,14 +99,14 @@ class createActionClient(Capability):
                 if fnmatch.fnmatch(action_type, glob):
                     self.protocol.log(
                         "info",
-                        "Found match with glob " + glob + ", continuing subscription...",
+                        "Found match with glob " + glob + ", creating Action client",
                     )
                     match = True
                     break
             if not match:
                 self.protocol.log(
                     "warn",
-                    "No match found for action, cancelling subscription to: " + action_type,
+                    "No match found for action, cancelling creation of action client type: " + action_type,
                 )
                 return
         else:
@@ -121,7 +121,6 @@ class createActionClient(Capability):
             self._actionclients[action_type] = ActionCaller(
                 action_type, action_name, args, s_cb, e_cb, f_cb, self.protocol.node_handle
             )
-            self.protocol.log("info", "created client")
 
         # Register the subscriber
         self._actionclients[action_type].args = args
@@ -165,11 +164,48 @@ class createActionClient(Capability):
         # TODO: fragmentation, compression
         self.protocol.send(outgoing_message)
 
+
+    def destroyClient(self, msg):
+
+        self.basic_type_check(msg, self.destroyclient_msg_fields)
+
+        action_type = msg.get("action_type")
+
+        if createActionClient.actions_glob is not None and createActionClient.actions_glob:
+            self.protocol.log("info", "Action security glob enabled, checking action: " + action_type)
+            match = False
+            for glob in createActionClient.actions_glob:
+                if fnmatch.fnmatch(action_type, glob):
+                    self.protocol.log(
+                        "info",
+                        "Found match with glob " + glob + ", killing client",
+                    )
+                    match = True
+                    break
+            if not match:
+                self.protocol.log(
+                    "warn",
+                    "No match found for action client, cancelling destruction of action client of type: " + action_type,
+                )
+                return
+        else:
+            self.protocol.log("info", "No action security glob, not checking Action Client.")
+
+        if action_type not in self._actionclients:
+            return
+        self._actionclients[action_type].unregister()
+
+        if self._actionclients.is_empty():
+            self._actionclients.clear()
+
+        self.protocol.log("info", "Destroyed Action Client of type %s" % action_type)
+
     def finish(self):
-        #for clients in self._actionclients.values():
-         #   clients.unregister()
+        for clients in self._actionclients.values():
+            clients.unregister()
         self._actionclients.clear()
         self.protocol.unregister_operation("createClient")
+        self.protocol.unregister_operation("destroyClient")
 
 
 
