@@ -11,13 +11,12 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/stale@v5.2.0
+      - uses: actions/stale@v6.0.0
         with:
           stale-issue-message: "This issue has been marked as stale because there has been no activity in the past 12 months. Please add a comment to keep it open."
           stale-issue-label: stale
           days-before-issue-stale: 365
           days-before-issue-close: 30
-          close-issue-reason: not_planned
 
           stale-pr-message: "This PR has been marked as stale because there has been no activity in the past 6 months. Please add a comment to keep it open."
           stale-pr-label: stale
