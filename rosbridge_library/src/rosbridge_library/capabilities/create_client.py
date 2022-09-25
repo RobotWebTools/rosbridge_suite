@@ -117,7 +117,7 @@ class createActionClient(Capability):
             self.protocol.node_handle.get_logger().info(f" client id : = {client_id, cid} ")
             s_cb = partial(self._success, client_id, action_type)
             e_cb = partial(self._failure, client_id, action_type)
-            f_cb = partial(self._feedback, client_id, action_type)
+                f_cb = partial(self._feedback, client_id, action_type)
             self._actionclients[action_type] = ActionCaller(
                 action_type, action_name, args, s_cb, e_cb, f_cb, self.protocol.node_handle
             )
