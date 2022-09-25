@@ -39,28 +39,14 @@ from rosbridge_library.internal.actions import ActionCaller
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
 from rosbridge_library.internal.message_conversion import extract_values
 
-try:
-    from cbor import dumps as encode_cbor
-except ImportError:
-    from rosbridge_library.util.cbor import dumps as encode_cbor
-
-try:
-    from ujson import dumps as encode_json
-except ImportError:
-    try:
-        from simplejson import dumps as encode_json
-    except ImportError:
-        from json import dumps as encode_json
-
-from json import dumps, loads
-import rclpy
-from rosbridge_library.protocol import Protocol
 
 class createActionClient(Capability):
 
     createclient_msg_fields = [
         (True, "action_name", str),
         (True, "action_type", str),
+        (True, "feedback", bool),
+        (True, "goal_msg", str)
         (False, "throttle_rate", int),
         (False, "fragment_size", int),
         (False, "queue_length", int),
@@ -81,16 +67,14 @@ class createActionClient(Capability):
         self._actionclients = {}
 
     def createClient(self, msg):
-        # Pull out the ID
-        cid = msg.get("id", None)
-
         # Check the args
         self.basic_type_check(msg, self.createclient_msg_fields)
 
         # Make the subscription
         action_name = msg.get("action_name")
         action_type = msg.get("action_type")
-        args = msg.get("args", [])
+        goal_msg = msg.get("goal_msg", [])
+        feedback = msg.get("feedback", True)
 
         if createActionClient.actions_glob is not None and createActionClient.actions_glob:
             self.protocol.log("info", "Action security glob enabled, checking action: " + action_type)
@@ -114,16 +98,18 @@ class createActionClient(Capability):
 
         if action_type not in self._actionclients:
             client_id = msg.get("id", None)
-            self.protocol.node_handle.get_logger().info(f" client id : = {client_id, cid} ")
             s_cb = partial(self._success, client_id, action_type)
             e_cb = partial(self._failure, client_id, action_type)
+            if feedback:
                 f_cb = partial(self._feedback, client_id, action_type)
+            else:
+                f_cb = None
             self._actionclients[action_type] = ActionCaller(
-                action_type, action_name, args, s_cb, e_cb, f_cb, self.protocol.node_handle
+                action_type, action_name, goal_msg, s_cb, e_cb, f_cb, self.protocol.node_handle
             )
 
         # Register the subscriber
-        self._actionclients[action_type].args = args
+        self._actionclients[action_type].args = goal_msg
         self._actionclients[action_type].start()
     
     def _success(self, cid, action_type, message):

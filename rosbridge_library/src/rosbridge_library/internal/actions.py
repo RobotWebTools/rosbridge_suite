@@ -77,9 +77,8 @@ class ActionCaller(Thread):
 
 
     def start_action(self,  args):
-        
         if not self.client.wait_for_server(timeout_sec=10.0):
-            self.node_handle.get_logger().info(f" Timeout: Action Server of type {self.action_type}  not available. Goal is ignored ")
+            self.node_handle.get_logger().info(f" Timeout: Action Server of Type: {self.action_type}  not available. Goal is ignored ")
             raise Exception("Action Server Not Available")
        
         inst = get_action_goal_instance(self.action_type)
@@ -111,7 +110,8 @@ class ActionCaller(Thread):
         return json_response
 
     def unregister(self):
-        #todo cancel goal before destroy
+        #TODO cancel goal before destroy
             #self.client._cancel_goal_async()
+            #self.client._goal_handles
         self.client.destroy()
         
