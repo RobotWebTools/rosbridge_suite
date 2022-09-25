@@ -46,7 +46,7 @@ class createActionClient(Capability):
         (True, "action_name", str),
         (True, "action_type", str),
         (True, "feedback", bool),
-        (True, "goal_msg", str)
+        (True, "goal_msg", str),
         (False, "throttle_rate", int),
         (False, "fragment_size", int),
         (False, "queue_length", int),
