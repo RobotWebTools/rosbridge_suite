@@ -327,7 +327,7 @@ class Subscribe(Capability):
             outgoing_msg = {"op": "png", "data": encode_png(outgoing_msg_dumped)}
         elif compression=="cbor":
             outgoing_msg[u"msg"] = message.get_cbor_values()
-            outgoing_msg = bytearray(encode_cbor(outgoing_msg))
+            outgoing_msg = encode_cbor(outgoing_msg)
         elif compression=="cbor-raw":
             now = get_rostime()
             outgoing_msg[u"msg"] = {
@@ -335,11 +335,11 @@ class Subscribe(Capability):
                 u"nsecs": now.nsecs,
                 u"bytes": message._message._buff
             }
-            outgoing_msg = bytearray(encode_cbor(outgoing_msg))
+            outgoing_msg = encode_cbor(outgoing_msg)
         else:
             outgoing_msg["msg"] = message.get_json_values()
 
-        self.protocol.send(outgoing_msg)
+        self.protocol.send(outgoing_msg, compression=compression)
 
     def finish(self):
         for subscription in self._subscriptions.values():

@@ -114,7 +114,7 @@ class IncomingQueue(threading.Thread):
 @implementer(interfaces.IPushProducer)
 class OutgoingValve:
     """Allows the Autobahn transport to pause outgoing messages from rosbridge.
-    
+
     The purpose of this valve is to connect backpressure from the WebSocket client
     back to the rosbridge protocol, which depends on backpressure for queueing.
     Without this flow control, rosbridge will happily keep writing messages to
@@ -133,11 +133,11 @@ class OutgoingValve:
         self._finished = False
 
     @log_exceptions
-    def relay(self, message):
+    def relay(self, message, compression="none"):
         self._valve.wait()
         if self._finished:
             return
-        reactor.callFromThread(self._proto.outgoing, message)
+        reactor.callFromThread(self._proto.outgoing, message, compression=compression)
 
     def pauseProducing(self):
         if not self._finished:
@@ -229,13 +229,15 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
             # no authentication required
             self.incoming_queue.push(message)
 
-    def outgoing(self, message):
+    def outgoing(self, message, compression="none"):
         if type(message) == bson.BSON:
             binary = True
             message = bytes(message)
         elif type(message) == bytearray:
             binary = True
             message = bytes(message)
+        elif compression in ["cbor", "cbor-raw"]:
+            binary = True
         else:
             binary = False
             message = message.encode('utf-8')
