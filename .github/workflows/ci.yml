@@ -42,7 +42,7 @@ jobs:
         with:
           path: ros_ws/src
 
-      - uses: ros-tooling/setup-ros@v0.2
+      - uses: ros-tooling/setup-ros@0.4.1
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
 
