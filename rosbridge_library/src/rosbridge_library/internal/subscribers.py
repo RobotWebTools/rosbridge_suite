@@ -128,6 +128,7 @@ class MultiSubscriber:
         self.node_handle = node_handle
         self.topic = topic
         self.qos = qos
+        self.raw = raw
 
         self.subscriber = node_handle.create_subscription(
             msg_class, topic, self.callback, qos, raw=raw
@@ -172,7 +173,7 @@ class MultiSubscriber:
             self.new_subscriptions.update({client_id: callback})
             if self.new_subscriber is None:
                 self.new_subscriber = self.node_handle.create_subscription(
-                    self.msg_class, self.topic, self._new_sub_callback, self.qos
+                    self.msg_class, self.topic, self._new_sub_callback, self.qos, raw=self.raw
                 )
 
     def unsubscribe(self, client_id):
