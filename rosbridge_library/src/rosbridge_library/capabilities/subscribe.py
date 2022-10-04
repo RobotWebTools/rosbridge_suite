@@ -36,16 +36,10 @@ PYTHON2 = sys.version_info < (3, 0)
 import fnmatch
 from threading import Lock
 from functools import partial
-from rospy import loginfo, get_rostime
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
 from rosbridge_library.internal.pngcompression import encode as encode_png
-
-try:
-    from cbor import dumps as encode_cbor
-except ImportError:
-    from rosbridge_library.util.cbor import dumps as encode_cbor
 
 try:
     from ujson import dumps as encode_json
@@ -326,20 +320,13 @@ class Subscribe(Capability):
             outgoing_msg_dumped = encode_json(outgoing_msg)
             outgoing_msg = {"op": "png", "data": encode_png(outgoing_msg_dumped)}
         elif compression=="cbor":
-            outgoing_msg[u"msg"] = message.get_cbor_values()
-            outgoing_msg = bytearray(encode_cbor(outgoing_msg))
+            outgoing_msg = message.get_cbor(outgoing_msg)
         elif compression=="cbor-raw":
-            now = get_rostime()
-            outgoing_msg[u"msg"] = {
-                u"secs": now.secs,
-                u"nsecs": now.nsecs,
-                u"bytes": message._message._buff
-            }
-            outgoing_msg = bytearray(encode_cbor(outgoing_msg))
+            outgoing_msg = message.get_cbor_raw(outgoing_msg)
         else:
             outgoing_msg["msg"] = message.get_json_values()
 
-        self.protocol.send(outgoing_msg)
+        self.protocol.send(outgoing_msg, compression=compression)
 
     def finish(self):
         for subscription in self._subscriptions.values():

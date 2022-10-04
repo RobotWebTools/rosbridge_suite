@@ -236,7 +236,7 @@ class Protocol:
         """
         pass
 
-    def send(self, message, cid=None):
+    def send(self, message, cid=None, compression="none"):
         """ Called internally in preparation for sending messages to the client
 
         This method pre-processes the message then passes it to the overridden
@@ -247,7 +247,7 @@ class Protocol:
         cid     -- (optional) an associated id
 
         """
-        serialized = self.serialize(message, cid)
+        serialized = message if compression in ["cbor", "cbor-raw"] else self.serialize(message, cid)
         if serialized is not None:
             if self.png == "png":
                 # TODO: png compression on outgoing messages
@@ -266,15 +266,15 @@ class Protocol:
             if fragment_list != None:
                 for fragment in fragment_list:
                     if self.bson_only_mode:
-                        self.outgoing(bson.BSON.encode(fragment))
+                        self.outgoing(bson.BSON.encode(fragment), compression)
                     else:
-                        self.outgoing(json.dumps(fragment))
+                        self.outgoing(json.dumps(fragment), compression)
                     # okay to use delay here (sender's send()-function) because rosbridge is sending next request only to service provider when last one had finished)
                     #  --> if this was not the case this delay needed to be implemented in service-provider's (meaning message receiver's) send_message()-function in rosbridge_tcp.py)
                     time.sleep(self.delay_between_messages)
             # else send message as it is
             else:
-                self.outgoing(serialized)
+                self.outgoing(serialized, compression)
                 time.sleep(self.delay_between_messages)
 
     def finish(self):
@@ -303,7 +303,7 @@ class Protocol:
                 return msg
             if has_binary(msg) or self.bson_only_mode:
                 return bson.BSON.encode(msg)
-            else:    
+            else:
                 return json.dumps(msg)
         except:
             if cid is not None:
