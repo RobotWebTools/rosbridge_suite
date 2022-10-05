@@ -40,11 +40,6 @@ from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
 
 try:
-    from cbor import dumps as encode_cbor
-except ImportError:
-    from rosbridge_library.util.cbor import dumps as encode_cbor
-
-try:
     from ujson import dumps as encode_json
 except ImportError:
     try:
@@ -358,8 +353,7 @@ class Subscribe(Capability):
             outgoing_msg_dumped = encode_json(outgoing_msg)
             outgoing_msg = {"op": "png", "data": encode_png(outgoing_msg_dumped)}
         elif compression == "cbor":
-            outgoing_msg["msg"] = message.get_cbor_values()
-            outgoing_msg = bytearray(encode_cbor(outgoing_msg))
+            outgoing_msg = message.get_cbor(outgoing_msg)
         elif compression == "cbor-raw":
             (secs, nsecs) = self.protocol.node_handle.get_clock().now().seconds_nanoseconds()
             outgoing_msg["msg"] = {
@@ -367,11 +361,11 @@ class Subscribe(Capability):
                 "nsecs": nsecs,
                 "bytes": message.message,
             }
-            outgoing_msg = bytearray(encode_cbor(outgoing_msg))
+            outgoing_msg = message.get_cbor_raw(outgoing_msg)
         else:
             outgoing_msg["msg"] = message.get_json_values()
 
-        self.protocol.send(outgoing_msg)
+        self.protocol.send(outgoing_msg, compression=compression)
 
     def finish(self):
         for subscription in self._subscriptions.values():
