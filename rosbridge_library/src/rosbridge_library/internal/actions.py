@@ -12,18 +12,18 @@ from rosbridge_library.internal.ros_loader import (
 )
 
 class InvalidActionException(Exception):
-    def __init__(self, actionname):
-        Exception.__init__(self, "Action %s does not exist" % actionname)
+    def __init__(self, actiontype):
+        Exception.__init__(self, "Action %s does not exist" % actiontype)
 
 
 class ActionCaller(Thread):
-    def __init__(self, action_type, action_name, args, success_callback, error_callback, feedback_callback, node_handle):
+    def __init__(self, action_type, action_name, goal_msg, success_callback, error_callback, feedback_callback, node_handle):
         """Create a action caller for the specified action.  Use start()
         to start in a separate thread or run() to run in this thread.
 
         Keyword arguments:
         action          -- the name of the action to call
-        args             -- arguments to pass to the action.  Can be an
+        goal_msg           -- arguments to pass to the action.  Can be an
         ordered list, or a dict of name-value pairs.  Anything else will be
         treated as though no arguments were provided (which is still valid for
         some kinds of action)
@@ -38,7 +38,7 @@ class ActionCaller(Thread):
         self.daemon = True
         self.action_type = action_type
         self.action_name = action_name
-        self.args = args
+        self.goal_msg = goal_msg
         self.success = success_callback
         self.error = error_callback
         self.feedback = feedback_callback
@@ -54,7 +54,7 @@ class ActionCaller(Thread):
     def run(self):
         try:
             # Call the action and pass the result to the success handler
-            self.success(self.start_action(self.args))
+            self.success(self.start_action(self.goal_msg))
         except Exception as e:
             # On error, just pass the exception to the error handler
             self.error(e)
@@ -76,15 +76,16 @@ class ActionCaller(Thread):
         populate_instance(msg, inst)
 
 
-    def start_action(self,  args):
+    def start_action(self,  goal_msg):
         if not self.client.wait_for_server(timeout_sec=10.0):
             self.node_handle.get_logger().info(f" Timeout: Action Server of Type: {self.action_type}  not available. Goal is ignored ")
             raise Exception("Action Server Not Available")
        
         inst = get_action_goal_instance(self.action_type)
         # Populate the instance with the provided args
-        self.args_to_action_goal_instance(inst, args)
-
+        self.args_to_action_goal_instance(inst, goal_msg)
+        
+        #TODO use send goal instead
         send_goal_future = self.client.send_goal_async(inst, self.feedback)
         rclpy.spin_until_future_complete(self.node_handle, send_goal_future)
         goal_handle = send_goal_future.result()

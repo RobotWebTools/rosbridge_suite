@@ -46,7 +46,6 @@ class createActionClient(Capability):
         (True, "action_name", str),
         (True, "action_type", str),
         (True, "feedback", bool),
-        (True, "goal_msg", str),
         (False, "throttle_rate", int),
         (False, "fragment_size", int),
         (False, "queue_length", int),
@@ -109,16 +108,15 @@ class createActionClient(Capability):
             )
 
         # Register the subscriber
-        self._actionclients[action_type].args = goal_msg
+        self._actionclients[action_type].goal_msg = goal_msg
         self._actionclients[action_type].start()
     
     def _success(self, cid, action_type, message):
         outgoing_message = {
-            "op": "service_response",
+            "op": "action_response",
+            "response_type":'result',
             "type": action_type,
-            "return_type":'result',
             "values": message,
-            "result": True,
         }
         if cid is not None:
             outgoing_message["id"] = cid
@@ -127,10 +125,10 @@ class createActionClient(Capability):
 
     def _failure(self, cid, action_type, exc):
         outgoing_message = {
-            "op": "service_response",
+            "op": "action_response",
+            "response_type": "error",
             "type": action_type,
             "values": str(exc),
-            "result": False,
         }
         if cid is not None:
             outgoing_message["id"] = cid
@@ -139,11 +137,10 @@ class createActionClient(Capability):
     
     def _feedback(self, cid, action_type, message):
         outgoing_message = {
-            "op": "service_response",
+            "op": "action_response",
+            "response_type":'feedback',
             "type": action_type,
-            "return_type":'feedback',
             "values": extract_values(message),
-            "result": True,
         }
         if cid is not None:
             outgoing_message["id"] = cid
@@ -158,7 +155,7 @@ class createActionClient(Capability):
         action_type = msg.get("action_type")
 
         if createActionClient.actions_glob is not None and createActionClient.actions_glob:
-            self.protocol.log("info", "Action security glob enabled, checking action: " + action_type)
+            self.protocol.log("info", "Action security glob enabled, checking action client of type:: " + action_type)
             match = False
             for glob in createActionClient.actions_glob:
                 if fnmatch.fnmatch(action_type, glob):
