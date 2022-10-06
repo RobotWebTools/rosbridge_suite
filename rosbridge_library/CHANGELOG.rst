@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.15 (2022-10-06)
+--------------------
 * Remove unnecessary checking of topic globs. (`#793 <https://github.com/RobotWebTools/rosbridge_suite/issues/793>`_)
   We do not have to check the topic globs on each incoming ros message. It is enough to check if the topic is allowed to be subscribed in the actual subscribe call as the message callback method (publish) is only called when the topic is subscribed to.
 * Skip unnecessary conversion for cbor/cbor-raw compression (`#792 <https://github.com/RobotWebTools/rosbridge_suite/issues/792>`_)
