@@ -2,6 +2,9 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.15 (2022-10-06)
+--------------------
+
 0.11.14 (2022-06-13)
 --------------------
 * Small fixes (`#681 <https://github.com/RobotWebTools/rosbridge_suite/issues/681>`_)

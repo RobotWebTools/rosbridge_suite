@@ -2,6 +2,16 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.15 (2022-10-06)
+--------------------
+* Remove unnecessary checking of topic globs. (`#793 <https://github.com/RobotWebTools/rosbridge_suite/issues/793>`_)
+  We do not have to check the topic globs on each incoming ros message. It is enough to check if the topic is allowed to be subscribed in the actual subscribe call as the message callback method (publish) is only called when the topic is subscribed to.
+* Skip unnecessary conversion for cbor/cbor-raw compression (`#792 <https://github.com/RobotWebTools/rosbridge_suite/issues/792>`_)
+  * Skip unnecessary conversion for cbor compression.
+  This change avoids some unnecessary conversions when using cbor/cbor-raw compression, leading to a significantly perfomance boost.
+  * Add caching for subscriptions with cbor compression.
+* Contributors: Hans-Joachim Krauch
+
 0.11.14 (2022-06-13)
 --------------------
 * Fix bson support for python3 (`#545 <https://github.com/RobotWebTools/rosbridge_suite/issues/545>`_)

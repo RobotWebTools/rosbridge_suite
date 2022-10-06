@@ -2,6 +2,14 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.15 (2022-10-06)
+--------------------
+* Skip unnecessary conversion for cbor/cbor-raw compression (`#792 <https://github.com/RobotWebTools/rosbridge_suite/issues/792>`_)
+  * Skip unnecessary conversion for cbor compression.
+  This change avoids some unnecessary conversions when using cbor/cbor-raw compression, leading to a significantly perfomance boost.
+  * Add caching for subscriptions with cbor compression.
+* Contributors: Hans-Joachim Krauch
+
 0.11.14 (2022-06-13)
 --------------------
 * Fix ROS 1 RosbridgeTcpSocket endless loop (`#722 <https://github.com/RobotWebTools/rosbridge_suite/issues/722>`_)
