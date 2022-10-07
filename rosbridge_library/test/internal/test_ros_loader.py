@@ -332,3 +332,17 @@ class TestROSLoader(unittest.TestCase):
             self.assertRaises(
                 ros_loader.InvalidClassException, ros_loader.get_service_response_instance, x
             )
+
+    def test_hidden_services_for_actions(self):
+        hidden_services = [
+            "example_interfaces/action/Fibonacci_GetResult",
+            "example_interfaces/action/Fibonacci_SendGoal",
+            "nav2_msgs/action/ComputePathToPose_SendGoal",
+            "nav2_msgs/action/ComputePathToPose_GetResult",
+            "nav2_msgs/action/_compute_path_to_pose/ComputePathToPose_SendGoal",
+            "nav2_msgs/action/_compute_path_to_pose/ComputePathToPose_GetResult",
+        ]
+        for x in hidden_services:
+            self.assertNotEqual(ros_loader.get_service_class(x), None)
+            self.assertNotEqual(ros_loader.get_service_request_instance(x), None)
+            self.assertNotEqual(ros_loader.get_service_response_instance(x), None)
