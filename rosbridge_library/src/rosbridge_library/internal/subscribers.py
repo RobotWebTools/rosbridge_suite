@@ -31,7 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from threading import Lock
+from threading import Lock, RLock
 
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rosbridge_library.internal import ros_loader
@@ -123,7 +123,7 @@ class MultiSubscriber:
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
         self.subscriptions = {client_id: callback}
-        self.lock = Lock()
+        self.rlock = RLock()
         self.msg_class = msg_class
         self.node_handle = node_handle
         self.topic = topic
@@ -138,8 +138,11 @@ class MultiSubscriber:
 
     def unregister(self):
         self.node_handle.destroy_subscription(self.subscriber)
-        with self.lock:
+        with self.rlock:
             self.subscriptions.clear()
+            if self.new_subscriber:
+                self.node_handle.destroy_subscription(self.new_subscriber)
+                self.new_subscriber = None
 
     def verify_type(self, msg_type):
         """Verify that the subscriber subscribes to messages of this type.
@@ -165,7 +168,7 @@ class MultiSubscriber:
         messages
 
         """
-        with self.lock:
+        with self.rlock:
             # If the topic is latched, adding a new subscriber will immediately invoke
             # the given callback.
             # In any case, the first message is handled using new_sub_callback,
@@ -183,7 +186,7 @@ class MultiSubscriber:
         client_id -- the ID of the client to unsubscribe
 
         """
-        with self.lock:
+        with self.rlock:
             if client_id in self.new_subscriptions:
                 del self.new_subscriptions[client_id]
             else:
@@ -191,7 +194,7 @@ class MultiSubscriber:
 
     def has_subscribers(self):
         """Return true if there are subscribers"""
-        with self.lock:
+        with self.rlock:
             return len(self.subscriptions) + len(self.new_subscriptions) != 0
 
     def callback(self, msg, callbacks=None):
@@ -208,7 +211,7 @@ class MultiSubscriber:
 
         # Get the callbacks to call
         if not callbacks:
-            with self.lock:
+            with self.rlock:
                 callbacks = self.subscriptions.values()
 
         # Pass the JSON to each of the callbacks
@@ -230,7 +233,7 @@ class MultiSubscriber:
         the subscriptions dictionary is updated with the newly incorporated
         subscriptors.
         """
-        with self.lock:
+        with self.rlock:
             self.callback(msg, self.new_subscriptions.values())
             self.subscriptions.update(self.new_subscriptions)
             self.new_subscriptions = {}
