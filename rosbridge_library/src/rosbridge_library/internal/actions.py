@@ -110,6 +110,12 @@ class ActionCaller(Thread):
 
         return json_response
 
+
+    def cancel_goal(self):
+        for goal_handle in self.client._goal_handles:
+            self.node_handle.get_logger().info(f"goal handle {goal_handle}")
+            self.client._cancel_goal_async(self.client._goal_handles[goal_handle]())
+
     def unregister(self):
         #TODO cancel goal before destroy
             #self.client._cancel_goal_async()

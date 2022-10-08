@@ -62,6 +62,7 @@ class createActionClient(Capability):
         # Register the operations that this capability provides
         protocol.register_operation("createClient", self.createClient)
         protocol.register_operation("destroyClient", self.destroyClient)
+        protocol.register_operation("cancelGoal", self.cancelGoal)
 
         self._actionclients = {}
 
@@ -182,6 +183,41 @@ class createActionClient(Capability):
             self._actionclients.clear()
 
         self.protocol.log("info", "Destroyed Action Client of type %s" % action_type)
+
+    def cancelGoal(self, msg):
+        self.basic_type_check(msg, self.destroyclient_msg_fields)
+
+        action_type = msg.get("action_type")
+
+        if createActionClient.actions_glob is not None and createActionClient.actions_glob:
+            self.protocol.log("info", "Action security glob enabled, checking action client of type:: " + action_type)
+            match = False
+            for glob in createActionClient.actions_glob:
+                if fnmatch.fnmatch(action_type, glob):
+                    self.protocol.log(
+                        "info",
+                        "Found match with glob " + glob + ", killing client",
+                    )
+                    match = True
+                    break
+            if not match:
+                self.protocol.log(
+                    "warn",
+                    "No match found for action client, cancelling destruction of action client of type: " + action_type,
+                )
+                return
+        else:
+            self.protocol.log("info", "No action security glob, not checking Action Client.")
+
+        if action_type not in self._actionclients:
+            self.protocol.log("info", "action client of type %s not available" % action_type)
+            return
+        self._actionclients[action_type].cancel_goal()
+
+        if self._actionclients.is_empty():
+            self._actionclients.clear()
+
+        self.protocol.log("info", "cancelled goal %s" % action_type)
 
     def finish(self):
         for clients in self._actionclients.values():
