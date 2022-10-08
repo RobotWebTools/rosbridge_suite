@@ -221,6 +221,7 @@ class createActionClient(Capability):
         self._actionclients.clear()
         self.protocol.unregister_operation("createClient")
         self.protocol.unregister_operation("destroyClient")
+        self.protocol.unregister_operation("cancelGoal")
 
 
 
