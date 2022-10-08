@@ -96,20 +96,16 @@ class createActionClient(Capability):
         else:
             self.protocol.log("info", "No action security glob, not checking subscription.")
 
-        if action_type not in self._actionclients:
-            client_id = msg.get("id", None)
-            s_cb = partial(self._success, client_id, action_type)
-            e_cb = partial(self._failure, client_id, action_type)
-            if feedback:
-                f_cb = partial(self._feedback, client_id, action_type)
-            else:
-                f_cb = None
-            self._actionclients[action_type] = ActionCaller(
-                action_type, action_name, goal_msg, s_cb, e_cb, f_cb, self.protocol.node_handle
-            )
-
-        # Register the subscriber
-        self._actionclients[action_type].goal_msg = goal_msg
+        
+        client_id = msg.get("id", None)
+        s_cb = partial(self._success, client_id, action_type)
+        e_cb = partial(self._failure, client_id, action_type)
+        if feedback:
+            f_cb = partial(self._feedback, client_id, action_type)
+        else:
+            f_cb = None
+        self._actionclients[action_type] = ActionCaller(
+            action_type, action_name, goal_msg, s_cb, e_cb, f_cb, self.protocol.node_handle)
         self._actionclients[action_type].start()
     
     def _success(self, cid, action_type, message):
