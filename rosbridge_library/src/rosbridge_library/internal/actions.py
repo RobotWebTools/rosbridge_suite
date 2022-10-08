@@ -16,6 +16,29 @@ class InvalidActionException(Exception):
         Exception.__init__(self, "Action %s does not exist" % actiontype)
 
 
+class ActionClientHandle:
+    def __init__(self):
+        self.clients = []
+
+    def create_client(self, action_name, action_type, client_id, node_handle):
+        self.node_handle = node_handle
+        self.clients.append(client_id)
+        action_class = get_action_class(action_type)
+        self.action_client= ActionClient(node_handle, action_class, action_name)
+
+
+    def cancel_goal(self):
+        for goal_handle in self.action_client._goal_handles:
+            self.node_handle.get_logger().info(f"goal handle {goal_handle}")
+            self.action_client._cancel_goal_async(self.action_client._goal_handles[goal_handle]())
+
+    def unregister(self, client_id):
+        self.clients.remove(client_id)
+        if len(self.clients) == 0:
+            self.cancel_goal()
+            self.action_client.destroy()
+
+
 class ActionCaller(Thread):
     def __init__(self, action_type, action_name, goal_msg, success_callback, error_callback, feedback_callback, node_handle):
         """Create a action caller for the specified action.  Use start()
@@ -111,14 +134,5 @@ class ActionCaller(Thread):
         return json_response
 
 
-    def cancel_goal(self):
-        for goal_handle in self.client._goal_handles:
-            self.node_handle.get_logger().info(f"goal handle {goal_handle}")
-            self.client._cancel_goal_async(self.client._goal_handles[goal_handle]())
 
-    def unregister(self):
-        #TODO cancel goal before destroy
-            #self.client._cancel_goal_async()
-            #self.client._goal_handles
-        self.client.destroy()
         
