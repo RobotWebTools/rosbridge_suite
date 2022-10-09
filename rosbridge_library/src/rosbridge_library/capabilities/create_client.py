@@ -35,8 +35,7 @@ from functools import partial
 from threading import Lock
 
 from rosbridge_library.capability import Capability
-from rosbridge_library.internal.actions import ActionCaller
-from rosbridge_library.internal.subscription_modifiers import MessageHandler
+from rosbridge_library.internal.actions import GoalHandle, ActionClientHandle
 from rosbridge_library.internal.message_conversion import extract_values
 
 
@@ -51,7 +50,10 @@ class createActionClient(Capability):
         (False, "queue_length", int),
         (False, "compression", str),
     ]
+
     destroyclient_msg_fields = [(True, "action_type", str)]
+
+    cancelgoal_msg_fields = [(True, "action_type", str)]
 
     actions_glob = None
 
@@ -69,20 +71,18 @@ class createActionClient(Capability):
     def createClient(self, msg):
         # Check the args
         self.basic_type_check(msg, self.createclient_msg_fields)
-
-        # Make the subscription
         action_name = msg.get("action_name")
         action_type = msg.get("action_type")
         goal_msg = msg.get("goal_msg", [])
         feedback = msg.get("feedback", True)
 
         if createActionClient.actions_glob is not None and createActionClient.actions_glob:
-            self.protocol.log("info", "Action security glob enabled, checking action: " + action_type)
+            self.protocol.log("debug", "Action security glob enabled, checking action: " + action_type)
             match = False
             for glob in createActionClient.actions_glob:
                 if fnmatch.fnmatch(action_type, glob):
                     self.protocol.log(
-                        "info",
+                        "debug",
                         "Found match with glob " + glob + ", creating Action client",
                     )
                     match = True
@@ -94,9 +94,8 @@ class createActionClient(Capability):
                 )
                 return
         else:
-            self.protocol.log("info", "No action security glob, not checking subscription.")
+            self.protocol.log("debug", "No action security glob, not checking subscription.")
 
-        
         client_id = msg.get("id", None)
         s_cb = partial(self._success, client_id, action_type)
         e_cb = partial(self._failure, client_id, action_type)
@@ -104,14 +103,16 @@ class createActionClient(Capability):
             f_cb = partial(self._feedback, client_id, action_type)
         else:
             f_cb = None
-        self._actionclients[action_type] = ActionCaller(
-            action_type, action_name, goal_msg, s_cb, e_cb, f_cb, self.protocol.node_handle)
-        self._actionclients[action_type].start()
-    
+
+        if action_type not in self._actionclients:
+            self._actionclients[action_type] = ActionClientHandle(action_name, action_type, self.protocol.node_handle)
+
+        GoalHandle(self._actionclients[action_type], goal_msg, s_cb, e_cb, f_cb).start()
+
     def _success(self, cid, action_type, message):
         outgoing_message = {
             "op": "action_response",
-            "response_type":'result',
+            "response_type": 'result',
             "type": action_type,
             "values": message,
         }
@@ -131,11 +132,11 @@ class createActionClient(Capability):
             outgoing_message["id"] = cid
         # TODO: fragmentation, compression
         self.protocol.send(outgoing_message)
-    
+
     def _feedback(self, cid, action_type, message):
         outgoing_message = {
             "op": "action_response",
-            "response_type":'feedback',
+            "response_type": 'feedback',
             "type": action_type,
             "values": extract_values(message),
         }
@@ -144,20 +145,17 @@ class createActionClient(Capability):
         # TODO: fragmentation, compression
         self.protocol.send(outgoing_message)
 
-
     def destroyClient(self, msg):
-
         self.basic_type_check(msg, self.destroyclient_msg_fields)
-
         action_type = msg.get("action_type")
 
         if createActionClient.actions_glob is not None and createActionClient.actions_glob:
-            self.protocol.log("info", "Action security glob enabled, checking action client of type:: " + action_type)
+            self.protocol.log("debug", "Action security glob enabled, checking action client of type:: " + action_type)
             match = False
             for glob in createActionClient.actions_glob:
                 if fnmatch.fnmatch(action_type, glob):
                     self.protocol.log(
-                        "info",
+                        "debug",
                         "Found match with glob " + glob + ", killing client",
                     )
                     match = True
@@ -169,29 +167,29 @@ class createActionClient(Capability):
                 )
                 return
         else:
-            self.protocol.log("info", "No action security glob, not checking Action Client.")
+            self.protocol.log("debug", "No action security glob, not checking Action Client.")
 
         if action_type not in self._actionclients:
             return
         self._actionclients[action_type].unregister()
+        del self._actionclients[action_type]
 
-        if self._actionclients.is_empty():
+        if len(self._actionclients) == 0:
             self._actionclients.clear()
 
         self.protocol.log("info", "Destroyed Action Client of type %s" % action_type)
 
     def cancelGoal(self, msg):
-        self.basic_type_check(msg, self.destroyclient_msg_fields)
-
+        self.basic_type_check(msg, self.cancelgoal_msg_fields)
         action_type = msg.get("action_type")
 
         if createActionClient.actions_glob is not None and createActionClient.actions_glob:
-            self.protocol.log("info", "Action security glob enabled, checking action client of type:: " + action_type)
+            self.protocol.log("debug", "Action security glob enabled, checking action client of type:: " + action_type)
             match = False
             for glob in createActionClient.actions_glob:
                 if fnmatch.fnmatch(action_type, glob):
                     self.protocol.log(
-                        "info",
+                        "debug",
                         "Found match with glob " + glob + ", killing client",
                     )
                     match = True
@@ -203,15 +201,12 @@ class createActionClient(Capability):
                 )
                 return
         else:
-            self.protocol.log("info", "No action security glob, not checking Action Client.")
+            self.protocol.log("debug", "No action security glob, not checking Action Client.")
 
         if action_type not in self._actionclients:
             self.protocol.log("info", "action client of type %s not available" % action_type)
             return
         self._actionclients[action_type].cancel_goal()
-
-        if self._actionclients.is_empty():
-            self._actionclients.clear()
 
         self.protocol.log("info", "cancelled goal %s" % action_type)
 
@@ -222,7 +217,3 @@ class createActionClient(Capability):
         self.protocol.unregister_operation("createClient")
         self.protocol.unregister_operation("destroyClient")
         self.protocol.unregister_operation("cancelGoal")
-
-
-
-
