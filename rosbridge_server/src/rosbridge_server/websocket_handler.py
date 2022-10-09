@@ -40,7 +40,7 @@ from functools import partial, wraps
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
 from tornado import version_info as tornado_version_info
-from tornado.gen import BadYieldError, coroutine
+from tornado.gen import BadYieldError
 from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
@@ -186,10 +186,9 @@ class RosbridgeWebSocket(WebSocketHandler):
 
         _io_loop.add_callback(partial(self.prewrite_message, message, binary))
 
-    @coroutine
-    def prewrite_message(self, message, binary):
+    async def prewrite_message(self, message, binary):
         cls = self.__class__
-        # Use a try block because the log decorator doesn't cooperate with @coroutine.
+        # Use a try block because the log decorator doesn't cooperate with coroutines.
         try:
             future = self.write_message(message, binary)
 
@@ -199,7 +198,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             if future is None and tornado_version_info >= (4, 3, 0, 0):
                 raise WebSocketClosedError
 
-            yield future
+            return future
         except WebSocketClosedError:
             cls.node_handle.get_logger().warn(
                 "WebSocketClosedError: Tried to write to a closed websocket",
