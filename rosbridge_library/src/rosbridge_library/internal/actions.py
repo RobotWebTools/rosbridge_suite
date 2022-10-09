@@ -11,41 +11,41 @@ from rosbridge_library.internal.ros_loader import (
     get_action_status_instance
 )
 
+
 class InvalidActionException(Exception):
     def __init__(self, actiontype):
         Exception.__init__(self, "Action %s does not exist" % actiontype)
 
 
 class ActionClientHandle:
-    def __init__(self):
-        self.clients = []
-
-    def create_client(self, action_name, action_type, client_id, node_handle):
+    def __init__(self, action_name, action_type, node_handle):
+        self.action_name = action_name
+        self.action_type = action_type
         self.node_handle = node_handle
-        self.clients.append(client_id)
-        action_class = get_action_class(action_type)
-        self.action_client= ActionClient(node_handle, action_class, action_name)
 
+        if self.action_type is None:
+            raise InvalidActionException(action_type)
+
+        action_class = get_action_class(action_type)
+        self.action_client = ActionClient(node_handle, action_class, action_name)
+        self.node_handle.get_logger().info(f" Created Action Client: {action_name} of type: {action_type} successfully")
 
     def cancel_goal(self):
         for goal_handle in self.action_client._goal_handles:
-            self.node_handle.get_logger().info(f"goal handle {goal_handle}")
-            self.action_client._cancel_goal_async(self.action_client._goal_handles[goal_handle]())
+            cancel_result = self.action_client._cancel_goal(self.action_client._goal_handles[goal_handle]())
+            self.node_handle.get_logger().info(f"cancel result {cancel_result}")
 
-    def unregister(self, client_id):
-        self.clients.remove(client_id)
-        if len(self.clients) == 0:
-            self.cancel_goal()
-            self.action_client.destroy()
+    def unregister(self):
+        self.cancel_goal()
+        self.action_client.destroy()
 
 
-class ActionCaller(Thread):
-    def __init__(self, action_type, action_name, goal_msg, success_callback, error_callback, feedback_callback, node_handle):
+class GoalHandle(Thread):
+    def __init__(self, action_client, goal_msg, success_callback, error_callback, feedback_callback):
         """Create a action caller for the specified action.  Use start()
         to start in a separate thread or run() to run in this thread.
 
         Keyword arguments:
-        action          -- the name of the action to call
         goal_msg           -- arguments to pass to the action.  Can be an
         ordered list, or a dict of name-value pairs.  Anything else will be
         treated as though no arguments were provided (which is still valid for
@@ -55,24 +55,14 @@ class ActionCaller(Thread):
         error_callback   -- a callback to call if an error occurs.  The
         callback will be passed the exception that caused the failure.
         feedback_callback -- a callback to call with the feedback of the action.
-        node_handle      -- a ROS2 node handle to call actions.
         """
         Thread.__init__(self)
         self.daemon = True
-        self.action_type = action_type
-        self.action_name = action_name
         self.goal_msg = goal_msg
         self.success = success_callback
         self.error = error_callback
         self.feedback = feedback_callback
-        self.node_handle = node_handle
-
-        if self.action_type is None:
-            raise InvalidActionException(action_type)
-        
-        action_class = get_action_class(action_type)
-        self.client = ActionClient(node_handle, action_class, action_name)
-        self.node_handle.get_logger().info(f" Created Action Client: {self.action_name} of type: {self.action_type} successfully")
+        self.client = action_client
 
     def run(self):
         try:
@@ -82,7 +72,6 @@ class ActionCaller(Thread):
             # On error, just pass the exception to the error handler
             self.error(e)
 
-
     def args_to_action_goal_instance(self, inst, args):
         """Populate a action goal instance with the provided args
 
@@ -91,40 +80,38 @@ class ActionCaller(Thread):
         Propagates any exceptions that may be raised."""
         msg = {}
         if isinstance(args, dict):
-            msg = args    
+            msg = args
         elif isinstance(args, list):
-            msg = dict(zip(inst.get_fields_and_field_types().keys(), args))    
+            msg = dict(zip(inst.get_fields_and_field_types().keys(), args))
 
         # Populate the provided instance, propagating any exceptions
         populate_instance(msg, inst)
 
-
     def start_action(self,  goal_msg):
-        if not self.client.wait_for_server(timeout_sec=10.0):
-            self.node_handle.get_logger().info(f" Timeout: Action Server of Type: {self.action_type}  not available. Goal is ignored ")
+        if not self.client.action_client.wait_for_server(timeout_sec=10.0):
+            self.client.node_handle.get_logger().info(f" Timeout: Action Server for Client Type: {self.client.action_type}  not available. Goal is ignored ")
             raise Exception("Action Server Not Available")
-       
-        inst = get_action_goal_instance(self.action_type)
+
+        inst = get_action_goal_instance(self.client.action_type)
         # Populate the instance with the provided args
         self.args_to_action_goal_instance(inst, goal_msg)
-        
-        #TODO use send goal instead
-        send_goal_future = self.client.send_goal_async(inst, self.feedback)
-        rclpy.spin_until_future_complete(self.node_handle, send_goal_future)
-        goal_handle = send_goal_future.result()
 
+        # TODO use send goal instead
+        send_goal_future = self.client.action_client.send_goal_async(inst, self.feedback)
+        rclpy.spin_until_future_complete(self.client.node_handle, send_goal_future)
+        goal_handle = send_goal_future.result()
         if not goal_handle.accepted:
-            raise  Exception('Action Goal was rejected!')
-        self.node_handle.get_logger().info(f"goal status == ACCEPTED .")
+            raise Exception('Action Goal was rejected!')
+        self.client.node_handle.get_logger().info("Goal is ACCEPTED by the action server.")
+
         result_future = goal_handle.get_result_async()
         goal_status = get_action_status_instance()
         while result_future:
-            rclpy.spin_until_future_complete(self.node_handle, result_future, timeout_sec=0.1)
+            rclpy.spin_until_future_complete(self.client.node_handle, result_future, timeout_sec=0.1)
             if result_future.result():
                 break
-        
-        status = result_future.result().status
 
+        status = result_future.result().status
         if status == goal_status.STATUS_SUCCEEDED:
             # Turn the response into JSON and pass to the callback
             json_response = extract_values(result_future.result().result)
@@ -132,7 +119,3 @@ class ActionCaller(Thread):
             raise Exception(status)
 
         return json_response
-
-
-
-        
