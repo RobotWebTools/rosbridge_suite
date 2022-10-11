@@ -208,7 +208,6 @@ class RosbridgeWebSocket(WebSocketHandler):
                 "WebSocketClosedError: Tried to write to a closed websocket",
                 throttle_duration_sec=1.0,
             )
-            raise
         except StreamClosedError:
             cls.node_handle.get_logger().warn(
                 "StreamClosedError: Tried to write to a closed stream",
