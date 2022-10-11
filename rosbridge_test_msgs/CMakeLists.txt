@@ -9,6 +9,7 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  action/ComplexName.action
   msg/Num.msg
   msg/TestChar.msg
   msg/TestDurationArray.msg

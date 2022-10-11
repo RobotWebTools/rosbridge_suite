@@ -1,0 +1,4 @@
+# The sole purpose of this action is to have an action type that is CamelCased
+# so the implementation needs to snake_case the name for hidden services
+---
+---
