@@ -337,10 +337,10 @@ class TestROSLoader(unittest.TestCase):
         hidden_services = [
             "example_interfaces/action/Fibonacci_GetResult",
             "example_interfaces/action/Fibonacci_SendGoal",
-            "nav2_msgs/action/ComputePathToPose_SendGoal",
-            "nav2_msgs/action/ComputePathToPose_GetResult",
-            "nav2_msgs/action/_compute_path_to_pose/ComputePathToPose_SendGoal",
-            "nav2_msgs/action/_compute_path_to_pose/ComputePathToPose_GetResult",
+            "rosbridge_test_msgs/action/ComplexName_SendGoal",
+            "rosbridge_test_msgs/action/ComplexName_GetResult",
+            "rosbridge_test_msgs/action/_complex_name/ComplexName_SendGoal",
+            "rosbridge_test_msgs/action/_complex_name/ComplexName_GetResult",
         ]
         for x in hidden_services:
             self.assertNotEqual(ros_loader.get_service_class(x), None)
