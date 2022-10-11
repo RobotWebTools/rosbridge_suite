@@ -209,18 +209,18 @@ class MultiSubscriber:
         """
         outgoing = OutgoingMessage(msg)
 
-        # Get the callbacks to call
-        if not callbacks:
-            with self.rlock:
-                callbacks = self.subscriptions.values()
+        with self.rlock:
+            callbacks = callbacks if callbacks else self.subscriptions.values()
 
-        # Pass the JSON to each of the callbacks
-        for callback in callbacks:
-            try:
-                callback(outgoing)
-            except Exception as exc:
-                # Do nothing if one particular callback fails except log it
-                self.node_handle.get_logger().error(f"Exception calling subscribe callback: {exc}")
+            # Pass the JSON to each of the callbacks
+            for callback in callbacks:
+                try:
+                    callback(outgoing)
+                except Exception as exc:
+                    # Do nothing if one particular callback fails except log it
+                    self.node_handle.get_logger().error(
+                        f"Exception calling subscribe callback: {exc}"
+                    )
 
     def _new_sub_callback(self, msg):
         """
