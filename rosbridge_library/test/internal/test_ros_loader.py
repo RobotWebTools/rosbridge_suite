@@ -343,6 +343,8 @@ class TestROSLoader(unittest.TestCase):
             "rosbridge_test_msgs/action/_complex_name/ComplexName_GetResult",
         ]
         for x in hidden_services:
+            ros_loader._loaded_msgs = {}
+            ros_loader._loaded_srvs = {}
             self.assertNotEqual(ros_loader.get_service_class(x), None)
             self.assertNotEqual(ros_loader.get_service_request_instance(x), None)
             self.assertNotEqual(ros_loader.get_service_response_instance(x), None)
