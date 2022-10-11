@@ -208,6 +208,8 @@ class RosbridgeWebSocket(WebSocketHandler):
                 "WebSocketClosedError: Tried to write to a closed websocket",
                 throttle_duration_sec=1.0,
             )
+            # If we end up here, a client has disconnected before its message callback(s) could be removed.
+            # To avoid log spamming, we only log a warning and do not re-raise the exception here.
         except StreamClosedError:
             cls.node_handle.get_logger().warn(
                 "StreamClosedError: Tried to write to a closed stream",
