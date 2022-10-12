@@ -36,7 +36,7 @@ from rosbridge_library.capabilities.advertise import Advertise
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.call_service import CallService
 
-from rosbridge_library.capabilities.create_client import createActionClient
+from rosbridge_library.capabilities.action_client import ActionClientRequests
 
 # imports for defragmentation
 from rosbridge_library.capabilities.defragmentation import Defragment
@@ -59,7 +59,7 @@ class RosbridgeProtocol(Protocol):
         AdvertiseService,
         ServiceResponse,
         UnadvertiseService,
-        createActionClient,
+        ActionClientRequests,
     ]
 
     print("registered capabilities (classes):")

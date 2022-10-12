@@ -30,13 +30,16 @@ class ActionClientHandle:
         self.action_client = ActionClient(node_handle, action_class, action_name)
         self.node_handle.get_logger().info(f" Created Action Client: {action_name} of type: {action_type} successfully")
 
-    def cancel_goal(self):
-        for goal_handle in self.action_client._goal_handles:
-            cancel_result = self.action_client._cancel_goal(self.action_client._goal_handles[goal_handle]())
+    def call_off_goal(self):
+        for goal_uuid in   self.action_client._goal_handles:
+            cancel_result = self.action_client._cancel_goal(self.action_client._goal_handles[goal_uuid]())
             self.node_handle.get_logger().info(f"cancel result {cancel_result}")
+            return cancel_result
+
+
 
     def unregister(self):
-        self.cancel_goal()
+        self.call_off_goal()
         self.action_client.destroy()
 
 
@@ -67,7 +70,7 @@ class GoalHandle(Thread):
     def run(self):
         try:
             # Call the action and pass the result to the success handler
-            self.success(self.start_action(self.goal_msg))
+            self.success(self.start_goal(self.goal_msg))
         except Exception as e:
             # On error, just pass the exception to the error handler
             self.error(e)
@@ -87,21 +90,21 @@ class GoalHandle(Thread):
         # Populate the provided instance, propagating any exceptions
         populate_instance(msg, inst)
 
-    def start_action(self,  goal_msg):
+    def start_goal(self,  goal_msg):
         if not self.client.action_client.wait_for_server(timeout_sec=10.0):
             self.client.node_handle.get_logger().info(f" Timeout: Action Server for Client Type: {self.client.action_type}  not available. Goal is ignored ")
             raise Exception("Action Server Not Available")
 
         inst = get_action_goal_instance(self.client.action_type)
-        # Populate the instance with the provided args
+        # Populate the goal instance with the provided goal args
         self.args_to_action_goal_instance(inst, goal_msg)
 
-        # TODO use send goal instead
+        # TODO  send the goal 
         send_goal_future = self.client.action_client.send_goal_async(inst, self.feedback)
         rclpy.spin_until_future_complete(self.client.node_handle, send_goal_future)
         goal_handle = send_goal_future.result()
         if not goal_handle.accepted:
-            raise Exception('Action Goal was rejected!')
+            raise Exception("Action Goal was rejected!")
         self.client.node_handle.get_logger().info("Goal is ACCEPTED by the action server.")
 
         result_future = goal_handle.get_result_async()
