@@ -36,8 +36,6 @@ class ActionClientHandle:
             self.node_handle.get_logger().info(f"cancel result {cancel_result}")
             return cancel_result
 
-
-
     def unregister(self):
         self.call_off_goal()
         self.action_client.destroy()
