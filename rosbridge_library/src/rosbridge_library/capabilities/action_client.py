@@ -156,9 +156,9 @@ class ActionClientRequests(Capability):
             return
 
         result = self._actionclients[action_type].call_off_goal()
-        self._success(client_id, action_type, extract_values(result))
-
-        self.protocol.log("info", "cancelled goal %s" % action_type)
+        if result is not None:
+            self._success(client_id, action_type, extract_values(result))
+            self.protocol.log("info", "cancelled goal %s" % action_type)
 
     def finish(self):
         for clients in self._actionclients.values():
