@@ -126,9 +126,13 @@ def get_action_result_instance(typestring):
     return cls.Result()
 
 
-def get_action_cancel_instance():
+def get_action_cancel_request_instance():
     cls = get_service_class('action_msgs/srv/CancelGoal')
-    return cls()
+    return cls.Request()
+
+def get_action_cancel_response_instance():
+    cls = get_service_class('action_msgs/srv/CancelGoal')
+    return cls.Response()
 
 
 def get_action_status_instance():
