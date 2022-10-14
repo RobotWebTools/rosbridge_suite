@@ -154,7 +154,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             cls.client_manager.remove_client(self.client_id, self.request.remote_ip)
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
 
-    def send_message(self, message):
+    def send_message(self, message, compression="none"):
         if type(message) == bson.BSON:
             binary = True
         elif type(message) == bytearray:

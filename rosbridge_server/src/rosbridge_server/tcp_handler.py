@@ -33,7 +33,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
 
     def setup(self):
         """
-        Called before the handle() method to perform any initialization 
+        Called before the handle() method to perform any initialization
         actions required. The default implementation does nothing.
         """
         cls = self.__class__
@@ -130,7 +130,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
             cls.client_count_pub.publish(cls.clients_connected)
         self.protocol.log("info", "disconnected. " + str(cls.clients_connected) + " client total." )
 
-    def send_message(self, message=None):
+    def send_message(self, message=None, compression="none"):
         """
         Callback from rosbridge
         """
