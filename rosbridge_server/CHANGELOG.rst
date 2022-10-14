@@ -2,6 +2,11 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.3.0 (2022-08-16)
+------------------
+* Add url_path config option (`#709 <https://github.com/RobotWebTools/rosbridge_suite/issues/709>`_)
+* Contributors: Matthijs van der Burgh, Sirawat S
+
 1.2.0 (2022-05-20)
 ------------------
 * Fixed multiple subscriber on transient_local topic (`#723 <https://github.com/RobotWebTools/rosbridge_suite/issues/723>`_)

@@ -2,6 +2,12 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.3.0 (2022-08-16)
+------------------
+* Allow integers in conversion to float array messages (`#777 <https://github.com/RobotWebTools/rosbridge_suite/issues/777>`_)
+* Non standard msg modules (`#735 <https://github.com/RobotWebTools/rosbridge_suite/issues/735>`_)
+* Contributors: Jacob Bandes-Storch, Will
+
 1.2.0 (2022-05-20)
 ------------------
 * Fixed float arrays conversion (`#730 <https://github.com/RobotWebTools/rosbridge_suite/issues/730>`_)

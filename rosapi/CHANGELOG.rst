@@ -2,6 +2,11 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.3.0 (2022-08-16)
+------------------
+* Fixed /get_param service for arrays (`#776 <https://github.com/RobotWebTools/rosbridge_suite/issues/776>`_)
+* Contributors: p0rys
+
 1.2.0 (2022-05-20)
 ------------------
 * Added `/rosapi/get_ros_version` service (`#708 <https://github.com/RobotWebTools/rosbridge_suite/issues/708>`_)
