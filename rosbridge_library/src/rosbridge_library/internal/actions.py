@@ -1,5 +1,8 @@
 from threading import Thread
+
 import rclpy
+from action_msgs.msg import GoalStatus
+from action_msgs.srv import CancelGoal
 from rclpy.action import ActionClient
 from rosbridge_library.internal.message_conversion import (
     extract_values,
@@ -9,8 +12,6 @@ from rosbridge_library.internal.ros_loader import (
     get_action_class,
     get_action_goal_instance,
 )
-from action_msgs.msg import GoalStatus
-from action_msgs.srv import CancelGoal
 from unique_identifier_msgs.msg import UUID
 
 
@@ -32,10 +33,14 @@ class ActionClientHandle:
         # loads the class of action type
         action_class = get_action_class(action_type)
         self.action_client = ActionClient(node_handle, action_class, action_name)
-        self.node_handle.get_logger().info(f" Created Action Client: {action_name} of type: {action_type}")
+        self.node_handle.get_logger().info(
+            f" Created Action Client: {action_name} of type: {action_type}"
+        )
 
         # create a client for cancel goal service call
-        self.cancel_client = self.node_handle.create_client(CancelGoal, self.action_name + "/_action/cancel_goal")
+        self.cancel_client = self.node_handle.create_client(
+            CancelGoal, self.action_name + "/_action/cancel_goal"
+        )
 
     def cancel_goal_call(self):
         """
@@ -65,7 +70,9 @@ class ActionClientHandle:
 
 
 class GoalHandle(Thread):
-    def __init__(self, action_client, goal_msg, success_callback, error_callback, feedback_callback):
+    def __init__(
+        self, action_client, goal_msg, success_callback, error_callback, feedback_callback
+    ):
         """
         Create a goal handle for the specified action.
         Use start() to start in a separate thread or run() to run in this thread.
@@ -114,9 +121,11 @@ class GoalHandle(Thread):
         # Populate the provided instance, propagating any exceptions
         populate_instance(msg, inst)
 
-    def start_goal(self,  goal_msg):
+    def start_goal(self, goal_msg):
         if not self.client.action_client.wait_for_server(timeout_sec=10.0):
-            self.client.node_handle.get_logger().warning(f" Timeout: Action Server for Client: {self.client.action_name} not available. Goal is ignored ")
+            self.client.node_handle.get_logger().warning(
+                f" Timeout: Action Server for Client: {self.client.action_name} not available. Goal is ignored "
+            )
             raise Exception("Action Server Not Available")
 
         inst = get_action_goal_instance(self.client.action_type)
@@ -129,12 +138,16 @@ class GoalHandle(Thread):
         goal_handle = send_goal_future.result()
         if not goal_handle.accepted:
             raise Exception("Action Goal was rejected!")
-        self.client.node_handle.get_logger().info(f"Goal is accepted by the action server: {self.client.action_name}.")
+        self.client.node_handle.get_logger().info(
+            f"Goal is accepted by the action server: {self.client.action_name}."
+        )
 
-        # check the status of the goal handle untill it's done periodically
+        # check the status of the goal handle until it's done periodically
         result_future = goal_handle.get_result_async()
         while result_future:
-            rclpy.spin_until_future_complete(self.client.node_handle, result_future, timeout_sec=0.1)
+            rclpy.spin_until_future_complete(
+                self.client.node_handle, result_future, timeout_sec=0.1
+            )
             if result_future.result():
                 break
 

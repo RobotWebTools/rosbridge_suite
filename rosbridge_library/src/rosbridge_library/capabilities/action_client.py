@@ -2,7 +2,7 @@ import fnmatch
 from functools import partial
 
 from rosbridge_library.capability import Capability
-from rosbridge_library.internal.actions import GoalHandle, ActionClientHandle
+from rosbridge_library.internal.actions import ActionClientHandle, GoalHandle
 from rosbridge_library.internal.message_conversion import extract_values
 
 
@@ -44,7 +44,9 @@ class ActionClientRequests(Capability):
         feedback = msg.get("feedback", True)
 
         if ActionClientRequests.actions_glob is not None and ActionClientRequests.actions_glob:
-            self.protocol.log("debug", "Action security glob enabled, checking action: " + action_type)
+            self.protocol.log(
+                "debug", "Action security glob enabled, checking action: " + action_type
+            )
             match = False
             for glob in ActionClientRequests.actions_glob:
                 if fnmatch.fnmatch(action_type, glob):
@@ -57,7 +59,8 @@ class ActionClientRequests(Capability):
             if not match:
                 self.protocol.log(
                     "warn",
-                    "No match found for action, cancelling creation of action client type: " + action_type,
+                    "No match found for action, cancelling creation of action client type: "
+                    + action_type,
                 )
                 return
         else:
@@ -72,14 +75,16 @@ class ActionClientRequests(Capability):
             f_cb = None
 
         if action_type not in self._actionclients:
-            self._actionclients[action_type] = ActionClientHandle(action_name, action_type, self.protocol.node_handle)
+            self._actionclients[action_type] = ActionClientHandle(
+                action_name, action_type, self.protocol.node_handle
+            )
 
         GoalHandle(self._actionclients[action_type], goal_msg, s_cb, e_cb, f_cb).start()
 
     def _success(self, cid, action_type, message):
         outgoing_message = {
             "op": "action_response",
-            "response_type": 'result',
+            "response_type": "result",
             "type": action_type,
             "values": message,
         }
@@ -103,7 +108,7 @@ class ActionClientRequests(Capability):
     def _feedback(self, cid, action_type, message):
         outgoing_message = {
             "op": "action_response",
-            "response_type": 'feedback',
+            "response_type": "feedback",
             "type": action_type,
             "values": extract_values(message),
         }
@@ -117,7 +122,10 @@ class ActionClientRequests(Capability):
         action_type = msg.get("action_type")
 
         if ActionClientRequests.actions_glob is not None and ActionClientRequests.actions_glob:
-            self.protocol.log("debug", "Action security glob enabled, checking action client of type:: " + action_type)
+            self.protocol.log(
+                "debug",
+                "Action security glob enabled, checking action client of type:: " + action_type,
+            )
             match = False
             for glob in ActionClientRequests.actions_glob:
                 if fnmatch.fnmatch(action_type, glob):
@@ -130,7 +138,8 @@ class ActionClientRequests(Capability):
             if not match:
                 self.protocol.log(
                     "warn",
-                    "No match found for action client, cancelling destruction of action client of type: " + action_type,
+                    "No match found for action client, cancelling destruction of action client of type: "
+                    + action_type,
                 )
                 return
         else:
@@ -160,7 +169,7 @@ class ActionClientRequests(Capability):
 
         outgoing_message = {
             "op": "action_response",
-            "response_type": 'cancel',
+            "response_type": "cancel",
             "type": action_type,
             "values": result,
         }
