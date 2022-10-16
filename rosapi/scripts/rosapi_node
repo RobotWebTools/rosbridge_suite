@@ -319,11 +319,10 @@ def main(args=None):
     node = Rosapi()
     try:
         rclpy.spin(node)
+        node.destroy_node()
+        rclpy.shutdown()
     except KeyboardInterrupt:
-        node.get_logger().info("Exiting due to SIGINT")
-
-    node.destroy_node()
-    rclpy.shutdown()
+        print("Exiting due to SIGINT")
 
 
 if __name__ == "__main__":

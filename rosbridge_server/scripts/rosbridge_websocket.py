@@ -119,7 +119,7 @@ class RosbridgeWebsocketNode(Node):
         if "--address" in sys.argv:
             idx = sys.argv.index("--address") + 1
             if idx < len(sys.argv):
-                address = int(sys.argv[idx])
+                address = sys.argv[idx]
             else:
                 print("--address argument provided without a value.")
                 sys.exit(-1)
@@ -331,12 +331,12 @@ def main(args=None):
     spin_callback.start()
     try:
         start_hook()
+        node.destroy_node()
+        rclpy.shutdown()
     except KeyboardInterrupt:
-        node.get_logger().info("Exiting due to SIGINT")
-
-    node.destroy_node()
-    rclpy.shutdown()
-    shutdown_hook()  # shutdown hook to stop the server
+        print("Exiting due to SIGINT")
+    finally:
+        shutdown_hook()  # shutdown hook to stop the server
 
 
 if __name__ == "__main__":
