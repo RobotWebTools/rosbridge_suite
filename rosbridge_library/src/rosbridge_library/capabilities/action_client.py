@@ -137,6 +137,7 @@ class ActionClientRequests(Capability):
             self.protocol.log("debug", "No action security glob, not checking Action client.")
 
         if action_type not in self._actionclients:
+            self.protocol.log("info", "action client of type %s not available" % action_type)
             return
         self._actionclients[action_type].unregister()
         del self._actionclients[action_type]
@@ -149,16 +150,25 @@ class ActionClientRequests(Capability):
     def cancel_goal(self, msg):
         self.basic_type_check(msg, self.cancel_goal_msg_fields)
         action_type = msg.get("action_type")
-        client_id = msg.get("id", None)
+        cid = msg.get("id", None)
 
         if action_type not in self._actionclients:
             self.protocol.log("info", "action client of type %s not available" % action_type)
             return
 
-        result = self._actionclients[action_type].call_off_goal()
-        if result is not None:
-            self._success(client_id, action_type, extract_values(result))
-            self.protocol.log("info", "cancelled goal %s" % action_type)
+        result = self._actionclients[action_type].cancel_goal_call()
+
+        outgoing_message = {
+            "op": "action_response",
+            "response_type": 'cancel',
+            "type": action_type,
+            "values": result,
+        }
+        if cid is not None:
+            outgoing_message["id"] = cid
+        self.protocol.send(outgoing_message)
+
+        self.protocol.log("info", "cancelled goal %s" % action_type)
 
     def finish(self):
         for clients in self._actionclients.values():
