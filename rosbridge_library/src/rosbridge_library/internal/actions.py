@@ -6,11 +6,12 @@ from rosbridge_library.internal.message_conversion import (
     populate_instance,
 )
 from rosbridge_library.internal.ros_loader import (
-    get_action_cancel_response_instance,
     get_action_class,
     get_action_goal_instance,
-    get_action_status_instance
 )
+from action_msgs.msg import GoalStatus
+from action_msgs.srv import CancelGoal
+from unique_identifier_msgs.msg import UUID
 
 
 class InvalidActionException(Exception):
@@ -33,40 +34,51 @@ class ActionClientHandle:
         self.action_client = ActionClient(node_handle, action_class, action_name)
         self.node_handle.get_logger().info(f" Created Action Client: {action_name} of type: {action_type}")
 
-    def call_off_goal(self):
-        if len(self.action_client._goal_handles) == 0:
-            self.node_handle.get_logger().info("no goal is active ")
-            return None
-        # get the goal uuid in the goal handle
-        for goal_uuid in self.action_client._goal_handles:
-            # send cancel request for goal_uuid's goal handle and get the response
-            cancel_result = self.action_client._cancel_goal(self.action_client._goal_handles[goal_uuid]())
-            self.node_handle.get_logger().info("gfdgdfgfdgfd ")
-            cancel_status = get_action_cancel_response_instance
-            if cancel_result.return_code == 0:
-                self.node_handle.get_logger().info(f" Cancelled Goal : {cancel_result.goals_canceling}")
-            return cancel_result
+        # create a client for cancel goal service call
+        self.cancel_client = self.node_handle.create_client(CancelGoal, self.action_name + "/_action/cancel_goal")
+
+    def cancel_goal_call(self):
+        """
+        Sends a cancel goal service call.It cancels all active and pending goals
+         of the action server by providing zeros to both goal id and stamp.
+        """
+        msg = CancelGoal.Request()
+        msg.goal_info.goal_id = UUID(uuid=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        msg.goal_info.stamp.nanosec = 0
+        msg.goal_info.stamp.sec = 0
+
+        # create a call with the cancel request
+        result = self.cancel_client.call(msg)
+        if result is not None:
+            # Turn the response into JSON and pass to the callback
+            json_response = extract_values(result)
+        else:
+            raise Exception(result)
+
+        return json_response
 
     def unregister(self):
-        # cancel the pending goal if any before destroy the client
-        self.call_off_goal()
+        # destroy the client
+        self.cancel_client.destroy()
         self.action_client.destroy()
 
 
 class GoalHandle(Thread):
     def __init__(self, action_client, goal_msg, success_callback, error_callback, feedback_callback):
-        """Create a action caller for the specified action.  Use start()
-        to start in a separate thread or run() to run in this thread.
+        """
+        Create a goal handle for the specified action.
+        Use start() to start in a separate thread or run() to run in this thread.
 
-        Keyword arguments:
+        Keyword Arguments:
+        -----------------
         action_client -- the action client on which the goal is handled
-        goal_msg           -- arguments to pass to the action.  Can be an
+        goal_msg -- arguments to pass to the action.  Can be an
         ordered list, or a dict of name-value pairs.  Anything else will be
         treated as though no arguments were provided (which is still valid for
-        some kinds of action)
+        some kinds of action).
         success_callback -- a callback to call with the JSON result of the
-        goal
-        error_callback   -- a callback to call if an error occurs. The
+        goal.
+        error_callback -- a callback to call if an error occurs. The
         callback will be passed the exception that caused the failure of goal.
         feedback_callback -- a callback to call with the feedback while the goal is executing if opted.
         """
@@ -87,11 +99,11 @@ class GoalHandle(Thread):
             self.error(e)
 
     def args_to_action_goal_instance(self, inst, args):
-        """Populate a action goal instance with the provided args
-
+        """
+        Populate a action goal instance with the provided args.
         args can be a dictionary of values, or a list, or None
-
-        Propagates any exceptions that may be raised."""
+        Propagates any exceptions that may be raised.
+        """
         msg = {}
         if isinstance(args, dict):
             msg = args
@@ -103,7 +115,7 @@ class GoalHandle(Thread):
 
     def start_goal(self,  goal_msg):
         if not self.client.action_client.wait_for_server(timeout_sec=10.0):
-            self.client.node_handle.get_logger().info(f" Timeout: Action Server for Client Type: {self.client.action_type}  not available. Goal is ignored ")
+            self.client.node_handle.get_logger().warning(f" Timeout: Action Server for Client: {self.client.action_name} not available. Goal is ignored ")
             raise Exception("Action Server Not Available")
 
         inst = get_action_goal_instance(self.client.action_type)
@@ -116,19 +128,18 @@ class GoalHandle(Thread):
         goal_handle = send_goal_future.result()
         if not goal_handle.accepted:
             raise Exception("Action Goal was rejected!")
-        self.client.node_handle.get_logger().info("Goal is ACCEPTED by the action server.")
+        self.client.node_handle.get_logger().info(f"Goal is accepted by the action server: {self.client.action_name}.")
 
         # check the status of the goal handle untill it's done periodically
         result_future = goal_handle.get_result_async()
-        goal_status = get_action_status_instance()
         while result_future:
             rclpy.spin_until_future_complete(self.client.node_handle, result_future, timeout_sec=0.1)
             if result_future.result():
                 break
-        
+
         # return the result of the goal if succeeded.
         status = result_future.result().status
-        if status == goal_status.STATUS_SUCCEEDED:
+        if status == GoalStatus.STATUS_SUCCEEDED:
             # Turn the response into JSON and pass to the callback
             json_response = extract_values(result_future.result().result)
         else:
