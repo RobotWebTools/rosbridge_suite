@@ -58,7 +58,8 @@ class ActionClientHandle:
         return json_response
 
     def unregister(self):
-        # destroy the client
+        # cancel goals if any before destroy the client
+        self.cancel_goal_call()
         self.cancel_client.destroy()
         self.action_client.destroy()
 
