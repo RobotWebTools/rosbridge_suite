@@ -40,7 +40,7 @@ from functools import partial, wraps
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
 from tornado import version_info as tornado_version_info
-from tornado.gen import BadYieldError, coroutine
+from tornado.gen import BadYieldError
 from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
@@ -146,7 +146,6 @@ class RosbridgeWebSocket(WebSocketHandler):
             self.incoming_queue.start()
             self.protocol.outgoing = self.send_message
             self.set_nodelay(True)
-            self._write_lock = threading.RLock()
             cls.clients_connected += 1
             if cls.client_manager:
                 cls.client_manager.add_client(self.client_id, self.request.remote_ip)
@@ -185,24 +184,21 @@ class RosbridgeWebSocket(WebSocketHandler):
         else:
             binary = False
 
-        with self._write_lock:
-            _io_loop.add_callback(partial(self.prewrite_message, message, binary))
+        _io_loop.add_callback(partial(self.prewrite_message, message, binary))
 
-    @coroutine
-    def prewrite_message(self, message, binary):
+    async def prewrite_message(self, message, binary):
         cls = self.__class__
-        # Use a try block because the log decorator doesn't cooperate with @coroutine.
+        # Use a try block because the log decorator doesn't cooperate with coroutines.
         try:
-            with self._write_lock:
-                future = self.write_message(message, binary)
+            future = self.write_message(message, binary)
 
-                # When closing, self.write_message() return None even if it's an undocument output.
-                # Consider it as WebSocketClosedError
-                # For tornado versions <4.3.0 self.write_message() does not have a return value
-                if future is None and tornado_version_info >= (4, 3, 0, 0):
-                    raise WebSocketClosedError
+            # When closing, self.write_message() return None even if it's an undocument output.
+            # Consider it as WebSocketClosedError
+            # For tornado versions <4.3.0 self.write_message() does not have a return value
+            if future is None and tornado_version_info >= (4, 3, 0, 0):
+                raise WebSocketClosedError
 
-                yield future
+            return future
         except WebSocketClosedError:
             cls.node_handle.get_logger().warn(
                 "WebSocketClosedError: Tried to write to a closed websocket",

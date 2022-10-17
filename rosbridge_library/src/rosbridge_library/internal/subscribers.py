@@ -33,6 +33,7 @@
 
 from threading import Lock
 
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
@@ -129,9 +130,10 @@ class MultiSubscriber:
         self.topic = topic
         self.qos = qos
         self.raw = raw
+        self.callback_group = MutuallyExclusiveCallbackGroup()
 
         self.subscriber = node_handle.create_subscription(
-            msg_class, topic, self.callback, qos, raw=raw
+            msg_class, topic, self.callback, qos, raw=raw, callback_group=self.callback_group
         )
         self.new_subscriber = None
         self.new_subscriptions = {}
@@ -173,7 +175,12 @@ class MultiSubscriber:
             self.new_subscriptions.update({client_id: callback})
             if self.new_subscriber is None:
                 self.new_subscriber = self.node_handle.create_subscription(
-                    self.msg_class, self.topic, self._new_sub_callback, self.qos, raw=self.raw
+                    self.msg_class,
+                    self.topic,
+                    self._new_sub_callback,
+                    self.qos,
+                    raw=self.raw,
+                    callback_group=self.callback_group,
                 )
 
     def unsubscribe(self, client_id):
