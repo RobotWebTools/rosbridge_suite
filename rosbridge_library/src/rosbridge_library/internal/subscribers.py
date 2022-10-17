@@ -210,7 +210,7 @@ class MultiSubscriber:
         outgoing = OutgoingMessage(msg)
 
         with self.rlock:
-            callbacks = callbacks if callbacks else self.subscriptions.values()
+            callbacks = callbacks or self.subscriptions.values()
 
             # Pass the JSON to each of the callbacks
             for callback in callbacks:
