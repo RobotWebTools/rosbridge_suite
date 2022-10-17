@@ -175,12 +175,11 @@ class RosbridgeWebSocket(WebSocketHandler):
         )
         self.incoming_queue.finish()
 
-    def send_message(self, message):
+    def send_message(self, message, compression="none"):
         if isinstance(message, bson.BSON):
             binary = True
-        elif isinstance(message, bytearray):
+        elif compression in ["cbor", "cbor-raw"]:
             binary = True
-            message = bytes(message)
         else:
             binary = False
 
