@@ -4,7 +4,7 @@
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rosapi</name>
-  <version>0.11.15</version>
+  <version>0.11.16</version>
   <description>
     Provides service calls for getting ros meta-information, like list of
     topics, services, params, etc.
