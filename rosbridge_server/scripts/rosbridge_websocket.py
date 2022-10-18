@@ -310,7 +310,7 @@ class RosbridgeWebsocketNode(Node):
 
         # To be able to access the list of topics and services, you must be able to access the rosapi services.
         if RosbridgeWebSocket.services_glob:
-            RosbridgeWebSocket.services_glob.append("/rosapi/*")
+            RosbridgeWebSocket.services_glob.append("rosapi/*")
 
         Subscribe.topics_glob = RosbridgeWebSocket.topics_glob
         Advertise.topics_glob = RosbridgeWebSocket.topics_glob
