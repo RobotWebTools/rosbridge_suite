@@ -96,9 +96,7 @@ class Rosapi(Node):
             self.get_topics_and_raw_types,
         )
         self.create_service(Services, "rosapi/services", self.get_services)
-        self.create_service(
-            ServicesForType, "rosapi/services_for_type", self.get_services_for_type
-        )
+        self.create_service(ServicesForType, "rosapi/services_for_type", self.get_services_for_type)
         self.create_service(Nodes, "rosapi/nodes", self.get_nodes)
         self.create_service(NodeDetails, "rosapi/node_details", self.get_node_details)
         self.create_service(GetActionServers, "rosapi/action_servers", self.get_action_servers)
