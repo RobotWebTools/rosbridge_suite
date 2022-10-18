@@ -114,11 +114,12 @@ class MultiSubscriber:
             reliability=ReliabilityPolicy.RELIABLE,
         )
 
-        infos = node_handle.get_publishers_info_by_topic(topic)
-        if any(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
-            qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
-        if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
-            qos.reliability = ReliabilityPolicy.BEST_EFFORT
+        # TODO: How to fix this for eloquent?
+        # infos = node_handle.get_publishers_info_by_topic(topic)
+        # if any(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
+        #     qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
+        # if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+        #     qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.

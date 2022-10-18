@@ -1,6 +1,6 @@
 <launch>
   <arg name="port" default="9090" />
-  <arg name="host" default="127.0.0.1" />
+  <arg name="host" default="" />
 
   <arg name="incoming_buffer" default="65536" />
   <arg name="socket_timeout" default="10" />

@@ -17,12 +17,6 @@ install(PROGRAMS
   DESTINATION lib/${PROJECT_NAME}
 )
 
-# install(FILES
-#   launch/rosbridge_websocket_launch.xml
-#   launch/rosbridge_tcp_launch.xml
-#   launch/rosbridge_tcp_launch.py
-#   DESTINATION share/${PROJECT_NAME}/launch
-# )
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )

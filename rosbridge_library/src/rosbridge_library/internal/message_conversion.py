@@ -299,6 +299,10 @@ def _to_binary_inst(msg):
         return list(standard_b64decode(msg))
     if isinstance(msg, list):
         return msg
+    if isinstance(msg, bytes):
+        data = array.array('B')
+        data.frombytes(memoryview(msg)) # Using the frombytes() method with a memoryview of the data allows for zero copying of data (HUGE time-saver for large arrays)
+        return data
     return bytes(bytearray(msg))
 
 

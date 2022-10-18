@@ -1,5 +1,6 @@
 # import rospy
 import rclpy
+from std_msgs.msg import Int32
 import struct
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 #######
@@ -46,29 +47,27 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         }
         try:
             self.protocol = RosbridgeProtocol(cls.client_id_seed, cls.ros_node, parameters=parameters)
-            print("send function:", cls.send_message)
             self.protocol.outgoing = self.send_message
-            self.protocol.parameters = self.parameters
             cls.client_id_seed += 1
             cls.clients_connected += 1
             if cls.client_count_pub:
-                cls.client_count_pub.publish(cls.clients_connected)
+                cls.client_count_pub.publish(Int32(data=cls.clients_connected))
             self.protocol.log("info", "connected. " + str(cls.clients_connected) + " client total.")
         except Exception as exc:
             # rospy.logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
             cls.ros_node.get_logger().info("Unable to accept incoming connection.  Reason: " + str(exc))
 
 
-    def recvall(self,n):
+    def recvall(self, msgsize):
         # http://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data
         # Helper function to recv n bytes or return None if EOF is hit
-        data = ''
-        while len(data) < n:
-            packet = self.request.recv(n - len(data))
+        data = bytearray()
+        while len(data) < msgsize:
+            packet = self.request.recv(msgsize - len(data))
             if not packet:
                 return None
-            data += str(packet)
-        return eval(bytes(data,'utf-8'))
+            data.extend(packet)
+        return data
 
     def recv_bson(self):
         # Read 4 bytes to get the length of the BSON packet
@@ -77,7 +76,6 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         if not raw_msglen:
             return None
         msglen = struct.unpack('i', raw_msglen)[0]
-        # print("msglen:",msglen)
         # Retrieve the rest of the message
         data = self.recvall(msglen - BSON_LENGTH_IN_BYTES)
         if data is None:
@@ -88,11 +86,10 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         # Exit on empty message
         if len(data) == 0:
             return None
-        self.protocol.incoming(message=data)
+        self.protocol.incoming(data)
         return True
 
     def handle(self):
-        print("listening for test, Start TCP-handle")
         """
         Listen for TCP messages
         """
@@ -127,12 +124,11 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         cls.clients_connected -= 1
         self.protocol.finish()
         if cls.client_count_pub:
-            cls.client_count_pub.publish(cls.clients_connected)
+            cls.client_count_pub.publish(Int32(data=cls.clients_connected))
         self.protocol.log("info", "disconnected. " + str(cls.clients_connected) + " client total." )
 
     def send_message(self, message=None):
         """
         Callback from rosbridge
         """
-        print("send msg:", message)
         self.request.sendall(message)

@@ -3,7 +3,7 @@
 # from rospy import init_node, get_param, loginfo, on_shutdown, Publisher
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, QoSDurabilityPolicy
+from rclpy.qos import QoSProfile, DurabilityPolicy
 from rosbridge_server import RosbridgeTcpSocket
 
 from rosbridge_library.capabilities.advertise import Advertise
@@ -103,7 +103,7 @@ class RosbridgeTcpsocketNode(Node):
         # QoS profile with transient local durability (latched topic in ROS 1).
         client_count_qos_profile = QoSProfile(
             depth=10,
-            durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
+            durability=DurabilityPolicy.TRANSIENT_LOCAL
         )
         RosbridgeTcpSocket.client_count_pub = self.create_publisher(Int32, 'client_count', qos_profile=client_count_qos_profile)
         # RosbridgeTcpSocket.client_count_pub.publish(0)
