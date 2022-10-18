@@ -2,6 +2,11 @@
 Changelog for package rosbridge_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.16 (2022-10-18)
+--------------------
+* Bump minimum required cmake version. (`#814 <https://github.com/RobotWebTools/rosbridge_suite/issues/814>`_)
+* Contributors: Hans-Joachim Krauch
+
 0.11.15 (2022-10-06)
 --------------------
 
