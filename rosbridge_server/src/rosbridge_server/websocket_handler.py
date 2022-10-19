@@ -39,8 +39,6 @@ from functools import partial, wraps
 
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
-from tornado import version_info as tornado_version_info
-from tornado.gen import BadYieldError
 from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
@@ -187,41 +185,21 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     async def prewrite_message(self, message, binary):
         cls = self.__class__
-        # Use a try block because the log decorator doesn't cooperate with coroutines.
         try:
-            future = self.write_message(message, binary)
-
-            # When closing, self.write_message() return None even if it's an undocument output.
-            # Consider it as WebSocketClosedError
-            # For tornado versions <4.3.0 self.write_message() does not have a return value
-            if future is None and tornado_version_info >= (4, 3, 0, 0):
-                raise WebSocketClosedError
-
-            return future
+            await self.write_message(message, binary)
         except WebSocketClosedError:
             cls.node_handle.get_logger().warn(
                 "WebSocketClosedError: Tried to write to a closed websocket",
                 throttle_duration_sec=1.0,
             )
             # If we end up here, a client has disconnected before its message callback(s) could be removed.
-            # To avoid log spamming, we only log a warning and do not re-raise the exception here.
         except StreamClosedError:
             cls.node_handle.get_logger().warn(
                 "StreamClosedError: Tried to write to a closed stream",
                 throttle_duration_sec=1.0,
             )
-            raise
-        except BadYieldError:
-            # Tornado <4.5.0 doesn't like its own yield and raises BadYieldError.
-            # This does not affect functionality, so pass silently only in this case.
-            if tornado_version_info < (4, 5, 0, 0):
-                pass
-            else:
-                _log_exception()
-                raise
         except:  # noqa: E722  # Will log and raise
             _log_exception()
-            raise
 
     @log_exceptions
     def check_origin(self, origin):
