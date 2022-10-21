@@ -115,20 +115,16 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
-        # start_proc = time.time()
         if len(self.buffer) > 0:
             self.buffer = self.buffer + message_string
         else:
             self.buffer = message_string
-        # num_bytes = len(self.buffer)
         msg = None
 
         # take care of having multiple JSON-objects in receiving buffer
         # ..first, try to load the whole buffer as a JSON-object
         try:
-            # dstart = time.time()
             msg = self.deserialize(self.buffer)
-            # des_time = time.time() - dstart
             self.buffer = ""
 
         # if loading whole object fails try to load part of it (from first opening bracket "{" to next closing bracket "}"
@@ -216,13 +212,10 @@ class Protocol:
 
         # now try to pass message to according operation
         try:
-            # opstart = time.time()
             self.operations[op](msg)
-            # optime = time.time() - opstart
         except Exception as exc:
             self.log("error", f"{op}: {str(exc)}", mid)
 
-        # self.log("warn", f"OP with {num_bytes} bytes: Deserial in {des_time:.4E} / Op func in {optime:.4E} / Total in {time.time()-start_proc:.4E} sec")
         # if anything left in buffer .. re-call self.incoming
         # TODO: check what happens if we have "garbage" on tcp-stack --> infinite loop might be triggered! .. might get out of it when next valid JSON arrives since only data after last 'valid' closing bracket is kept
         if len(self.buffer) > 0:
