@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.1 (2022-10-21)
+------------------
 * Add graceful shutdown (`#794 <https://github.com/RobotWebTools/rosbridge_suite/issues/794>`_)
 * Contributors: Hans-Joachim Krauch
 

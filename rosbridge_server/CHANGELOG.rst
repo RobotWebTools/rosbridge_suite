@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.1 (2022-10-21)
+------------------
 * Fix exceptions not being handled correctly. (`#817 <https://github.com/RobotWebTools/rosbridge_suite/issues/817>`_)
 * Skip unnecessary conversion for cbor/cbor-raw compression (`#792 <https://github.com/RobotWebTools/rosbridge_suite/issues/792>`_) (`#800 <https://github.com/RobotWebTools/rosbridge_suite/issues/800>`_)
 * Improve robustness for multiple client connections (`#803 <https://github.com/RobotWebTools/rosbridge_suite/issues/803>`_)

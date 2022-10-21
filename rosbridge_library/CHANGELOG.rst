@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.1 (2022-10-21)
+------------------
 * Optimized large binary array publishing (`#819 <https://github.com/RobotWebTools/rosbridge_suite/issues/819>`_)
 * Skip unnecessary conversion for cbor/cbor-raw compression (`#792 <https://github.com/RobotWebTools/rosbridge_suite/issues/792>`_) (`#800 <https://github.com/RobotWebTools/rosbridge_suite/issues/800>`_)
 * Improve robustness for multiple client connections (`#803 <https://github.com/RobotWebTools/rosbridge_suite/issues/803>`_)
