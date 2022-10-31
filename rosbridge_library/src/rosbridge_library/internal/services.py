@@ -49,8 +49,6 @@ class InvalidServiceException(Exception):
 
 
 class ServiceCaller(Thread):
-    clients = {}
-
     def __init__(self, service, args, success_callback, error_callback, node_handle):
         """Create a service caller for the specified service.  Use start()
         to start in a separate thread or run() to run in this thread.
@@ -78,7 +76,7 @@ class ServiceCaller(Thread):
     def run(self):
         try:
             # Call the service and pass the result to the success handler
-            self.success(call_service(self.node_handle, self.service, self.clients, self.args))
+            self.success(call_service(self.node_handle, self.service, self.args))
         except Exception as e:
             # On error, just pass the exception to the error handler
             self.error(e)
@@ -100,7 +98,7 @@ def args_to_service_request_instance(service, inst, args):
     populate_instance(msg, inst)
 
 
-def call_service(node_handle, service, clients, args=None):
+def call_service(node_handle, service, args=None):
     # Given the service name, fetch the type and class of the service,
     # and a request instance
 
@@ -122,14 +120,11 @@ def call_service(node_handle, service, clients, args=None):
     # Populate the instance with the provided args
     args_to_service_request_instance(service, inst, args)
 
-    if service_class in clients:
-        client = clients[service_class]
-    else:
-        client = node_handle.create_client(service_class, service)
-        clients[service_class] = client
+    client = node_handle.create_client(service_class, service)
 
     result = client.call(inst)
 
+    node_handle.destroy_client(client)
     if result is not None:
         # Turn the response into JSON and pass to the callback
         json_response = extract_values(result)
