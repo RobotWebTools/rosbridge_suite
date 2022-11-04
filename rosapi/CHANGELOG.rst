@@ -2,6 +2,11 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.3.1 (2022-10-21)
+------------------
+* Add graceful shutdown (`#794 <https://github.com/RobotWebTools/rosbridge_suite/issues/794>`_)
+* Contributors: Hans-Joachim Krauch
+
 1.3.0 (2022-08-16)
 ------------------
 * Fixed /get_param service for arrays (`#776 <https://github.com/RobotWebTools/rosbridge_suite/issues/776>`_)

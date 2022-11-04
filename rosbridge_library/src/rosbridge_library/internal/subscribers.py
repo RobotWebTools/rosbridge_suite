@@ -31,8 +31,9 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from threading import Lock
+from threading import Lock, RLock
 
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
@@ -123,23 +124,27 @@ class MultiSubscriber:
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
         self.subscriptions = {client_id: callback}
-        self.lock = Lock()
+        self.rlock = RLock()
         self.msg_class = msg_class
         self.node_handle = node_handle
         self.topic = topic
         self.qos = qos
         self.raw = raw
+        self.callback_group = MutuallyExclusiveCallbackGroup()
 
         self.subscriber = node_handle.create_subscription(
-            msg_class, topic, self.callback, qos, raw=raw
+            msg_class, topic, self.callback, qos, raw=raw, callback_group=self.callback_group
         )
         self.new_subscriber = None
         self.new_subscriptions = {}
 
     def unregister(self):
         self.node_handle.destroy_subscription(self.subscriber)
-        with self.lock:
+        with self.rlock:
             self.subscriptions.clear()
+            if self.new_subscriber:
+                self.node_handle.destroy_subscription(self.new_subscriber)
+                self.new_subscriber = None
 
     def verify_type(self, msg_type):
         """Verify that the subscriber subscribes to messages of this type.
@@ -165,7 +170,7 @@ class MultiSubscriber:
         messages
 
         """
-        with self.lock:
+        with self.rlock:
             # If the topic is latched, adding a new subscriber will immediately invoke
             # the given callback.
             # In any case, the first message is handled using new_sub_callback,
@@ -173,7 +178,12 @@ class MultiSubscriber:
             self.new_subscriptions.update({client_id: callback})
             if self.new_subscriber is None:
                 self.new_subscriber = self.node_handle.create_subscription(
-                    self.msg_class, self.topic, self._new_sub_callback, self.qos, raw=self.raw
+                    self.msg_class,
+                    self.topic,
+                    self._new_sub_callback,
+                    self.qos,
+                    raw=self.raw,
+                    callback_group=self.callback_group,
                 )
 
     def unsubscribe(self, client_id):
@@ -183,7 +193,7 @@ class MultiSubscriber:
         client_id -- the ID of the client to unsubscribe
 
         """
-        with self.lock:
+        with self.rlock:
             if client_id in self.new_subscriptions:
                 del self.new_subscriptions[client_id]
             else:
@@ -191,8 +201,8 @@ class MultiSubscriber:
 
     def has_subscribers(self):
         """Return true if there are subscribers"""
-        with self.lock:
-            return len(self.subscriptions) != 0
+        with self.rlock:
+            return len(self.subscriptions) + len(self.new_subscriptions) != 0
 
     def callback(self, msg, callbacks=None):
         """Callback for incoming messages on the rclpy subscription.
@@ -206,18 +216,18 @@ class MultiSubscriber:
         """
         outgoing = OutgoingMessage(msg)
 
-        # Get the callbacks to call
-        if not callbacks:
-            with self.lock:
-                callbacks = self.subscriptions.values()
+        with self.rlock:
+            callbacks = callbacks or self.subscriptions.values()
 
-        # Pass the JSON to each of the callbacks
-        for callback in callbacks:
-            try:
-                callback(outgoing)
-            except Exception as exc:
-                # Do nothing if one particular callback fails except log it
-                self.node_handle.get_logger().error(f"Exception calling subscribe callback: {exc}")
+            # Pass the JSON to each of the callbacks
+            for callback in callbacks:
+                try:
+                    callback(outgoing)
+                except Exception as exc:
+                    # Do nothing if one particular callback fails except log it
+                    self.node_handle.get_logger().error(
+                        f"Exception calling subscribe callback: {exc}"
+                    )
 
     def _new_sub_callback(self, msg):
         """
@@ -230,7 +240,7 @@ class MultiSubscriber:
         the subscriptions dictionary is updated with the newly incorporated
         subscriptors.
         """
-        with self.lock:
+        with self.rlock:
             self.callback(msg, self.new_subscriptions.values())
             self.subscriptions.update(self.new_subscriptions)
             self.new_subscriptions = {}

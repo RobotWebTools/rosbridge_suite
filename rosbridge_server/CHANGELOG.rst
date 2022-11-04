@@ -2,6 +2,17 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.3.1 (2022-10-21)
+------------------
+* Fix exceptions not being handled correctly. (`#817 <https://github.com/RobotWebTools/rosbridge_suite/issues/817>`_)
+* Skip unnecessary conversion for cbor/cbor-raw compression (`#792 <https://github.com/RobotWebTools/rosbridge_suite/issues/792>`_) (`#800 <https://github.com/RobotWebTools/rosbridge_suite/issues/800>`_)
+* Improve robustness for multiple client connections (`#803 <https://github.com/RobotWebTools/rosbridge_suite/issues/803>`_)
+* Minor performance improvements (`#809 <https://github.com/RobotWebTools/rosbridge_suite/issues/809>`_)
+* Fix hostname parameter is no longer converted as an int value (`#780 <https://github.com/RobotWebTools/rosbridge_suite/issues/780>`_)
+* Fix duplicate subscription created with wrong 'raw' attribute. (`#798 <https://github.com/RobotWebTools/rosbridge_suite/issues/798>`_)
+* Add graceful shutdown (`#794 <https://github.com/RobotWebTools/rosbridge_suite/issues/794>`_)
+* Contributors: Hans-Joachim Krauch, Hugo Perier, Steffen Nattke
+
 1.3.0 (2022-08-16)
 ------------------
 * Add url_path config option (`#709 <https://github.com/RobotWebTools/rosbridge_suite/issues/709>`_)
