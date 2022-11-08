@@ -51,6 +51,9 @@ atomics = [
     "float32",
     "float64",
     "string",
+    "float",
+    "int",
+    "double",
 ]
 specials = ["time", "duration"]
 
