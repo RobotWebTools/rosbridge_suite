@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-# from rospy import init_node, get_param, loginfo, on_shutdown, Publisher
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, DurabilityPolicy
@@ -98,15 +97,12 @@ class RosbridgeTcpsocketNode(Node):
                 if len(element.strip().strip("'")) > 0]
         
         # Publisher for number of connected clients
-        # RosbridgeTcpSocket.client_count_pub = Publisher('client_count', Int32, queue_size=10, latch=True)
-        # Publisher for number of connected clients
         # QoS profile with transient local durability (latched topic in ROS 1).
         client_count_qos_profile = QoSProfile(
             depth=10,
             durability=DurabilityPolicy.TRANSIENT_LOCAL
         )
         RosbridgeTcpSocket.client_count_pub = self.create_publisher(Int32, 'client_count', qos_profile=client_count_qos_profile)
-        # RosbridgeTcpSocket.client_count_pub.publish(0)
         RosbridgeTcpSocket.client_count_pub.publish(Int32(data=0))
 
         # update parameters if provided via commandline
@@ -250,51 +246,38 @@ class RosbridgeTcpsocketNode(Node):
         ...END (parameter handling)
         """
 
-# if __name__ == "__main__":
 def main(args=None):
     if args is None:
         args = sys.argv
 
-    loaded = False
-    retry_count = 0
     rclpy.init(args=args)
     rosbridge_tcpsocket_node = RosbridgeTcpsocketNode()
-    # while not loaded:
-    #     retry_count += 1
-    #     print("trying to start rosbridge TCP server..")
+
     try:
-        print("")
-        # update to ros2
-        # rclpy.init(args=sys.argv)
-        # node = rclpy.create_node('rosbridge_tcp')
-
-        # init_node("rosbridge_tcp")
-        signal(SIGINT, SIG_DFL)
-
         # Server host is a tuple ('host', port)
         # empty string for host makes server listen on all available interfaces
-        SocketServer.ThreadingTCPServer.allow_reuse_address = True
+        SocketServer.TCPServer.allow_reuse_address = True
         host = rosbridge_tcpsocket_node._host
         port = rosbridge_tcpsocket_node._port
-        with SocketServer.TCPServer((host, port), RosbridgeTcpSocket) as server:
-        # server = SocketServer.ThreadingTCPServer((host, port), RosbridgeTcpSocket)
-        # server_thread = threading.Thread(target=server.serve_forever, daemon=True)
-        # server_thread.start()
-        # on_shutdown(partial(shutdown_hook, server))
-        # 也许再也不需要使用hook_shutdown 参见：https://github.com/ros2/rclpy/issues/244
-        # rclpy.context.Context.on_shutdown(partial(shutdown_hook, server))
+        server = SocketServer.TCPServer((host, port), RosbridgeTcpSocket)
+        with server:
+            # Need to place server.server_forever() in a thread so we can call rclpy.spin() below
+            server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+            server_thread.start()
 
-        # loginfo("Rosbridge TCP server started on port %d", port)
             sys.stdout.flush()
             rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP server started on {host}:{port}")
-
-            loaded = True
-            server.serve_forever()
+            rclpy.spin(rosbridge_tcpsocket_node)
+        
+    except KeyboardInterrupt:
+        rosbridge_tcpsocket_node.get_logger().info(f"Exiting due to SIGINT")
     except Exception as e:
-        time.sleep(rosbridge_tcpsocket_node._delay_between_messages)
-        print("server not loaded"+e.args)
         print(traceback.format_exc())
-
+    finally:
+        server.shutdown()
+        server_thread.join()
+        rosbridge_tcpsocket_node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

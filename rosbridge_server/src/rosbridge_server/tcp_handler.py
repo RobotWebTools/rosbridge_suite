@@ -1,12 +1,7 @@
-# import rospy
-import rclpy
 from std_msgs.msg import Int32
 import struct
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-#######
-import functools
-print = functools.partial(print, flush=True)
-#######
+
 try:
     import SocketServer
 except ImportError:
@@ -54,16 +49,15 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
                 cls.client_count_pub.publish(Int32(data=cls.clients_connected))
             self.protocol.log("info", "connected. " + str(cls.clients_connected) + " client total.")
         except Exception as exc:
-            # rospy.logerr("Unable to accept incoming connection.  Reason: %s", str(exc))
             cls.ros_node.get_logger().info("Unable to accept incoming connection.  Reason: " + str(exc))
 
 
-    def recvall(self, msgsize):
+    def recvall(self, n):
         # http://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data
         # Helper function to recv n bytes or return None if EOF is hit
         data = bytearray()
-        while len(data) < msgsize:
-            packet = self.request.recv(msgsize - len(data))
+        while len(data) < n:
+            packet = self.request.recv(n - len(data))
             if not packet:
                 return None
             data.extend(packet)
@@ -76,6 +70,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         if not raw_msglen:
             return None
         msglen = struct.unpack('i', raw_msglen)[0]
+        
         # Retrieve the rest of the message
         data = self.recvall(msglen - BSON_LENGTH_IN_BYTES)
         if data is None:
@@ -86,6 +81,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         # Exit on empty message
         if len(data) == 0:
             return None
+        
         self.protocol.incoming(data)
         return True
 
@@ -97,28 +93,29 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         self.request.settimeout(cls.socket_timeout)
         while True:
             try:
-              if self.bson_only_mode:
-                  if self.recv_bson() is None:
-                      break
-                  continue
+                if self.bson_only_mode:
+                    if self.recv_bson() is None:
+                        break
+                    continue
 
-              # non-BSON handling
-              data = self.request.recv(cls.incoming_buffer)
-              # Exit on empty string
-              # add spin to disposal of callback 
-              rclpy.spin_once(self.ros_node, timeout_sec=0.)
-              if data.strip() == '':
-                  break
-              elif len(data.strip()) > 0:
-                  self.protocol.incoming(data.strip(''))
-              else:
-                  pass
+                # non-BSON handling
+                bytes = self.request.recv(cls.incoming_buffer)
+
+                # Exit on empty message because socket was closed
+                if len(bytes) == 0:
+                    break
+                else:
+                    string_encoded = bytes.decode().strip()
+                    if len(string_encoded) > 0:
+                        self.protocol.incoming(string_encoded)
             except Exception:
                 self.protocol.log("debug", "socket connection timed out! (ignore warning if client is only listening..)")
 
     def finish(self):
         """
         Called when TCP connection finishes
+        Called after the handle() method to perform any clean-up actions required.
+        If setup() raises an exception, this function will not be called.
         """
         cls = self.__class__
         cls.clients_connected -= 1
@@ -131,4 +128,9 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Callback from rosbridge
         """
-        self.request.sendall(message)
+        if self.bson_only_mode:
+            self.request.sendall(message)
+        elif message is not None:
+            self.request.sendall(message.encode())
+        else:
+            self.protocol.log("error", "send_message called with no message or message is None, not sending")
