@@ -25,14 +25,11 @@ import sys
 import time
 import traceback
 import threading
+
 #TODO: take care of socket timeouts and make sure to close sockets after killing program to release network ports
 
 #TODO: add new parameters to websocket version! those of rosbridge_tcp.py might not be needed, but the others should work well when adding them to .._websocket.py
 
-# update  reference https://docs.ros.org/en/foxy/Contributing/Migration-Guide-Python.html
-# update to a class and could be compile to a excutable file
-def shutdown_hook(server):
-        server.shutdown()
 
 class RosbridgeTcpsocketNode(Node):
     def __init__(self):
@@ -264,9 +261,9 @@ def main(args=None):
             # Need to place server.server_forever() in a thread so we can call rclpy.spin() below
             server_thread = threading.Thread(target=server.serve_forever, daemon=True)
             server_thread.start()
-
             sys.stdout.flush()
             rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP server started on {host}:{port}")
+            
             rclpy.spin(rosbridge_tcpsocket_node)
         
     except KeyboardInterrupt:
