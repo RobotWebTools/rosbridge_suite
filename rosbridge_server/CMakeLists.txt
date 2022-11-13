@@ -13,12 +13,12 @@ ament_package()
 install(PROGRAMS
   scripts/rosbridge_websocket.py
   scripts/rosbridge_websocket
+  scripts/rosbridge_tcp
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(FILES
-  launch/rosbridge_websocket_launch.xml
-  DESTINATION share/${PROJECT_NAME}/launch
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
