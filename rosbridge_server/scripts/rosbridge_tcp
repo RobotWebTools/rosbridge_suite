@@ -251,22 +251,31 @@ def main(args=None):
     try:
         # Server host is a tuple ('host', port)
         # empty string for host makes server listen on all available interfaces
-        SocketServer.ThreadingTCPServer.allow_reuse_address = True
+        SocketServer.TCPServer.allow_reuse_address = True
         host = rosbridge_tcpsocket_node._host
         port = rosbridge_tcpsocket_node._port
-        server = SocketServer.ThreadingTCPServer((host, port), RosbridgeTcpSocket)
-        with server:
+        server = SocketServer.TCPServer((host, port), RosbridgeTcpSocket)
+        # with server:
             # Need to place server.server_forever() in a thread so we can call rclpy.spin() below
-            server_thread = threading.Thread(target=server.serve_forever, daemon=True)
-            server_thread.start()
-            sys.stdout.flush()
-            rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP server started on {host}:{port}")
-            
-            rclpy.spin(rosbridge_tcpsocket_node)
+        server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+        server_thread.start()
+        sys.stdout.flush()
+        rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP server started on {host}:{port}")
+        
+        rclpy.spin(rosbridge_tcpsocket_node)
+
+            # Put rclpy.spin in separate thread?
+            # sys.stdout.flush()
+            # spin_thread = threading.Thread(target=lambda: rclpy.spin(rosbridge_tcpsocket_node), daemon=True)
+            # spin_thread.start()
+            # rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP node spinning in separate thread")
+            # rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP server started on {host}:{port}")
+            # server.serve_forever()
         
     except KeyboardInterrupt:
         rosbridge_tcpsocket_node.get_logger().info(f"Exiting due to SIGINT")
     except Exception as e:
+        rosbridge_tcpsocket_node.get_logger().warn(f"Encountered an exception: {traceback.format_exc()}")
         print(traceback.format_exc())
     finally:
         server.shutdown()
