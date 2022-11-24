@@ -142,20 +142,14 @@ class GoalHandle(Thread):
             f"Goal is accepted by the action server: {self.client.action_name}."
         )
 
-        # check the status of the goal handle until it's done periodically
-        result_future = goal_handle.get_result_async()
-        while result_future:
-            rclpy.spin_until_future_complete(
-                self.client.node_handle, result_future, timeout_sec=0.1
-            )
-            if result_future.result():
-                break
+        # get the result
+        result = goal_handle.get_result()
 
         # return the result of the goal if succeeded.
-        status = result_future.result().status
+        status = result.status
         if status == GoalStatus.STATUS_SUCCEEDED:
             # Turn the response into JSON and pass to the callback
-            json_response = extract_values(result_future.result().result)
+            json_response = extract_values(result.result)
         else:
             raise Exception(status)
 
