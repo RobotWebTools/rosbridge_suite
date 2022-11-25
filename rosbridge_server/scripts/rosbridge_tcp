@@ -187,6 +187,8 @@ class RosbridgeTcpsocketNode(Node):
         RosbridgeTcpSocket.unregister_timeout = unregister_timeout
         RosbridgeTcpSocket.bson_only_mode = bson_only_mode
 
+        self.retry_startup_delay = retry_startup_delay
+
         if "--topics_glob" in sys.argv:
             idx = sys.argv.index("--topics_glob") + 1
             if idx < len(sys.argv):
@@ -246,42 +248,74 @@ def main(args=None):
         args = sys.argv
 
     rclpy.init(args=args)
-    rosbridge_tcpsocket_node = RosbridgeTcpsocketNode()
 
-    try:
-        # Server host is a tuple ('host', port)
-        # empty string for host makes server listen on all available interfaces
-        SocketServer.TCPServer.allow_reuse_address = True
-        host = rosbridge_tcpsocket_node._host
-        port = rosbridge_tcpsocket_node._port
-        server = SocketServer.TCPServer((host, port), RosbridgeTcpSocket)
-        # with server:
-            # Need to place server.server_forever() in a thread so we can call rclpy.spin() below
-        server_thread = threading.Thread(target=server.serve_forever, daemon=True)
-        server_thread.start()
-        sys.stdout.flush()
-        rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP server started on {host}:{port}")
-        
-        rclpy.spin(rosbridge_tcpsocket_node)
+    loaded = False
+    while not loaded:
+        try:
+            rosbridge_tcpsocket_node = RosbridgeTcpsocketNode()
+            # Server host is a tuple ('host', port)
+            # empty string for host makes server listen on all available interfaces
+            SocketServer.TCPServer.allow_reuse_address = True
+            host = rosbridge_tcpsocket_node._host
+            port = rosbridge_tcpsocket_node._port
+            server = SocketServer.TCPServer((host, port), RosbridgeTcpSocket)
+            server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+            server_thread.start()
+            sys.stdout.flush()
+            rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP server started on {host}:{port}")
+            
+            loaded = True
+            rclpy.spin(rosbridge_tcpsocket_node)
+        except KeyboardInterrupt:
+            rosbridge_tcpsocket_node.get_logger().info(f"Exiting due to SIGINT")
+        except Exception as e:
+            rosbridge_tcpsocket_node.get_logger().warn(f"Encountered an exception: {traceback.format_exc()}")
+            rosbridge_tcpsocket_node.get_logger().warn(f"Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
+            print(traceback.format_exc())
+            loaded = False
+            time.sleep(rosbridge_tcpsocket_node.retry_startup_delay)
+        finally:
+            server.shutdown()
+            server_thread.join()
+            rosbridge_tcpsocket_node.destroy_node()
+    rclpy.shutdown()
 
-            # Put rclpy.spin in separate thread?
-            # sys.stdout.flush()
-            # spin_thread = threading.Thread(target=lambda: rclpy.spin(rosbridge_tcpsocket_node), daemon=True)
-            # spin_thread.start()
-            # rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP node spinning in separate thread")
-            # rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP server started on {host}:{port}")
-            # server.serve_forever()
+    # No while loop
+    # rosbridge_tcpsocket_node = RosbridgeTcpsocketNode()
+    # try:
+    #     # Server host is a tuple ('host', port)
+    #     # empty string for host makes server listen on all available interfaces
+    #     SocketServer.TCPServer.allow_reuse_address = True
+    #     host = rosbridge_tcpsocket_node._host
+    #     port = rosbridge_tcpsocket_node._port
+    #     server = SocketServer.TCPServer((host, port), RosbridgeTcpSocket)
+    #     # with server:
+    #         # Need to place server.server_forever() in a thread so we can call rclpy.spin() below
+    #     server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+    #     server_thread.start()
+    #     sys.stdout.flush()
+    #     rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP server started on {host}:{port}")
         
-    except KeyboardInterrupt:
-        rosbridge_tcpsocket_node.get_logger().info(f"Exiting due to SIGINT")
-    except Exception as e:
-        rosbridge_tcpsocket_node.get_logger().warn(f"Encountered an exception: {traceback.format_exc()}")
-        print(traceback.format_exc())
-    finally:
-        server.shutdown()
-        server_thread.join()
-        rosbridge_tcpsocket_node.destroy_node()
-        rclpy.shutdown()
+    #     rclpy.spin(rosbridge_tcpsocket_node)
+
+    #         # Put rclpy.spin in separate thread?
+    #         # sys.stdout.flush()
+    #         # spin_thread = threading.Thread(target=lambda: rclpy.spin(rosbridge_tcpsocket_node), daemon=True)
+    #         # spin_thread.start()
+    #         # rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP node spinning in separate thread")
+    #         # rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP server started on {host}:{port}")
+    #         # server.serve_forever()
+        
+    # except KeyboardInterrupt:
+    #     rosbridge_tcpsocket_node.get_logger().info(f"Exiting due to SIGINT")
+    # except Exception as e:
+    #     rosbridge_tcpsocket_node.get_logger().warn(f"Encountered an exception: {traceback.format_exc()}")
+    #     print(traceback.format_exc())
+    # finally:
+    #     server.shutdown()
+    #     server_thread.join()
+    #     rosbridge_tcpsocket_node.destroy_node()
+    #     rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
