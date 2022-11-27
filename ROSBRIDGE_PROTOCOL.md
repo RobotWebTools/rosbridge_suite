@@ -467,6 +467,50 @@ A response to a ROS service call
     response will contain the ID
  * **result** - return value of service callback. true means success, false failure.
 
+ #### 3.3.10 Send Goal
+
+```json
+{ "op": "send_goal",
+  (optional) "id": <string>,
+  "action_name": <string>,
+  "action_type": <string>,
+  (optional) "goal_msg": <list<json>>
+```
+
+This command creates an action client with the specified action name and type if not already created; sends the goal msg to the action server and returns  the feedback and result of the goal.
+
+ * **action_name** – the name of the action to which the goal will be sent (ex. /navigate_to_pose)
+ * **action_type** – the type of the action (ex. /nav2_msgs/action/NavigateToPose)
+  * **feedback** – an optional boolean specifies whether to receive the feedback for this goal or not. defaults to true)
+ * **goal_msg** – if the Goal has no args, then goal msg does not have to be
+    provided, though an empty list is equally acceptable. goal msg should be a list of json objects representing the arguments to the action
+ * **id** – an optional id to distinguish this goal call
+
+ #### 3.3.11 Cancel Goal
+
+```json
+{ "op": "cancel_goal",
+  (optional) "id": <string>,
+  "action_name": <string>
+```
+
+This command cancels all the executing and pending goals of the specified action and return the result of cancel call.
+
+ * **action_name** – the name of the action (ex. /navigate_to_pose)
+ * **id** – an optional id to distinguish this cancel goal call.
+
+ #### 3.3.11 Destroy Client
+
+```json
+{ "op": "destroy_goal",
+  (optional) "id": <string>,
+  "action_name": <string>
+```
+This command destroys the action client if the action client was created on earlier send_goal calls.
+
+ * **action_name** – the name of the action (ex. /navigate_to_pose)
+ * **id** – an optional id to distinguish this cancel goal call.
+
 ## 4 Further considerations
 
 Further considerations for the rosbridge protocol are listed below.
