@@ -11,7 +11,7 @@ class ActionClientRequests(Capability):
     send_goal_msg_fields = [
         (True, "action_name", str),
         (True, "action_type", str),
-        (True, "feedback", bool),
+        (False, "feedback", bool),
     ]
 
     destroy_client_msg_fields = [(True, "action_name", str)]

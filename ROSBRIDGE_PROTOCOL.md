@@ -474,6 +474,7 @@ A response to a ROS service call
   (optional) "id": <string>,
   "action_name": <string>,
   "action_type": <string>,
+  (optional) "feedback": <bool>,
   (optional) "goal_msg": <list<json>>
 ```
 
@@ -499,7 +500,7 @@ This command cancels all the executing and pending goals of the specified action
  * **action_name** – the name of the action (ex. /navigate_to_pose)
  * **id** – an optional id to distinguish this cancel goal call.
 
- #### 3.3.11 Destroy Client
+ #### 3.3.12 Destroy Client
 
 ```json
 { "op": "destroy_goal",
