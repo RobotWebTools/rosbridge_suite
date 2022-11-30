@@ -91,6 +91,7 @@ ros_primitive_types = [
 ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
 ros_binary_types = ["uint8[]", "char[]", "sequence<uint8>", "sequence<char>"]
 list_tokens = re.compile("<(.+?)>")
+bounded_string_regex = re.compile(r"string<(\d+)>")
 bounded_array_tokens = re.compile(r"(.+)\[.*\]")
 ros_binary_types_list_braces = [
     ("uint8[]", re.compile(r"uint8\[[^\]]*\]")),
@@ -210,6 +211,9 @@ def _from_inst(inst, rostype):
     if rostype in ros_time_types:
         return {"sec": inst.sec, "nanosec": inst.nanosec}
 
+    if bounded_string_regex.match(rostype):
+        return inst
+
     if bson_only_mode is None:
         bson_only_mode = rospy.get_param("~bson_only_mode", False)
     # Check for primitive types
@@ -278,6 +282,9 @@ def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
     # Check the type for time or rostime
     if rostype in ros_time_types:
         return _to_time_inst(msg, rostype, inst)
+
+    if bounded_string_regex.match(rostype):
+        return inst
 
     # Check to see whether this is a primitive type
     if rostype in ros_primitive_types:

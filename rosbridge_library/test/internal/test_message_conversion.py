@@ -316,3 +316,23 @@ class TestMessageConversion(unittest.TestCase):
             ints = list(map(int, range(0, 16)))
             ret = test_float32_msg(rostype, ints)
             np.testing.assert_array_equal(ret, np.array(ints))
+
+    def test_bounded_strings(self):
+        def test_round_trip_conversion(rostype, data):
+            msg = {"data": data}
+            inst = ros_loader.get_message_instance(rostype)
+            c.populate_instance(msg, inst)
+            self.validate_instance(inst)
+            return inst.data
+
+        assert "GOAT" == test_round_trip_conversion("rosbridge_test_msgs/TestBoundedString", "GOAT")
+        assert "" == test_round_trip_conversion("rosbridge_test_msgs/TestBoundedString", "")
+        self.assertRaises(
+            Exception, test_round_trip_conversion, "rosbridge_test_msgs/TestBoundedString", 3
+        )
+        self.assertRaises(
+            Exception,
+            test_round_trip_conversion,
+            "rosbridge_test_msgs/TestBoundedString",
+            "toomanycharacters",
+        )
