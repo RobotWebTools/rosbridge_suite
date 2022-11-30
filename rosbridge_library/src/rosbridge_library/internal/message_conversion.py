@@ -284,7 +284,7 @@ def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
         return _to_time_inst(msg, rostype, inst)
 
     if bounded_string_regex.match(rostype):
-        return inst
+        return msg
 
     # Check to see whether this is a primitive type
     if rostype in ros_primitive_types:
