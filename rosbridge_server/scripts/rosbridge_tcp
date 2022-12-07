@@ -23,6 +23,7 @@ import sys
 import time
 import traceback
 import threading
+import errno
 
 #TODO: take care of socket timeouts and make sure to close sockets after killing program to release network ports
 
@@ -247,11 +248,13 @@ def main(args=None):
     if args is None:
         args = sys.argv
 
-    rclpy.init(args=args)
+    # rclpy.init(args=args)
 
     loaded = False
+    sleep_dur = 0.
     while not loaded:
         try:
+            rclpy.init(args=args)
             rosbridge_tcpsocket_node = RosbridgeTcpsocketNode()
             # Server host is a tuple ('host', port)
             # empty string for host makes server listen on all available interfaces
@@ -268,17 +271,31 @@ def main(args=None):
             rclpy.spin(rosbridge_tcpsocket_node)
         except KeyboardInterrupt:
             rosbridge_tcpsocket_node.get_logger().info(f"Exiting due to SIGINT")
+            sleep_dur = 0.
+        
+        except OSError as error:
+            rosbridge_tcpsocket_node.get_logger().info(f"Caught OS error: {traceback.format_exc()}")
+            if error.errno == errno.EADDRINUSE:
+                rosbridge_tcpsocket_node.get_logger().info(f"OS thinks address is in use. Will try reloading in 5 minutes.")
+                sleep_dur = 360.
+            else:
+                rosbridge_tcpsocket_node.get_logger().warn(f"Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
+                sleep_dur = rosbridge_tcpsocket_node.retry_startup_delay
+            loaded = False
+
         except Exception as e:
             rosbridge_tcpsocket_node.get_logger().warn(f"Encountered an exception: {traceback.format_exc()}")
             rosbridge_tcpsocket_node.get_logger().warn(f"Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
             print(traceback.format_exc())
             loaded = False
-            time.sleep(rosbridge_tcpsocket_node.retry_startup_delay)
+            sleep_dur = rosbridge_tcpsocket_node.retry_startup_delay
+        
         finally:
             server.shutdown()
             server_thread.join()
             rosbridge_tcpsocket_node.destroy_node()
-    rclpy.shutdown()
+            rclpy.shutdown()
+            time.sleep(sleep_dur)
 
     # No while loop
     # rosbridge_tcpsocket_node = RosbridgeTcpsocketNode()
