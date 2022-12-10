@@ -337,10 +337,12 @@ def main(args=None):
             rosbridge_tcpsocket_node.get_logger().info(f"Exiting due to SIGINT")
             sleep_dur = 0.
         
-        except OSError:
+        except OSError as error:
             rosbridge_tcpsocket_node.get_logger().info(f"Caught OS error: {traceback.format_exc()}")
             rosbridge_tcpsocket_node.get_logger().warn(f"Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
             sleep_dur = rosbridge_tcpsocket_node.retry_startup_delay
+            if error.errno == errno.EPIPE or error.errno == errno.ECONNRESET:
+                server_is_running = False
             loaded = False
 
         except Exception:
