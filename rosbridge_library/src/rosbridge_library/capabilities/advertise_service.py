@@ -5,7 +5,7 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.internal.ros_loader import get_service_class
-
+import datetime
 
 class AdvertisedServiceHandler:
 
@@ -30,6 +30,7 @@ class AdvertisedServiceHandler:
         return id
 
     async def handle_request(self, req, res):
+        self.protocol.log("info", f"[{datetime.datetime.now()}] handle_request() for service {self.service_name}") # DEBUG
         # generate a unique ID
         request_id = "service_request:" + self.service_name + ":" + str(self.next_id())
 
