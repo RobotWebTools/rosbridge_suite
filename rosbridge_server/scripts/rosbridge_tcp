@@ -24,6 +24,7 @@ import time
 import traceback
 import threading
 import errno
+import datetime
 
 #TODO: take care of socket timeouts and make sure to close sockets after killing program to release network ports
 
@@ -271,33 +272,33 @@ def main(args=None):
     #         server_thread = threading.Thread(target=server.serve_forever, daemon=True)
     #         server_thread.start()
     #         sys.stdout.flush()
-    #         rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP server started on {host}:{port}")
+    #         rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Rosbridge TCP server started on {host}:{port}")
             
     #         loaded = True
     #         rclpy.spin(rosbridge_tcpsocket_node)
         
     #     except KeyboardInterrupt:
-    #         rosbridge_tcpsocket_node.get_logger().info(f"Exiting due to SIGINT")
+    #         rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Exiting due to SIGINT")
     #         sleep_dur = 0.
         
     #     except OSError as error:
-    #         rosbridge_tcpsocket_node.get_logger().info(f"Caught OS error: {traceback.format_exc()}")
-    #         rosbridge_tcpsocket_node.get_logger().warn(f"Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
+    #         rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Caught OS error: {traceback.format_exc()}")
+    #         rosbridge_tcpsocket_node.get_logger().warn(f"[{datetime.datetime.now()}] Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
     #         sleep_dur = rosbridge_tcpsocket_node.retry_startup_delay
     #         loaded = False
 
     #     except Exception as e:
-    #         rosbridge_tcpsocket_node.get_logger().warn(f"Encountered an exception: {traceback.format_exc()}")
-    #         rosbridge_tcpsocket_node.get_logger().warn(f"Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
+    #         rosbridge_tcpsocket_node.get_logger().warn(f"[{datetime.datetime.now()}] Encountered an exception: {traceback.format_exc()}")
+    #         rosbridge_tcpsocket_node.get_logger().warn(f"[{datetime.datetime.now()}] Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
     #         loaded = False
     #         sleep_dur = rosbridge_tcpsocket_node.retry_startup_delay
         
     #     finally:
-    #         rosbridge_tcpsocket_node.get_logger().info(f"Shutting down server...")
+    #         rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Shutting down server...")
     #         server.shutdown()
     #         server_thread.join()
     #         server.server_close() # Must close socket to do proper cleanup
-    #         rosbridge_tcpsocket_node.get_logger().info(f"Destroying node...")
+    #         rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Destroying node...")
     #         rosbridge_tcpsocket_node.destroy_node()
     #         rclpy.shutdown()
     #         time.sleep(sleep_dur)
@@ -316,7 +317,7 @@ def main(args=None):
             # executor.add_node(rosbridge_tcpsocket_node)
             # spin_thread = threading.Thread(target=executor.spin, daemon=True)
             spin_thread.start()
-            rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP node spinning in separate thread")
+            rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Rosbridge TCP node spinning in separate thread")
             # Server host is a tuple ('host', port)
             # empty string for host makes server listen on all available interfaces
             SocketServer.TCPServer.allow_reuse_address = True
@@ -326,37 +327,37 @@ def main(args=None):
             loaded = True
 
             sys.stdout.flush()
-            rosbridge_tcpsocket_node.get_logger().info(f"Rosbridge TCP server started on {host}:{port}")
+            rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Rosbridge TCP server started on {host}:{port}")
             server_is_running = True
             server.serve_forever()
         
         except KeyboardInterrupt:
-            rosbridge_tcpsocket_node.get_logger().info(f"Exiting due to SIGINT")
+            rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Exiting due to SIGINT")
             sleep_dur = 0.
         
         except OSError as error:
-            rosbridge_tcpsocket_node.get_logger().info(f"Caught OS error: {traceback.format_exc()}")
-            rosbridge_tcpsocket_node.get_logger().warn(f"Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
+            rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Caught OS error: {traceback.format_exc()}")
+            rosbridge_tcpsocket_node.get_logger().warn(f"[{datetime.datetime.now()}] Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
             sleep_dur = rosbridge_tcpsocket_node.retry_startup_delay
-            if error.errno == errno.EPIPE or error.errno == errno.ECONNRESET:
-                server_is_running = False
+            # if error.errno == errno.EPIPE or error.errno == errno.ECONNRESET:
+            #     server_is_running = False
             loaded = False
 
         except Exception:
-            rosbridge_tcpsocket_node.get_logger().warn(f"Encountered an exception: {traceback.format_exc()}")
-            rosbridge_tcpsocket_node.get_logger().warn(f"Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
+            rosbridge_tcpsocket_node.get_logger().warn(f"[{datetime.datetime.now()}] Encountered an exception: {traceback.format_exc()}")
+            rosbridge_tcpsocket_node.get_logger().warn(f"[{datetime.datetime.now()}] Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
             loaded = False
             sleep_dur = rosbridge_tcpsocket_node.retry_startup_delay
         
         finally:
             if server_is_running:
-                rosbridge_tcpsocket_node.get_logger().info(f"Shutting down server...")
+                rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Shutting down server...")
                 server.shutdown()
                 server_is_running = False
             server.server_close() # Must close socket to do proper cleanup
             event.set()
             # spin_thread.join()
-            rosbridge_tcpsocket_node.get_logger().info(f"Destroying node...")
+            rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Destroying node...")
             rosbridge_tcpsocket_node.destroy_node()
             rclpy.shutdown()
             time.sleep(sleep_dur)
