@@ -1,7 +1,6 @@
 from std_msgs.msg import Int32
 import struct
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-import traceback
 
 try:
     import SocketServer
@@ -129,14 +128,11 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Callback from rosbridge
         """
-        try:
-            if self.bson_only_mode:
-                self.request.sendall(message)
-            elif message is not None:
-                self.request.sendall(message.encode())
-            else:
-                self.protocol.log("error", "send_message called with no message or message is None, not sending")
-        except Exception:
-            self.protocol.log("error", f"Error in send_message(): {traceback.format_exc()}")
-            raise Exception(f"Error on TCP request.sendall()")
+        if self.bson_only_mode:
+            self.request.sendall(message)
+        elif message is not None:
+            self.request.sendall(message.encode())
+        else:
+            self.protocol.log("error", "send_message called with no message or message is None, not sending")
+
         
