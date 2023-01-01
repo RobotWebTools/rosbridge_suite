@@ -29,7 +29,6 @@ class AdvertisedServiceHandler:
         return id
 
     async def handle_request(self, req, res):
-        self.protocol.log("info", f"handle_request() for service {self.service_name}") # DEBUG
         # generate a unique ID
         request_id = "service_request:" + self.service_name + ":" + str(self.next_id())
 
