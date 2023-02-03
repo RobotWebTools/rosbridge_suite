@@ -48,6 +48,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
             if cls.client_count_pub:
                 cls.client_count_pub.publish(Int32(data=cls.clients_connected))
             self.protocol.log("info", "connected. " + str(cls.clients_connected) + " client total.")
+            self.force_close_request = False
         except Exception as exc:
             cls.ros_node.get_logger().info("Unable to accept incoming connection.  Reason: " + str(exc))
 
@@ -93,6 +94,10 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         self.request.settimeout(cls.socket_timeout)
         while True:
             try:
+                if self.force_close_request:
+                    self.protocol.log("error", "send_message failed, likely by ConnectionResetError or BrokenPipe. Terminating client connection.")
+                    break
+
                 if self.bson_only_mode:
                     if self.recv_bson() is None:
                         break
@@ -128,11 +133,14 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Callback from rosbridge
         """
-        if self.bson_only_mode:
-            self.request.sendall(message)
-        elif message is not None:
-            self.request.sendall(message.encode())
-        else:
-            self.protocol.log("error", "send_message called with no message or message is None, not sending")
+        try:
+            if self.bson_only_mode:
+                self.request.sendall(message)
+            elif message is not None:
+                self.request.sendall(message.encode())
+            else:
+                self.protocol.log("error", "send_message called with no message or message is None, not sending")
+        except Exception:
+            self.force_close_request = True
 
         
