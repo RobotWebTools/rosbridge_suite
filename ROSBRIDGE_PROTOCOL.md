@@ -27,7 +27,7 @@ The rosbridge server is a server which accepts websockets connections and
 implements the rosbridge protocol.
 
 The full source code of rosbridge is located in the rosbridge_suite package.
-The package is located at https://github.com/robotwebtools/rosbridge_suite, and
+The package is located at https://github.com/RobotWebTools/rosbridge_suite/tree/ros1, and
 the full breakdown of the stack and its packages is detailed in section 4.5 of
 this document.
 
@@ -538,7 +538,7 @@ can latch messages too.
 ### 4.5 Rosbridge package structure
 
 Rosbridge 2.0 resides in a package named rosbridge_suite, located at
-https://github.com/robotwebtools/rosbridge_suite.
+https://github.com/RobotWebTools/rosbridge_suite/tree/ros1.
 
 The meta-package will contain the following packages:
 
