@@ -40,6 +40,6 @@ jobs:
 
       - uses: ros-tooling/setup-ros@0.4.2
 
-      - uses: ros-tooling/action-ros-ci@v0.2
+      - uses: ros-tooling/action-ros-ci@v0.3
         with:
           target-ros2-distro: ${{ matrix.ros }}
