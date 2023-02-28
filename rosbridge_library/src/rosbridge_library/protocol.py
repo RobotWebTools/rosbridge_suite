@@ -254,7 +254,11 @@ class Protocol:
                 pass
 
             fragment_list = None
-            if self.fragment_size is not None and len(serialized) > self.fragment_size:
+            if (
+                self.fragment_size is not None
+                and len(serialized) > self.fragment_size
+                and compression not in ["cbor", "cbor-raw"]
+            ):
                 mid = message.get("id", None)
 
                 # TODO: think about splitting into fragments that have specified size including header-fields!
