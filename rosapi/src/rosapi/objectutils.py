@@ -36,6 +36,8 @@ import inspect
 from rosapi.stringify_field_types import stringify_field_types
 from rosbridge_library.internal import ros_loader
 
+import re
+
 # Keep track of atomic types and special types
 atomics = [
     "bool",
@@ -51,11 +53,31 @@ atomics = [
     "float32",
     "float64",
     "string",
-    "float",
-    "int",
-    "double",
+    # "float",
+    # "int",
+    # "double",
+    # "boolean"
 ]
 specials = ["time", "duration"]
+
+py_to_ros = {
+    "boolean": {"ros_type": "bool",
+                "default_value": False
+                },
+    "bytes": {"ros_type": "byte",
+              "default_value": 0
+              },
+    "double": {"ros_type": "float64",
+               "default_value": 0.0
+               },
+    "int": {"ros_type": "int64",
+            "default_value": 0
+            },
+    "float": {"ros_type": "float64",
+              "default_value": 0.0
+              }
+
+}
 
 
 def get_typedef(type):
@@ -132,9 +154,9 @@ def get_typedef_full_text(ty):
 def _get_typedef(instance):
     """Gets a typedef dict for the specified instance"""
     if (
-        instance is None
-        or not hasattr(instance, "__slots__")
-        or not hasattr(instance, "_fields_and_field_types")
+            instance is None
+            or not hasattr(instance, "__slots__")
+            or not hasattr(instance, "_fields_and_field_types")
     ):
         return None
 
@@ -158,8 +180,16 @@ def _get_typedef(instance):
                 field_type = field_type[:-2]
             else:
                 split = field_type.find("[")
-                arraylen = int(field_type[split + 1 : -1])
+                arraylen = int(field_type[split + 1: -1])
                 field_type = field_type[:split]
+
+        ####bug fix : add sequence<msgObj> list determine
+        regular = re.findall(r"sequence<(.+)>", field_type)
+        if len(regular) > 0:
+            arraylen = 0
+            field_type = regular[0]
+        ## end###
+
         fieldarraylen.append(arraylen)
 
         # Get the fully qualified type
@@ -170,17 +200,22 @@ def _get_typedef(instance):
         example = field_instance
         if arraylen >= 0:
             example = []
+
         elif field_type not in atomics:
             example = {}
+        ###bug fix:example to ros value
+        if field_type in py_to_ros.keys():
+            example = py_to_ros[field_type]["default_value"]
         examples.append(str(example))
 
     # Add pseudo constants names and values filtering members
     attributes = inspect.getmembers(instance)
+    ###
     for attribute in attributes:
         if (
-            attribute[0] not in instance.__slots__
-            and not attribute[0].startswith("_")
-            and not inspect.isroutine(attribute[1])
+                attribute[0] not in instance.__slots__
+                and not attribute[0].startswith("_")
+                and not inspect.isroutine(attribute[1])
         ):
             constnames.append(str(attribute[0]))
             constvalues.append(str(attribute[1]))
@@ -244,6 +279,9 @@ def _type_name(type, instance):
     """given a short type, and an object instance of that type,
     determines and returns the fully qualified type"""
     # The fully qualified type of atomic and special types is just their original name
+    if type in py_to_ros.keys():
+        return py_to_ros[type]["ros_type"]
+
     if type in atomics or type in specials:
         return type
 
@@ -252,11 +290,13 @@ def _type_name(type, instance):
     if isinstance(instance, list):
         return type
 
+    if isinstance(instance, bytes):
+        return 'byte'
     # Otherwise, the type will come from the module and class name of the instance
     return _type_name_from_instance(instance)
 
 
 def _type_name_from_instance(instance):
     mod = instance.__module__
-    type = mod[0 : mod.find(".")] + "/" + instance.__class__.__name__
+    type = mod[0: mod.find(".")] + "/" + instance.__class__.__name__
     return type
