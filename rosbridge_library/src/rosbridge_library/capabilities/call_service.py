@@ -32,6 +32,7 @@
 
 import fnmatch
 from functools import partial
+from threading import Thread
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.services import ServiceCaller
@@ -52,7 +53,10 @@ class CallService(Capability):
         Capability.__init__(self, protocol)
 
         # Register the operations that this capability provides
-        protocol.register_operation("call_service", self.call_service)
+        # This calls the service in a separate thread so multiple services can be processed simultaneously.
+        protocol.register_operation(
+            "call_service", lambda msg: Thread(target=self.call_service, args=(msg,)).start()
+        )
 
     def call_service(self, message):
         # Pull out the ID
