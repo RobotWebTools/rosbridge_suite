@@ -316,3 +316,21 @@ class TestMessageConversion(unittest.TestCase):
             ints = list(map(int, range(0, 16)))
             ret = test_float32_msg(rostype, ints)
             np.testing.assert_array_equal(ret, np.array(ints))
+
+    # Test a float32 array with a length with non-numeric characters in it
+    def test_float32_complexboundedarray(self):
+        def test_nestedboundedarray_msg(rostype, data):
+            msg = {"data": {"data": data}}
+            inst = ros_loader.get_message_instance(rostype)
+            c.populate_instance(msg, inst)
+            self.validate_instance(inst)
+            return inst.data
+
+        for msgtype in ["TestNestedBoundedArray"]:
+            rostype = "rosbridge_test_msgs/" + msgtype
+
+            # From List[float]
+            floats = list(map(float, range(0, 16)))
+            ret = test_nestedboundedarray_msg(rostype, floats)
+
+            self.assertEqual(c._from_inst(ret, rostype), {"data": floats})
