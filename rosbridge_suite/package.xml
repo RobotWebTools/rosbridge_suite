@@ -21,7 +21,7 @@
   <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
   <maintainer email="ros-tooling@foxglove.dev">Foxglove</maintainer>
 
-  <buildtool_depend>ament_cmake_core</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>rosbridge_library</exec_depend>
   <exec_depend>rosbridge_server</exec_depend>
