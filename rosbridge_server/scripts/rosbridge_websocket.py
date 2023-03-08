@@ -174,6 +174,10 @@ class RosbridgeWebsocketNode(Node):
     def protocol_parameter_handling(self):
         RosbridgeWebSocket.use_compression = self.declare_parameter("use_compression", False).value
 
+        RosbridgeWebSocket.call_services_in_new_thread = self.declare_parameter(
+            "call_services_in_new_thread", False
+        ).value
+
         # get RosbridgeProtocol parameters
         RosbridgeWebSocket.fragment_timeout = self.declare_parameter(
             "fragment_timeout", RosbridgeWebSocket.fragment_timeout
