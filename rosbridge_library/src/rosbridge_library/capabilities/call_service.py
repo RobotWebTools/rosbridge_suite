@@ -53,10 +53,19 @@ class CallService(Capability):
         Capability.__init__(self, protocol)
 
         # Register the operations that this capability provides
-        # This calls the service in a separate thread so multiple services can be processed simultaneously.
-        protocol.register_operation(
-            "call_service", lambda msg: Thread(target=self.call_service, args=(msg,)).start()
-        )
+        call_services_in_new_thread = protocol.node_handle.get_parameter(
+            "call_services_in_new_thread"
+        ).get_parameter_value()
+        if call_services_in_new_thread:
+            # Calls the service in a separate thread so multiple services can be processed simultaneously.
+            protocol.node_handle.get_logger().info("Calling services in new thread")
+            protocol.register_operation(
+                "call_service", lambda msg: Thread(target=self.call_service, args=(msg,)).start()
+            )
+        else:
+            # Calls the service in this thread, so services block and must be processed sequentially.
+            protocol.node_handle.get_logger().info("Calling services in existing thread")
+            protocol.register_operation("call_service", self.call_service)
 
     def call_service(self, message):
         # Pull out the ID
