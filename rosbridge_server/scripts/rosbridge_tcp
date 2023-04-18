@@ -68,6 +68,7 @@ class RosbridgeTcpsocketNode(Node):
         max_message_size = self.declare_parameter('max_message_size', RosbridgeTcpSocket.max_message_size).value
         # unregister_timeout = get_param('~unregister_timeout', RosbridgeTcpSocket.unregister_timeout)
         unregister_timeout = self.declare_parameter('unregister_timeout', RosbridgeTcpSocket.unregister_timeout).value
+        call_services_in_new_thread = self.declare_parameter("call_services_in_new_thread", False).value        
         # bson_only_mode = get_param('~bson_only_mode', False)
         bson_only_mode = self.declare_parameter('bson_only_mode', RosbridgeTcpSocket.bson_only_mode).value
         
