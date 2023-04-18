@@ -40,11 +40,6 @@ from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
 
 try:
-    from cbor import dumps as encode_cbor
-except ImportError:
-    from rosbridge_library.util.cbor import dumps as encode_cbor
-
-try:
     from ujson import dumps as encode_json
 except ImportError:
     try:
@@ -289,25 +284,6 @@ class Subscribe(Capability):
         self.basic_type_check(msg, self.unsubscribe_msg_fields)
 
         topic = msg["topic"]
-        if Subscribe.topics_glob is not None and Subscribe.topics_glob:
-            self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
-            match = False
-            for glob in Subscribe.topics_glob:
-                if fnmatch.fnmatch(topic, glob):
-                    self.protocol.log(
-                        "debug",
-                        "Found match with glob " + glob + ", continuing unsubscription...",
-                    )
-                    match = True
-                    break
-            if not match:
-                self.protocol.log(
-                    "warn",
-                    "No match found for topic, cancelling unsubscription from: " + topic,
-                )
-                return
-        else:
-            self.protocol.log("debug", "No topic security glob, not checking unsubscription.")
 
         if topic not in self._subscriptions:
             return
@@ -332,25 +308,6 @@ class Subscribe(Capability):
 
         """
         # TODO: fragmentation, proper ids
-        if Subscribe.topics_glob and Subscribe.topics_glob:
-            self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
-            match = False
-            for glob in Subscribe.topics_glob:
-                if fnmatch.fnmatch(topic, glob):
-                    self.protocol.log(
-                        "debug",
-                        "Found match with glob " + glob + ", continuing topic publish...",
-                    )
-                    match = True
-                    break
-            if not match:
-                self.protocol.log(
-                    "warn",
-                    "No match found for topic, cancelling topic publish to: " + topic,
-                )
-                return
-        else:
-            self.protocol.log("debug", "No topic security glob, not checking topic publish.")
 
         outgoing_msg = {"op": "publish", "topic": topic}
         if compression == "png":
@@ -358,8 +315,7 @@ class Subscribe(Capability):
             outgoing_msg_dumped = encode_json(outgoing_msg)
             outgoing_msg = {"op": "png", "data": encode_png(outgoing_msg_dumped)}
         elif compression == "cbor":
-            outgoing_msg["msg"] = message.get_cbor_values()
-            outgoing_msg = bytearray(encode_cbor(outgoing_msg))
+            outgoing_msg = message.get_cbor(outgoing_msg)
         elif compression == "cbor-raw":
             (secs, nsecs) = self.protocol.node_handle.get_clock().now().seconds_nanoseconds()
             outgoing_msg["msg"] = {
@@ -367,11 +323,11 @@ class Subscribe(Capability):
                 "nsecs": nsecs,
                 "bytes": message.message,
             }
-            outgoing_msg = bytearray(encode_cbor(outgoing_msg))
+            outgoing_msg = message.get_cbor_raw(outgoing_msg)
         else:
             outgoing_msg["msg"] = message.get_json_values()
 
-        self.protocol.send(outgoing_msg)
+        self.protocol.send(outgoing_msg, compression=compression)
 
     def finish(self):
         for subscription in self._subscriptions.values():

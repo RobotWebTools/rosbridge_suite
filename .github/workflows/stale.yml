@@ -7,17 +7,18 @@ on:
 jobs:
   stale:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
-      - uses: actions/stale@v5
+      - uses: actions/stale@v7.0.0
         with:
-          operations-per-run: 250
-
-          stale-issue-message: "This issue has been marked as stale because there has been no activity in the past 6 months. Please add a comment to keep it open."
+          stale-issue-message: "This issue has been marked as stale because there has been no activity in the past 12 months. Please add a comment to keep it open."
           stale-issue-label: stale
-          days-before-issue-stale: 180
+          days-before-issue-stale: 365
           days-before-issue-close: 30
 
-          stale-pr-message: "This PR has been marked as stale because there has been no activity in the past 6 months. Please add a comment to keep it open. Thank you for your contribution."
+          stale-pr-message: "This PR has been marked as stale because there has been no activity in the past 6 months. Please add a comment to keep it open."
           stale-pr-label: stale
           days-before-pr-stale: 180
           days-before-pr-close: 30
