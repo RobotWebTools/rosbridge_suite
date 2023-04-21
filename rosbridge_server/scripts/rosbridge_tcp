@@ -23,7 +23,6 @@ import sys
 import time
 import traceback
 import threading
-import errno
 import datetime
 
 #TODO: take care of socket timeouts and make sure to close sockets after killing program to release network ports

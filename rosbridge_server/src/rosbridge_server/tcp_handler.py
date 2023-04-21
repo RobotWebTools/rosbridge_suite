@@ -8,7 +8,6 @@ try:
 except ImportError:
     import socketserver as SocketServer
 
-
 class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     """
     TCP Socket server for rosbridge
@@ -51,10 +50,8 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
                 cls.client_count_pub.publish(Int32(data=cls.clients_connected))
             self.protocol.log("info", "connected. " + str(cls.clients_connected) + " client total.")
             self.force_close_request = False
-            self.send_message_exception = None
         except Exception as exc:
             cls.ros_node.get_logger().info("Unable to accept incoming connection.  Reason: " + str(exc))
-
 
     def recvall(self, n):
         # http://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data
@@ -146,5 +143,3 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         except Exception:
             self.force_close_request = True
             self.protocol.log("error", f"Exception during send_message(): {traceback.format_exc()}")
-
-        
