@@ -72,6 +72,7 @@ class RosbridgeTcpsocketNode(Node):
         unregister_timeout = self.declare_parameter('unregister_timeout', RosbridgeTcpSocket.unregister_timeout).value
         # bson_only_mode = get_param('~bson_only_mode', False)
         bson_only_mode = self.declare_parameter('bson_only_mode', RosbridgeTcpSocket.bson_only_mode).value
+        self._bson_only_mode = bson_only_mode
         
         if max_message_size == "None":
             max_message_size = None
@@ -254,56 +255,7 @@ def main(args=None):
     if args is None:
         args = sys.argv
 
-    # rclpy.init(args=args)
-
-    # Version 1: TCP server in separate thread
-    # loaded = False
-    # sleep_dur = 0.
-    # while not loaded:
-    #     try:
-    #         rclpy.init(args=args)
-    #         rosbridge_tcpsocket_node = RosbridgeTcpsocketNode()
-    #         # Server host is a tuple ('host', port)
-    #         # empty string for host makes server listen on all available interfaces
-    #         SocketServer.TCPServer.allow_reuse_address = True
-    #         host = rosbridge_tcpsocket_node._host
-    #         port = rosbridge_tcpsocket_node._port
-    #         server = SocketServer.TCPServer((host, port), RosbridgeTcpSocket)
-    #         server_thread = threading.Thread(target=server.serve_forever, daemon=True)
-    #         server_thread.start()
-    #         sys.stdout.flush()
-    #         rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Rosbridge TCP server started on {host}:{port}")
-            
-    #         loaded = True
-    #         rclpy.spin(rosbridge_tcpsocket_node)
-        
-    #     except KeyboardInterrupt:
-    #         rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Exiting due to SIGINT")
-    #         sleep_dur = 0.
-        
-    #     except OSError as error:
-    #         rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Caught OS error: {traceback.format_exc()}")
-    #         rosbridge_tcpsocket_node.get_logger().warn(f"[{datetime.datetime.now()}] Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
-    #         sleep_dur = rosbridge_tcpsocket_node.retry_startup_delay
-    #         loaded = False
-
-    #     except Exception as e:
-    #         rosbridge_tcpsocket_node.get_logger().warn(f"[{datetime.datetime.now()}] Encountered an exception: {traceback.format_exc()}")
-    #         rosbridge_tcpsocket_node.get_logger().warn(f"[{datetime.datetime.now()}] Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
-    #         loaded = False
-    #         sleep_dur = rosbridge_tcpsocket_node.retry_startup_delay
-        
-    #     finally:
-    #         rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Shutting down server...")
-    #         server.shutdown()
-    #         server_thread.join()
-    #         server.server_close() # Must close socket to do proper cleanup
-    #         rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Destroying node...")
-    #         rosbridge_tcpsocket_node.destroy_node()
-    #         rclpy.shutdown()
-    #         time.sleep(sleep_dur)
-
-    # Version 2: rclpy.spin in different thread
+    # Place rclpy.spin in different thread
     loaded = False
     sleep_dur = 0.
     server_is_running = False
@@ -311,6 +263,13 @@ def main(args=None):
         try:
             rclpy.init(args=args)
             rosbridge_tcpsocket_node = RosbridgeTcpsocketNode()
+
+            if not rosbridge_tcpsocket_node._bson_only_mode:
+                rosbridge_tcpsocket_node.get_logger().warn(f"[{datetime.datetime.now()}] Rosbridge TCP node can only operate properly if arg 'bson_only_mode' is True. Shutting down...")
+                rosbridge_tcpsocket_node.destroy_node()
+                rclpy.shutdown()
+                return
+
             event = threading.Event()
             spin_thread = threading.Thread(target=spin_function, daemon=True, args=(event, rosbridge_tcpsocket_node))
             # executor = rclpy.executors.MultiThreadedExecutor()
@@ -320,10 +279,10 @@ def main(args=None):
             rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Rosbridge TCP node spinning in separate thread")
             # Server host is a tuple ('host', port)
             # empty string for host makes server listen on all available interfaces
-            SocketServer.TCPServer.allow_reuse_address = True
+            SocketServer.ThreadingTCPServer.allow_reuse_address = True
             host = rosbridge_tcpsocket_node._host
             port = rosbridge_tcpsocket_node._port
-            server = SocketServer.TCPServer((host, port), RosbridgeTcpSocket)            
+            server = SocketServer.ThreadingTCPServer((host, port), RosbridgeTcpSocket)            
             loaded = True
 
             sys.stdout.flush()
@@ -334,14 +293,6 @@ def main(args=None):
         except KeyboardInterrupt:
             rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Exiting due to SIGINT")
             sleep_dur = 0.
-        
-        except OSError as error:
-            rosbridge_tcpsocket_node.get_logger().info(f"[{datetime.datetime.now()}] Caught OS error: {traceback.format_exc()}")
-            rosbridge_tcpsocket_node.get_logger().warn(f"[{datetime.datetime.now()}] Will try reloading in {rosbridge_tcpsocket_node.retry_startup_delay} seconds")
-            sleep_dur = rosbridge_tcpsocket_node.retry_startup_delay
-            # if error.errno == errno.EPIPE or error.errno == errno.ECONNRESET:
-            #     server_is_running = False
-            loaded = False
 
         except Exception:
             rosbridge_tcpsocket_node.get_logger().warn(f"[{datetime.datetime.now()}] Encountered an exception: {traceback.format_exc()}")

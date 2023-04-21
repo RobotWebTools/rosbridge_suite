@@ -1,11 +1,13 @@
 from std_msgs.msg import Int32
 import struct
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
+import traceback
 
 try:
     import SocketServer
 except ImportError:
     import socketserver as SocketServer
+
 
 class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
     """
@@ -49,6 +51,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
                 cls.client_count_pub.publish(Int32(data=cls.clients_connected))
             self.protocol.log("info", "connected. " + str(cls.clients_connected) + " client total.")
             self.force_close_request = False
+            self.send_message_exception = None
         except Exception as exc:
             cls.ros_node.get_logger().info("Unable to accept incoming connection.  Reason: " + str(exc))
 
@@ -95,7 +98,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         while True:
             try:
                 if self.force_close_request:
-                    self.protocol.log("error", "send_message failed, likely by ConnectionResetError or BrokenPipe. Terminating client connection.")
+                    self.protocol.log("error", "Force close request was triggered due to exception on send_message(). Likely by ConnectionResetError or BrokenPipe. Terminating client connection.")
                     break
 
                 if self.bson_only_mode:
@@ -142,5 +145,6 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
                 self.protocol.log("error", "send_message called with no message or message is None, not sending")
         except Exception:
             self.force_close_request = True
+            self.protocol.log("error", f"Exception during send_message(): {traceback.format_exc()}")
 
         
