@@ -1,4 +1,5 @@
 from std_msgs.msg import Int32
+from rosbridge_library.util import bson
 import struct
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 
@@ -124,13 +125,18 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
             cls.client_count_pub.publish(Int32(data=cls.clients_connected))
         self.protocol.log("info", "disconnected. " + str(cls.clients_connected) + " client total." )
 
-    def send_message(self, message=None):
+    def send_message(self, message=None, compression="none"):
         """
         Callback from rosbridge
         """
-        if self.bson_only_mode:
-            self.request.sendall(message)
-        elif message is not None:
-            self.request.sendall(message.encode())
+        if isinstance(message, bson.BSON) or bson_only_mode:
+            binary = True
+        elif compression in ["cbor", "cbor-raw"]:
+            binary = True
         else:
-            self.protocol.log("error", "send_message called with no message or message is None, not sending")
+            binary = False
+
+        if binary:
+            self.request.sendall(message)
+        else:
+            self.request.sendall(message.encode())
