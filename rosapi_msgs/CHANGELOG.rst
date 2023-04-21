@@ -2,6 +2,12 @@
 Changelog for package rosapi_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.3.1 (2022-10-21)
+------------------
+
+1.3.0 (2022-08-16)
+------------------
+
 1.2.0 (2022-05-20)
 ------------------
 * Added `/rosapi/get_ros_version` service (`#708 <https://github.com/RobotWebTools/rosbridge_suite/issues/708>`_)

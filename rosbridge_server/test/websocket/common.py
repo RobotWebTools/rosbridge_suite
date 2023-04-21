@@ -38,7 +38,7 @@ class TestClientProtocol(WebSocketClientProtocol):
 
     def onMessage(self, payload, binary):
         print(f"WebSocket client received message: {payload}")
-        self.message_handler(json.loads(payload))
+        self.message_handler(payload if binary else json.loads(payload))
 
 
 def _generate_node():

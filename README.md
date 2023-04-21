@@ -1,6 +1,12 @@
 rosbridge_suite
 ===============
 
+[![ROS Foxy version](https://img.shields.io/ros/v/foxy/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#foxy)
+[![ROS Galactic version](https://img.shields.io/ros/v/galactic/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#galactic)
+[![ROS Humble version](https://img.shields.io/ros/v/humble/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#humble)
+[![ROS Rolling version](https://img.shields.io/ros/v/rolling/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#rolling)
+
+
 #### Server Implementations of the rosbridge v2 Protocol
 
 rosbridge provides a JSON interface to ROS, allowing any client to send JSON to publish or subscribe to ROS topics, call ROS services, and more. rosbridge supports a variety of transport layers, including WebSockets and TCP. For information on the protocol itself, see the [rosbridge protocol specification](ROSBRIDGE_PROTOCOL.md).
@@ -26,6 +32,7 @@ A rosbridge client is a program that communicates with rosbridge using its JSON 
  * [roslibjs](https://github.com/RobotWebTools/roslibjs) - A JavaScript API, which communicates with rosbridge over WebSockets.
  * [jrosbridge](https://github.com/WPI-RAIL/jrosbridge) - A Java API, which communicates with rosbridge over WebSockets.
  * [roslibpy](https://github.com/gramaziokohler/roslibpy) - A Python API, which communicates with rosbridge over WebSockets.
+ * [roslibrust](https://github.com/Carter12s/roslibrust) - A Rust API, which communicates with rosbridge over WebSockets.
 
 ### License
 rosbridge_suite is released with a BSD license. For full terms and conditions, see the [LICENSE](LICENSE) file.

@@ -71,7 +71,7 @@ class RosbridgeTcpsocketNode(Node):
         unregister_timeout = self.declare_parameter('unregister_timeout', RosbridgeTcpSocket.unregister_timeout).value
         # bson_only_mode = get_param('~bson_only_mode', False)
         bson_only_mode = self.declare_parameter('bson_only_mode', RosbridgeTcpSocket.bson_only_mode).value
-        self._bson_only_mode = bson_only_mode
+        self.bson_only_mode = bson_only_mode
         
         if max_message_size == "None":
             max_message_size = None
@@ -263,7 +263,7 @@ def main(args=None):
             rclpy.init(args=args)
             rosbridge_tcpsocket_node = RosbridgeTcpsocketNode()
 
-            if not rosbridge_tcpsocket_node._bson_only_mode:
+            if not rosbridge_tcpsocket_node.bson_only_mode:
                 rosbridge_tcpsocket_node.get_logger().warn(f"[{datetime.datetime.now()}] Rosbridge TCP node can only operate properly if arg 'bson_only_mode' is True. Shutting down...")
                 rosbridge_tcpsocket_node.destroy_node()
                 rclpy.shutdown()

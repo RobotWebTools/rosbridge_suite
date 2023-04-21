@@ -299,6 +299,11 @@ class TestMessageConversion(unittest.TestCase):
             ret = test_float32_msg(rostype, floats)
             np.testing.assert_array_equal(ret, np.array(floats))
 
+            # From List[int]
+            ints = list(map(int, range(0, 256)))
+            ret = test_float32_msg(rostype, ints)
+            np.testing.assert_array_equal(ret, np.array(ints))
+
         for msgtype in ["TestFloat32BoundedArray"]:
             rostype = "rosbridge_test_msgs/" + msgtype
 
@@ -306,3 +311,8 @@ class TestMessageConversion(unittest.TestCase):
             floats = list(map(float, range(0, 16)))
             ret = test_float32_msg(rostype, floats)
             np.testing.assert_array_equal(ret, np.array(floats))
+
+            # From List[int]
+            ints = list(map(int, range(0, 16)))
+            ret = test_float32_msg(rostype, ints)
+            np.testing.assert_array_equal(ret, np.array(ints))
