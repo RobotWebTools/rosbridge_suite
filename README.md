@@ -13,7 +13,7 @@ rosbridge provides a JSON interface to ROS, allowing any client to send JSON to 
 
 For full documentation, see [the ROS wiki](http://ros.org/wiki/rosbridge_suite).
 
-This project is released as part of the [Robot Web Tools](http://robotwebtools.org/) effort.
+This project is released as part of the [Robot Web Tools](https://robotwebtools.github.io/) effort.
 
 ### Packages
 
