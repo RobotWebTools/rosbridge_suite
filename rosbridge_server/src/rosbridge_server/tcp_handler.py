@@ -129,7 +129,7 @@ class RosbridgeTcpSocket(SocketServer.BaseRequestHandler):
         """
         Callback from rosbridge
         """
-        if isinstance(message, bson.BSON) or bson_only_mode:
+        if isinstance(message, bson.BSON) or self.bson_only_mode:
             binary = True
         elif compression in ["cbor", "cbor-raw"]:
             binary = True
