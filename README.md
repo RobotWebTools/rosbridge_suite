@@ -59,4 +59,4 @@ Releasing requires push access to [RobotWebTools/rosbridge_suite](https://github
     - `bloom-release --rosdistro galactic --track galactic rosbridge_suite`
     - `bloom-release --rosdistro rolling --track rolling rosbridge_suite`
 
-Once the PRs are merged, packages will be available for each distro after the next sync. Build/sync status can be viewed at: [foxy](http://repo.ros2.org/status_page/ros_foxy_default.html), [galactic](http://repo.ros2.org/status_page/ros_galactic_default.html), [rolling](http://repo.ros2.org/status_page/ros_rolling_default.html).
+Once the PRs are merged, packages will be available for each distro after the next sync. Build/sync status can be viewed at: [foxy](http://repo.ros2.org/status_page/ros_foxy_default.html), [galactic](http://repo.ros2.org/status_page/ros_galactic_default.html), [rolling](http://repo.ros2.org/status_page/ros_rolling_default.html). 
