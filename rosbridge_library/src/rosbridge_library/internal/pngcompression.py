@@ -31,10 +31,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from base64 import standard_b64decode, standard_b64encode
+from io import BytesIO
 from math import ceil, floor, sqrt
 
 from PIL import Image
-from io import BytesIO
 
 
 def encode(string):
