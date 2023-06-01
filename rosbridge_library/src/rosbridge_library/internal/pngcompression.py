@@ -34,18 +34,18 @@ from base64 import standard_b64decode, standard_b64encode
 from math import ceil, floor, sqrt
 
 from PIL import Image
-from rosbridge_library.util import BytesIO
+from io import BytesIO
 
 
 def encode(string):
     """PNG-compress the string in a square RBG image padded with '\n', return the b64 encoded bytes"""
-    string_bytes = string.encode('utf-8')
+    string_bytes = string.encode("utf-8")
     length = len(string_bytes)
     width = floor(sqrt(length / 3.0))
     height = ceil((length / 3.0) / width)
     bytes_needed = int(width * height * 3)
-    string_padded = string_bytes + (b'\n' * (bytes_needed - length))
-    i = Image.frombytes('RGB', (int(width), int(height)), string_padded)
+    string_padded = string_bytes + (b"\n" * (bytes_needed - length))
+    i = Image.frombytes("RGB", (int(width), int(height)), string_padded)
     buff = BytesIO()
     i.save(buff, "png")
     encoded = standard_b64encode(buff.getvalue()).decode()
@@ -53,11 +53,11 @@ def encode(string):
 
 
 def decode(string):
-    """ b64 decode the string, then PNG-decompress """
+    """b64 decode the string, then PNG-decompress"""
     decoded = standard_b64decode(string)
     buff = BytesIO(decoded)
     i = Image.open(buff)
     try:
         return i.tostring()
     except NotImplementedError:
-        return i.tobytes().decode('utf-8')
+        return i.tobytes().decode("utf-8")

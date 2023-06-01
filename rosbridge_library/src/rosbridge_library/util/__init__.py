@@ -7,11 +7,6 @@ except ImportError:
     except ImportError:
         import json  # noqa: F401
 
-import sys
-
-string_types = (str,)
-from io import BytesIO, StringIO
-
 import bson
 
 try:
