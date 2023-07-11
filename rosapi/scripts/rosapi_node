@@ -172,7 +172,7 @@ class Rosapi(Node):
             response.subscribing,
             response.publishing,
             response.services,
-        ) = proxy.get_node_info(request.node)
+        ) = proxy.get_node_info(request.node) or ([], [], [])
         return response
 
     def get_action_servers(self, request, response):
