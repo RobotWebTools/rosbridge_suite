@@ -168,11 +168,9 @@ class Rosapi(Node):
 
     def get_node_details(self, request, response):
         """Called by the rosapi/Nodes service. Returns a node description"""
-        (
-            response.subscribing,
-            response.publishing,
-            response.services,
-        ) = proxy.get_node_info(request.node) or ([], [], [])
+        (response.subscribing, response.publishing, response.services,) = proxy.get_node_info(
+            request.node
+        ) or ([], [], [])
         return response
 
     def get_action_servers(self, request, response):
