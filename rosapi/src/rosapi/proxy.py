@@ -65,9 +65,13 @@ def get_topics_and_types(topics_glob):
 
         # Add topics with unknown type messages.
         unknown_type = topics.difference([x for x, _ in topic_types])
-        return zip(* topic_types + [[x,''] for x in unknown_type])
+        topic_types.extend([[x, ''] for x in unknown_type])
+        if topic_types:
+            return zip(*topic_types)
+        else:
+            return [], []
     except:
-        return []
+        return [], []
 
 
 def get_topics_for_type(type, topics_glob):
