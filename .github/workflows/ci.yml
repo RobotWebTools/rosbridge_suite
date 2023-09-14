@@ -8,7 +8,6 @@ jobs:
       fail-fast: false
       matrix:
         python_version:
-          - 2.7
           - 3.8
 
     name: Lint (python-${{ matrix.python_version }})
@@ -29,8 +28,6 @@ jobs:
         include:
           # Test supported ROS 1 distributions
           # http://wiki.ros.org/Distributions
-          - ros_distribution: melodic
-            os: ubuntu-18.04
           - ros_distribution: noetic
             os: ubuntu-20.04
 
