@@ -21,10 +21,6 @@ jobs:
         include:
           # Test supported ROS 2 distributions
           # https://docs.ros.org/en/rolling/Releases.html
-          - ros: foxy
-            os: ubuntu-20.04
-          - ros: galactic
-            os: ubuntu-20.04
           - ros: humble
             os: ubuntu-22.04
           - ros: iron
