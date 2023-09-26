@@ -137,17 +137,19 @@ float64 w 1
         )
 
         try:
-            self.assertEqual(
+            # We match against a regex here as the Gid.msg differs between distros:
+            # Distros up to humble use 24 bytes, more recent distros use 16 bytes.
+            # See https://github.com/ros2/rmw_dds_common/pull/68
+            self.assertRegex(
                 stringify_field_types("rmw_dds_common/NodeEntitiesInfo"),
-                """\
-string<=256 node_namespace
+                r"""string<=256 node_namespace
 string<=256 node_name
-Gid[] reader_gid_seq
-Gid[] writer_gid_seq
+Gid\[\] reader_gid_seq
+Gid\[\] writer_gid_seq
 
 ================================================================================
 MSG: rmw_dds_common/Gid
-char[24] data
+char\[(24|16)\] data
 """,
             )
         except InvalidModuleException:
