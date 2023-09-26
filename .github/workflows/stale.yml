@@ -11,7 +11,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/stale@v7.0.0
+      - uses: actions/stale@v8.0.0
         with:
           stale-issue-message: "This issue has been marked as stale because there has been no activity in the past 12 months. Please add a comment to keep it open."
           stale-issue-label: stale
