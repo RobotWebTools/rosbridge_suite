@@ -4,7 +4,7 @@
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rosbridge_server</name>
-  <version>0.11.16</version>
+  <version>0.11.17</version>
   <description>A WebSocket interface to rosbridge.</description>
 
   <license>BSD</license>
