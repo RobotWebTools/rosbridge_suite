@@ -2,6 +2,13 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.3.2 (2023-09-27)
+------------------
+* Interpret call_services_in_new_thread as boolean (`#857 <https://github.com/RobotWebTools/rosbridge_suite/issues/857>`_)
+* Add option to call services in a separate thread (`#847 <https://github.com/RobotWebTools/rosbridge_suite/issues/847>`_)
+* fix memory leak on service call (`#774 <https://github.com/RobotWebTools/rosbridge_suite/issues/774>`_)
+* Contributors: Sebastian Castro, hiroyuki obinata, rwhitney456
+
 1.3.1 (2022-10-21)
 ------------------
 * Optimized large binary array publishing (`#819 <https://github.com/RobotWebTools/rosbridge_suite/issues/819>`_)

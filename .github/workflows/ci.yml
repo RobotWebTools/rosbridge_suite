@@ -6,9 +6,9 @@ jobs:
   lint:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4.5.0
+      - uses: actions/setup-python@v4.7.0
         with:
           python-version: '3.8'
 
@@ -21,11 +21,9 @@ jobs:
         include:
           # Test supported ROS 2 distributions
           # https://docs.ros.org/en/rolling/Releases.html
-          - ros: foxy
-            os: ubuntu-20.04
-          - ros: galactic
-            os: ubuntu-20.04
           - ros: humble
+            os: ubuntu-22.04
+          - ros: iron
             os: ubuntu-22.04
           - ros: rolling
             os: ubuntu-22.04
@@ -34,11 +32,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: ros_ws/src
 
-      - uses: ros-tooling/setup-ros@0.6.1
+      - uses: ros-tooling/setup-ros@0.7.0
 
       - uses: ros-tooling/action-ros-ci@v0.3
         with:
