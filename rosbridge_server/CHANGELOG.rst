@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.2 (2023-09-27)
+------------------
 * Add option to call services in a separate thread (`#847 <https://github.com/RobotWebTools/rosbridge_suite/issues/847>`_)
 * Contributors: Sebastian Castro
 

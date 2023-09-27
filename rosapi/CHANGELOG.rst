@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.2 (2023-09-27)
+------------------
 * Fix ROS2 CI for iron & rolling (`#875 <https://github.com/RobotWebTools/rosbridge_suite/issues/875>`_)
 * Contributors: Hans-Joachim Krauch
 
