@@ -2,6 +2,11 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add option to call services in a separate thread (`#847 <https://github.com/RobotWebTools/rosbridge_suite/issues/847>`_)
+* Contributors: Sebastian Castro
+
 1.3.1 (2022-10-21)
 ------------------
 * Fix exceptions not being handled correctly. (`#817 <https://github.com/RobotWebTools/rosbridge_suite/issues/817>`_)
