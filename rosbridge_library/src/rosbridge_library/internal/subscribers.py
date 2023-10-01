@@ -106,13 +106,17 @@ class MultiSubscriber:
         # incompatible. Here we make a "best effort" attempt to match existing
         # publishers for the requested topic. This is not perfect because more
         # publishers may come online after our subscriber is set up, but we try
-        # to provide sane defaults. For more information, see:
+        # to provide sane defaults.
+        # For this reason we use volatile durability and best effort reliability
+        # to prioritize topic compatibility when the publisher policy is not known.
+        # For more information, see:
         # - https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html
         # - https://github.com/RobotWebTools/rosbridge_suite/issues/551
+        # - https://github.com/RobotWebTools/rosbridge_suite/issues/769
         qos = QoSProfile(
             depth=10,
             durability=DurabilityPolicy.VOLATILE,
-            reliability=ReliabilityPolicy.RELIABLE,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
         )
 
         infos = node_handle.get_publishers_info_by_topic(topic)
