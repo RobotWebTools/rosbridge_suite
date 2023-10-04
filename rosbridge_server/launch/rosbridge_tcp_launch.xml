@@ -4,12 +4,12 @@
 
   <arg name="incoming_buffer" default="65536" />
   <arg name="socket_timeout" default="10" />
-  <arg name="retry_startup_delay" default="5" />
+  <arg name="retry_startup_delay" default="5.0" />
 
   <arg name="fragment_timeout" default="600" />
   <arg name="delay_between_messages" default="0" />
   <arg name="max_message_size" default="None" />
-  <arg name="unregister_timeout" default="10" />
+  <arg name="unregister_timeout" default="10.0" />
 
   <arg name="call_services_in_new_thread" default="false" />
 
