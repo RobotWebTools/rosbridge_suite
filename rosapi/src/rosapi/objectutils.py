@@ -35,6 +35,7 @@ import inspect
 
 from rosapi.stringify_field_types import stringify_field_types
 from rosbridge_library.internal import ros_loader
+import logging
 
 # Keep track of atomic types and special types
 atomics = [
@@ -48,8 +49,8 @@ atomics = [
     "uint32",
     "int64",
     "uint64",
-    "float32",
-    "float64",
+    "float",
+    "double",
     "string",
 ]
 specials = ["time", "duration"]
@@ -74,8 +75,13 @@ def get_typedef(type):
         return _get_special_typedef(type)
 
     # Fetch an instance and return its typedef
-    instance = ros_loader.get_message_instance(type)
-    return _get_typedef(instance)
+    try:
+        instance = ros_loader.get_message_instance(type)
+        type_def = _get_typedef(instance)
+        return type_def
+    except Exception as e:
+        logging.error(f"👺 An error occurred trying to get the type definition for {type}: {e}")
+        return None
 
 
 def get_service_request_typedef(servicetype):
@@ -134,6 +140,8 @@ def _get_typedef(instance):
         or not hasattr(instance, "_fields_and_field_types")
     ):
         return None
+    
+    logging.warning(f"🍄 Getting type def for {instance}")
 
     fieldnames = []
     fieldtypes = []
