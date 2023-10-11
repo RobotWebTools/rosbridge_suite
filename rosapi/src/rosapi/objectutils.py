@@ -140,8 +140,6 @@ def _get_typedef(instance):
         or not hasattr(instance, "_fields_and_field_types")
     ):
         return None
-    
-    logging.warning(f"🍄 Getting type def for {instance}")
 
     fieldnames = []
     fieldtypes = []
