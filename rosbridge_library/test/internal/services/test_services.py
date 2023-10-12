@@ -6,6 +6,7 @@ import unittest
 import numpy as np
 import rclpy
 from rcl_interfaces.srv import ListParameters
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader, services
@@ -48,7 +49,7 @@ class ServiceTester:
 
     def callback(self, req, res):
         self.req = req
-        time.sleep(0.5)
+        time.sleep(0.1)
         gen = c.extract_values(res)
         gen = populate_random_args(gen)
         try:
@@ -79,7 +80,9 @@ class ServiceTester:
 class TestServices(unittest.TestCase):
     def setUp(self):
         rclpy.init()
+        self.executor = MultiThreadedExecutor()
         self.node = Node("test_node")
+        self.executor.add_node(self.node)
 
     def tearDown(self):
         rclpy.shutdown()
@@ -144,7 +147,8 @@ class TestServices(unittest.TestCase):
         p = self.node.create_client(ListParameters, self.node.get_name() + "/list_parameters")
         p.wait_for_service(0.5)
         ret = p.call_async(ListParameters.Request())
-        rclpy.spin_until_future_complete(self.node, ret)
+        self.executor.spin_until_future_complete(ret, 1.0)
+        self.node.destroy_client(p)
 
         # Now, call using the services
         json_ret = services.call_service(self.node, self.node.get_name() + "/list_parameters")
@@ -160,7 +164,7 @@ class TestServices(unittest.TestCase):
         p = self.node.create_client(ListParameters, self.node.get_name() + "/list_parameters")
         p.wait_for_service(0.5)
         ret = p.call_async(ListParameters.Request())
-        rclpy.spin_until_future_complete(self.node, ret)
+        self.executor.spin_until_future_complete(ret)
 
         rcvd = {"json": None}
 
@@ -175,7 +179,7 @@ class TestServices(unittest.TestCase):
             self.node.get_name() + "/list_parameters", None, success, error, self.node
         ).start()
 
-        time.sleep(0.5)
+        time.sleep(0.2)
 
         for x, y in zip(ret.result().result.names, rcvd["json"]["result"]["names"]):
             self.assertEqual(x, y)
@@ -183,7 +187,7 @@ class TestServices(unittest.TestCase):
     def test_service_tester(self):
         t = ServiceTester("/test_service_tester", "rosbridge_test_msgs/TestRequestAndResponse")
         t.start()
-        time.sleep(1.0)
+        time.sleep(0.2)
         t.validate(self.msgs_equal)
 
     def test_service_tester_alltypes(self):
@@ -201,7 +205,7 @@ class TestServices(unittest.TestCase):
             t.start()
             ts.append(t)
 
-        time.sleep(1.0)
+        time.sleep(0.2)
 
         for t in ts:
             t.validate(self.msgs_equal)
@@ -223,7 +227,7 @@ class TestServices(unittest.TestCase):
             t.start()
             ts.append(t)
 
-        time.sleep(1.0)
+        time.sleep(0.2)
 
         for t in ts:
             t.validate(self.msgs_equal)

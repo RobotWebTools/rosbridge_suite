@@ -32,6 +32,7 @@
 
 from threading import Thread
 
+import rclpy
 from rclpy.expand_topic_name import expand_topic_name
 from rosbridge_library.internal.message_conversion import (
     extract_values,
@@ -122,7 +123,9 @@ def call_service(node_handle, service, args=None):
 
     client = node_handle.create_client(service_class, service)
 
-    result = client.call(inst)
+    future = client.call_async(inst)
+    rclpy.spin_until_future_complete(node_handle, future)
+    result = future.result()
 
     node_handle.destroy_client(client)
     if result is not None:

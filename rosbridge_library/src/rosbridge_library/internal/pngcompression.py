@@ -31,31 +31,32 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from base64 import standard_b64decode, standard_b64encode
-from io import StringIO
+from io import BytesIO
 from math import ceil, floor, sqrt
 
 from PIL import Image
 
 
 def encode(string):
-    """PNG-compress the string in a square RBG image padded with '\n', return the b64 encoded bytes"""
-    length = len(string)
+    """PNG-compress the string in a square RGB image padded with '\n', return the b64 encoded bytes"""
+    string_bytes = string.encode("utf-8")
+    length = len(string_bytes)
     width = floor(sqrt(length / 3.0))
     height = ceil((length / 3.0) / width)
     bytes_needed = int(width * height * 3)
-    while length < bytes_needed:
-        string += "\n"
-        length += 1
-    i = Image.frombytes("RGB", (int(width), int(height)), string)
-    buff = StringIO()
+    string_padded = string_bytes + (b"\n" * (bytes_needed - length))
+    i = Image.frombytes("RGB", (int(width), int(height)), string_padded)
+    buff = BytesIO()
     i.save(buff, "png")
     encoded = standard_b64encode(buff.getvalue())
     return encoded
 
 
 def decode(string):
-    """b64 decode the string, then PNG-decompress"""
+    """b64 decode the string, then PNG-decompress and remove the '\n' padding"""
     decoded = standard_b64decode(string)
-    buff = StringIO(decoded)
-    i = Image.open(buff)
-    return i.tostring()
+    buff = BytesIO(decoded)
+    i = Image.open(buff, formats=("png",)).convert("RGB")
+    dec_str = i.tobytes().decode("utf-8")
+    dec_str = dec_str.replace("\n", "")  # Remove padding from encoding
+    return dec_str
