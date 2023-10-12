@@ -14,7 +14,5 @@ if (BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
 
   # TODO: Enable tests
-  ament_add_pytest_test(test_internal_subscribers "test/internal/subscribers/")
-  ament_add_pytest_test(test_internal_services "test/internal/services")
-  ament_add_pytest_test(test_internal_utils "test/internal/utils")
+  ament_add_pytest_test(test_internal "test/internal/")
 endif()
