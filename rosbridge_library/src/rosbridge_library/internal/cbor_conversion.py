@@ -24,6 +24,7 @@ STRING_TYPES = ["string"]
 BOOL_TYPES = ["boolean"]
 TIME_TYPES = ["time", "duration"]
 BOOL_ARRAY_TYPES = ["sequence<boolean>"]
+STRING_ARRAY_TYPES = ["sequence<string>"]
 BYTESTREAM_TYPES = ["sequence<uint8>", "sequence<char>"]
 
 # Typed array tags according to <https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00>
@@ -83,6 +84,9 @@ def extract_cbor_values(msg):
         # bool array
         elif slot_type in BOOL_ARRAY_TYPES:
             out[slot] = [bool(i) for i in val]
+
+        elif slot_type in STRING_ARRAY_TYPES:
+            out[slot] = [str(i) for i in val]
 
         # numeric arrays
         elif slot_type in TAGGED_ARRAY_FORMATS:
