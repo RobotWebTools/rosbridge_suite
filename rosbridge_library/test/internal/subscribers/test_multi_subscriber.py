@@ -1,24 +1,41 @@
 #!/usr/bin/env python
+import time
 import unittest
-from time import sleep
 
-import rospy
-import rostest
+import rclpy
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.internal.subscribers import MultiSubscriber
 from rosbridge_library.internal.topics import TypeConflictException
-from rosgraph import Master
 from std_msgs.msg import Int32, String
 
 
 class TestMultiSubscriber(unittest.TestCase):
     def setUp(self):
-        rospy.init_node("test_multi_subscriber")
+        self.node_name = "test_multi_subscriber"
+        self.client_id = "test_client_id"
+
+        rclpy.init()
+        self.executor = MultiThreadedExecutor()
+        self.node = Node(self.node_name)
+        self.executor.add_node(self.node)
+
+    def tearDown(self):
+        self.executor.remove_node(self.node)
+        self.node.destroy_node()
+        rclpy.shutdown()
 
     def is_topic_published(self, topicname):
-        return topicname in dict(rospy.get_published_topics()).keys()
+        self.executor.spin_once(0.1)
+        published_topic_data = self.node.get_publisher_names_and_types_by_node(self.node_name, "")
+        return topicname in [topic[0] for topic in published_topic_data]
 
     def is_topic_subscribed(self, topicname):
-        return topicname in dict(Master("test_multi_subscriber").getSystemState()[1])
+        self.executor.spin_once(0.1)
+        subscribed_topic_data = self.node.get_subscriber_names_and_types_by_node(self.node_name, "")
+        print(f"Subscription list:\n{subscribed_topic_data}")
+        return topicname in [topic[0] for topic in subscribed_topic_data]
 
     def test_register_multisubscriber(self):
         """Register a subscriber on a clean topic with a good msg type"""
@@ -26,7 +43,7 @@ class TestMultiSubscriber(unittest.TestCase):
         msg_type = "std_msgs/String"
 
         self.assertFalse(self.is_topic_subscribed(topic))
-        MultiSubscriber(topic, msg_type)
+        MultiSubscriber(topic, self.client_id, lambda *args: None, self.node, msg_type=msg_type)
         self.assertTrue(self.is_topic_subscribed(topic))
 
     def test_unregister_multisubscriber(self):
@@ -35,7 +52,9 @@ class TestMultiSubscriber(unittest.TestCase):
         msg_type = "std_msgs/String"
 
         self.assertFalse(self.is_topic_subscribed(topic))
-        multi = MultiSubscriber(topic, msg_type)
+        multi = MultiSubscriber(
+            topic, self.client_id, lambda *args: None, self.node, msg_type=msg_type
+        )
         self.assertTrue(self.is_topic_subscribed(topic))
         multi.unregister()
         self.assertFalse(self.is_topic_subscribed(topic))
@@ -57,7 +76,7 @@ class TestMultiSubscriber(unittest.TestCase):
             "sensor_msgs/PointCloud2",
         ]
 
-        s = MultiSubscriber(topic, msg_type)
+        s = MultiSubscriber(topic, self.client_id, lambda *args: None, self.node, msg_type=msg_type)
         s.verify_type(msg_type)
         for othertype in othertypes:
             self.assertRaises(TypeConflictException, s.verify_type, othertype)
@@ -65,18 +84,19 @@ class TestMultiSubscriber(unittest.TestCase):
     def test_subscribe_unsubscribe(self):
         topic = "/test_subscribe_unsubscribe"
         msg_type = "std_msgs/String"
-        client = "client_test_subscribe_unsubscribe"
 
         self.assertFalse(self.is_topic_subscribed(topic))
-        multi = MultiSubscriber(topic, msg_type)
+        multi = MultiSubscriber(
+            topic, self.client_id, lambda *args: None, self.node, msg_type=msg_type
+        )
         self.assertTrue(self.is_topic_subscribed(topic))
-        self.assertFalse(multi.has_subscribers())
+        self.assertEqual(len(multi.new_subscriptions), 0)
 
-        multi.subscribe(client, None)
-        self.assertTrue(multi.has_subscribers())
+        multi.subscribe(self.client_id, None)
+        self.assertEqual(len(multi.new_subscriptions), 1)
 
-        multi.unsubscribe(client)
-        self.assertFalse(multi.has_subscribers())
+        multi.unsubscribe(self.client_id)
+        self.assertEqual(len(multi.new_subscriptions), 0)
 
         multi.unregister()
         self.assertFalse(self.is_topic_subscribed(topic))
@@ -84,74 +104,82 @@ class TestMultiSubscriber(unittest.TestCase):
     def test_subscribe_receive_json(self):
         topic = "/test_subscribe_receive_json"
         msg_type = "std_msgs/String"
-        client = "client_test_subscribe_receive_json"
 
         msg = String()
         msg.data = "dsajfadsufasdjf"
 
-        pub = rospy.Publisher(topic, String)
-        multi = MultiSubscriber(topic, msg_type)
-
+        publisher_qos = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        pub = self.node.create_publisher(String, topic, publisher_qos)
         received = {"msg": None}
 
         def cb(msg):
             received["msg"] = msg.get_json_values()
 
-        multi.subscribe(client, cb)
-        sleep(0.5)
+        MultiSubscriber(topic, self.client_id, cb, self.node, msg_type=msg_type)
         pub.publish(msg)
-        sleep(0.5)
+        time.sleep(0.1)
+        self.executor.spin_once()
+        time.sleep(0.1)
         self.assertEqual(msg.data, received["msg"]["data"])
 
     def test_subscribe_receive_json_multiple(self):
         topic = "/test_subscribe_receive_json_multiple"
         msg_type = "std_msgs/Int32"
-        client = "client_test_subscribe_receive_json_multiple"
 
         numbers = list(range(100))
 
-        pub = rospy.Publisher(topic, Int32)
-        multi = MultiSubscriber(topic, msg_type)
-
+        publisher_qos = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        pub = self.node.create_publisher(Int32, topic, publisher_qos)
         received = {"msgs": []}
 
         def cb(msg):
             received["msgs"].append(msg.get_json_values()["data"])
 
-        multi.subscribe(client, cb)
-        sleep(0.5)
+        MultiSubscriber(topic, self.client_id, cb, self.node, msg_type=msg_type)
+        time.sleep(0.1)
         for x in numbers:
             msg = Int32()
             msg.data = x
             pub.publish(msg)
-        sleep(0.5)
+            self.executor.spin_once()
+            time.sleep(0.01)
+        time.sleep(0.1)
         self.assertEqual(numbers, received["msgs"])
 
     def test_unsubscribe_does_not_receive_further_msgs(self):
         topic = "/test_unsubscribe_does_not_receive_further_msgs"
         msg_type = "std_msgs/String"
-        client = "client_test_unsubscribe_does_not_receive_further_msgs"
 
         msg = String()
         msg.data = "dsajfadsufasdjf"
 
-        pub = rospy.Publisher(topic, String)
-        multi = MultiSubscriber(topic, msg_type)
-
+        publisher_qos = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        pub = self.node.create_publisher(String, topic, publisher_qos)
         received = {"count": 0}
 
         def cb(msg):
             received["count"] = received["count"] + 1
 
-        multi.subscribe(client, cb)
-        sleep(0.5)
+        multi = MultiSubscriber(topic, self.client_id, cb, self.node, msg_type=msg_type)
+        time.sleep(0.1)
         pub.publish(msg)
-        sleep(0.5)
+        self.executor.spin_once()
+        time.sleep(0.1)
         self.assertEqual(received["count"], 1)
-        multi.unsubscribe(client)
-        sleep(0.5)
+        multi.unsubscribe(self.client_id)
+        time.sleep(0.1)
         pub.publish(msg)
-        sleep(0.5)
+        self.executor.spin_once()
+        time.sleep(0.1)
         self.assertEqual(received["count"], 1)
 
     def test_multiple_subscribers(self):
@@ -163,8 +191,11 @@ class TestMultiSubscriber(unittest.TestCase):
         msg = String()
         msg.data = "dsajfadsufasdjf"
 
-        pub = rospy.Publisher(topic, String)
-        multi = MultiSubscriber(topic, msg_type)
+        publisher_qos = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        pub = self.node.create_publisher(String, topic, publisher_qos)
 
         received = {"msg1": None, "msg2": None}
 
@@ -174,16 +205,12 @@ class TestMultiSubscriber(unittest.TestCase):
         def cb2(msg):
             received["msg2"] = msg.get_json_values()
 
-        multi.subscribe(client1, cb1)
+        multi = MultiSubscriber(topic, client1, cb1, self.node, msg_type=msg_type)
         multi.subscribe(client2, cb2)
-        sleep(0.5)
+        time.sleep(0.1)
         pub.publish(msg)
-        sleep(0.5)
+        self.executor.spin_once()
+        self.executor.spin_once()  # Need to spin twice due to 2 callbacks
+        time.sleep(0.1)
         self.assertEqual(msg.data, received["msg1"]["data"])
         self.assertEqual(msg.data, received["msg2"]["data"])
-
-
-PKG = "rosbridge_library"
-NAME = "test_multi_subscriber"
-if __name__ == "__main__":
-    rostest.unitrun(PKG, NAME, TestMultiSubscriber)
