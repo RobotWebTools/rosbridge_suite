@@ -45,9 +45,7 @@ class TestServiceCapabilities(unittest.TestCase):
         rclpy.shutdown()
 
     def local_send_cb(self, msg):
-        print("CALLBACK HIT")
         self.received_message = msg
-        print(self.received_message)
 
     def mock_log(self, loglevel, message, _=None):
         self.log_entries.append((loglevel, message))

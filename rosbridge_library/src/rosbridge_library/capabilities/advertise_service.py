@@ -76,8 +76,6 @@ class AdvertisedServiceHandler:
         time to stop any active service requests, ending their busy wait
         loops.
         """
-        print("got to graceful shutdown")
-        print(self.request_futures)
         if self.request_futures:
             incomplete_ids = ", ".join(self.request_futures.keys())
             self.protocol.log(
