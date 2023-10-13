@@ -69,7 +69,7 @@ class CallService(Capability):
             protocol.node_handle.get_logger().info("Calling services in existing thread")
             protocol.register_operation("call_service", self.call_service)
 
-    def call_service(self, message):
+    def call_service(self, message, sleep_time=0):
         # Pull out the ID
         cid = message.get("id", None)
 
@@ -112,7 +112,9 @@ class CallService(Capability):
         e_cb = partial(self._failure, cid, service)
 
         # Run service caller in the same thread.
-        ServiceCaller(trim_servicename(service), args, s_cb, e_cb, self.protocol.node_handle).run()
+        ServiceCaller(
+            trim_servicename(service), args, s_cb, e_cb, self.protocol.node_handle, sleep_time
+        ).run()
 
     def _success(self, cid, service, fragment_size, compression, message):
         outgoing_message = {

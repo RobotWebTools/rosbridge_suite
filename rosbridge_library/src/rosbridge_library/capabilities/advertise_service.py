@@ -48,13 +48,6 @@ class AdvertisedServiceHandler:
         try:
             return await future
         finally:
-            self.protocol.send(
-                {
-                    "op": "service_response",
-                    "id": request_id,
-                    "result": False,
-                }
-            )
             del self.request_futures[request_id]
 
     def handle_response(self, request_id, res):
@@ -86,7 +79,14 @@ class AdvertisedServiceHandler:
             for future_id in self.request_futures:
                 future = self.request_futures[future_id]
                 future.set_exception(RuntimeError(f"Service {self.service_name} was unadvertised"))
-        self.protocol.node_handle.destroy_service(self.service_handle)
+        self.service_handle.destroy()
+        self.protocol.send(
+            {
+                "op": "service_response",
+                "id": future,
+                "result": False,
+            }
+        )
 
 
 class AdvertiseService(Capability):

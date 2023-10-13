@@ -114,7 +114,8 @@ class TestServiceCapabilities(unittest.TestCase):
             )
         )
         self.received_message = None
-        Thread(target=call_service.call_service, args=(call_msg,)).start()
+        sleep_time = 0.01
+        Thread(target=call_service.call_service, args=(call_msg, sleep_time)).start()
 
         loop_iterations = 0
         while self.received_message is None:
@@ -182,7 +183,8 @@ class TestServiceCapabilities(unittest.TestCase):
             )
         )
         self.received_message = None
-        Thread(target=call_service.call_service, args=(call_msg,)).start()
+        sleep_time = 0.01
+        Thread(target=call_service.call_service, args=(call_msg, sleep_time)).start()
 
         loop_iterations = 0
         while self.received_message is None:

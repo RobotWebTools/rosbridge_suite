@@ -50,7 +50,7 @@ class InvalidServiceException(Exception):
 
 
 class ServiceCaller(Thread):
-    def __init__(self, service, args, success_callback, error_callback, node_handle):
+    def __init__(self, service, args, success_callback, error_callback, node_handle, sleep_time=0):
         """Create a service caller for the specified service.  Use start()
         to start in a separate thread or run() to run in this thread.
 
@@ -64,7 +64,8 @@ class ServiceCaller(Thread):
         service call
         error_callback   -- a callback to call if an error occurs.  The
         callback will be passed the exception that caused the failure
-        node_handle      -- a ROS2 node handle to call services.
+        node_handle      -- a ROS 2 node handle to call services.
+        sleep_time       -- if nonzero, puts sleeps between executor spins
         """
         Thread.__init__(self)
         self.daemon = True
@@ -73,11 +74,16 @@ class ServiceCaller(Thread):
         self.success = success_callback
         self.error = error_callback
         self.node_handle = node_handle
+        self.sleep_time = sleep_time
 
     def run(self):
         try:
             # Call the service and pass the result to the success handler
-            self.success(call_service(self.node_handle, self.service, self.args))
+            self.success(
+                call_service(
+                    self.node_handle, self.service, args=self.args, sleep_time=self.sleep_time
+                )
+            )
         except Exception as e:
             # On error, just pass the exception to the error handler
             self.error(e)
@@ -99,7 +105,7 @@ def args_to_service_request_instance(service, inst, args):
     populate_instance(msg, inst)
 
 
-def call_service(node_handle, service, args=None):
+def call_service(node_handle, service, args=None, sleep_time=0):
     # Given the service name, fetch the type and class of the service,
     # and a request instance
     service = expand_topic_name(service, node_handle.get_name(), node_handle.get_namespace())
@@ -122,10 +128,17 @@ def call_service(node_handle, service, args=None):
     client = node_handle.create_client(service_class, service)
 
     future = client.call_async(inst)
-    if node_handle.executor:
-        node_handle.executor.spin_until_future_complete(future)
+    if sleep_time == 0:
+        if node_handle.executor:
+            node_handle.executor.spin_until_future_complete(future)
+        else:
+            rclpy.spin_until_future_complete(future)
     else:
-        rclpy.spin_until_future_complete(node_handle, future)
+        while not future.done():
+            if node_handle.executor:
+                node_handle.executor.spin_once(timeout_sec=sleep_time)
+            else:
+                rclpy.spin_once(node_handle, timeout_sec=sleep_time)
     result = future.result()
 
     node_handle.destroy_client(client)

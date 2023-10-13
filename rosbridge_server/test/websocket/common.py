@@ -8,7 +8,7 @@ import rclpy
 import rclpy.task
 from autobahn.twisted.websocket import WebSocketClientFactory, WebSocketClientProtocol
 from rcl_interfaces.srv import GetParameters
-from rclpy.executors import SingleThreadedExecutor
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from twisted.internet import reactor
 from twisted.internet.endpoints import TCP4ClientEndpoint
@@ -118,8 +118,8 @@ def run_websocket_test(
 ):
     context = rclpy.Context()
     rclpy.init(context=context)
-    executor = SingleThreadedExecutor(context=context)
-    node = rclpy.create_node(node_name, context=context)
+    executor = MultiThreadedExecutor(context=context)
+    node = Node(node_name, context=context)
     executor.add_node(node)
 
     async def task():
@@ -128,11 +128,12 @@ def run_websocket_test(
 
     future = executor.create_task(task)
 
-    reactor.callInThread(rclpy.spin_until_future_complete, node, future, executor)
+    reactor.callInThread(executor.spin_until_future_complete, future)
     reactor.run(installSignalHandlers=False)
 
-    rclpy.shutdown(context=context)
+    executor.remove_node(node)
     node.destroy_node()
+    rclpy.shutdown(context=context)
 
 
 def sleep(node: Node, duration: float) -> Awaitable[None]:
