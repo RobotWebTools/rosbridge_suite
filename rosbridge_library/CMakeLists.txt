@@ -12,7 +12,6 @@ ament_package()
 
 if (BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
-
-  # TODO: Enable tests
+  ament_add_pytest_test(test_capabilities "test/capabilities/")
   ament_add_pytest_test(test_internal "test/internal/")
 endif()

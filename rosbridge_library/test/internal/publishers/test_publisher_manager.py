@@ -21,12 +21,9 @@ manager.unregister_timeout = 1.0
 
 class TestPublisherManager(unittest.TestCase):
     def setUp(self):
-        self.node_name = "test_multi_publisher"
-        self.client_id = "test_client_id"
-
         rclpy.init()
         self.executor = MultiThreadedExecutor()
-        self.node = Node(self.node_name)
+        self.node = Node("test_publisher_manager")
         self.executor.add_node(self.node)
 
     def tearDown(self):

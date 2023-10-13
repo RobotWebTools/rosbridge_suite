@@ -14,12 +14,11 @@ from std_msgs.msg import Int32, String
 
 class TestMultiSubscriber(unittest.TestCase):
     def setUp(self):
-        self.node_name = "test_multi_subscriber"
         self.client_id = "test_client_id"
 
         rclpy.init()
         self.executor = MultiThreadedExecutor()
-        self.node = Node(self.node_name)
+        self.node = Node("test_multi_subscriber")
         self.executor.add_node(self.node)
 
     def tearDown(self):

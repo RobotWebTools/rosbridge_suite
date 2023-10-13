@@ -15,12 +15,9 @@ from rosbridge_library.util.ros import is_topic_published
 
 class TestMultiPublisher(unittest.TestCase):
     def setUp(self):
-        self.node_name = "test_multi_publisher"
-        self.client_id = "test_client_id"
-
         rclpy.init()
         self.executor = MultiThreadedExecutor()
-        self.node = Node(self.node_name)
+        self.node = Node("test_multi_publisher")
         self.executor.add_node(self.node)
 
     def tearDown(self):

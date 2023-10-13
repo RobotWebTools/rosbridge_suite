@@ -102,8 +102,6 @@ def args_to_service_request_instance(service, inst, args):
 def call_service(node_handle, service, args=None):
     # Given the service name, fetch the type and class of the service,
     # and a request instance
-
-    # This should be equivalent to rospy.resolve_name.
     service = expand_topic_name(service, node_handle.get_name(), node_handle.get_namespace())
 
     service_names_and_types = dict(node_handle.get_service_names_and_types())
@@ -124,7 +122,10 @@ def call_service(node_handle, service, args=None):
     client = node_handle.create_client(service_class, service)
 
     future = client.call_async(inst)
-    rclpy.spin_until_future_complete(node_handle, future)
+    if node_handle.executor:
+        node_handle.executor.spin_until_future_complete(future)
+    else:
+        rclpy.spin_until_future_complete(node_handle, future)
     result = future.result()
 
     node_handle.destroy_client(client)

@@ -34,6 +34,7 @@ class ServiceResponse(Capability):
             message_conversion.populate_instance(values, resp)
             # pass along the response
             service_handler.handle_response(request_id, resp)
+            self.protocol.send(message)
         else:
             self.protocol.log(
                 "error",

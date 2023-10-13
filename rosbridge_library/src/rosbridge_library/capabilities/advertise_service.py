@@ -48,6 +48,13 @@ class AdvertisedServiceHandler:
         try:
             return await future
         finally:
+            self.protocol.send(
+                {
+                    "op": "service_response",
+                    "id": request_id,
+                    "result": False,
+                }
+            )
             del self.request_futures[request_id]
 
     def handle_response(self, request_id, res):
@@ -69,6 +76,8 @@ class AdvertisedServiceHandler:
         time to stop any active service requests, ending their busy wait
         loops.
         """
+        print("got to graceful shutdown")
+        print(self.request_futures)
         if self.request_futures:
             incomplete_ids = ", ".join(self.request_futures.keys())
             self.protocol.log(
@@ -76,7 +85,8 @@ class AdvertisedServiceHandler:
                 f"Service {self.service_name} was unadvertised with a service call in progress, "
                 f"aborting service calls with request IDs {incomplete_ids}",
             )
-            for future in self.request_futures.values():
+            for future_id in self.request_futures:
+                future = self.request_futures[future_id]
                 future.set_exception(RuntimeError(f"Service {self.service_name} was unadvertised"))
         self.protocol.node_handle.destroy_service(self.service_handle)
 
@@ -138,4 +148,4 @@ class AdvertiseService(Capability):
         service_type = message["type"]
         service_handler = AdvertisedServiceHandler(service_name, service_type, self.protocol)
         self.protocol.external_service_list[service_name] = service_handler
-        self.protocol.log("info", "Advertised service %s." % service_name)
+        self.protocol.log("info", f"Advertised service {service_name}")

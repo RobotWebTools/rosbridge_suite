@@ -17,11 +17,9 @@ from std_msgs.msg import String
 
 class TestSubscriberManager(unittest.TestCase):
     def setUp(self):
-        self.node_name = "test_subscriber_manager"
-
         rclpy.init()
         self.executor = MultiThreadedExecutor()
-        self.node = Node(self.node_name)
+        self.node = Node("test_subscriber_manager")
         self.executor.add_node(self.node)
 
     def tearDown(self):

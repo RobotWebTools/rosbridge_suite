@@ -10,11 +10,9 @@ from rosbridge_library.internal import subscription_modifiers
 
 class TestMessageHandlers(unittest.TestCase):
     def setUp(self):
-        self.node_name = "test_subscription_modifiers"
-
         rclpy.init()
         self.executor = MultiThreadedExecutor()
-        self.node = Node(self.node_name)
+        self.node = Node("test_subscription_modifiers")
         self.executor.add_node(self.node)
 
     def tearDown(self):

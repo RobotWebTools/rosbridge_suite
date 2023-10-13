@@ -1,25 +1,35 @@
 #!/usr/bin/env python
+import time
 import unittest
 from json import dumps, loads
-from time import sleep
 
-import rospy
-import rostest
+import rclpy
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.capabilities.publish import Publish
-from rosbridge_library.protocol import (
+from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
     MissingArgumentException,
-    Protocol,
 )
+from rosbridge_library.protocol import Protocol
 from std_msgs.msg import String
 
 
 class TestAdvertise(unittest.TestCase):
     def setUp(self):
-        rospy.init_node("test_advertise")
+        rclpy.init()
+        self.executor = MultiThreadedExecutor()
+        self.node = Node("test_publish")
+        self.executor.add_node(self.node)
+
+    def tearDown(self):
+        self.executor.remove_node(self.node)
+        self.node.destroy_node()
+        rclpy.shutdown()
 
     def test_missing_arguments(self):
-        proto = Protocol("hello")
+        proto = Protocol("hello", self.node)
         pub = Publish(proto)
         msg = {"op": "publish"}
         self.assertRaises(MissingArgumentException, pub.publish, msg)
@@ -28,14 +38,14 @@ class TestAdvertise(unittest.TestCase):
         self.assertRaises(MissingArgumentException, pub.publish, msg)
 
     def test_invalid_arguments(self):
-        proto = Protocol("hello")
+        proto = Protocol("hello", self.node)
         pub = Publish(proto)
 
         msg = {"op": "publish", "topic": 3}
         self.assertRaises(InvalidArgumentException, pub.publish, msg)
 
     def test_publish_works(self):
-        proto = Protocol("hello")
+        proto = Protocol("hello", self.node)
         pub = Publish(proto)
         topic = "/test_publish_works"
         msg = {"data": "test publish works"}
@@ -45,16 +55,14 @@ class TestAdvertise(unittest.TestCase):
         def cb(msg):
             received["msg"] = msg
 
-        rospy.Subscriber(topic, String, cb)
+        subscriber_qos = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        self.node.create_subscription(String, topic, cb, subscriber_qos)
 
         pub_msg = loads(dumps({"op": "publish", "topic": topic, "msg": msg}))
         pub.publish(pub_msg)
-
-        sleep(0.5)
+        self.executor.spin_once()
+        time.sleep(0.5)
         self.assertEqual(received["msg"].data, msg["data"])
-
-
-PKG = "rosbridge_library"
-NAME = "test_publish"
-if __name__ == "__main__":
-    rostest.unitrun(PKG, NAME, TestAdvertise)
