@@ -8,7 +8,7 @@ import rclpy
 import rclpy.task
 from autobahn.twisted.websocket import WebSocketClientFactory, WebSocketClientProtocol
 from rcl_interfaces.srv import GetParameters
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from twisted.internet import reactor
 from twisted.internet.endpoints import TCP4ClientEndpoint
@@ -118,7 +118,7 @@ def run_websocket_test(
 ):
     context = rclpy.Context()
     rclpy.init(context=context)
-    executor = MultiThreadedExecutor(context=context)
+    executor = SingleThreadedExecutor(context=context)
     node = Node(node_name, context=context)
     executor.add_node(node)
 

@@ -4,7 +4,7 @@ import unittest
 from json import dumps, loads
 
 import rclpy
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.capabilities import subscribe
@@ -19,7 +19,7 @@ from std_msgs.msg import String
 class TestSubscribe(unittest.TestCase):
     def setUp(self):
         rclpy.init()
-        self.executor = MultiThreadedExecutor()
+        self.executor = SingleThreadedExecutor()
         self.node = Node("test_subscribe")
         self.executor.add_node(self.node)
 

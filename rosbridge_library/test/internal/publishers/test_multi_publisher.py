@@ -16,7 +16,7 @@ from rosbridge_library.util.ros import is_topic_published
 class TestMultiPublisher(unittest.TestCase):
     def setUp(self):
         rclpy.init()
-        self.executor = MultiThreadedExecutor()
+        self.executor = MultiThreadedExecutor(num_threads=2)
         self.node = Node("test_multi_publisher")
         self.executor.add_node(self.node)
 
@@ -146,6 +146,7 @@ class TestMultiPublisher(unittest.TestCase):
 
         p = MultiPublisher(topic, self.node, msg_type)
         p.publish(msg)
+        time.sleep(0.1)
         self.executor.spin_once()
         time.sleep(0.1)
         self.assertEqual(received["msg"].data, msg["data"])

@@ -3,7 +3,7 @@ import time
 import unittest
 
 import rclpy
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.internal.subscribers import manager
@@ -18,7 +18,7 @@ from std_msgs.msg import String
 class TestSubscriberManager(unittest.TestCase):
     def setUp(self):
         rclpy.init()
-        self.executor = MultiThreadedExecutor()
+        self.executor = SingleThreadedExecutor()
         self.node = Node("test_subscriber_manager")
         self.executor.add_node(self.node)
 

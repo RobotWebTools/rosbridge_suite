@@ -3,7 +3,7 @@ import time
 import unittest
 
 import rclpy
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
@@ -22,7 +22,7 @@ manager.unregister_timeout = 1.0
 class TestPublisherManager(unittest.TestCase):
     def setUp(self):
         rclpy.init()
-        self.executor = MultiThreadedExecutor()
+        self.executor = SingleThreadedExecutor()
         self.node = Node("test_publisher_manager")
         self.executor.add_node(self.node)
 

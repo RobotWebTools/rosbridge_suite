@@ -3,7 +3,7 @@ import time
 import unittest
 
 import rclpy
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rosbridge_library.internal import subscription_modifiers
 
@@ -11,7 +11,7 @@ from rosbridge_library.internal import subscription_modifiers
 class TestMessageHandlers(unittest.TestCase):
     def setUp(self):
         rclpy.init()
-        self.executor = MultiThreadedExecutor()
+        self.executor = SingleThreadedExecutor()
         self.node = Node("test_subscription_modifiers")
         self.executor.add_node(self.node)
 

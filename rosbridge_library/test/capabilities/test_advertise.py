@@ -4,7 +4,7 @@ import unittest
 from json import dumps, loads
 
 import rclpy
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rosbridge_library.capabilities.advertise import Advertise
 from rosbridge_library.internal import ros_loader
@@ -20,7 +20,7 @@ from rosbridge_library.util.ros import is_topic_published
 class TestAdvertise(unittest.TestCase):
     def setUp(self):
         rclpy.init()
-        self.executor = MultiThreadedExecutor()
+        self.executor = SingleThreadedExecutor()
         self.node = Node("test_advertise")
         self.executor.add_node(self.node)
 

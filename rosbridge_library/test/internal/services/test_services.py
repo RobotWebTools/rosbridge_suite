@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 import rclpy
 from rcl_interfaces.srv import ListParameters
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader, services
@@ -48,7 +48,9 @@ class ServiceTester:
         gen = c.extract_values(req)
         gen = populate_random_args(gen)
         self.input = gen
-        thread = services.ServiceCaller(self.name, gen, self.success, self.error, self.node)
+        thread = services.ServiceCaller(
+            self.name, gen, self.success, self.error, self.node, spin_rate=0.01
+        )
         thread.start()
         thread.join()
 
@@ -85,7 +87,7 @@ class ServiceTester:
 class TestServices(unittest.TestCase):
     def setUp(self):
         rclpy.init()
-        self.executor = MultiThreadedExecutor()
+        self.executor = SingleThreadedExecutor()
         self.node = Node("test_node")
         self.executor.add_node(self.node)
 
@@ -157,7 +159,9 @@ class TestServices(unittest.TestCase):
         self.node.destroy_client(p)
 
         # Now, call using the services
-        json_ret = services.call_service(self.node, self.node.get_name() + "/list_parameters")
+        json_ret = services.call_service(
+            self.node, self.node.get_name() + "/list_parameters", spin_rate=0.01
+        )
         for x, y in zip(ret.result().result.names, json_ret["result"]["names"]):
             self.assertEqual(x, y)
 
@@ -182,7 +186,12 @@ class TestServices(unittest.TestCase):
 
         # Now, call using the services
         services.ServiceCaller(
-            self.node.get_name() + "/list_parameters", None, success, error, self.node
+            self.node.get_name() + "/list_parameters",
+            None,
+            success,
+            error,
+            self.node,
+            spin_rate=0.01,
         ).start()
 
         time.sleep(0.2)

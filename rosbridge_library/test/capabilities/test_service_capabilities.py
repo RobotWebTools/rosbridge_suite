@@ -5,7 +5,7 @@ from json import dumps, loads
 from threading import Thread
 
 import rclpy
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.call_service import CallService
@@ -21,7 +21,7 @@ from rosbridge_library.protocol import Protocol
 class TestServiceCapabilities(unittest.TestCase):
     def setUp(self):
         rclpy.init()
-        self.executor = MultiThreadedExecutor()
+        self.executor = SingleThreadedExecutor()
         self.node = Node("test_service_capabilities")
         self.executor.add_node(self.node)
 
@@ -114,8 +114,8 @@ class TestServiceCapabilities(unittest.TestCase):
             )
         )
         self.received_message = None
-        sleep_time = 0.01
-        Thread(target=call_service.call_service, args=(call_msg, sleep_time)).start()
+        spin_rate = 0.01
+        Thread(target=call_service.call_service, args=(call_msg, spin_rate)).start()
 
         loop_iterations = 0
         while self.received_message is None:
@@ -183,8 +183,8 @@ class TestServiceCapabilities(unittest.TestCase):
             )
         )
         self.received_message = None
-        sleep_time = 0.01
-        Thread(target=call_service.call_service, args=(call_msg, sleep_time)).start()
+        spin_rate = 0.01
+        Thread(target=call_service.call_service, args=(call_msg, spin_rate)).start()
 
         loop_iterations = 0
         while self.received_message is None:

@@ -4,7 +4,7 @@ import unittest
 from json import dumps, loads
 
 import rclpy
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rosbridge_library.capabilities.call_service import CallService
 from rosbridge_library.internal.exceptions import (
@@ -33,7 +33,7 @@ class TestCallService(unittest.TestCase):
 
     def setUp(self):
         rclpy.init()
-        self.executor = MultiThreadedExecutor()
+        self.executor = SingleThreadedExecutor()
         self.node = Node("test_call_service")
         self.executor.add_node(self.node)
 
@@ -82,7 +82,7 @@ class TestCallService(unittest.TestCase):
 
         proto.send = cb
 
-        s.call_service(send_msg)
+        s.call_service(send_msg, spin_rate=0.01)
 
         timeout = 1.0
         start = time.time()
@@ -119,7 +119,7 @@ class TestCallService(unittest.TestCase):
 
         proto.send = cb
 
-        s.call_service(send_msg)
+        s.call_service(send_msg, spin_rate=0.01)
 
         timeout = 1.0
         start = time.time()
@@ -158,7 +158,7 @@ class TestCallService(unittest.TestCase):
 
         proto.send = cb
 
-        s.call_service(send_msg)
+        s.call_service(send_msg, spin_rate=0.01)
 
         timeout = 1.0
         start = time.time()
