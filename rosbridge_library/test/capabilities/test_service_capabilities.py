@@ -5,7 +5,6 @@ from json import dumps, loads
 from threading import Thread
 
 import rclpy
-from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.call_service import CallService
@@ -21,7 +20,6 @@ from rosbridge_library.protocol import Protocol
 class TestServiceCapabilities(unittest.TestCase):
     def setUp(self):
         rclpy.init()
-        self.executor = SingleThreadedExecutor()
         self.node = Node("test_service_capabilities")
 
         self.node.declare_parameter("call_services_in_new_thread", False)
@@ -39,14 +37,8 @@ class TestServiceCapabilities(unittest.TestCase):
         self.received_message = None
         self.log_entries = []
 
-        self.executor.add_node(self.node)
-        self.exec_thread = Thread(target=self.executor.spin)
-        self.exec_thread.start()
-
     def tearDown(self):
-        self.executor.remove_node(self.node)
         self.node.destroy_node()
-        self.executor.shutdown()
         rclpy.shutdown()
 
     def local_send_cb(self, msg):
@@ -91,7 +83,6 @@ class TestServiceCapabilities(unittest.TestCase):
         )
         self.advertise.advertise_service(advertise_msg)
 
-    @unittest.skip("This test blocks, need to fix this")
     def test_call_advertised_service(self):
         # Advertise the service
         service_path = "/set_bool_2"
@@ -123,6 +114,7 @@ class TestServiceCapabilities(unittest.TestCase):
 
         loop_iterations = 0
         while self.received_message is None:
+            rclpy.spin_once(self.node, timeout_sec=0.1)
             time.sleep(0.5)
             loop_iterations += 1
             if loop_iterations > 3:
@@ -150,6 +142,7 @@ class TestServiceCapabilities(unittest.TestCase):
 
         loop_iterations = 0
         while self.received_message is None:
+            rclpy.spin_once(self.node, timeout_sec=0.1)
             time.sleep(0.5)
             loop_iterations += 1
             if loop_iterations > 3:
@@ -159,7 +152,7 @@ class TestServiceCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["op"], "service_response")
         self.assertTrue(self.received_message["result"])
 
-    @unittest.skip("This test blocks, need to fix this")
+    @unittest.skip("This test currently raises an exception, need to fix this")
     def test_unadvertise_with_live_request(self):
         # Advertise the service
         service_path = "/set_bool_3"
@@ -191,6 +184,7 @@ class TestServiceCapabilities(unittest.TestCase):
 
         loop_iterations = 0
         while self.received_message is None:
+            rclpy.spin_once(self.node, timeout_sec=0.1)
             time.sleep(0.5)
             loop_iterations += 1
             if loop_iterations > 3:
@@ -202,12 +196,15 @@ class TestServiceCapabilities(unittest.TestCase):
         self.assertTrue("id" in self.received_message)
 
         # Now unadvertise the service
+        # TODO: This raises an exception, likely because of the following rclpy issue:
+        # https://github.com/ros2/rclpy/issues/1098
         response_msg = loads(dumps({"op": "unadvertise_service", "service": service_path}))
         self.received_message = None
         self.unadvertise.unadvertise_service(response_msg)
 
         loop_iterations = 0
         while self.received_message is None:
+            rclpy.spin_once(self.node, timeout_sec=0.1)
             time.sleep(0.5)
             loop_iterations += 1
             if loop_iterations > 3:
