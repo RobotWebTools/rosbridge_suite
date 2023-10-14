@@ -158,61 +158,61 @@ class TestServiceCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["op"], "service_response")
         self.assertTrue(self.received_message["result"])
 
-    # TODO: This test test currently blocks, need to figure out why
-    # def test_unadvertise_with_live_request(self):
-    #     # Advertise the service
-    #     service_path = "/set_bool_3"
-    #     advertise_msg = loads(
-    #         dumps(
-    #             {
-    #                 "op": "advertise_service",
-    #                 "type": "std_srvs/SetBool",
-    #                 "service": service_path,
-    #             }
-    #         )
-    #     )
-    #     self.received_message = None
-    #     self.advertise.advertise_service(advertise_msg)
+    @unittest.skip("Unadvertising currently blocks in this test, need to fix this")
+    def test_unadvertise_with_live_request(self):
+        # Advertise the service
+        service_path = "/set_bool_3"
+        advertise_msg = loads(
+            dumps(
+                {
+                    "op": "advertise_service",
+                    "type": "std_srvs/SetBool",
+                    "service": service_path,
+                }
+            )
+        )
+        self.received_message = None
+        self.advertise.advertise_service(advertise_msg)
 
-    #     # Now send the response
-    #     call_msg = loads(
-    #         dumps(
-    #             {
-    #                 "op": "call_service",
-    #                 "id": "foo",
-    #                 "service": service_path,
-    #                 "args": {"data": True},
-    #             }
-    #         )
-    #     )
-    #     self.received_message = None
-    #     Thread(target=self.call_service.call_service, args=(call_msg,)).start()
+        # Now send the response
+        call_msg = loads(
+            dumps(
+                {
+                    "op": "call_service",
+                    "id": "foo",
+                    "service": service_path,
+                    "args": {"data": True},
+                }
+            )
+        )
+        self.received_message = None
+        Thread(target=self.call_service.call_service, args=(call_msg,)).start()
 
-    #     loop_iterations = 0
-    #     while self.received_message is None:
-    #         time.sleep(0.5)
-    #         loop_iterations += 1
-    #         if loop_iterations > 3:
-    #             self.fail("Timed out waiting for service call message.")
+        loop_iterations = 0
+        while self.received_message is None:
+            time.sleep(0.5)
+            loop_iterations += 1
+            if loop_iterations > 3:
+                self.fail("Timed out waiting for service call message.")
 
-    #     self.assertFalse(self.received_message is None)
-    #     self.assertTrue("op" in self.received_message)
-    #     self.assertTrue(self.received_message["op"] == "call_service")
-    #     self.assertTrue("id" in self.received_message)
+        self.assertFalse(self.received_message is None)
+        self.assertTrue("op" in self.received_message)
+        self.assertTrue(self.received_message["op"] == "call_service")
+        self.assertTrue("id" in self.received_message)
 
-    #     # Now unadvertise the service
-    #     response_msg = loads(dumps({"op": "unadvertise_service", "service": service_path}))
-    #     self.received_message = None
-    #     self.unadvertise.unadvertise_service(response_msg)
+        # Now unadvertise the service
+        response_msg = loads(dumps({"op": "unadvertise_service", "service": service_path}))
+        self.received_message = None
+        self.unadvertise.unadvertise_service(response_msg)
 
-    #     loop_iterations = 0
-    #     while self.received_message is None:
-    #         time.sleep(0.5)
-    #         loop_iterations += 1
-    #         if loop_iterations > 3:
-    #             self.fail("Timed out waiting for unadvertise service message.")
+        loop_iterations = 0
+        while self.received_message is None:
+            time.sleep(0.5)
+            loop_iterations += 1
+            if loop_iterations > 3:
+                self.fail("Timed out waiting for unadvertise service message.")
 
-    #     self.assertFalse(self.received_message is None)
-    #     self.assertTrue("op" in self.received_message)
-    #     self.assertEqual(self.received_message["op"], "service_response")
-    #     self.assertFalse(self.received_message["result"])
+        self.assertFalse(self.received_message is None)
+        self.assertTrue("op" in self.received_message)
+        self.assertEqual(self.received_message["op"], "service_response")
+        self.assertFalse(self.received_message["result"])
