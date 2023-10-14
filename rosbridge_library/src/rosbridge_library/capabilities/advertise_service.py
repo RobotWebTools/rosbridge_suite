@@ -80,13 +80,6 @@ class AdvertisedServiceHandler:
                 future = self.request_futures[future_id]
                 future.set_exception(RuntimeError(f"Service {self.service_name} was unadvertised"))
         self.service_handle.destroy()
-        self.protocol.send(
-            {
-                "op": "service_response",
-                "id": future,
-                "result": False,
-            }
-        )
 
 
 class AdvertiseService(Capability):

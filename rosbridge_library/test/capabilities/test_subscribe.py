@@ -2,6 +2,7 @@
 import time
 import unittest
 from json import dumps, loads
+from threading import Thread
 
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
@@ -23,9 +24,13 @@ class TestSubscribe(unittest.TestCase):
         self.node = Node("test_subscribe")
         self.executor.add_node(self.node)
 
+        self.exec_thread = Thread(target=self.executor.spin)
+        self.exec_thread.start()
+
     def tearDown(self):
         self.executor.remove_node(self.node)
         self.node.destroy_node()
+        self.executor.shutdown()
         rclpy.shutdown()
 
     def dummy_cb(self, msg):
@@ -119,8 +124,6 @@ class TestSubscribe(unittest.TestCase):
             durability=DurabilityPolicy.TRANSIENT_LOCAL,
         )
         pub = self.node.create_publisher(String, topic, publisher_qos)
-        time.sleep(0.1)
         pub.publish(msg)
-        self.executor.spin_once()
         time.sleep(0.1)
         self.assertEqual(received["msg"]["msg"]["data"], msg.data)

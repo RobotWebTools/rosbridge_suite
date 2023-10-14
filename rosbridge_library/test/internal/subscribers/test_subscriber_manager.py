@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import time
 import unittest
+from threading import Thread
 
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
@@ -22,9 +23,13 @@ class TestSubscriberManager(unittest.TestCase):
         self.node = Node("test_subscriber_manager")
         self.executor.add_node(self.node)
 
+        self.exec_thread = Thread(target=self.executor.spin)
+        self.exec_thread.start()
+
     def tearDown(self):
         self.executor.remove_node(self.node)
         self.node.destroy_node()
+        self.executor.shutdown()
         rclpy.shutdown()
 
     def test_subscribe(self):
@@ -213,6 +218,5 @@ class TestSubscriberManager(unittest.TestCase):
         manager.subscribe(client, topic, cb, self.node, msg_type)
         time.sleep(0.1)
         pub.publish(msg)
-        self.executor.spin_once()
         time.sleep(0.1)
         self.assertEqual(msg.data, received["msg"]["data"])

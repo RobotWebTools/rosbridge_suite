@@ -2,6 +2,7 @@
 import random
 import time
 import unittest
+from threading import Thread
 
 import numpy as np
 import rclpy
@@ -49,7 +50,11 @@ class ServiceTester:
         gen = populate_random_args(gen)
         self.input = gen
         thread = services.ServiceCaller(
-            self.name, gen, self.success, self.error, self.node, spin_rate=0.01
+            self.name,
+            gen,
+            self.success,
+            self.error,
+            self.node,
         )
         thread.start()
         thread.join()
@@ -91,8 +96,12 @@ class TestServices(unittest.TestCase):
         self.node = Node("test_node")
         self.executor.add_node(self.node)
 
+        self.exec_thread = Thread(target=self.executor.spin)
+        self.exec_thread.start()
+
     def tearDown(self):
         self.executor.remove_node(self.node)
+        self.executor.shutdown()
         rclpy.shutdown()
 
     def msgs_equal(self, msg1, msg2):
@@ -155,12 +164,14 @@ class TestServices(unittest.TestCase):
         p = self.node.create_client(ListParameters, self.node.get_name() + "/list_parameters")
         p.wait_for_service(0.5)
         ret = p.call_async(ListParameters.Request())
-        self.executor.spin_until_future_complete(ret, 1.0)
+        while not ret.done():
+            time.sleep(0.1)
         self.node.destroy_client(p)
 
         # Now, call using the services
         json_ret = services.call_service(
-            self.node, self.node.get_name() + "/list_parameters", spin_rate=0.01
+            self.node,
+            self.node.get_name() + "/list_parameters",
         )
         for x, y in zip(ret.result().result.names, json_ret["result"]["names"]):
             self.assertEqual(x, y)
@@ -174,7 +185,9 @@ class TestServices(unittest.TestCase):
         p = self.node.create_client(ListParameters, self.node.get_name() + "/list_parameters")
         p.wait_for_service(0.5)
         ret = p.call_async(ListParameters.Request())
-        self.executor.spin_until_future_complete(ret)
+        while not ret.done():
+            time.sleep(0.1)
+        self.node.destroy_client(p)
 
         rcvd = {"json": None}
 
@@ -191,7 +204,6 @@ class TestServices(unittest.TestCase):
             success,
             error,
             self.node,
-            spin_rate=0.01,
         ).start()
 
         time.sleep(0.2)

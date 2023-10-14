@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import time
 import unittest
+from threading import Thread
 
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
@@ -26,9 +27,13 @@ class TestPublisherManager(unittest.TestCase):
         self.node = Node("test_publisher_manager")
         self.executor.add_node(self.node)
 
+        self.exec_thread = Thread(target=self.executor.spin)
+        self.exec_thread.start()
+
     def tearDown(self):
         self.executor.remove_node(self.node)
         self.node.destroy_node()
+        self.executor.shutdown()
         rclpy.shutdown()
 
     def test_register_publisher(self):
@@ -235,7 +240,6 @@ class TestPublisherManager(unittest.TestCase):
         self.node.create_subscription(String, topic, cb, subscriber_qos)
 
         manager.publish(client, topic, msg, self.node)
-        self.executor.spin_once()
         time.sleep(0.5)
         self.assertEqual(received["msg"].data, msg["data"])
 

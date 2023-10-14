@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import time
 import unittest
+from threading import Thread
 
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
@@ -20,9 +21,13 @@ class TestMultiPublisher(unittest.TestCase):
         self.node = Node("test_multi_publisher")
         self.executor.add_node(self.node)
 
+        self.exec_thread = Thread(target=self.executor.spin)
+        self.exec_thread.start()
+
     def tearDown(self):
         self.executor.remove_node(self.node)
         self.node.destroy_node()
+        self.executor.shutdown()
         rclpy.shutdown()
 
     def test_register_multipublisher(self):
@@ -121,7 +126,6 @@ class TestMultiPublisher(unittest.TestCase):
 
         p = MultiPublisher(topic, self.node, msg_type)
         p.publish(msg)
-        self.executor.spin_once()
         time.sleep(0.1)
         self.assertEqual(received["msg"].data, msg["data"])
 
@@ -147,8 +151,6 @@ class TestMultiPublisher(unittest.TestCase):
         p = MultiPublisher(topic, self.node, msg_type)
         p.publish(msg)
         time.sleep(0.1)
-        self.executor.spin_once()
-        time.sleep(0.1)
         self.assertEqual(received["msg"].data, msg["data"])
 
         p.unregister()
@@ -164,12 +166,10 @@ class TestMultiPublisher(unittest.TestCase):
 
         time.sleep(1)
         p.publish(msg)
-        self.executor.spin_once()
         self.assertIsNone(received["msg"])
 
         time.sleep(1)
         p.publish(msg)
-        self.executor.spin_once()
         self.assertEqual(received["msg"].data, msg["data"])
 
     def test_bad_publish(self):

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import time
 import unittest
+from threading import Thread
 
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
@@ -21,9 +22,13 @@ class TestMultiSubscriber(unittest.TestCase):
         self.node = Node("test_multi_subscriber")
         self.executor.add_node(self.node)
 
+        self.exec_thread = Thread(target=self.executor.spin)
+        self.exec_thread.start()
+
     def tearDown(self):
         self.executor.remove_node(self.node)
         self.node.destroy_node()
+        self.executor.shutdown()
         rclpy.shutdown()
 
     def test_register_multisubscriber(self):
@@ -110,7 +115,6 @@ class TestMultiSubscriber(unittest.TestCase):
         MultiSubscriber(topic, self.client_id, cb, self.node, msg_type=msg_type)
         time.sleep(0.1)
         pub.publish(msg)
-        self.executor.spin_once()
         time.sleep(0.1)
         self.assertEqual(msg.data, received["msg"]["data"])
 
@@ -136,7 +140,6 @@ class TestMultiSubscriber(unittest.TestCase):
             msg = Int32()
             msg.data = x
             pub.publish(msg)
-            self.executor.spin_once()
             time.sleep(0.01)
         time.sleep(0.1)
         self.assertEqual(numbers, received["msgs"])
@@ -161,13 +164,11 @@ class TestMultiSubscriber(unittest.TestCase):
         multi = MultiSubscriber(topic, self.client_id, cb, self.node, msg_type=msg_type)
         time.sleep(0.1)
         pub.publish(msg)
-        self.executor.spin_once()
         time.sleep(0.1)
         self.assertEqual(received["count"], 1)
         multi.unsubscribe(self.client_id)
         time.sleep(0.1)
         pub.publish(msg)
-        self.executor.spin_once()
         time.sleep(0.1)
         self.assertEqual(received["count"], 1)
 
@@ -198,8 +199,6 @@ class TestMultiSubscriber(unittest.TestCase):
         multi.subscribe(client2, cb2)
         time.sleep(0.1)
         pub.publish(msg)
-        self.executor.spin_once()
-        self.executor.spin_once()  # Need to spin twice due to 2 callbacks
         time.sleep(0.1)
         self.assertEqual(msg.data, received["msg1"]["data"])
         self.assertEqual(msg.data, received["msg2"]["data"])

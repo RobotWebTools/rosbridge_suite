@@ -2,8 +2,10 @@
 import time
 import unittest
 from json import dumps, loads
+from threading import Thread
 
 import rclpy
+from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rosbridge_library.capabilities.call_service import CallService
@@ -39,17 +41,28 @@ class TestCallService(unittest.TestCase):
 
         self.node.declare_parameter("call_services_in_new_thread", False)
 
-        # Create service servers
+        # Create service servers with a separate callback group
+        self.cb_group = ReentrantCallbackGroup()
         self.trigger_srv = self.node.create_service(
-            Trigger, self.node.get_name() + "/trigger", self.trigger_cb
+            Trigger,
+            self.node.get_name() + "/trigger",
+            self.trigger_cb,
+            callback_group=self.cb_group,
         )
         self.set_bool_srv = self.node.create_service(
-            SetBool, self.node.get_name() + "/set_bool", self.set_bool_cb
+            SetBool,
+            self.node.get_name() + "/set_bool",
+            self.set_bool_cb,
+            callback_group=self.cb_group,
         )
+
+        self.exec_thread = Thread(target=self.executor.spin)
+        self.exec_thread.start()
 
     def tearDown(self):
         self.executor.remove_node(self.node)
         self.node.destroy_node()
+        self.executor.shutdown()
         rclpy.shutdown()
 
     def test_missing_arguments(self):
@@ -82,7 +95,7 @@ class TestCallService(unittest.TestCase):
 
         proto.send = cb
 
-        s.call_service(send_msg, spin_rate=0.01)
+        s.call_service(send_msg)
 
         timeout = 1.0
         start = time.time()
@@ -119,7 +132,7 @@ class TestCallService(unittest.TestCase):
 
         proto.send = cb
 
-        s.call_service(send_msg, spin_rate=0.01)
+        s.call_service(send_msg)
 
         timeout = 1.0
         start = time.time()
@@ -158,7 +171,7 @@ class TestCallService(unittest.TestCase):
 
         proto.send = cb
 
-        s.call_service(send_msg, spin_rate=0.01)
+        s.call_service(send_msg)
 
         timeout = 1.0
         start = time.time()

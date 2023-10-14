@@ -2,6 +2,7 @@
 import time
 import unittest
 from json import dumps, loads
+from threading import Thread
 
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
@@ -23,12 +24,15 @@ class TestAdvertise(unittest.TestCase):
         self.executor = SingleThreadedExecutor()
         self.node = Node("test_advertise")
         self.executor.add_node(self.node)
+        self.exec_thread = Thread(target=self.executor.spin)
+        self.exec_thread.start()
 
         manager.unregister_timeout = 1.0
 
     def tearDown(self):
         self.executor.remove_node(self.node)
         self.node.destroy_node()
+        self.executor.shutdown()
         rclpy.shutdown()
 
     def test_missing_arguments(self):
