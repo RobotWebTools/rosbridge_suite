@@ -30,8 +30,10 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import time
 from threading import Thread
 
+import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.expand_topic_name import expand_topic_name
 from rosbridge_library.internal.message_conversion import (
@@ -99,7 +101,7 @@ def args_to_service_request_instance(service, inst, args):
     populate_instance(msg, inst)
 
 
-def call_service(node_handle, service, args=None):
+def call_service(node_handle, service, args=None, sleep_time=0.001):
     # Given the service name, fetch the type and class of the service,
     # and a request instance
     service = expand_topic_name(service, node_handle.get_name(), node_handle.get_namespace())
@@ -123,7 +125,11 @@ def call_service(node_handle, service, args=None):
         service_class, service, callback_group=ReentrantCallbackGroup()
     )
 
-    result = client.call(inst)
+    # result = client.call(inst)
+    future = client.call_async(inst)
+    while rclpy.ok() and not future.done():
+        time.sleep(sleep_time)
+    result = future.result()
 
     node_handle.destroy_client(client)
     if result is not None:

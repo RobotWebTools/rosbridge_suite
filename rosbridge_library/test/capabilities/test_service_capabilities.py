@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+import time
 import unittest
 from json import dumps, loads
+from threading import Thread
 
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
@@ -15,8 +17,6 @@ from rosbridge_library.internal.exceptions import (
 )
 from rosbridge_library.protocol import Protocol
 
-# from threading import Thread
-
 
 class TestServiceCapabilities(unittest.TestCase):
     def setUp(self):
@@ -25,8 +25,8 @@ class TestServiceCapabilities(unittest.TestCase):
         self.node = Node("test_service_capabilities")
         self.executor.add_node(self.node)
 
-        # self.exec_thread = Thread(target=self.executor.spin)
-        # self.exec_thread.start()
+        self.exec_thread = Thread(target=self.executor.spin)
+        self.exec_thread.start()
 
         self.node.declare_parameter("call_services_in_new_thread", False)
 
@@ -91,75 +91,74 @@ class TestServiceCapabilities(unittest.TestCase):
         )
         self.advertise.advertise_service(advertise_msg)
 
-    # TODO: These tests currently block, need to figure out why
+    def test_call_advertised_service(self):
+        # Advertise the service
+        service_path = "/set_bool_2"
+        advertise_msg = loads(
+            dumps(
+                {
+                    "op": "advertise_service",
+                    "type": "std_srvs/SetBool",
+                    "service": service_path,
+                }
+            )
+        )
+        self.received_message = None
+        self.advertise.advertise_service(advertise_msg)
 
-    # def test_call_advertised_service(self):
-    #     # Advertise the service
-    #     service_path = "/set_bool_2"
-    #     advertise_msg = loads(
-    #         dumps(
-    #             {
-    #                 "op": "advertise_service",
-    #                 "type": "std_srvs/SetBool",
-    #                 "service": service_path,
-    #             }
-    #         )
-    #     )
-    #     self.received_message = None
-    #     self.advertise.advertise_service(advertise_msg)
+        # Call the advertised service using rosbridge
+        self.received_message = None
+        call_msg = loads(
+            dumps(
+                {
+                    "op": "call_service",
+                    "id": "foo",
+                    "service": service_path,
+                    "args": {"data": True},
+                }
+            )
+        )
+        Thread(target=self.call_service.call_service, args=(call_msg,)).start()
 
-    #     # Call the advertised service using rosbridge
-    #     self.received_message = None
-    #     call_msg = loads(
-    #         dumps(
-    #             {
-    #                 "op": "call_service",
-    #                 "id": "foo",
-    #                 "service": service_path,
-    #                 "args": {"data": True},
-    #             }
-    #         )
-    #     )
-    #     Thread(target=self.call_service.call_service, args=(call_msg,)).start()
+        loop_iterations = 0
+        while self.received_message is None:
+            time.sleep(0.5)
+            loop_iterations += 1
+            if loop_iterations > 3:
+                self.fail("Timed out waiting for service call message.")
 
-    #     loop_iterations = 0
-    #     while self.received_message is None:
-    #         time.sleep(0.5)
-    #         loop_iterations += 1
-    #         if loop_iterations > 3:
-    #             self.fail("Timed out waiting for service call message.")
+        self.assertFalse(self.received_message is None)
+        self.assertTrue("op" in self.received_message)
+        self.assertTrue(self.received_message["op"] == "call_service")
+        self.assertTrue("id" in self.received_message)
 
-    #     self.assertFalse(self.received_message is None)
-    #     self.assertTrue("op" in self.received_message)
-    #     self.assertTrue(self.received_message["op"] == "call_service")
-    #     self.assertTrue("id" in self.received_message)
+        # Now send the response
+        response_msg = loads(
+            dumps(
+                {
+                    "op": "service_response",
+                    "service": service_path,
+                    "id": self.received_message["id"],
+                    "values": {"success": True, "message": "set bool to true"},
+                    "result": True,
+                }
+            )
+        )
+        self.received_message = None
+        self.response.service_response(response_msg)
 
-    #     # Now send the response
-    #     response_msg = loads(
-    #         dumps(
-    #             {
-    #                 "op": "service_response",
-    #                 "service": service_path,
-    #                 "id": self.received_message["id"],
-    #                 "values": {"success": True, "message": "set bool to true"},
-    #                 "result": True,
-    #             }
-    #         )
-    #     )
-    #     self.received_message = None
-    #     self.response.service_response(response_msg)
+        loop_iterations = 0
+        while self.received_message is None:
+            time.sleep(0.5)
+            loop_iterations += 1
+            if loop_iterations > 3:
+                self.fail("Timed out waiting for service response message.")
 
-    #     loop_iterations = 0
-    #     while self.received_message is None:
-    #         time.sleep(0.5)
-    #         loop_iterations += 1
-    #         if loop_iterations > 3:
-    #             self.fail("Timed out waiting for service response message.")
+        self.assertFalse(self.received_message is None)
+        self.assertEqual(self.received_message["op"], "service_response")
+        self.assertTrue(self.received_message["result"])
 
-    #     self.assertFalse(self.received_message is None)
-    #     self.assertEqual(self.received_message["op"], "service_response")
-    #     self.assertTrue(self.received_message["result"])
-
+    # TODO: This test test currently blocks, need to figure out why
     # def test_unadvertise_with_live_request(self):
     #     # Advertise the service
     #     service_path = "/set_bool_3"
