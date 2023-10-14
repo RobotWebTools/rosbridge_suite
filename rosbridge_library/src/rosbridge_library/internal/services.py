@@ -125,7 +125,6 @@ def call_service(node_handle, service, args=None, sleep_time=0.001):
         service_class, service, callback_group=ReentrantCallbackGroup()
     )
 
-    # result = client.call(inst)
     future = client.call_async(inst)
     while rclpy.ok() and not future.done():
         time.sleep(sleep_time)
