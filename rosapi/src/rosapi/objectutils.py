@@ -70,13 +70,11 @@ def get_typedef(type):
          - string[] constnames
          - string[] constvalues
     get_typedef will return a typedef dict for the specified message type"""
-    logging.warn(f'🎃 looking up type {type}')
 
     # Check if the type string indicates a sequence (array) type
     if type.startswith('sequence<') and type.endswith('>'):
         # Extract the inner type and continue processing
         type = type[9:-1]
-        logging.warn(f'🍎 sequence detected, so tranforming type to {type}')
     
     if type in atomics:
         # Atomics don't get a typedef
@@ -92,7 +90,7 @@ def get_typedef(type):
         type_def = _get_typedef(instance)
         return type_def
     except Exception as e:
-        logging.error(f"👺 An error occurred trying to get the type definition for {type}: {e}")
+        logging.error(f"An error occurred trying to get the type definition for {type}: {e}")
         return None
 
 
@@ -175,8 +173,6 @@ def _handle_array_information(instance):
         fieldnames.append(name)
 
         field_type, arraylen = _handle_type_and_array_len(instance, name)
-        logging.warn(f'🍄 instance {instance} and name {name} resolved to:')
-        logging.warn(f'🐸 field_type {field_type} and {arraylen}')
         fieldarraylen.append(arraylen)
 
         field_instance = getattr(instance, name)
