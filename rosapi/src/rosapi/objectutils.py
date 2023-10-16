@@ -52,10 +52,9 @@ atomics = [
     "uint64",
     "float",
     "float32",
-    "float64"
-    "double",
+    "float64" "double",
     "string",
-    "octet"
+    "octet",
 ]
 specials = ["time", "duration"]
 
@@ -72,10 +71,10 @@ def get_typedef(type):
     get_typedef will return a typedef dict for the specified message type"""
 
     # Check if the type string indicates a sequence (array) type
-    if type.startswith('sequence<') and type.endswith('>'):
+    if type.startswith("sequence<") and type.endswith(">"):
         # Extract the inner type and continue processing
         type = type[9:-1]
-    
+
     if type in atomics:
         # Atomics don't get a typedef
         return None
@@ -147,13 +146,15 @@ def _get_typedef(instance):
     if _valid_instance(instance):
         fieldnames, fieldtypes, fieldarraylen, examples = _handle_array_information(instance)
         constnames, constvalues = _handle_constant_information(instance)
-        typedef = _build_typedef_dictionary(instance, fieldnames, fieldtypes, fieldarraylen, examples, constnames, constvalues)
+        typedef = _build_typedef_dictionary(
+            instance, fieldnames, fieldtypes, fieldarraylen, examples, constnames, constvalues
+        )
         return typedef
 
 
 def _valid_instance(instance):
     """Check if instance is valid i.e.,
-     not None, has __slots__ and _fields_and_field_types attributes"""
+    not None, has __slots__ and _fields_and_field_types attributes"""
     return not (
         instance is None
         or not hasattr(instance, "__slots__")
@@ -180,27 +181,27 @@ def _handle_array_information(instance):
 
         example = _handle_example(arraylen, field_type, field_instance)
         examples.append(str(example))
-        
+
     return fieldnames, fieldtypes, fieldarraylen, examples
 
 
 def _handle_type_and_array_len(instance, name):
     """Extracts field type and determines its length if it's an array"""
-    
+
     # Get original field type using instance's _fields_and_field_types property
     field_type = instance._fields_and_field_types[name[1:]]
 
     # Check for a sequence type
-    is_sequence = field_type.startswith('sequence<') and field_type.endswith('>')
-    
+    is_sequence = field_type.startswith("sequence<") and field_type.endswith(">")
+
     # Initialize arraylen
     arraylen = -1
 
     # If field_type is a sequence, update the `field_type` variable.
     if is_sequence:
         # Extract the inner type and continue processing
-        field_type = field_type[9:-1]  
-        arraylen = 0  
+        field_type = field_type[9:-1]
+        arraylen = 0
     else:
         if field_type[-1:] == "]":
             if field_type[-2:-1] == "[":
@@ -210,7 +211,7 @@ def _handle_type_and_array_len(instance, name):
                 split = field_type.find("[")
                 arraylen = int(field_type[split + 1 : -1])
                 field_type = field_type[:split]
-          
+
     return field_type, arraylen
 
 
@@ -223,6 +224,7 @@ def _handle_example(arraylen, field_type, field_instance):
     else:
         example = field_instance
     return example
+
 
 def _handle_constant_information(instance):
     """Handles extraction of constants information including constant names and values"""
@@ -240,7 +242,9 @@ def _handle_constant_information(instance):
     return constnames, constvalues
 
 
-def _build_typedef_dictionary(instance, fieldnames, fieldtypes, fieldarraylen, examples, constnames, constvalues):
+def _build_typedef_dictionary(
+    instance, fieldnames, fieldtypes, fieldarraylen, examples, constnames, constvalues
+):
     """Builds the typedef dictionary from multiple inputs collected from instance"""
     typedef = {
         "type": _type_name_from_instance(instance),
