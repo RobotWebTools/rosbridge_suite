@@ -32,10 +32,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import inspect
+import logging
 
 from rosapi.stringify_field_types import stringify_field_types
 from rosbridge_library.internal import ros_loader
-import logging
 
 # Keep track of atomic types and special types
 atomics = [
