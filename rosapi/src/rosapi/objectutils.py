@@ -52,7 +52,8 @@ atomics = [
     "uint64",
     "float",
     "float32",
-    "float64" "double",
+    "float64",
+    "double",
     "string",
     "octet",
 ]
