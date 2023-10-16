@@ -40,6 +40,7 @@ import logging
 # Keep track of atomic types and special types
 atomics = [
     "bool",
+    "boolean",
     "byte",
     "int8",
     "uint8",
@@ -50,8 +51,11 @@ atomics = [
     "int64",
     "uint64",
     "float",
+    "float32",
+    "float64"
     "double",
     "string",
+    "octet"
 ]
 specials = ["time", "duration"]
 
