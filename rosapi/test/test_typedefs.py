@@ -3,15 +3,15 @@ import unittest
 
 import rosapi.objectutils as objectutils
 
-
 # Globally defined ros_loader, used inside the setUp and teardown functions
 ros_loader = None
+
 
 class TestUtils(unittest.TestCase):
     def setUp(self):
         global ros_loader
         self.original_ros_loader = ros_loader
-        ros_loader = self._mock_get_message_instance('default')
+        ros_loader = self._mock_get_message_instance("default")
 
     def tearDown(self):
         global ros_loader
@@ -21,6 +21,7 @@ class TestUtils(unittest.TestCase):
         class MockInstance(object):
             __slots__ = ["_" + type]
             _fields_and_field_types = {type: type}
+
         return MockInstance()
 
     def test_get_typedef_for_atomic_types(self):
