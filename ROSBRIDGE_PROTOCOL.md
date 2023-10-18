@@ -476,6 +476,7 @@ A response to a ROS service call
   "action_type": <string>,
   (optional) "feedback": <bool>,
   (optional) "goal_msg": <list<json>>
+}
 ```
 
 This command creates an action client with the specified action name and type if not already created; sends the goal msg to the action server and returns  the feedback and result of the goal.
@@ -493,6 +494,7 @@ This command creates an action client with the specified action name and type if
 { "op": "cancel_goal",
   (optional) "id": <string>,
   "action_name": <string>
+}
 ```
 
 This command cancels all the executing and pending goals of the specified action and return the result of cancel call.
@@ -503,9 +505,10 @@ This command cancels all the executing and pending goals of the specified action
  #### 3.3.12 Destroy Client
 
 ```json
-{ "op": "destroy_goal",
+{ "op": "destroy_client",
   (optional) "id": <string>,
   "action_name": <string>
+}
 ```
 This command destroys the action client if the action client was created on earlier send_goal calls.
 
