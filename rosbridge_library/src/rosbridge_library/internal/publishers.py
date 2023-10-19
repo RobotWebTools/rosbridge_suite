@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from multiprocessing.spawn import is_forking
 from threading import Timer
 
 from rclpy.duration import Duration

@@ -31,6 +31,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import time
+import traceback
+import datetime
 
 from rosbridge_library.capabilities.fragmentation import Fragmentation
 from rosbridge_library.util import bson, json
@@ -134,7 +136,7 @@ class Protocol:
                 # that receives exactly one full BSON message.
                 # This will then be passed to self.deserialize and shouldn't cause any
                 # exceptions because of fragmented messages (broken or invalid messages might still be sent tough)
-                self.log("error", "Exception in deserialization of BSON")
+                self.log("error", f"Exception in deserialization of BSON: {traceback.format_exc()}")
 
             else:
                 # TODO: handling of partial/multiple/broken json data in incoming buffer
@@ -387,9 +389,9 @@ class Protocol:
         """
         stdout_formatted_msg = None
         if lid is not None:
-            stdout_formatted_msg = f"[Client {self.client_id}] [id: {lid}] {message}"
+            stdout_formatted_msg = f"[{datetime.datetime.now()}] [Client {self.client_id}] [id: {lid}] {message}"
         else:
-            stdout_formatted_msg = f"[Client {self.client_id}] {message}"
+            stdout_formatted_msg = f"[{datetime.datetime.now()}] [Client {self.client_id}] {message}"
 
         if level == "error" or level == "err":
             self.node_handle.get_logger().error(stdout_formatted_msg)
