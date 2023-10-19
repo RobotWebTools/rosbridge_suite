@@ -29,7 +29,7 @@ class ActionClientRequests(Capability):
         protocol.register_operation("destroy_client", self.destroy_client)
         protocol.register_operation("cancel_goal", self.cancel_goal)
 
-        self._actionclients = {}
+        self._action_clients = {}
 
     def send_goal(self, msg):
         # Check the args
@@ -70,12 +70,12 @@ class ActionClientRequests(Capability):
         else:
             f_cb = None
 
-        if action_name not in self._actionclients:
-            self._actionclients[action_name] = ActionClientHandle(
+        if action_name not in self._action_clients:
+            self._action_clients[action_name] = ActionClientHandle(
                 action_name, action_type, self.protocol.node_handle
             )
 
-        GoalHandle(self._actionclients[action_name], goal_msg, s_cb, e_cb, f_cb).start()
+        GoalHandle(self._action_clients[action_name], goal_msg, s_cb, e_cb, f_cb).start()
 
     def _success(self, cid, action_name, message):
         outgoing_message = {
@@ -141,14 +141,14 @@ class ActionClientRequests(Capability):
         else:
             self.protocol.log("debug", "No action security glob, not checking Action client.")
 
-        if action_name not in self._actionclients:
+        if action_name not in self._action_clients:
             self.protocol.log("info", "action client %s not available" % action_name)
             return
-        self._actionclients[action_name].unregister()
-        del self._actionclients[action_name]
+        self._action_clients[action_name].unregister()
+        del self._action_clients[action_name]
 
-        if len(self._actionclients) == 0:
-            self._actionclients.clear()
+        if len(self._action_clients) == 0:
+            self._action_clients.clear()
 
         self.protocol.log("info", "Destroyed Action Client %s" % action_name)
 
@@ -157,11 +157,11 @@ class ActionClientRequests(Capability):
         action_name = msg.get("action_name")
         cid = msg.get("id", None)
 
-        if action_name not in self._actionclients:
+        if action_name not in self._action_clients:
             self.protocol.log("info", "action client %s not available" % action_name)
             return
 
-        result = self._actionclients[action_name].cancel_goal_call()
+        result = self._action_clients[action_name].cancel_goal_call()
 
         outgoing_message = {
             "op": "action_response",
@@ -176,9 +176,9 @@ class ActionClientRequests(Capability):
         self.protocol.log("info", "cancelled goals of %s" % action_name)
 
     def finish(self):
-        for clients in self._actionclients.values():
+        for clients in self._action_clients.values():
             clients.unregister()
-        self._actionclients.clear()
+        self._action_clients.clear()
         self.protocol.unregister_operation("send_goal")
         self.protocol.unregister_operation("destroy_client")
         self.protocol.unregister_operation("cancel_goal")

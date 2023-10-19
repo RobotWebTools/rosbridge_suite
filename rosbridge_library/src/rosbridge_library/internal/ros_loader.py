@@ -180,7 +180,7 @@ def _get_action_class(typestring):
         # The type string starts with the package and ends with the
         # class and contains module subnames in between. For
         # compatibility with ROS1 style types, we fall back to use a
-        # standard "srv" subname.
+        # standard "action" subname.
         splits = [x for x in typestring.split("/") if x]
         if len(splits) > 2:
             subname = ".".join(splits[1:-1])
