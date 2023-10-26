@@ -2,21 +2,36 @@
 import time
 import unittest
 from json import dumps, loads
+from threading import Thread
 
-import rospy
-import rostest
+import rclpy
+from rclpy.executors import SingleThreadedExecutor
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.capabilities import subscribe
-from rosbridge_library.protocol import (
+from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
     MissingArgumentException,
-    Protocol,
 )
+from rosbridge_library.protocol import Protocol
 from std_msgs.msg import String
 
 
 class TestSubscribe(unittest.TestCase):
     def setUp(self):
-        rospy.init_node("test_subscribe")
+        rclpy.init()
+        self.executor = SingleThreadedExecutor()
+        self.node = Node("test_subscribe")
+        self.executor.add_node(self.node)
+
+        self.exec_thread = Thread(target=self.executor.spin)
+        self.exec_thread.start()
+
+    def tearDown(self):
+        self.executor.remove_node(self.node)
+        self.node.destroy_node()
+        self.executor.shutdown()
+        rclpy.shutdown()
 
     def dummy_cb(self, msg):
         pass
@@ -28,7 +43,7 @@ class TestSubscribe(unittest.TestCase):
         topic = "/test_update_params"
         msg_type = "std_msgs/String"
 
-        subscription = subscribe.Subscription(client_id, topic, None)
+        subscription = subscribe.Subscription(client_id, topic, None, self.node)
 
         min_throttle_rate = 5
         min_queue_length = 2
@@ -60,13 +75,13 @@ class TestSubscribe(unittest.TestCase):
             subscription.unregister()
 
     def test_missing_arguments(self):
-        proto = Protocol("test_missing_arguments")
+        proto = Protocol("test_missing_arguments", self.node)
         sub = subscribe.Subscribe(proto)
         msg = {"op": "subscribe"}
         self.assertRaises(MissingArgumentException, sub.subscribe, msg)
 
     def test_invalid_arguments(self):
-        proto = Protocol("test_invalid_arguments")
+        proto = Protocol("test_invalid_arguments", self.node)
         sub = subscribe.Subscribe(proto)
 
         msg = {"op": "subscribe", "topic": 3}
@@ -88,7 +103,7 @@ class TestSubscribe(unittest.TestCase):
         self.assertRaises(InvalidArgumentException, sub.subscribe, msg)
 
     def test_subscribe_works(self):
-        proto = Protocol("test_subscribe_works")
+        proto = Protocol("test_subscribe_works", self.node)
         sub = subscribe.Subscribe(proto)
         topic = "/test_subscribe_works"
         msg = String()
@@ -104,15 +119,11 @@ class TestSubscribe(unittest.TestCase):
 
         sub.subscribe(loads(dumps({"op": "subscribe", "topic": topic, "type": msg_type})))
 
-        p = rospy.Publisher(topic, String, queue_size=5)
-        time.sleep(0.25)
-        p.publish(msg)
-
-        time.sleep(0.25)
+        publisher_qos = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        pub = self.node.create_publisher(String, topic, publisher_qos)
+        pub.publish(msg)
+        time.sleep(0.1)
         self.assertEqual(received["msg"]["msg"]["data"], msg.data)
-
-
-PKG = "rosbridge_library"
-NAME = "test_subscribe"
-if __name__ == "__main__":
-    rostest.unitrun(PKG, NAME, TestSubscribe)

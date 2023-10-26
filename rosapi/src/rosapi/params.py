@@ -234,7 +234,10 @@ def _get_param_names(node_name):
 
     request = ListParameters.Request()
     future = client.call_async(request)
-    rclpy.spin_until_future_complete(_node, future)
+    if _node.executor:
+        _node.executor.spin_until_future_complete(future)
+    else:
+        rclpy.spin_until_future_complete(_node, future)
     response = future.result()
 
     if response is not None:

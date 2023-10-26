@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import unittest
 
-import rostest
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
 from std_msgs.msg import String
 
@@ -26,9 +25,3 @@ class TestOutgoingMessage(unittest.TestCase):
 
         again = outgoing.get_cbor_values()
         self.assertTrue(result is again)
-
-
-PKG = "rosbridge_library"
-NAME = "test_outgoing_message"
-if __name__ == "__main__":
-    rostest.unitrun(PKG, NAME, TestOutgoingMessage)
