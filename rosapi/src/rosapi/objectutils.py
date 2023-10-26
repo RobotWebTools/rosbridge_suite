@@ -141,13 +141,9 @@ def _get_typedef(instance):
     examples = []
     constnames = []
     constvalues = []
-    for i in range(len(instance.__slots__)):
-        # Pull out the name
-        name = instance.__slots__[i]
-        fieldnames.append(name)
 
-        # Pull out the type and determine whether it's an array
-        field_type = instance._fields_and_field_types[name[1:]]  # Remove trailing underscore.
+    for field_name, field_type in instance.get_fields_and_field_types().items():
+        fieldnames.append(field_name)
         arraylen = -1
         if field_type[-1:] == "]":
             if field_type[-2:-1] == "[":
@@ -160,7 +156,7 @@ def _get_typedef(instance):
         fieldarraylen.append(arraylen)
 
         # Get the fully qualified type
-        field_instance = getattr(instance, name)
+        field_instance = getattr(instance, field_name)
         fieldtypes.append(_type_name(field_type, field_instance))
 
         # Set the example as appropriate
