@@ -3,6 +3,7 @@ import os
 import sys
 import unittest
 
+from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
 from std_srvs.srv import SetBool
 from twisted.python import log
@@ -26,7 +27,9 @@ class TestCallService(unittest.TestCase):
             res.message = "Hello, world!"
             return res
 
-        service = node.create_service(SetBool, "/test_service", service_cb)
+        service = node.create_service(
+            SetBool, "/test_service", service_cb, callback_group=ReentrantCallbackGroup()
+        )
 
         ws_client = await make_client()
         responses_future, ws_client.message_handler = expect_messages(

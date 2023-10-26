@@ -1,6 +1,6 @@
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2012, Willow Garage, Inc.
+# Copyright (c) 2023, Willow Garage, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,33 +30,18 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from base64 import standard_b64decode, standard_b64encode
-from io import BytesIO
-from math import ceil, floor, sqrt
 
-from PIL import Image
-
-
-def encode(string):
-    """PNG-compress the string in a square RGB image padded with '\n', return the b64 encoded bytes"""
-    string_bytes = string.encode("utf-8")
-    length = len(string_bytes)
-    width = floor(sqrt(length / 3.0))
-    height = ceil((length / 3.0) / width)
-    bytes_needed = int(width * height * 3)
-    string_padded = string_bytes + (b"\n" * (bytes_needed - length))
-    i = Image.frombytes("RGB", (int(width), int(height)), string_padded)
-    buff = BytesIO()
-    i.save(buff, "png")
-    encoded = standard_b64encode(buff.getvalue())
-    return encoded
+def is_topic_published(node, topic_name):
+    """Checks if a topic is published on a node."""
+    published_topic_data = node.get_publisher_names_and_types_by_node(
+        node.get_name(), node.get_namespace()
+    )
+    return any(topic[0] == topic_name for topic in published_topic_data)
 
 
-def decode(string):
-    """b64 decode the string, then PNG-decompress and remove the '\n' padding"""
-    decoded = standard_b64decode(string)
-    buff = BytesIO(decoded)
-    i = Image.open(buff, formats=("png",)).convert("RGB")
-    dec_str = i.tobytes().decode("utf-8")
-    dec_str = dec_str.replace("\n", "")  # Remove padding from encoding
-    return dec_str
+def is_topic_subscribed(node, topic_name):
+    """Checks if a topic is subscribed to by a node."""
+    subscribed_topic_data = node.get_subscriber_names_and_types_by_node(
+        node.get_name(), node.get_namespace()
+    )
+    return any(topic[0] == topic_name for topic in subscribed_topic_data)

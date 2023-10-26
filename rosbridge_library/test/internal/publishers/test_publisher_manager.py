@@ -1,25 +1,40 @@
 #!/usr/bin/env python
+import time
 import unittest
-from time import sleep
+from threading import Thread
 
-import rospy
-import rostest
+import rclpy
+from rclpy.executors import SingleThreadedExecutor
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 from rosbridge_library.internal.publishers import manager
 from rosbridge_library.internal.topics import (
     TopicNotEstablishedException,
     TypeConflictException,
 )
+from rosbridge_library.util.ros import is_topic_published
 from std_msgs.msg import String
+
+# Reduce this from its default of 10 to speed up tests
+manager.unregister_timeout = 1.0
 
 
 class TestPublisherManager(unittest.TestCase):
     def setUp(self):
-        rospy.init_node("test_publisher_manager")
-        manager.unregister_timeout = 1.0
+        rclpy.init()
+        self.executor = SingleThreadedExecutor()
+        self.node = Node("test_publisher_manager")
+        self.executor.add_node(self.node)
 
-    def is_topic_published(self, topicname):
-        return topicname in dict(rospy.get_published_topics()).keys()
+        self.exec_thread = Thread(target=self.executor.spin)
+        self.exec_thread.start()
+
+    def tearDown(self):
+        self.executor.remove_node(self.node)
+        self.node.destroy_node()
+        self.executor.shutdown()
+        rclpy.shutdown()
 
     def test_register_publisher(self):
         """Register a publisher on a clean topic with a good msg type"""
@@ -28,18 +43,19 @@ class TestPublisherManager(unittest.TestCase):
         client = "client_test_register_publisher"
 
         self.assertFalse(topic in manager._publishers)
-        self.assertFalse(self.is_topic_published(topic))
-        manager.register(client, topic, msg_type)
+        self.assertFalse(is_topic_published(self.node, topic))
+        manager.register(client, topic, self.node, msg_type)
         self.assertTrue(topic in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic))
+        self.assertTrue(is_topic_published(self.node, topic))
 
         manager.unregister(client, topic)
         self.assertTrue(topic in manager.unregister_timers)
         self.assertTrue(topic in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic))
-        sleep(manager.unregister_timeout * 1.1)
+        self.assertTrue(is_topic_published(self.node, topic))
+
+        time.sleep(manager.unregister_timeout + 1.0)
         self.assertFalse(topic in manager._publishers)
-        self.assertFalse(self.is_topic_published(topic))
+        self.assertFalse(is_topic_published(self.node, topic))
         self.assertFalse(topic in manager.unregister_timers)
 
     def test_register_publisher_multiclient(self):
@@ -49,23 +65,28 @@ class TestPublisherManager(unittest.TestCase):
         client2 = "client_test_register_publisher_2"
 
         self.assertFalse(topic in manager._publishers)
-        self.assertFalse(self.is_topic_published(topic))
-        manager.register(client1, topic, msg_type)
+        self.assertFalse(is_topic_published(self.node, topic))
+
+        manager.register(client1, topic, self.node, msg_type)
         self.assertTrue(topic in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic))
-        manager.register(client2, topic, msg_type)
+        self.assertTrue(is_topic_published(self.node, topic))
+
+        manager.register(client2, topic, self.node, msg_type)
         self.assertTrue(topic in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic))
+        self.assertTrue(is_topic_published(self.node, topic))
+
         manager.unregister(client1, topic)
         self.assertTrue(topic in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic))
+        self.assertTrue(is_topic_published(self.node, topic))
+
         manager.unregister(client2, topic)
         self.assertTrue(topic in manager.unregister_timers)
         self.assertTrue(topic in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic))
-        sleep(manager.unregister_timeout * 1.1)
+        self.assertTrue(is_topic_published(self.node, topic))
+
+        time.sleep(manager.unregister_timeout + 1.0)
         self.assertFalse(topic in manager._publishers)
-        self.assertFalse(self.is_topic_published(topic))
+        self.assertFalse(is_topic_published(self.node, topic))
         self.assertFalse(topic in manager.unregister_timers)
 
     def test_register_publisher_conflicting_types(self):
@@ -75,12 +96,15 @@ class TestPublisherManager(unittest.TestCase):
         client = "client_test_register_publisher_conflicting_types"
 
         self.assertFalse(topic in manager._publishers)
-        self.assertFalse(self.is_topic_published(topic))
-        manager.register(client, topic, msg_type)
-        self.assertTrue(topic in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic))
+        self.assertFalse(is_topic_published(self.node, topic))
 
-        self.assertRaises(TypeConflictException, manager.register, "client2", topic, msg_type_bad)
+        manager.register(client, topic, self.node, msg_type)
+        self.assertTrue(topic in manager._publishers)
+        self.assertTrue(is_topic_published(self.node, topic))
+
+        self.assertRaises(
+            TypeConflictException, manager.register, "client2", topic, self.node, msg_type_bad
+        )
 
     def test_register_multiple_publishers(self):
         topic1 = "/test_register_multiple_publishers1"
@@ -90,33 +114,36 @@ class TestPublisherManager(unittest.TestCase):
 
         self.assertFalse(topic1 in manager._publishers)
         self.assertFalse(topic2 in manager._publishers)
-        self.assertFalse(self.is_topic_published(topic1))
-        self.assertFalse(self.is_topic_published(topic2))
-        manager.register(client, topic1, msg_type)
+        self.assertFalse(is_topic_published(self.node, topic1))
+        self.assertFalse(is_topic_published(self.node, topic2))
+
+        manager.register(client, topic1, self.node, msg_type)
         self.assertTrue(topic1 in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic1))
+        self.assertTrue(is_topic_published(self.node, topic1))
         self.assertFalse(topic2 in manager._publishers)
-        self.assertFalse(self.is_topic_published(topic2))
-        manager.register(client, topic2, msg_type)
+        self.assertFalse(is_topic_published(self.node, topic2))
+
+        manager.register(client, topic2, self.node, msg_type)
         self.assertTrue(topic1 in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic1))
+        self.assertTrue(is_topic_published(self.node, topic1))
         self.assertTrue(topic2 in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic2))
+        self.assertTrue(is_topic_published(self.node, topic2))
 
         manager.unregister(client, topic1)
-        self.assertTrue(self.is_topic_published(topic1))
+        self.assertTrue(is_topic_published(self.node, topic1))
         self.assertTrue(topic1 in manager.unregister_timers)
         self.assertTrue(topic2 in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic2))
+        self.assertTrue(is_topic_published(self.node, topic2))
 
         manager.unregister(client, topic2)
         self.assertTrue(topic2 in manager.unregister_timers)
-        self.assertTrue(self.is_topic_published(topic2))
-        sleep(manager.unregister_timeout * 1.1)
+        self.assertTrue(is_topic_published(self.node, topic2))
+
+        time.sleep(manager.unregister_timeout + 1.0)
         self.assertFalse(topic1 in manager._publishers)
-        self.assertFalse(self.is_topic_published(topic1))
+        self.assertFalse(is_topic_published(self.node, topic1))
         self.assertFalse(topic2 in manager._publishers)
-        self.assertFalse(self.is_topic_published(topic2))
+        self.assertFalse(is_topic_published(self.node, topic2))
         self.assertFalse(topic1 in manager.unregister_timers)
         self.assertFalse(topic2 in manager.unregister_timers)
 
@@ -125,26 +152,32 @@ class TestPublisherManager(unittest.TestCase):
         client = "client_test_register_no_msgtype"
 
         self.assertFalse(topic in manager._publishers)
-        self.assertFalse(self.is_topic_published(topic))
-        self.assertRaises(TopicNotEstablishedException, manager.register, client, topic)
+        self.assertFalse(is_topic_published(self.node, topic))
+        self.assertRaises(TopicNotEstablishedException, manager.register, client, topic, self.node)
 
     def test_register_infer_topictype(self):
         topic = "/test_register_infer_topictype"
         client = "client_test_register_infer_topictype"
 
-        self.assertFalse(self.is_topic_published(topic))
+        self.assertFalse(is_topic_published(self.node, topic))
 
-        rospy.Publisher(topic, String)
+        publisher_qos = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        self.node.create_publisher(String, topic, publisher_qos)
+        time.sleep(0.1)
 
-        self.assertTrue(self.is_topic_published(topic))
+        self.assertTrue(is_topic_published(self.node, topic))
         self.assertFalse(topic in manager._publishers)
-        manager.register(client, topic)
+
+        manager.register(client, topic, self.node)
         self.assertTrue(topic in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic))
+        self.assertTrue(is_topic_published(self.node, topic))
 
         manager.unregister(client, topic)
         self.assertTrue(topic in manager.unregister_timers)
-        self.assertTrue(self.is_topic_published(topic))
+        self.assertTrue(is_topic_published(self.node, topic))
 
     def test_register_multiple_notopictype(self):
         topic = "/test_register_multiple_notopictype"
@@ -154,24 +187,29 @@ class TestPublisherManager(unittest.TestCase):
 
         self.assertFalse(topic in manager._publishers)
         self.assertFalse(topic in manager.unregister_timers)
-        self.assertFalse(self.is_topic_published(topic))
-        manager.register(client1, topic, msg_type)
+        self.assertFalse(is_topic_published(self.node, topic))
+
+        manager.register(client1, topic, self.node, msg_type)
         self.assertTrue(topic in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic))
-        manager.register(client2, topic)
+        self.assertTrue(is_topic_published(self.node, topic))
+
+        manager.register(client2, topic, self.node)
         self.assertTrue(topic in manager._publishers)
-        self.assertTrue(self.is_topic_published(topic))
+        self.assertTrue(is_topic_published(self.node, topic))
+
         manager.unregister(client1, topic)
         self.assertTrue(topic in manager._publishers)
         self.assertTrue(topic in manager.unregister_timers)
-        self.assertTrue(self.is_topic_published(topic))
+        self.assertTrue(is_topic_published(self.node, topic))
+
         manager.unregister(client2, topic)
         self.assertTrue(topic in manager.unregister_timers)
         self.assertTrue(topic in manager._publishers)
-        sleep(manager.unregister_timeout * 1.1)
+
+        time.sleep(manager.unregister_timeout + 1.0)
         self.assertFalse(topic in manager._publishers)
         self.assertFalse(topic in manager.unregister_timers)
-        self.assertFalse(self.is_topic_published(topic))
+        self.assertFalse(is_topic_published(self.node, topic))
 
     def test_publish_not_registered(self):
         topic = "/test_publish_not_registered"
@@ -179,8 +217,10 @@ class TestPublisherManager(unittest.TestCase):
         client = "client_test_publish_not_registered"
 
         self.assertFalse(topic in manager._publishers)
-        self.assertFalse(self.is_topic_published(topic))
-        self.assertRaises(TopicNotEstablishedException, manager.publish, client, topic, msg)
+        self.assertFalse(is_topic_published(self.node, topic))
+        self.assertRaises(
+            TopicNotEstablishedException, manager.publish, client, topic, msg, self.node
+        )
 
     def test_publisher_manager_publish(self):
         """Make sure that publishing works"""
@@ -193,10 +233,14 @@ class TestPublisherManager(unittest.TestCase):
         def cb(msg):
             received["msg"] = msg
 
-        rospy.Subscriber(topic, String, cb)
-        manager.publish(client, topic, msg)
-        sleep(0.5)
+        subscriber_qos = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        self.node.create_subscription(String, topic, cb, subscriber_qos)
 
+        manager.publish(client, topic, msg, self.node)
+        time.sleep(0.5)
         self.assertEqual(received["msg"].data, msg["data"])
 
     def test_publisher_manager_bad_publish(self):
@@ -206,11 +250,7 @@ class TestPublisherManager(unittest.TestCase):
         msg_type = "std_msgs/String"
         msg = {"data": 3}
 
-        manager.register(client, topic, msg_type)
-        self.assertRaises(FieldTypeMismatchException, manager.publish, client, topic, msg)
-
-
-PKG = "rosbridge_library"
-NAME = "test_publisher_manager"
-if __name__ == "__main__":
-    rostest.unitrun(PKG, NAME, TestPublisherManager)
+        manager.register(client, topic, self.node, msg_type)
+        self.assertRaises(
+            FieldTypeMismatchException, manager.publish, client, topic, msg, self.node
+        )

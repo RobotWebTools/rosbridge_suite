@@ -76,9 +76,10 @@ class AdvertisedServiceHandler:
                 f"Service {self.service_name} was unadvertised with a service call in progress, "
                 f"aborting service calls with request IDs {incomplete_ids}",
             )
-            for future in self.request_futures.values():
+            for future_id in self.request_futures:
+                future = self.request_futures[future_id]
                 future.set_exception(RuntimeError(f"Service {self.service_name} was unadvertised"))
-        self.protocol.node_handle.destroy_service(self.service_handle)
+        self.service_handle.destroy()
 
 
 class AdvertiseService(Capability):
@@ -138,4 +139,4 @@ class AdvertiseService(Capability):
         service_type = message["type"]
         service_handler = AdvertisedServiceHandler(service_name, service_type, self.protocol)
         self.protocol.external_service_list[service_name] = service_handler
-        self.protocol.log("info", "Advertised service %s." % service_name)
+        self.protocol.log("info", f"Advertised service {service_name}")

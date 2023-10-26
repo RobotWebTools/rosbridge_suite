@@ -119,7 +119,7 @@ def run_websocket_test(
     context = rclpy.Context()
     rclpy.init(context=context)
     executor = SingleThreadedExecutor(context=context)
-    node = rclpy.create_node(node_name, context=context)
+    node = Node(node_name, context=context)
     executor.add_node(node)
 
     async def task():
@@ -128,11 +128,12 @@ def run_websocket_test(
 
     future = executor.create_task(task)
 
-    reactor.callInThread(rclpy.spin_until_future_complete, node, future, executor)
+    reactor.callInThread(executor.spin_until_future_complete, future)
     reactor.run(installSignalHandlers=False)
 
-    rclpy.shutdown(context=context)
+    executor.remove_node(node)
     node.destroy_node()
+    rclpy.shutdown(context=context)
 
 
 def sleep(node: Node, duration: float) -> Awaitable[None]:
