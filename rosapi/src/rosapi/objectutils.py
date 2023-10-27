@@ -32,6 +32,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import inspect
+import logging
+import re
 
 from rosapi.stringify_field_types import stringify_field_types
 from rosbridge_library.internal import ros_loader
@@ -39,6 +41,7 @@ from rosbridge_library.internal import ros_loader
 # Keep track of atomic types and special types
 atomics = [
     "bool",
+    "boolean",
     "byte",
     "int8",
     "uint8",
@@ -48,9 +51,12 @@ atomics = [
     "uint32",
     "int64",
     "uint64",
+    "float",
     "float32",
     "float64",
+    "double",
     "string",
+    "octet",
 ]
 specials = ["time", "duration"]
 
@@ -65,6 +71,12 @@ def get_typedef(type):
          - string[] constnames
          - string[] constvalues
     get_typedef will return a typedef dict for the specified message type"""
+
+    # Check if the type string indicates a sequence (array) type
+    if matches := re.findall("sequence<([^<]+)>", type):
+        # Extract the inner type and continue processing
+        type = matches[0]
+
     if type in atomics:
         # Atomics don't get a typedef
         return None
@@ -74,8 +86,13 @@ def get_typedef(type):
         return _get_special_typedef(type)
 
     # Fetch an instance and return its typedef
-    instance = ros_loader.get_message_instance(type)
-    return _get_typedef(instance)
+    try:
+        instance = ros_loader.get_message_instance(type)
+        type_def = _get_typedef(instance)
+        return type_def
+    except (ros_loader.InvalidModuleException, ros_loader.InvalidClassException) as e:
+        logging.error(f"An error occurred trying to get the type definition for {type}: {e}")
+        return None
 
 
 def get_service_request_typedef(servicetype):
@@ -128,27 +145,63 @@ def get_typedef_full_text(ty):
 
 def _get_typedef(instance):
     """Gets a typedef dict for the specified instance"""
-    if (
+    if _valid_instance(instance):
+        fieldnames, fieldtypes, fieldarraylen, examples = _handle_array_information(instance)
+        constnames, constvalues = _handle_constant_information(instance)
+        typedef = _build_typedef_dictionary(
+            instance, fieldnames, fieldtypes, fieldarraylen, examples, constnames, constvalues
+        )
+        return typedef
+
+
+def _valid_instance(instance):
+    """Check if instance is valid i.e.,
+    not None, has __slots__ and _fields_and_field_types attributes"""
+    return not (
         instance is None
         or not hasattr(instance, "__slots__")
         or not hasattr(instance, "_fields_and_field_types")
-    ):
-        return None
+    )
 
+
+def _handle_array_information(instance):
+    """Handles extraction of array information including field names, types,
+    lengths and examples"""
     fieldnames = []
     fieldtypes = []
     fieldarraylen = []
     examples = []
-    constnames = []
-    constvalues = []
     for i in range(len(instance.__slots__)):
-        # Pull out the name
         name = instance.__slots__[i]
         fieldnames.append(name)
 
-        # Pull out the type and determine whether it's an array
-        field_type = instance._fields_and_field_types[name[1:]]  # Remove trailing underscore.
-        arraylen = -1
+        field_type, arraylen = _handle_type_and_array_len(instance, name)
+        fieldarraylen.append(arraylen)
+
+        field_instance = getattr(instance, name)
+        fieldtypes.append(_type_name(field_type, field_instance))
+
+        example = _handle_example(arraylen, field_type, field_instance)
+        examples.append(str(example))
+
+    return fieldnames, fieldtypes, fieldarraylen, examples
+
+
+def _handle_type_and_array_len(instance, name):
+    """Extracts field type and determines its length if it's an array"""
+
+    # Get original field type using instance's _fields_and_field_types property
+    field_type = instance._fields_and_field_types[name[1:]]
+
+    # Initialize arraylen
+    arraylen = -1
+
+    # If field_type is a sequence, update the `field_type` variable.
+    if matches := re.findall("sequence<([^<]+)>", field_type):
+        # Extract the inner type and continue processing
+        field_type = matches[0]
+        arraylen = 0
+    else:
         if field_type[-1:] == "]":
             if field_type[-2:-1] == "[":
                 arraylen = 0
@@ -157,21 +210,25 @@ def _get_typedef(instance):
                 split = field_type.find("[")
                 arraylen = int(field_type[split + 1 : -1])
                 field_type = field_type[:split]
-        fieldarraylen.append(arraylen)
 
-        # Get the fully qualified type
-        field_instance = getattr(instance, name)
-        fieldtypes.append(_type_name(field_type, field_instance))
+    return field_type, arraylen
 
-        # Set the example as appropriate
+
+def _handle_example(arraylen, field_type, field_instance):
+    """Determines the example of a field instance, whether it's an array or atomic type"""
+    if arraylen >= 0:
+        example = []
+    elif field_type not in atomics:
+        example = {}
+    else:
         example = field_instance
-        if arraylen >= 0:
-            example = []
-        elif field_type not in atomics:
-            example = {}
-        examples.append(str(example))
+    return example
 
-    # Add pseudo constants names and values filtering members
+
+def _handle_constant_information(instance):
+    """Handles extraction of constants information including constant names and values"""
+    constnames = []
+    constvalues = []
     attributes = inspect.getmembers(instance)
     for attribute in attributes:
         if (
@@ -181,7 +238,13 @@ def _get_typedef(instance):
         ):
             constnames.append(str(attribute[0]))
             constvalues.append(str(attribute[1]))
+    return constnames, constvalues
 
+
+def _build_typedef_dictionary(
+    instance, fieldnames, fieldtypes, fieldarraylen, examples, constnames, constvalues
+):
+    """Builds the typedef dictionary from multiple inputs collected from instance"""
     typedef = {
         "type": _type_name_from_instance(instance),
         "fieldnames": fieldnames,
@@ -191,7 +254,6 @@ def _get_typedef(instance):
         "constnames": constnames,
         "constvalues": constvalues,
     }
-
     return typedef
 
 
