@@ -33,6 +33,7 @@
 
 import inspect
 import logging
+import re
 
 from rosapi.stringify_field_types import stringify_field_types
 from rosbridge_library.internal import ros_loader
@@ -72,9 +73,9 @@ def get_typedef(type):
     get_typedef will return a typedef dict for the specified message type"""
 
     # Check if the type string indicates a sequence (array) type
-    if type.startswith("sequence<") and type.endswith(">"):
+    if matches := re.findall("sequence<([^<]+)>", type):
         # Extract the inner type and continue processing
-        type = type[9:-1]
+        type = matches[0]
 
     if type in atomics:
         # Atomics don't get a typedef
@@ -89,7 +90,7 @@ def get_typedef(type):
         instance = ros_loader.get_message_instance(type)
         type_def = _get_typedef(instance)
         return type_def
-    except Exception as e:
+    except (InvalidModuleException, InvalidClassException) as e:
         logging.error(f"An error occurred trying to get the type definition for {type}: {e}")
         return None
 
@@ -192,16 +193,13 @@ def _handle_type_and_array_len(instance, name):
     # Get original field type using instance's _fields_and_field_types property
     field_type = instance._fields_and_field_types[name[1:]]
 
-    # Check for a sequence type
-    is_sequence = field_type.startswith("sequence<") and field_type.endswith(">")
-
     # Initialize arraylen
     arraylen = -1
 
     # If field_type is a sequence, update the `field_type` variable.
-    if is_sequence:
+    if matches := re.findall("sequence<([^<]+)>", field_type):
         # Extract the inner type and continue processing
-        field_type = field_type[9:-1]
+        field_type = matches[0]
         arraylen = 0
     else:
         if field_type[-1:] == "]":
