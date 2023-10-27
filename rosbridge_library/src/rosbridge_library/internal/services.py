@@ -30,8 +30,11 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import time
 from threading import Thread
 
+import rclpy
+from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.expand_topic_name import expand_topic_name
 from rosbridge_library.internal.message_conversion import (
     extract_values,
@@ -63,7 +66,7 @@ class ServiceCaller(Thread):
         service call
         error_callback   -- a callback to call if an error occurs.  The
         callback will be passed the exception that caused the failure
-        node_handle      -- a ROS2 node handle to call services.
+        node_handle      -- a ROS 2 node handle to call services.
         """
         Thread.__init__(self)
         self.daemon = True
@@ -76,7 +79,7 @@ class ServiceCaller(Thread):
     def run(self):
         try:
             # Call the service and pass the result to the success handler
-            self.success(call_service(self.node_handle, self.service, self.args))
+            self.success(call_service(self.node_handle, self.service, args=self.args))
         except Exception as e:
             # On error, just pass the exception to the error handler
             self.error(e)
@@ -98,11 +101,9 @@ def args_to_service_request_instance(service, inst, args):
     populate_instance(msg, inst)
 
 
-def call_service(node_handle, service, args=None):
+def call_service(node_handle, service, args=None, sleep_time=0.001):
     # Given the service name, fetch the type and class of the service,
     # and a request instance
-
-    # This should be equivalent to rospy.resolve_name.
     service = expand_topic_name(service, node_handle.get_name(), node_handle.get_namespace())
 
     service_names_and_types = dict(node_handle.get_service_names_and_types())
@@ -120,9 +121,14 @@ def call_service(node_handle, service, args=None):
     # Populate the instance with the provided args
     args_to_service_request_instance(service, inst, args)
 
-    client = node_handle.create_client(service_class, service)
+    client = node_handle.create_client(
+        service_class, service, callback_group=ReentrantCallbackGroup()
+    )
 
-    result = client.call(inst)
+    future = client.call_async(inst)
+    while rclpy.ok() and not future.done():
+        time.sleep(sleep_time)
+    result = future.result()
 
     node_handle.destroy_client(client)
     if result is not None:

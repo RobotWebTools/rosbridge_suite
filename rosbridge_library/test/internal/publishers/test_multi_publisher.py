@@ -1,41 +1,54 @@
 #!/usr/bin/env python
+import time
 import unittest
-from time import sleep
+from threading import Thread
 
-import rospy
-import rostest
+import rclpy
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 from rosbridge_library.internal.publishers import MultiPublisher
 from rosbridge_library.internal.topics import TypeConflictException
+from rosbridge_library.util.ros import is_topic_published
 
 
 class TestMultiPublisher(unittest.TestCase):
     def setUp(self):
-        rospy.init_node("test_multi_publisher")
+        rclpy.init()
+        self.executor = MultiThreadedExecutor(num_threads=2)
+        self.node = Node("test_multi_publisher")
+        self.executor.add_node(self.node)
 
-    def is_topic_published(self, topicname):
-        return topicname in dict(rospy.get_published_topics()).keys()
+        self.exec_thread = Thread(target=self.executor.spin)
+        self.exec_thread.start()
+
+    def tearDown(self):
+        self.executor.remove_node(self.node)
+        self.node.destroy_node()
+        self.executor.shutdown()
+        rclpy.shutdown()
 
     def test_register_multipublisher(self):
         """Register a publisher on a clean topic with a good msg type"""
         topic = "/test_register_multipublisher"
         msg_type = "std_msgs/String"
 
-        self.assertFalse(self.is_topic_published(topic))
-        _ = MultiPublisher(topic, msg_type)
-        self.assertTrue(self.is_topic_published(topic))
+        self.assertFalse(is_topic_published(self.node, topic))
+        MultiPublisher(topic, self.node, msg_type)
+        self.assertTrue(is_topic_published(self.node, topic))
 
     def test_unregister_multipublisher(self):
         """Register and unregister a publisher on a clean topic with a good msg type"""
         topic = "/test_unregister_multipublisher"
         msg_type = "std_msgs/String"
 
-        self.assertFalse(self.is_topic_published(topic))
-        multipublisher = MultiPublisher(topic, msg_type)
-        self.assertTrue(self.is_topic_published(topic))
-        multipublisher.unregister()
-        self.assertFalse(self.is_topic_published(topic))
+        self.assertFalse(is_topic_published(self.node, topic))
+        p = MultiPublisher(topic, self.node, msg_type)
+        self.assertTrue(is_topic_published(self.node, topic))
+        p.unregister()
+        self.assertFalse(is_topic_published(self.node, topic))
 
     def test_register_client(self):
         """Adds a publisher then removes it."""
@@ -43,7 +56,7 @@ class TestMultiPublisher(unittest.TestCase):
         msg_type = "std_msgs/String"
         client_id = "client1"
 
-        p = MultiPublisher(topic, msg_type)
+        p = MultiPublisher(topic, self.node, msg_type)
         self.assertFalse(p.has_clients())
 
         p.register_client(client_id)
@@ -57,16 +70,16 @@ class TestMultiPublisher(unittest.TestCase):
         topic = "/test_register_multiple_clients"
         msg_type = "std_msgs/String"
 
-        p = MultiPublisher(topic, msg_type)
+        p = MultiPublisher(topic, self.node, msg_type)
         self.assertFalse(p.has_clients())
 
         for i in range(1000):
-            p.register_client("client%d" % i)
+            p.register_client(f"client{i}")
             self.assertTrue(p.has_clients())
 
         for i in range(1000):
             self.assertTrue(p.has_clients())
-            p.unregister_client("client%d" % i)
+            p.unregister_client(f"client{i}")
 
         self.assertFalse(p.has_clients())
 
@@ -87,7 +100,7 @@ class TestMultiPublisher(unittest.TestCase):
             "sensor_msgs/PointCloud2",
         ]
 
-        p = MultiPublisher(topic, msg_type)
+        p = MultiPublisher(topic, self.node, msg_type)
         p.verify_type(msg_type)
         for othertype in othertypes:
             self.assertRaises(TypeConflictException, p.verify_type, othertype)
@@ -103,12 +116,60 @@ class TestMultiPublisher(unittest.TestCase):
         def cb(msg):
             received["msg"] = msg
 
-        rospy.Subscriber(topic, ros_loader.get_message_class(msg_type), cb)
-        p = MultiPublisher(topic, msg_type)
+        subscriber_qos = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        self.node.create_subscription(
+            ros_loader.get_message_class(msg_type), topic, cb, subscriber_qos
+        )
+
+        p = MultiPublisher(topic, self.node, msg_type)
         p.publish(msg)
+        time.sleep(0.1)
+        self.assertEqual(received["msg"].data, msg["data"])
 
-        sleep(0.5)
+    def test_publish_twice(self):
+        """Make sure that publishing works"""
+        topic = "/test_publish_twice"
+        msg_type = "std_msgs/String"
+        msg = {"data": "why halo thar"}
 
+        received = {"msg": None}
+
+        def cb(msg):
+            received["msg"] = msg
+
+        subscriber_qos = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        self.node.create_subscription(
+            ros_loader.get_message_class(msg_type), topic, cb, subscriber_qos
+        )
+
+        p = MultiPublisher(topic, self.node, msg_type)
+        p.publish(msg)
+        time.sleep(0.1)
+        self.assertEqual(received["msg"].data, msg["data"])
+
+        p.unregister()
+        # The publisher went away at time T. Here's the timeline of the events:
+        # T+1 seconds - the subscriber will retry to reconnect
+        # T+2 seconds - publish msg -> it's gone
+        # T+3 seconds - publish msg -> OK
+        time.sleep(1)
+
+        received["msg"] = None
+        self.assertIsNone(received["msg"])
+        p = MultiPublisher(topic, self.node, msg_type)
+
+        time.sleep(1)
+        p.publish(msg)
+        self.assertIsNone(received["msg"])
+
+        time.sleep(1)
+        p.publish(msg)
         self.assertEqual(received["msg"].data, msg["data"])
 
     def test_bad_publish(self):
@@ -117,11 +178,5 @@ class TestMultiPublisher(unittest.TestCase):
         msg_type = "std_msgs/String"
         msg = {"data": 3}
 
-        p = MultiPublisher(topic, msg_type)
+        p = MultiPublisher(topic, self.node, msg_type)
         self.assertRaises(FieldTypeMismatchException, p.publish, msg)
-
-
-PKG = "rosbridge_library"
-NAME = "test_multi_publisher"
-if __name__ == "__main__":
-    rostest.unitrun(PKG, NAME, TestMultiPublisher)

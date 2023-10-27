@@ -2,10 +2,12 @@
 import random
 import time
 import unittest
+from threading import Thread
 
 import numpy as np
 import rclpy
 from rcl_interfaces.srv import ListParameters
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader, services
@@ -31,24 +33,35 @@ def populate_random_args(d):
 
 
 class ServiceTester:
-    def __init__(self, name, srv_type):
+    def __init__(self, executor, name, srv_type):
         self.name = name
+        self.executor = executor
         self.node = Node("service_tester_" + srv_type.replace("/", "_"))
+        self.executor.add_node(self.node)
         self.srvClass = ros_loader.get_service_class(srv_type)
         self.service = self.node.create_service(self.srvClass, name, self.callback)
+
+    def __del__(self):
+        self.executor.remove_node(self.node)
 
     def start(self):
         req = self.srvClass.Request()
         gen = c.extract_values(req)
         gen = populate_random_args(gen)
         self.input = gen
-        thread = services.ServiceCaller(self.name, gen, self.success, self.error, self.node)
+        thread = services.ServiceCaller(
+            self.name,
+            gen,
+            self.success,
+            self.error,
+            self.node,
+        )
         thread.start()
         thread.join()
 
     def callback(self, req, res):
         self.req = req
-        time.sleep(0.5)
+        time.sleep(0.1)
         gen = c.extract_values(res)
         gen = populate_random_args(gen)
         try:
@@ -79,9 +92,16 @@ class ServiceTester:
 class TestServices(unittest.TestCase):
     def setUp(self):
         rclpy.init()
+        self.executor = SingleThreadedExecutor()
         self.node = Node("test_node")
+        self.executor.add_node(self.node)
+
+        self.exec_thread = Thread(target=self.executor.spin)
+        self.exec_thread.start()
 
     def tearDown(self):
+        self.executor.remove_node(self.node)
+        self.executor.shutdown()
         rclpy.shutdown()
 
     def msgs_equal(self, msg1, msg2):
@@ -144,10 +164,15 @@ class TestServices(unittest.TestCase):
         p = self.node.create_client(ListParameters, self.node.get_name() + "/list_parameters")
         p.wait_for_service(0.5)
         ret = p.call_async(ListParameters.Request())
-        rclpy.spin_until_future_complete(self.node, ret)
+        while not ret.done():
+            time.sleep(0.1)
+        self.node.destroy_client(p)
 
         # Now, call using the services
-        json_ret = services.call_service(self.node, self.node.get_name() + "/list_parameters")
+        json_ret = services.call_service(
+            self.node,
+            self.node.get_name() + "/list_parameters",
+        )
         for x, y in zip(ret.result().result.names, json_ret["result"]["names"]):
             self.assertEqual(x, y)
 
@@ -160,7 +185,9 @@ class TestServices(unittest.TestCase):
         p = self.node.create_client(ListParameters, self.node.get_name() + "/list_parameters")
         p.wait_for_service(0.5)
         ret = p.call_async(ListParameters.Request())
-        rclpy.spin_until_future_complete(self.node, ret)
+        while not ret.done():
+            time.sleep(0.1)
+        self.node.destroy_client(p)
 
         rcvd = {"json": None}
 
@@ -172,18 +199,24 @@ class TestServices(unittest.TestCase):
 
         # Now, call using the services
         services.ServiceCaller(
-            self.node.get_name() + "/list_parameters", None, success, error, self.node
+            self.node.get_name() + "/list_parameters",
+            None,
+            success,
+            error,
+            self.node,
         ).start()
 
-        time.sleep(0.5)
+        time.sleep(0.2)
 
         for x, y in zip(ret.result().result.names, rcvd["json"]["result"]["names"]):
             self.assertEqual(x, y)
 
     def test_service_tester(self):
-        t = ServiceTester("/test_service_tester", "rosbridge_test_msgs/TestRequestAndResponse")
+        t = ServiceTester(
+            self.executor, "/test_service_tester", "rosbridge_test_msgs/TestRequestAndResponse"
+        )
         t.start()
-        time.sleep(1.0)
+        time.sleep(0.2)
         t.validate(self.msgs_equal)
 
     def test_service_tester_alltypes(self):
@@ -197,11 +230,13 @@ class TestServices(unittest.TestCase):
             "TestMultipleRequestFields",
             "TestArrayRequest",
         ]:
-            t = ServiceTester("/test_service_tester_alltypes_" + srv, "rosbridge_test_msgs/" + srv)
+            t = ServiceTester(
+                self.executor, "/test_service_tester_alltypes_" + srv, "rosbridge_test_msgs/" + srv
+            )
             t.start()
             ts.append(t)
 
-        time.sleep(1.0)
+        time.sleep(0.2)
 
         for t in ts:
             t.validate(self.msgs_equal)
@@ -219,11 +254,11 @@ class TestServices(unittest.TestCase):
         ]
         ts = []
         for srv in common:
-            t = ServiceTester("/test_random_service_types/" + srv, srv)
+            t = ServiceTester(self.executor, "/test_random_service_types/" + srv, srv)
             t.start()
             ts.append(t)
 
-        time.sleep(1.0)
+        time.sleep(0.2)
 
         for t in ts:
             t.validate(self.msgs_equal)

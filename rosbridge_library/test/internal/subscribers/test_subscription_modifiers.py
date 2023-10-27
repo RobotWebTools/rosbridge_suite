@@ -2,28 +2,41 @@
 import time
 import unittest
 
-import rospy
-import rostest
-from rosbridge_library.internal import subscription_modifiers as subscribe
+import rclpy
+from rclpy.executors import SingleThreadedExecutor
+from rclpy.node import Node
+from rosbridge_library.internal import subscription_modifiers
 
 
 class TestMessageHandlers(unittest.TestCase):
     def setUp(self):
-        rospy.init_node("test_message_handlers")
+        rclpy.init()
+        self.executor = SingleThreadedExecutor()
+        self.node = Node("test_subscription_modifiers")
+        self.executor.add_node(self.node)
+
+    def tearDown(self):
+        self.executor.remove_node(self.node)
+        self.node.destroy_node()
+        rclpy.shutdown()
 
     def dummy_cb(self, msg):
         pass
 
     def test_default_message_handler(self):
-        handler = subscribe.MessageHandler(None, self.dummy_cb)
+        handler = subscription_modifiers.MessageHandler(None, self.dummy_cb)
         self.help_test_default(handler)
 
     def test_throttle_message_handler(self):
-        handler = subscribe.ThrottleMessageHandler(subscribe.MessageHandler(None, self.dummy_cb))
+        handler = subscription_modifiers.ThrottleMessageHandler(
+            subscription_modifiers.MessageHandler(None, self.dummy_cb)
+        )
         self.help_test_throttle(handler, 50)
 
     def test_queue_message_handler_passes_msgs(self):
-        handler = subscribe.QueueMessageHandler(subscribe.MessageHandler(None, self.dummy_cb))
+        handler = subscription_modifiers.QueueMessageHandler(
+            subscription_modifiers.MessageHandler(None, self.dummy_cb)
+        )
         self.help_test_queue(handler, 1000)
         handler.finish()
 
@@ -33,7 +46,9 @@ class TestMessageHandlers(unittest.TestCase):
         def cb(msg):
             received["msgs"].append(msg)
 
-        handler = subscribe.QueueMessageHandler(subscribe.MessageHandler(None, cb))
+        handler = subscription_modifiers.QueueMessageHandler(
+            subscription_modifiers.MessageHandler(None, cb)
+        )
 
         self.assertTrue(handler.is_alive())
 
@@ -49,11 +64,11 @@ class TestMessageHandlers(unittest.TestCase):
 
         msgs = range(1000)
 
-        handler = subscribe.MessageHandler(None, cb)
+        handler = subscription_modifiers.MessageHandler(None, cb)
 
         handler = handler.set_throttle_rate(10000)
         handler = handler.set_queue_length(10)
-        self.assertIsInstance(handler, subscribe.QueueMessageHandler)
+        self.assertIsInstance(handler, subscription_modifiers.QueueMessageHandler)
 
         # 'hello' is handled immediately
         handler.handle_message("hello")
@@ -85,10 +100,10 @@ class TestMessageHandlers(unittest.TestCase):
         queue_length = 5
         msgs = range(queue_length * 5)
 
-        handler = subscribe.MessageHandler(None, cb)
+        handler = subscription_modifiers.MessageHandler(None, cb)
 
         handler = handler.set_queue_length(queue_length)
-        self.assertIsInstance(handler, subscribe.QueueMessageHandler)
+        self.assertIsInstance(handler, subscription_modifiers.QueueMessageHandler)
 
         # send all messages at once.
         # only the first and the last queue_length should get through,
@@ -97,13 +112,13 @@ class TestMessageHandlers(unittest.TestCase):
             handler.handle_message(x)
             # yield the thread so the first callback can append,
             # otherwise the first handled value is non-deterministic.
-            time.sleep(0)
+            time.sleep(0.01)
 
         # wait long enough for all the callbacks, and then some.
         time.sleep(queue_length + 3)
 
         try:
-            self.assertEqual([msgs[0]] + msgs[-queue_length:], received["msgs"])
+            self.assertEqual([msgs[0]] + list(msgs[-queue_length:]), received["msgs"])
         except:  # noqa: E722  # Will finish and raise
             handler.finish()
             raise
@@ -111,7 +126,7 @@ class TestMessageHandlers(unittest.TestCase):
         handler.finish()
 
     def test_queue_message_handler_rate(self):
-        handler = subscribe.MessageHandler(None, self.dummy_cb)
+        handler = subscription_modifiers.MessageHandler(None, self.dummy_cb)
         self.help_test_queue_rate(handler, 50, 10)
         handler.finish()
 
@@ -120,7 +135,7 @@ class TestMessageHandlers(unittest.TestCase):
     def help_test_default(self, handler):
         handler = handler.set_queue_length(0)
         handler = handler.set_throttle_rate(0)
-        self.assertIsInstance(handler, subscribe.MessageHandler)
+        self.assertIsInstance(handler, subscription_modifiers.MessageHandler)
 
         msg = "test_default_message_handler"
         received = {"msg": None}
@@ -156,7 +171,7 @@ class TestMessageHandlers(unittest.TestCase):
     def help_test_throttle(self, handler, throttle_rate):
         handler = handler.set_queue_length(0)
         handler = handler.set_throttle_rate(throttle_rate)
-        self.assertIsInstance(handler, subscribe.ThrottleMessageHandler)
+        self.assertIsInstance(handler, subscription_modifiers.ThrottleMessageHandler)
 
         msg = "test_throttle_message_handler"
 
@@ -199,7 +214,7 @@ class TestMessageHandlers(unittest.TestCase):
 
     def help_test_queue(self, handler, queue_length):
         handler = handler.set_queue_length(queue_length)
-        self.assertIsInstance(handler, subscribe.QueueMessageHandler)
+        self.assertIsInstance(handler, subscription_modifiers.QueueMessageHandler)
 
         received = {"msgs": []}
 
@@ -220,7 +235,7 @@ class TestMessageHandlers(unittest.TestCase):
     def help_test_queue_rate(self, handler, throttle_rate, queue_length):
         handler = handler.set_throttle_rate(throttle_rate)
         handler = handler.set_queue_length(queue_length)
-        self.assertIsInstance(handler, subscribe.QueueMessageHandler)
+        self.assertIsInstance(handler, subscription_modifiers.QueueMessageHandler)
 
         received = {"msg": None}
 
@@ -251,125 +266,112 @@ class TestMessageHandlers(unittest.TestCase):
     # Test that each transition works and is stable
     def test_transitions(self):
         # MessageHandler.transition is stable
-        handler = subscribe.MessageHandler(None, self.dummy_cb)
+        handler = subscription_modifiers.MessageHandler(None, self.dummy_cb)
         next_handler = handler.transition()
         self.assertEqual(handler, next_handler)
 
         # Going from MessageHandler to ThrottleMessageHandler...
-        handler = subscribe.MessageHandler(None, self.dummy_cb)
+        handler = subscription_modifiers.MessageHandler(None, self.dummy_cb)
         next_handler = handler.set_throttle_rate(100)
-        self.assertIsInstance(next_handler, subscribe.ThrottleMessageHandler)
+        self.assertIsInstance(next_handler, subscription_modifiers.ThrottleMessageHandler)
         handler = next_handler
         # Testing transition returns another ThrottleMessageHandler
         next_handler = handler.transition()
         self.assertEqual(handler, next_handler)
         # And finally going back to MessageHandler
         next_handler = handler.set_throttle_rate(0)
-        self.assertIsInstance(next_handler, subscribe.MessageHandler)
+        self.assertIsInstance(next_handler, subscription_modifiers.MessageHandler)
 
         # Same for QueueMessageHandler
-        handler = subscribe.MessageHandler(None, self.dummy_cb)
+        handler = subscription_modifiers.MessageHandler(None, self.dummy_cb)
         next_handler = handler.set_queue_length(100)
-        self.assertIsInstance(next_handler, subscribe.QueueMessageHandler)
+        self.assertIsInstance(next_handler, subscription_modifiers.QueueMessageHandler)
         handler = next_handler
         next_handler = handler.transition()
         self.assertEqual(handler, next_handler)
         next_handler = handler.set_queue_length(0)
-        self.assertIsInstance(next_handler, subscribe.MessageHandler)
+        self.assertIsInstance(next_handler, subscription_modifiers.MessageHandler)
 
         # Checking a QueueMessageHandler with rate limit can be generated both ways
-        handler = subscribe.MessageHandler(None, self.dummy_cb)
+        handler = subscription_modifiers.MessageHandler(None, self.dummy_cb)
         next_handler = handler.set_queue_length(100).set_throttle_rate(100)
-        self.assertIsInstance(next_handler, subscribe.QueueMessageHandler)
+        self.assertIsInstance(next_handler, subscription_modifiers.QueueMessageHandler)
         next_handler.finish()
         next_handler = handler.set_throttle_rate(100).set_queue_length(100)
-        self.assertIsInstance(next_handler, subscribe.QueueMessageHandler)
+        self.assertIsInstance(next_handler, subscription_modifiers.QueueMessageHandler)
         next_handler.finish()
         handler = next_handler
         next_handler = handler.transition()
         self.assertEqual(handler, next_handler)
         # Check both steps on the way back to plain MessageHandler
         next_handler = handler.set_throttle_rate(0)
-        self.assertIsInstance(next_handler, subscribe.QueueMessageHandler)
+        self.assertIsInstance(next_handler, subscription_modifiers.QueueMessageHandler)
         next_handler = handler.set_queue_length(0)
-        self.assertIsInstance(next_handler, subscribe.MessageHandler)
+        self.assertIsInstance(next_handler, subscription_modifiers.MessageHandler)
 
     def test_transition_functionality(self):
         # Test individually
-        handler = subscribe.MessageHandler(None, None)
+        handler = subscription_modifiers.MessageHandler(None, None)
         handler = self.help_test_queue(handler, 10)
         handler.finish()
 
-        handler = subscribe.MessageHandler(None, None)
+        handler = subscription_modifiers.MessageHandler(None, None)
         handler = self.help_test_throttle(handler, 50)
         handler.finish()
 
-        handler = subscribe.MessageHandler(None, None)
+        handler = subscription_modifiers.MessageHandler(None, None)
         handler = self.help_test_default(handler)
         handler.finish()
 
         # Test combinations
-        handler = subscribe.MessageHandler(None, None)
+        handler = subscription_modifiers.MessageHandler(None, None)
         handler = self.help_test_queue(handler, 10)
         handler = self.help_test_throttle(handler, 50)
         handler = self.help_test_default(handler)
         handler.finish()
 
-        handler = subscribe.MessageHandler(None, None)
+        handler = subscription_modifiers.MessageHandler(None, None)
         handler = self.help_test_queue(handler, 10)
         handler = self.help_test_default(handler)
         handler = self.help_test_throttle(handler, 50)
         handler.finish()
 
-        handler = subscribe.MessageHandler(None, None)
+        handler = subscription_modifiers.MessageHandler(None, None)
         handler = self.help_test_throttle(handler, 50)
         handler = self.help_test_queue_rate(handler, 50, 10)
         handler = self.help_test_default(handler)
         handler.finish()
 
-        handler = subscribe.MessageHandler(None, None)
+        handler = subscription_modifiers.MessageHandler(None, None)
         handler = self.help_test_throttle(handler, 50)
         handler = self.help_test_default(handler)
         handler = self.help_test_queue_rate(handler, 50, 10)
         handler.finish()
 
-        handler = subscribe.MessageHandler(None, None)
+        handler = subscription_modifiers.MessageHandler(None, None)
         handler = self.help_test_default(handler)
         handler = self.help_test_throttle(handler, 50)
         handler = self.help_test_queue_rate(handler, 50, 10)
         handler.finish()
 
-        handler = subscribe.MessageHandler(None, None)
+        handler = subscription_modifiers.MessageHandler(None, None)
         handler = self.help_test_default(handler)
         handler = self.help_test_queue(handler, 10)
         handler = self.help_test_throttle(handler, 50)
         handler.finish()
 
         # Test duplicates
-        handler = subscribe.MessageHandler(None, None)
+        handler = subscription_modifiers.MessageHandler(None, None)
         handler = self.help_test_queue_rate(handler, 50, 10)
         handler = self.help_test_queue_rate(handler, 100, 10)
         handler.finish()
 
-        handler = subscribe.MessageHandler(None, None)
+        handler = subscription_modifiers.MessageHandler(None, None)
         handler = self.help_test_throttle(handler, 50)
         handler = self.help_test_throttle(handler, 100)
         handler.finish()
 
-        handler = subscribe.MessageHandler(None, None)
+        handler = subscription_modifiers.MessageHandler(None, None)
         handler = self.help_test_default(handler)
         handler = self.help_test_default(handler)
         handler.finish()
-
-
-#        handler = self.help_test_throttle(handler, 50)
-#        handler = self.help_test_default(handler)
-#        handler = self.help_test_throttle(handler, 50)
-#        handler = self.help_test_default(handler)
-#        handler = self.help_test_throttle(handler, 50)
-
-
-PKG = "rosbridge_library"
-NAME = "test_message_handlers"
-if __name__ == "__main__":
-    rostest.unitrun(PKG, NAME, TestMessageHandlers)
