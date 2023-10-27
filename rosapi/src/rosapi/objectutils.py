@@ -37,10 +37,6 @@ import re
 
 from rosapi.stringify_field_types import stringify_field_types
 from rosbridge_library.internal import ros_loader
-from rosbridge_library.internal.ros_loader import (
-    InvalidClassException,
-    InvalidModuleException,
-)
 
 # Keep track of atomic types and special types
 atomics = [
@@ -94,7 +90,7 @@ def get_typedef(type):
         instance = ros_loader.get_message_instance(type)
         type_def = _get_typedef(instance)
         return type_def
-    except (InvalidModuleException, InvalidClassException) as e:
+    except (ros_loader.InvalidModuleException, ros_loader.InvalidClassException) as e:
         logging.error(f"An error occurred trying to get the type definition for {type}: {e}")
         return None
 
