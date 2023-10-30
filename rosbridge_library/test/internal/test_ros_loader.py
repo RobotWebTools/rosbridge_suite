@@ -6,7 +6,10 @@ from rosidl_runtime_py.utilities import get_message
 
 
 class TestROSLoader(unittest.TestCase):
-    def test_bad_msgnames(self):
+    #################
+    # Message Tests #
+    #################
+    def test_bad_msg_names(self):
         bad = [
             "",
             "/",
@@ -33,7 +36,7 @@ class TestROSLoader(unittest.TestCase):
                 ros_loader.InvalidTypeStringException, ros_loader.get_message_instance, x
             )
 
-    def test_irregular_msgnames(self):
+    def test_irregular_msg_names(self):
         irregular = [
             "std_msgs//String",
             "//std_msgs/String",
@@ -49,7 +52,7 @@ class TestROSLoader(unittest.TestCase):
             self.assertNotEqual(ros_loader.get_message_class(x), None)
             self.assertNotEqual(ros_loader.get_message_instance(x), None)
 
-    def test_std_msgnames(self):
+    def test_std_msg_names(self):
         stdmsgs = [
             "std_msgs/Bool",
             "std_msgs/Byte",
@@ -124,7 +127,7 @@ class TestROSLoader(unittest.TestCase):
             self.assertEqual(get_message(x), type(inst))
             self.assertTrue(x in ros_loader._loaded_msgs)
 
-    def test_assorted_msgnames(self):
+    def test_assorted_msg_names(self):
         assortedmsgs = [
             "geometry_msgs/Pose",
             "actionlib_msgs/GoalStatus",
@@ -145,7 +148,7 @@ class TestROSLoader(unittest.TestCase):
             self.assertNotEqual(inst, None)
             self.assertEqual(get_message(x), type(inst))
 
-    def test_invalid_msgnames_primitives(self):
+    def test_invalid_msg_names_primitives(self):
         invalid = [
             "bool",
             "int8",
@@ -172,7 +175,7 @@ class TestROSLoader(unittest.TestCase):
                 x,
             )
 
-    def test_nonexistent_packagenames(self):
+    def test_nonexistent_package_names(self):
         nonexistent = [
             "wangle_msgs/Jam",
             "whistleblower_msgs/Document",
@@ -195,7 +198,7 @@ class TestROSLoader(unittest.TestCase):
             self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_message_class, x)
             self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_message_instance, x)
 
-    def test_nonexistent_msg_classnames(self):
+    def test_nonexistent_msg_class_names(self):
         nonexistent = [
             "rcl_interfaces/Time",
             "rcl_interfaces/Duration",
@@ -208,7 +211,10 @@ class TestROSLoader(unittest.TestCase):
             self.assertRaises(ros_loader.InvalidClassException, ros_loader.get_message_class, x)
             self.assertRaises(ros_loader.InvalidClassException, ros_loader.get_message_instance, x)
 
-    def test_bad_servicenames(self):
+    #################
+    # Service Tests #
+    #################
+    def test_bad_service_names(self):
         bad = [
             "",
             "/",
@@ -241,7 +247,7 @@ class TestROSLoader(unittest.TestCase):
                 ros_loader.InvalidTypeStringException, ros_loader.get_service_response_instance, x
             )
 
-    def test_irregular_servicenames(self):
+    def test_irregular_service_names(self):
         irregular = [
             "rcl_interfaces//GetParameters",
             "/rcl_interfaces/GetParameters/",
@@ -258,7 +264,7 @@ class TestROSLoader(unittest.TestCase):
             self.assertNotEqual(ros_loader.get_service_request_instance(x), None)
             self.assertNotEqual(ros_loader.get_service_response_instance(x), None)
 
-    def test_common_servicenames(self):
+    def test_common_service_names(self):
         common = [
             "rcl_interfaces/GetParameters",
             "rcl_interfaces/SetParameters",
@@ -302,7 +308,7 @@ class TestROSLoader(unittest.TestCase):
                 ros_loader.InvalidModuleException, ros_loader.get_service_response_instance, x
             )
 
-    def test_nonexistent_service_packagenames(self):
+    def test_nonexistent_service_package_names(self):
         nonexistent = [
             "butler_srvs/FetchDrink",
             "money_srvs/MoreMoney",
@@ -318,7 +324,7 @@ class TestROSLoader(unittest.TestCase):
                 ros_loader.InvalidModuleException, ros_loader.get_service_response_instance, x
             )
 
-    def test_nonexistent_service_classnames(self):
+    def test_nonexistent_service_class_names(self):
         nonexistent = [
             "std_srvs/Reboot",
             "std_srvs/Full",
@@ -332,3 +338,138 @@ class TestROSLoader(unittest.TestCase):
             self.assertRaises(
                 ros_loader.InvalidClassException, ros_loader.get_service_response_instance, x
             )
+
+    ################
+    # Action Tests #
+    ################
+    def test_bad_action_names(self):
+        bad = [
+            "",
+            "/",
+            "//",
+            "///",
+            "////",
+            "/////",
+            "bad",
+            "stillbad",
+            "not/better/even/still",
+            "not//better//even//still",
+            "not///better///even///still",
+            "better/",
+            "better//",
+            "better///",
+            "/better",
+            "//better",
+            "///better",
+            r"this\isbad",
+            "\\",
+        ]
+        for x in bad:
+            self.assertRaises(ros_loader.InvalidTypeStringException, ros_loader.get_action_class, x)
+            self.assertRaises(
+                ros_loader.InvalidTypeStringException, ros_loader.get_action_goal_instance, x
+            )
+            self.assertRaises(
+                ros_loader.InvalidTypeStringException, ros_loader.get_action_feedback_instance, x
+            )
+            self.assertRaises(
+                ros_loader.InvalidTypeStringException, ros_loader.get_action_result_instance, x
+            )
+
+    def test_irregular_action_names(self):
+        irregular = [
+            "example_interfaces//Fibonacci",
+            "/example_interfaces/Fibonacci/",
+            "/example_interfaces/Fibonacci",
+            "//example_interfaces/Fibonacci",
+            "/example_interfaces//Fibonacci",
+            "example_interfaces/Fibonacci//",
+            "/example_interfaces/Fibonacci//",
+            "example_interfaces/Fibonacci/",
+            "example_interfaces//Fibonacci//",
+        ]
+        for x in irregular:
+            self.assertNotEqual(ros_loader.get_action_class(x), None)
+            self.assertNotEqual(ros_loader.get_action_goal_instance(x), None)
+            self.assertNotEqual(ros_loader.get_action_feedback_instance(x), None)
+            self.assertNotEqual(ros_loader.get_action_result_instance(x), None)
+
+    def test_common_action_names(self):
+        common = [
+            "control_msgs/FollowJointTrajectory",
+            "tf2_msgs/LookupTransform",
+            "example_interfaces/Fibonacci",
+        ]
+        for x in common:
+            self.assertNotEqual(ros_loader.get_action_class(x), None)
+            self.assertNotEqual(ros_loader.get_action_goal_instance(x), None)
+            self.assertNotEqual(ros_loader.get_action_feedback_instance(x), None)
+            self.assertNotEqual(ros_loader.get_action_result_instance(x), None)
+
+    def test_action_cache(self):
+        common = [
+            "control_msgs/FollowJointTrajectory",
+            "tf2_msgs/LookupTransform",
+            "example_interfaces/Fibonacci",
+        ]
+        for x in common:
+            self.assertNotEqual(ros_loader.get_action_class(x), None)
+            self.assertNotEqual(ros_loader.get_action_goal_instance(x), None)
+            self.assertNotEqual(ros_loader.get_action_feedback_instance(x), None)
+            self.assertNotEqual(ros_loader.get_action_result_instance(x), None)
+            self.assertTrue(x in ros_loader._loaded_actions)
+
+    def test_packages_without_actions(self):
+        no_msgs = ["roslib/A", "roslib/B", "roslib/C", "std_msgs/CuriousSrv"]
+        for x in no_msgs:
+            self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_action_class, x)
+            self.assertRaises(
+                ros_loader.InvalidModuleException, ros_loader.get_action_goal_instance, x
+            )
+            self.assertRaises(
+                ros_loader.InvalidModuleException, ros_loader.get_action_feedback_instance, x
+            )
+            self.assertRaises(
+                ros_loader.InvalidModuleException, ros_loader.get_action_result_instance, x
+            )
+
+    def test_nonexistent_action_package_names(self):
+        nonexistent = [
+            "butler_srvs/SetTable",
+            "money_srvs/WithdrawMoreMoney",
+            "snoopdogg_actions/LayBackWithMyMindOnMyMoneyAndMyMoneyOnMyMind",
+            "revenge_actions/PlotRevenge",
+        ]
+        for x in nonexistent:
+            self.assertRaises(ros_loader.InvalidModuleException, ros_loader.get_action_class, x)
+            self.assertRaises(
+                ros_loader.InvalidModuleException, ros_loader.get_action_goal_instance, x
+            )
+            self.assertRaises(
+                ros_loader.InvalidModuleException, ros_loader.get_action_feedback_instance, x
+            )
+            self.assertRaises(
+                ros_loader.InvalidModuleException, ros_loader.get_action_result_instance, x
+            )
+
+    def test_nonexistent_action_class_names(self):
+        nonexistent = [
+            "control_msgs/ControlFusionReactor",
+            "tf2_msgs/GetDualQuaternionRepresentation",
+            "example_interfaces/DoNonexistentAction",
+        ]
+        for x in nonexistent:
+            self.assertRaises(ros_loader.InvalidClassException, ros_loader.get_action_class, x)
+            self.assertRaises(
+                ros_loader.InvalidClassException, ros_loader.get_action_goal_instance, x
+            )
+            self.assertRaises(
+                ros_loader.InvalidClassException, ros_loader.get_action_feedback_instance, x
+            )
+            self.assertRaises(
+                ros_loader.InvalidClassException, ros_loader.get_action_result_instance, x
+            )
+
+
+if __name__ == "__main__":
+    unittest.main()
