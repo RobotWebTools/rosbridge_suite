@@ -4,12 +4,11 @@ import unittest
 from json import dumps, loads
 from threading import Thread
 
-from example_interfaces.action._fibonacci import Fibonacci_FeedbackMessage
-
 import rclpy
+from example_interfaces.action._fibonacci import Fibonacci_FeedbackMessage
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from rclpy.qos import DurabilityPolicy, ReliabilityPolicy, QoSProfile
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rosbridge_library.capabilities.action_feedback import ActionFeedback
 from rosbridge_library.capabilities.action_result import ActionResult
 from rosbridge_library.capabilities.advertise_action import AdvertiseAction
@@ -148,7 +147,8 @@ class TestActionCapabilities(unittest.TestCase):
             Fibonacci_FeedbackMessage,
             f"{action_path}/_action/feedback",
             self.feedback_subscriber_cb,
-            sub_qos_profile)
+            sub_qos_profile,
+        )
         time.sleep(0.1)
 
         feedback_msg = loads(

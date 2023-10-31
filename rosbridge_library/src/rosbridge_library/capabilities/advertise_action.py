@@ -94,7 +94,6 @@ class AdvertisedActionHandler:
         del self.goal_handles[goal_id]
         return result
 
-
     def handle_feedback(self, goal_id, feedback):
         """
         Called by the ActionFeedback capability to handle action feedback from the external client.
@@ -103,7 +102,6 @@ class AdvertisedActionHandler:
             self.goal_handles[goal_id].publish_feedback(feedback)
         else:
             self.protocol.log("warning", f"Received action feedback for unrecognized id: {goal_id}")
-
 
     def handle_result(self, goal_id, res):
         """
