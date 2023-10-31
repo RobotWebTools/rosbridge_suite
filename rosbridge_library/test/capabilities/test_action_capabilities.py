@@ -134,7 +134,7 @@ class TestActionCapabilities(unittest.TestCase):
 
         self.assertIsNotNone(self.received_message)
         self.assertTrue("op" in self.received_message)
-        self.assertTrue(self.received_message["op"] == "send_action_goal")
+        self.assertEqual(self.received_message["op"], "send_action_goal")
         self.assertTrue("id" in self.received_message)
 
         # Send feedback message
@@ -239,7 +239,7 @@ class TestActionCapabilities(unittest.TestCase):
 
         self.assertIsNotNone(self.received_message)
         self.assertTrue("op" in self.received_message)
-        self.assertTrue(self.received_message["op"] == "send_action_goal")
+        self.assertEqual(self.received_message["op"], "send_action_goal")
         self.assertTrue("id" in self.received_message)
 
         # Now unadvertise the action

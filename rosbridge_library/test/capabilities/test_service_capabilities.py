@@ -122,7 +122,7 @@ class TestServiceCapabilities(unittest.TestCase):
 
         self.assertFalse(self.received_message is None)
         self.assertTrue("op" in self.received_message)
-        self.assertTrue(self.received_message["op"] == "call_service")
+        self.assertEqual(self.received_message["op"], "call_service")
         self.assertTrue("id" in self.received_message)
 
         # Now send the response
@@ -191,7 +191,7 @@ class TestServiceCapabilities(unittest.TestCase):
 
         self.assertFalse(self.received_message is None)
         self.assertTrue("op" in self.received_message)
-        self.assertTrue(self.received_message["op"] == "call_service")
+        self.assertEqual(self.received_message["op"], "call_service")
         self.assertTrue("id" in self.received_message)
 
         # Now unadvertise the service
