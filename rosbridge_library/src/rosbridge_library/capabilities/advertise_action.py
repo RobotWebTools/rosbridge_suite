@@ -1,4 +1,37 @@
+# Software License Agreement (BSD License)
+#
+# Copyright (c) 2023, PickNik Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#  * Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above
+#    copyright notice, this list of conditions and the following
+#    disclaimer in the documentation and/or other materials provided
+#    with the distribution.
+#  * Neither the name of the copyright holder nor the names of its
+#    contributors may be used to endorse or promote products derived
+#    from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
 import fnmatch
+import time
 
 import rclpy
 from rclpy.action import ActionServer
@@ -12,11 +45,12 @@ class AdvertisedActionHandler:
 
     id_counter = 1
 
-    def __init__(self, action_name, action_type, protocol):
+    def __init__(self, action_name, action_type, protocol, sleep_time=0.001):
         self.goal_futures = {}
         self.action_name = action_name
         self.action_type = action_type
         self.protocol = protocol
+        self.sleep_time = sleep_time
         # setup the action
         self.action_server = ActionServer(
             protocol.node_handle,
@@ -31,26 +65,30 @@ class AdvertisedActionHandler:
         self.id_counter += 1
         return id
 
-    async def execute_callback(self, goal):
+    def execute_callback(self, goal):
         # generate a unique ID
-        goal_id = f"action_goal:{self.action}:{self.next_id()}"
+        goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
         future = rclpy.task.Future()
-        self.request_futures[goal_id] = future
+        self.goal_futures[goal_id] = future
 
         # build a request to send to the external client
         goal_message = {
             "op": "send_action_goal",
             "id": goal_id,
             "action": self.action_name,
-            "args": message_conversion.extract_values(goal),
+            "action_type": self.action_type,
+            "args": message_conversion.extract_values(goal.request),
         }
         self.protocol.send(goal_message)
 
-        try:
-            return await future
-        finally:
-            del self.goal_futures[goal_id]
+        while not future.done():
+            time.sleep(self.sleep_time)
+
+        result = future.result()
+        goal.succeed()
+        del self.goal_futures[goal_id]
+        return result
 
     def handle_result(self, goal_id, res):
         """

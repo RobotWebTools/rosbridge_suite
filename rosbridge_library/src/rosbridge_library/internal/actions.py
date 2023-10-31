@@ -33,7 +33,6 @@
 import time
 from threading import Thread
 
-import rclpy
 from rclpy.action import ActionClient
 from rclpy.expand_topic_name import expand_topic_name
 from rosbridge_library.internal.message_conversion import (
@@ -52,7 +51,16 @@ class InvalidActionException(Exception):
 
 
 class ActionClientHandler(Thread):
-    def __init__(self, action, action_type, args, success_callback, error_callback, node_handle):
+    def __init__(
+        self,
+        action,
+        action_type,
+        args,
+        success_callback,
+        error_callback,
+        feedback_callback,
+        node_handle,
+    ):
         """
         Create a client handler for the specified action.
         Use start() to start in a separate thread or run() to run in this thread.
@@ -76,12 +84,21 @@ class ActionClientHandler(Thread):
         self.args = args
         self.success = success_callback
         self.error = error_callback
+        self.feedback = feedback_callback
         self.node_handle = node_handle
 
     def run(self):
         try:
             # Call the service and pass the result to the success handler
-            self.success(send_goal(self.node_handle, self.action, self.action_type, args=self.args))
+            self.success(
+                SendGoal().send_goal(
+                    self.node_handle,
+                    self.action,
+                    self.action_type,
+                    args=self.args,
+                    feedback_cb=self.feedback,
+                )
+            )
         except Exception as e:
             # On error, just pass the exception to the error handler
             self.error(e)
@@ -105,31 +122,41 @@ def args_to_action_goal_instance(action, inst, args):
     populate_instance(msg, inst)
 
 
-def send_goal(node_handle, action, action_type, args=None, sleep_time=0.001):
-    # Given the action nam and type, fetch a request instance
-    action_name = expand_topic_name(action, node_handle.get_name(), node_handle.get_namespace())
-    action_class = get_action_class(action_type)
-    inst = get_action_goal_instance(action_type)
+class SendGoal:
+    def get_result_cb(self, future):
+        self.result = future.result()
 
-    # Populate the instance with the provided args
-    args_to_action_goal_instance(action_name, inst, args)
+    def goal_response_cb(self, future):
+        goal_handle = future.result()
+        if not goal_handle.accepted:
+            raise Exception("Action goal was rejected")
+        result_future = goal_handle.get_result_async()
+        result_future.add_done_callback(self.get_result_cb)
 
-    client = ActionClient(node_handle, action_class, action_name)
-    send_goal_future = client.send_goal_async(inst)
-    while rclpy.ok() and not send_goal_future.done():
-        time.sleep(sleep_time)
-    goal_handle = send_goal_future.result()
+    def send_goal(
+        self, node_handle, action, action_type, args=None, feedback_cb=None, sleep_time=0.001
+    ):
+        # Given the action nam and type, fetch a request instance
+        action_name = expand_topic_name(action, node_handle.get_name(), node_handle.get_namespace())
+        action_class = get_action_class(action_type)
+        inst = get_action_goal_instance(action_type)
 
-    if not goal_handle.accepted:
-        raise Exception("Action goal was rejected")  # TODO: Catch better
+        # Populate the instance with the provided args
+        args_to_action_goal_instance(action_name, inst, args)
 
-    result = goal_handle.get_result()
-    client.destroy()
+        self.result = None
+        client = ActionClient(node_handle, action_class, action_name)
+        send_goal_future = client.send_goal_async(inst, feedback_callback=feedback_cb)
+        send_goal_future.add_done_callback(self.goal_response_cb)
 
-    if result is not None:
-        # Turn the response into JSON and pass to the callback
-        json_response = extract_values(result)
-    else:
-        raise Exception(result)
+        while self.result is None:
+            time.sleep(sleep_time)
 
-    return json_response
+        client.destroy()
+        if self.result is not None:
+            # Turn the response into JSON and pass to the callback
+            json_response = extract_values(self.result)
+        else:
+            raise Exception(self.result)
+
+        return json_response

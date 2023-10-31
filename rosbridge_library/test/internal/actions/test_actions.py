@@ -149,7 +149,7 @@ class TestActions(unittest.TestCase):
         self.assertEqual(list(self.result.sequence), [0, 1, 1, 2, 3, 5])
 
         # Now, call using the services
-        json_ret = actions.send_goal(
+        json_ret = actions.SendGoal().send_goal(
             self.node,
             "get_fibonacci_sequence",
             "example_interfaces/Fibonacci",
@@ -161,28 +161,30 @@ class TestActions(unittest.TestCase):
         """Same as test_service_call but via the thread caller"""
         ActionTester(self.executor)
 
-        rcvd = {"json": None}
+        received = {"json": None}
 
         def success(json):
-            rcvd["json"] = json
+            received["json"] = json
 
         def error():
             raise Exception()
 
         # Now, call using the services
+        order = 5
         actions.ActionClientHandler(
             "get_fibonacci_sequence",
             "example_interfaces/Fibonacci",
-            {"order": 5},
+            {"order": order},
             success,
             error,
+            None,  # No feedback
             self.node,
         ).start()
 
         time.sleep(1.0)
 
-        self.assertIsNotNone(rcvd["json"])
-        self.assertEqual(list(rcvd["json"]["result"]["sequence"]), [0, 1, 1, 2, 3, 5])
+        self.assertIsNotNone(received["json"])
+        self.assertEqual(list(received["json"]["result"]["sequence"]), [0, 1, 1, 2, 3, 5])
 
 
 if __name__ == "__main__":
