@@ -41,6 +41,7 @@ from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.capabilities.send_action_goal import SendActionGoal
 from rosbridge_library.capabilities.service_response import ServiceResponse
 from rosbridge_library.capabilities.subscribe import Subscribe
+from rosbridge_library.capabilities.unadvertise_action import UnadvertiseAction
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from rosbridge_library.protocol import Protocol
 
@@ -61,6 +62,7 @@ class RosbridgeProtocol(Protocol):
         ActionFeedback,
         ActionResult,
         SendActionGoal,
+        UnadvertiseAction,
     ]
 
     print("registered capabilities (classes):")

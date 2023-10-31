@@ -13,6 +13,7 @@ from rosbridge_library.capabilities.action_feedback import ActionFeedback
 from rosbridge_library.capabilities.action_result import ActionResult
 from rosbridge_library.capabilities.advertise_action import AdvertiseAction
 from rosbridge_library.capabilities.send_action_goal import SendActionGoal
+from rosbridge_library.capabilities.unadvertise_action import UnadvertiseAction
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
     MissingArgumentException,
@@ -36,7 +37,7 @@ class TestActionCapabilities(unittest.TestCase):
         # being sent
         self.proto.send = self.local_send_cb
         self.advertise = AdvertiseAction(self.proto)
-        # self.unadvertise = UnadvertiseService(self.proto)
+        self.unadvertise = UnadvertiseAction(self.proto)
         self.result = ActionResult(self.proto)
         self.send_goal = SendActionGoal(self.proto)
         self.feedback = ActionFeedback(self.proto)
@@ -197,6 +198,64 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertIsNotNone(self.received_message)
         self.assertEqual(self.received_message["op"], "action_result")
         self.assertEqual(self.received_message["values"]["result"]["sequence"], [1, 1, 2, 3, 5])
+
+    @unittest.skip("Currently raises an exception not catchable by unittest, need to fix this")
+    def test_unadvertise_action(self):
+        # Advertise the action
+        action_path = "/fibonacci_3"
+        advertise_msg = loads(
+            dumps(
+                {
+                    "op": "advertise_action",
+                    "type": "example_interfaces/Fibonacci",
+                    "action": action_path,
+                }
+            )
+        )
+        self.received_message = None
+        self.advertise.advertise_action(advertise_msg)
+
+        # Send a goal to the advertised action using rosbridge
+        self.received_message = None
+        goal_msg = loads(
+            dumps(
+                {
+                    "op": "call_service",
+                    "id": "foo",
+                    "action": action_path,
+                    "action_type": "example_interfaces/Fibonacci",
+                    "args": {"order": 5},
+                }
+            )
+        )
+        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
+
+        loop_iterations = 0
+        while self.received_message is None:
+            time.sleep(0.5)
+            loop_iterations += 1
+            if loop_iterations > 3:
+                self.fail("Timed out waiting for action goal message.")
+
+        self.assertIsNotNone(self.received_message)
+        self.assertTrue("op" in self.received_message)
+        self.assertTrue(self.received_message["op"] == "send_action_goal")
+        self.assertTrue("id" in self.received_message)
+
+        # Now unadvertise the action
+        # TODO: This raises an exception, likely because of the following rclpy issue:
+        # https://github.com/ros2/rclpy/issues/1098
+        unadvertise_msg = loads(dumps({"op": "unadvertise_action", "action": action_path}))
+        self.received_message = None
+        self.unadvertise.unadvertise_action(unadvertise_msg)
+
+        loop_iterations = 0
+        while self.received_message is None:
+            rclpy.spin_once(self.node, timeout_sec=0.1)
+            time.sleep(0.5)
+            loop_iterations += 1
+            if loop_iterations > 3:
+                self.fail("Timed out waiting for unadvertise action message.")
 
 
 if __name__ == "__main__":

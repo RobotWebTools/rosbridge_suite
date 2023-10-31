@@ -87,7 +87,6 @@ class AdvertisedActionHandler:
 
         while not future.done():
             time.sleep(self.sleep_time)
-
         result = future.result()
         goal.succeed()
         del self.goal_futures[goal_id]
@@ -125,7 +124,7 @@ class AdvertisedActionHandler:
             )
             for future_id in self.goal_futures:
                 future = self.goal_futures[future_id]
-                future.set_exception(RuntimeError(f"Goal {self.action_name} was unadvertised"))
+                future.set_exception(RuntimeError(f"Action {self.action_name} was unadvertised"))
         self.action_server.destroy()
 
 

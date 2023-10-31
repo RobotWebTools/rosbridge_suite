@@ -152,7 +152,6 @@ class TestServiceCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["op"], "service_response")
         self.assertTrue(self.received_message["result"])
 
-    @unittest.skip("This test currently raises an exception, need to fix this")
     def test_unadvertise_with_live_request(self):
         # Advertise the service
         service_path = "/set_bool_3"
@@ -198,19 +197,21 @@ class TestServiceCapabilities(unittest.TestCase):
         # Now unadvertise the service
         # TODO: This raises an exception, likely because of the following rclpy issue:
         # https://github.com/ros2/rclpy/issues/1098
-        response_msg = loads(dumps({"op": "unadvertise_service", "service": service_path}))
+        unadvertise_msg = loads(dumps({"op": "unadvertise_service", "service": service_path}))
         self.received_message = None
-        self.unadvertise.unadvertise_service(response_msg)
+        self.unadvertise.unadvertise_service(unadvertise_msg)
 
-        loop_iterations = 0
-        while self.received_message is None:
-            rclpy.spin_once(self.node, timeout_sec=0.1)
-            time.sleep(0.5)
-            loop_iterations += 1
-            if loop_iterations > 3:
-                self.fail("Timed out waiting for unadvertise service message.")
+        with self.assertRaises(RuntimeError) as context:
+            loop_iterations = 0
+            while self.received_message is None:
+                rclpy.spin_once(self.node, timeout_sec=0.1)
+                time.sleep(0.5)
+                loop_iterations += 1
+                if loop_iterations > 3:
+                    self.fail("Timed out waiting for unadvertise service message.")
 
-        self.assertFalse(self.received_message is None)
-        self.assertTrue("op" in self.received_message)
-        self.assertEqual(self.received_message["op"], "service_response")
-        self.assertFalse(self.received_message["result"])
+            self.assertTrue(f"Service {service_path} was unadvertised" in context.exception)
+
+
+if __name__ == "__main__":
+    unittest.main()
