@@ -111,8 +111,7 @@ class SendActionGoal(Capability):
         # Create the callbacks
         s_cb = partial(self._success, cid, action, fragment_size, compression)
         e_cb = partial(self._failure, cid, action)
-        feedback = True  # TODO: Implement
-        if feedback:
+        if message.get("feedback", False):
             f_cb = partial(self._feedback, cid, action)
         else:
             f_cb = None
@@ -156,7 +155,6 @@ class SendActionGoal(Capability):
         if cid is not None:
             outgoing_message["id"] = cid
         # TODO: fragmentation, compression
-        print(outgoing_message)
         self.protocol.send(outgoing_message)
 
 

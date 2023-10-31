@@ -4,9 +4,13 @@ import unittest
 from json import dumps, loads
 from threading import Thread
 
+from example_interfaces.action._fibonacci import Fibonacci_FeedbackMessage
+
 import rclpy
-from rclpy.executors import SingleThreadedExecutor
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, ReliabilityPolicy, QoSProfile
+from rosbridge_library.capabilities.action_feedback import ActionFeedback
 from rosbridge_library.capabilities.action_result import ActionResult
 from rosbridge_library.capabilities.advertise_action import AdvertiseAction
 from rosbridge_library.capabilities.send_action_goal import SendActionGoal
@@ -20,7 +24,7 @@ from rosbridge_library.protocol import Protocol
 class TestActionCapabilities(unittest.TestCase):
     def setUp(self):
         rclpy.init()
-        self.executor = SingleThreadedExecutor()
+        self.executor = MultiThreadedExecutor(num_threads=2)
         self.node = Node("test_action_capabilities")
         self.executor.add_node(self.node)
 
@@ -36,6 +40,7 @@ class TestActionCapabilities(unittest.TestCase):
         # self.unadvertise = UnadvertiseService(self.proto)
         self.result = ActionResult(self.proto)
         self.send_goal = SendActionGoal(self.proto)
+        self.feedback = ActionFeedback(self.proto)
         self.received_message = None
         self.log_entries = []
 
@@ -48,8 +53,10 @@ class TestActionCapabilities(unittest.TestCase):
         rclpy.shutdown()
 
     def local_send_cb(self, msg):
-        print(f"Received: {msg}")
         self.received_message = msg
+
+    def feedback_subscriber_cb(self, msg):
+        self.latest_feedback = msg
 
     def mock_log(self, loglevel, message, _=None):
         self.log_entries.append((loglevel, message))
@@ -102,7 +109,6 @@ class TestActionCapabilities(unittest.TestCase):
         )
         self.received_message = None
         self.advertise.advertise_action(advertise_msg)
-        # rclpy.spin_once(self.node, timeout_sec=0.1)
 
         # Send a goal to the advertised action using rosbridge
         self.received_message = None
@@ -131,7 +137,40 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertTrue(self.received_message["op"] == "send_action_goal")
         self.assertTrue("id" in self.received_message)
 
-        # TODO: Send feedback
+        # Send feedback message
+        self.latest_feedback = None
+        sub_qos_profile = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.VOLATILE,
+            reliability=ReliabilityPolicy.RELIABLE,
+        )
+        self.subscription = self.node.create_subscription(
+            Fibonacci_FeedbackMessage,
+            f"{action_path}/_action/feedback",
+            self.feedback_subscriber_cb,
+            sub_qos_profile)
+        time.sleep(0.1)
+
+        feedback_msg = loads(
+            dumps(
+                {
+                    "op": "action_feedback",
+                    "action": action_path,
+                    "id": self.received_message["id"],
+                    "values": {"sequence": [1, 1, 2]},
+                }
+            )
+        )
+        self.feedback.action_feedback(feedback_msg)
+        loop_iterations = 0
+        while self.latest_feedback is None:
+            time.sleep(0.5)
+            loop_iterations += 1
+            if loop_iterations > 3:
+                self.fail("Timed out waiting for action feedback message.")
+
+        self.assertIsNotNone(self.latest_feedback)
+        self.assertEqual(list(self.latest_feedback.feedback.sequence), [1, 1, 2])
 
         # Now send the result
         result_msg = loads(

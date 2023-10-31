@@ -47,6 +47,8 @@ class AdvertisedActionHandler:
 
     def __init__(self, action_name, action_type, protocol, sleep_time=0.001):
         self.goal_futures = {}
+        self.goal_handles = {}
+
         self.action_name = action_name
         self.action_type = action_type
         self.protocol = protocol
@@ -70,6 +72,7 @@ class AdvertisedActionHandler:
         goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
         future = rclpy.task.Future()
+        self.goal_handles[goal_id] = goal
         self.goal_futures[goal_id] = future
 
         # build a request to send to the external client
@@ -88,7 +91,19 @@ class AdvertisedActionHandler:
         result = future.result()
         goal.succeed()
         del self.goal_futures[goal_id]
+        del self.goal_handles[goal_id]
         return result
+
+
+    def handle_feedback(self, goal_id, feedback):
+        """
+        Called by the ActionFeedback capability to handle action feedback from the external client.
+        """
+        if goal_id in self.goal_handles:
+            self.goal_handles[goal_id].publish_feedback(feedback)
+        else:
+            self.protocol.log("warning", f"Received action feedback for unrecognized id: {goal_id}")
+
 
     def handle_result(self, goal_id, res):
         """
