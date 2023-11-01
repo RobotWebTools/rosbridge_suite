@@ -6,7 +6,7 @@ from threading import Thread
 
 import rclpy
 from example_interfaces.action._fibonacci import Fibonacci_FeedbackMessage
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rosbridge_library.capabilities.action_feedback import ActionFeedback
@@ -24,7 +24,7 @@ from rosbridge_library.protocol import Protocol
 class TestActionCapabilities(unittest.TestCase):
     def setUp(self):
         rclpy.init()
-        self.executor = MultiThreadedExecutor(num_threads=2)
+        self.executor = SingleThreadedExecutor()
         self.node = Node("test_action_capabilities")
         self.executor.add_node(self.node)
 
