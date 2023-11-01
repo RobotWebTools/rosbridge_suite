@@ -95,6 +95,9 @@ class TestActionCapabilities(unittest.TestCase):
         )
         self.advertise.advertise_action(advertise_msg)
 
+    @unittest.skip(
+        reason="Currently fails in Iron/Rolling due to https://github.com/ros2/rclpy/issues/1195, need to fix this"
+    )
     def test_execute_advertised_action(self):
         # Advertise the action
         action_path = "/fibonacci_action_2"
