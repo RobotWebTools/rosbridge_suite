@@ -23,6 +23,7 @@ class TestServiceCapabilities(unittest.TestCase):
         self.node = Node("test_service_capabilities")
 
         self.node.declare_parameter("call_services_in_new_thread", False)
+        self.node.declare_parameter("send_action_goals_in_new_thread", False)
 
         self.proto = Protocol(self._testMethodName, self.node)
         # change the log function so we can verify errors are logged

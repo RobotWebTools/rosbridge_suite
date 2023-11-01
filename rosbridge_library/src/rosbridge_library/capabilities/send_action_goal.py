@@ -56,21 +56,21 @@ class SendActionGoal(Capability):
         Capability.__init__(self, protocol)
 
         # Register the operations that this capability provides
-        call_services_in_new_thread = (
-            protocol.node_handle.get_parameter("call_services_in_new_thread")
+        send_action_goals_in_new_thread = (
+            protocol.node_handle.get_parameter("send_action_goals_in_new_thread")
             .get_parameter_value()
             .bool_value
         )
-        if call_services_in_new_thread:
+        if send_action_goals_in_new_thread:
             # Sends the action goal in a separate thread so multiple actions can be processed simultaneously.
-            protocol.node_handle.get_logger().info("Sending action goal in new thread")
+            protocol.node_handle.get_logger().info("Sending action goals in new thread")
             protocol.register_operation(
                 "send_action_goal",
                 lambda msg: Thread(target=self.send_action_goal, args=(msg,)).start(),
             )
         else:
             # Sends the actions goal in this thread, so actions block and must be processed sequentially.
-            protocol.node_handle.get_logger().info("Sending action goal in existing thread")
+            protocol.node_handle.get_logger().info("Sending action goals in existing thread")
             protocol.register_operation("send_action_goal", self.send_action_goal)
 
         protocol.register_operation("cancel_action_goal", self.cancel_action_goal)

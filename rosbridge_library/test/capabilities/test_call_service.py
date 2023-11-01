@@ -40,6 +40,7 @@ class TestCallService(unittest.TestCase):
         self.executor.add_node(self.node)
 
         self.node.declare_parameter("call_services_in_new_thread", False)
+        self.node.declare_parameter("send_action_goals_in_new_thread", False)
 
         # Create service servers with a separate callback group
         self.cb_group = ReentrantCallbackGroup()
