@@ -160,7 +160,7 @@ class SendActionGoal(Capability):
         # send response with result: false
         outgoing_message = {
             "op": "action_result",
-            "service": action,
+            "action": action,
             "values": str(exc),
             "result": False,
         }

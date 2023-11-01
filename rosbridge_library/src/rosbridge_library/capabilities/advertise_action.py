@@ -31,7 +31,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import fnmatch
-import time
 
 import rclpy
 from rclpy.action import ActionServer
@@ -67,11 +66,12 @@ class AdvertisedActionHandler:
         self.id_counter += 1
         return id
 
-    def execute_callback(self, goal):
+    async def execute_callback(self, goal):
         # generate a unique ID
         goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
         future = rclpy.task.Future()
+        future.add_done_callback(lambda _: goal.succeed())
         self.goal_handles[goal_id] = goal
         self.goal_futures[goal_id] = future
 
@@ -85,13 +85,11 @@ class AdvertisedActionHandler:
         }
         self.protocol.send(goal_message)
 
-        while not future.done():
-            time.sleep(self.sleep_time)
-        result = future.result()
-        goal.succeed()
-        del self.goal_futures[goal_id]
-        del self.goal_handles[goal_id]
-        return result
+        try:
+            return await future
+        finally:
+            del self.goal_futures[goal_id]
+            del self.goal_handles[goal_id]
 
     def handle_feedback(self, goal_id, feedback):
         """
