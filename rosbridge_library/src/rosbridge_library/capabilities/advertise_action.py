@@ -82,6 +82,7 @@ class AdvertisedActionHandler:
             "action": self.action_name,
             "action_type": self.action_type,
             "args": message_conversion.extract_values(goal.request),
+            "feedback": True,
         }
         self.protocol.send(goal_message)
 

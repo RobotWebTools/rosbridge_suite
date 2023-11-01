@@ -115,8 +115,8 @@ class TestActionCapabilities(unittest.TestCase):
         goal_msg = loads(
             dumps(
                 {
-                    "op": "call_service",
-                    "id": "foo",
+                    "op": "send_action_goal",
+                    "id": "foo2",
                     "action": action_path,
                     "action_type": "example_interfaces/Fibonacci",
                     "args": {"order": 5},
@@ -219,7 +219,7 @@ class TestActionCapabilities(unittest.TestCase):
             dumps(
                 {
                     "op": "send_action_goal",
-                    "id": "foo",
+                    "id": "foo3",
                     "action": action_path,
                     "action_type": "example_interfaces/Fibonacci",
                     "args": {"order": 5},
@@ -246,7 +246,7 @@ class TestActionCapabilities(unittest.TestCase):
                 {
                     "op": "cancel_action_goal",
                     "action": action_path,
-                    "id": "foo",
+                    "id": "foo3",
                 }
             )
         )
@@ -287,7 +287,7 @@ class TestActionCapabilities(unittest.TestCase):
             dumps(
                 {
                     "op": "send_action_goal",
-                    "id": "foo",
+                    "id": "foo4",
                     "action": action_path,
                     "action_type": "example_interfaces/Fibonacci",
                     "args": {"order": 5},
