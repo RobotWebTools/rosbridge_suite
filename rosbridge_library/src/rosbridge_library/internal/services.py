@@ -101,7 +101,7 @@ def args_to_service_request_instance(service, inst, args):
     populate_instance(msg, inst)
 
 
-def call_service(node_handle, service, args=None, sleep_time=0.001):
+def call_service(node_handle, service, args=None, server_timeout_time=1.0, sleep_time=0.001):
     # Given the service name, fetch the type and class of the service,
     # and a request instance
     service = expand_topic_name(service, node_handle.get_name(), node_handle.get_namespace())
@@ -124,6 +124,7 @@ def call_service(node_handle, service, args=None, sleep_time=0.001):
     client = node_handle.create_client(
         service_class, service, callback_group=ReentrantCallbackGroup()
     )
+    client.wait_for_service(server_timeout_time)
 
     future = client.call_async(inst)
     while rclpy.ok() and not future.done():

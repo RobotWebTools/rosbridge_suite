@@ -128,9 +128,11 @@ def args_to_action_goal_instance(action, inst, args):
 class SendGoal:
     """Helper class to send action goals."""
 
-    def __init__(self, sleep_time=0.001):
+    def __init__(self, server_timeout_time=1.0, sleep_time=0.001):
+        self.server_timeout_time = server_timeout_time
         self.sleep_time = sleep_time
         self.goal_handle = None
+        self.goal_canceled = False
 
     def get_result_cb(self, future):
         self.result = future.result()
@@ -153,10 +155,11 @@ class SendGoal:
 
         self.result = None
         client = ActionClient(node_handle, action_class, action_name)
+        client.wait_for_server(timeout_sec=self.server_timeout_time)
         send_goal_future = client.send_goal_async(inst, feedback_callback=feedback_cb)
         send_goal_future.add_done_callback(self.goal_response_cb)
 
-        while self.result is None:
+        while self.result is None and not self.goal_canceled:
             time.sleep(self.sleep_time)
 
         client.destroy()
@@ -175,3 +178,4 @@ class SendGoal:
         cancel_goal_future = self.goal_handle.cancel_goal_async()
         while not cancel_goal_future.done():
             time.sleep(self.sleep_time)
+        self.goal_canceled = True

@@ -143,16 +143,6 @@ class SendActionGoal(Capability):
             if client_handler.send_goal_helper is not None:
                 client_handler.send_goal_helper.cancel_goal()
 
-                outgoing_message = {
-                    "op": "action_result",
-                    "action": action,
-                    "result": False,
-                }
-                if cid is not None:
-                    outgoing_message["id"] = cid
-                # TODO: fragmentation, compression
-                self.protocol.send(outgoing_message)
-
     def _success(self, cid, action, fragment_size, compression, message):
         outgoing_message = {
             "op": "action_result",
