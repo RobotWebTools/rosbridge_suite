@@ -157,7 +157,7 @@ class TestActionCapabilities(unittest.TestCase):
                     "op": "action_feedback",
                     "action": action_path,
                     "id": self.received_message["id"],
-                    "values": {"sequence": [1, 1, 2]},
+                    "values": {"sequence": [0, 1, 1]},
                 }
             )
         )
@@ -170,7 +170,7 @@ class TestActionCapabilities(unittest.TestCase):
                 self.fail("Timed out waiting for action feedback message.")
 
         self.assertIsNotNone(self.latest_feedback)
-        self.assertEqual(list(self.latest_feedback.feedback.sequence), [1, 1, 2])
+        self.assertEqual(list(self.latest_feedback.feedback.sequence), [0, 1, 1])
 
         # Now send the result
         result_msg = loads(
@@ -179,7 +179,7 @@ class TestActionCapabilities(unittest.TestCase):
                     "op": "action_result",
                     "action": action_path,
                     "id": self.received_message["id"],
-                    "values": {"sequence": [1, 1, 2, 3, 5]},
+                    "values": {"sequence": [0, 1, 1, 2, 3, 5]},
                     "result": True,
                 }
             )
@@ -196,7 +196,7 @@ class TestActionCapabilities(unittest.TestCase):
 
         self.assertIsNotNone(self.received_message)
         self.assertEqual(self.received_message["op"], "action_result")
-        self.assertEqual(self.received_message["values"]["result"]["sequence"], [1, 1, 2, 3, 5])
+        self.assertEqual(self.received_message["values"]["result"]["sequence"], [0, 1, 1, 2, 3, 5])
 
     def test_cancel_advertised_action(self):
         # Advertise the action
@@ -218,7 +218,7 @@ class TestActionCapabilities(unittest.TestCase):
         goal_msg = loads(
             dumps(
                 {
-                    "op": "call_service",
+                    "op": "send_action_goal",
                     "id": "foo",
                     "action": action_path,
                     "action_type": "example_interfaces/Fibonacci",
@@ -286,7 +286,7 @@ class TestActionCapabilities(unittest.TestCase):
         goal_msg = loads(
             dumps(
                 {
-                    "op": "call_service",
+                    "op": "send_action_goal",
                     "id": "foo",
                     "action": action_path,
                     "action_type": "example_interfaces/Fibonacci",

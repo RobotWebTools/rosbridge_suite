@@ -18,21 +18,18 @@ log.startLogging(sys.stderr)
 generate_test_description = common.generate_test_description
 
 
-class TestAdvertiseAction(unittest.TestCase):
-    def goal1_response_callback(self, future):
+class TestActionFeedback(unittest.TestCase):
+    def goal_response_callback(self, future):
         goal_handle = future.result()
         if not goal_handle.accepted:
             return
-        self.goal1_result_future = goal_handle.get_result_async()
+        self.goal_result_future = goal_handle.get_result_async()
 
-    def goal2_response_callback(self, future):
-        goal_handle = future.result()
-        if not goal_handle.accepted:
-            return
-        self.goal2_result_future = goal_handle.get_result_async()
+    def feedback_callback(self, msg):
+        self.latest_feedback = msg
 
     @websocket_test
-    async def test_two_concurrent_calls(self, node: Node, make_client):
+    async def test_feedback(self, node: Node, make_client):
         ws_client = await make_client()
         ws_client.sendJson(
             {
@@ -45,51 +42,46 @@ class TestAdvertiseAction(unittest.TestCase):
         client.wait_for_server()
 
         requests_future, ws_client.message_handler = expect_messages(
-            2, "WebSocket", node.get_logger()
+            1, "WebSocket", node.get_logger()
         )
         requests_future.add_done_callback(lambda _: node.executor.wake())
 
-        self.goal1_result_future = None
-        goal1_future = client.send_goal_async(Fibonacci.Goal(order=3))
-        goal1_future.add_done_callback(self.goal1_response_callback)
-
-        self.goal2_result_future = None
-        goal2_future = client.send_goal_async(Fibonacci.Goal(order=5))
-        goal2_future.add_done_callback(self.goal2_response_callback)
+        self.goal_result_future = None
+        goal_future = client.send_goal_async(
+            Fibonacci.Goal(order=5),
+            feedback_callback=self.feedback_callback,
+        )
+        goal_future.add_done_callback(self.goal_response_callback)
 
         requests = await requests_future
 
         self.assertEqual(requests[0]["op"], "send_action_goal")
         self.assertEqual(requests[0]["action"], "/test_fibonacci_action")
         self.assertEqual(requests[0]["action_type"], "example_interfaces/Fibonacci")
-        self.assertEqual(requests[0]["args"], {"order": 3})
+        self.assertEqual(requests[0]["args"], {"order": 5})
+
+        self.latest_feedback = None
         ws_client.sendJson(
             {
-                "op": "action_result",
+                "op": "action_feedback",
                 "action": "/test_fibonacci_action",
                 "values": {"sequence": [0, 1, 1, 2]},
                 "id": requests[0]["id"],
-                "result": True,
             }
         )
-
-        self.assertEqual(requests[1]["op"], "send_action_goal")
-        self.assertEqual(requests[1]["action"], "/test_fibonacci_action")
-        self.assertEqual(requests[1]["action_type"], "example_interfaces/Fibonacci")
-        self.assertEqual(requests[1]["args"], {"order": 5})
         ws_client.sendJson(
             {
                 "op": "action_result",
                 "action": "/test_fibonacci_action",
                 "values": {"sequence": [0, 1, 1, 2, 3, 5]},
-                "id": requests[1]["id"],
+                "id": requests[0]["id"],
                 "result": True,
             }
         )
 
-        result1 = await self.goal1_result_future
-        self.assertEqual(result1.result, Fibonacci.Result(sequence=[0, 1, 1, 2]))
-        result2 = await self.goal2_result_future
-        self.assertEqual(result2.result, Fibonacci.Result(sequence=[0, 1, 1, 2, 3, 5]))
+        result = await self.goal_result_future
+        self.assertIsNotNone(self.latest_feedback)
+        self.assertEqual(self.latest_feedback.feedback, Fibonacci.Feedback(sequence=[0, 1, 1, 2]))
+        self.assertEqual(result.result, Fibonacci.Result(sequence=[0, 1, 1, 2, 3, 5]))
 
         node.destroy_client(client)

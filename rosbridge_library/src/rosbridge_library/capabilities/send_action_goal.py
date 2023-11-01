@@ -133,6 +133,9 @@ class SendActionGoal(Capability):
         cid = message.get("id", None)
         action = message["action"]
 
+        # Typecheck the args
+        self.basic_type_check(message, self.cancel_action_goal_msg_fields)
+
         # Pull out the ID
         # Check for deprecated action ID, eg. /rosbridge/topics#33
         cid = extract_id(action, cid)
