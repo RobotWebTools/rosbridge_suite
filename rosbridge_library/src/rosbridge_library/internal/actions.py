@@ -67,6 +67,7 @@ class ActionClientHandler(Thread):
 
         Keyword arguments:
         action           -- the name of the action to execute.
+        action_type      -- the type of the action to execute.
         args             -- arguments to pass to the action. Can be an
         ordered list, or a dict of name-value pairs. Anything else will be
         treated as though no arguments were provided (which is still valid for
@@ -86,12 +87,14 @@ class ActionClientHandler(Thread):
         self.error = error_callback
         self.feedback = feedback_callback
         self.node_handle = node_handle
+        self.send_goal_helper = None
 
     def run(self):
         try:
             # Call the service and pass the result to the success handler
+            self.send_goal_helper = SendGoal()
             self.success(
-                SendGoal().send_goal(
+                self.send_goal_helper.send_goal(
                     self.node_handle,
                     self.action,
                     self.action_type,
@@ -123,20 +126,24 @@ def args_to_action_goal_instance(action, inst, args):
 
 
 class SendGoal:
+    """Helper class to send action goals."""
+
+    def __init__(self, sleep_time=0.001):
+        self.sleep_time = sleep_time
+        self.goal_handle = None
+
     def get_result_cb(self, future):
         self.result = future.result()
 
     def goal_response_cb(self, future):
-        goal_handle = future.result()
-        if not goal_handle.accepted:
+        self.goal_handle = future.result()
+        if not self.goal_handle.accepted:
             raise Exception("Action goal was rejected")
-        result_future = goal_handle.get_result_async()
+        result_future = self.goal_handle.get_result_async()
         result_future.add_done_callback(self.get_result_cb)
 
-    def send_goal(
-        self, node_handle, action, action_type, args=None, feedback_cb=None, sleep_time=0.001
-    ):
-        # Given the action nam and type, fetch a request instance
+    def send_goal(self, node_handle, action, action_type, args=None, feedback_cb=None):
+        # Given the action name and type, fetch a request instance
         action_name = expand_topic_name(action, node_handle.get_name(), node_handle.get_namespace())
         action_class = get_action_class(action_type)
         inst = get_action_goal_instance(action_type)
@@ -150,7 +157,7 @@ class SendGoal:
         send_goal_future.add_done_callback(self.goal_response_cb)
 
         while self.result is None:
-            time.sleep(sleep_time)
+            time.sleep(self.sleep_time)
 
         client.destroy()
         if self.result is not None:
@@ -160,3 +167,11 @@ class SendGoal:
             raise Exception(self.result)
 
         return json_response
+
+    def cancel_goal(self):
+        if self.goal_handle is None:
+            return
+
+        cancel_goal_future = self.goal_handle.cancel_goal_async()
+        while not cancel_goal_future.done():
+            time.sleep(self.sleep_time)

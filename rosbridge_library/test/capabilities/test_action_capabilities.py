@@ -198,10 +198,76 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["op"], "action_result")
         self.assertEqual(self.received_message["values"]["result"]["sequence"], [1, 1, 2, 3, 5])
 
+    def test_cancel_advertised_action(self):
+        # Advertise the action
+        action_path = "/fibonacci_3"
+        advertise_msg = loads(
+            dumps(
+                {
+                    "op": "advertise_action",
+                    "type": "example_interfaces/Fibonacci",
+                    "action": action_path,
+                }
+            )
+        )
+        self.advertise.advertise_action(advertise_msg)
+        time.sleep(0.1)
+
+        # Send a goal to the advertised action using rosbridge
+        self.received_message = None
+        goal_msg = loads(
+            dumps(
+                {
+                    "op": "call_service",
+                    "id": "foo",
+                    "action": action_path,
+                    "action_type": "example_interfaces/Fibonacci",
+                    "args": {"order": 5},
+                }
+            )
+        )
+        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
+
+        loop_iterations = 0
+        while self.received_message is None:
+            time.sleep(0.5)
+            loop_iterations += 1
+            if loop_iterations > 3:
+                self.fail("Timed out waiting for action goal message.")
+
+        self.assertIsNotNone(self.received_message)
+        self.assertTrue("op" in self.received_message)
+        self.assertEqual(self.received_message["op"], "send_action_goal")
+        self.assertTrue("id" in self.received_message)
+
+        # Now cancel the goal
+        cancel_msg = loads(
+            dumps(
+                {
+                    "op": "cancel_action_goal",
+                    "action": action_path,
+                    "id": "foo",
+                }
+            )
+        )
+        self.received_message = None
+        self.send_goal.cancel_action_goal(cancel_msg)
+
+        loop_iterations = 0
+        while self.received_message is None:
+            time.sleep(0.5)
+            loop_iterations += 1
+            if loop_iterations > 3:
+                self.fail("Timed out waiting for action result message.")
+
+        self.assertIsNotNone(self.received_message)
+        self.assertEqual(self.received_message["op"], "action_result")
+        self.assertFalse(self.received_message["result"])
+
     @unittest.skip("Currently raises an exception not catchable by unittest, need to fix this")
     def test_unadvertise_action(self):
         # Advertise the action
-        action_path = "/fibonacci_3"
+        action_path = "/fibonacci_4"
         advertise_msg = loads(
             dumps(
                 {

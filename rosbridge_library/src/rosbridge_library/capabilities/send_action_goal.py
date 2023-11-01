@@ -46,8 +46,10 @@ class SendActionGoal(Capability):
         (False, "fragment_size", (int, type(None))),
         (False, "compression", str),
     ]
+    cancel_action_goal_msg_fields = [(True, "action", str)]
 
     actions_glob = None
+    client_handler_list = {}
 
     def __init__(self, protocol):
         # Call superclass constructor
@@ -70,6 +72,8 @@ class SendActionGoal(Capability):
             # Sends the actions goal in this thread, so actions block and must be processed sequentially.
             protocol.node_handle.get_logger().info("Sending action goal in existing thread")
             protocol.register_operation("send_action_goal", self.send_action_goal)
+
+        protocol.register_operation("cancel_action_goal", self.cancel_action_goal)
 
     def send_action_goal(self, message):
         # Pull out the ID
@@ -117,9 +121,37 @@ class SendActionGoal(Capability):
             f_cb = None
 
         # Run action client handler in the same thread.
-        ActionClientHandler(
+        client_handler = ActionClientHandler(
             trim_action_name(action), action_type, args, s_cb, e_cb, f_cb, self.protocol.node_handle
-        ).run()
+        )
+        self.client_handler_list[cid] = client_handler
+        client_handler.run()
+        del self.client_handler_list[cid]
+
+    def cancel_action_goal(self, message):
+        # Extract the args
+        cid = message.get("id", None)
+        action = message["action"]
+
+        # Pull out the ID
+        # Check for deprecated action ID, eg. /rosbridge/topics#33
+        cid = extract_id(action, cid)
+
+        # Cancel the action
+        if cid in self.client_handler_list:
+            client_handler = self.client_handler_list[cid]
+            if client_handler.send_goal_helper is not None:
+                client_handler.send_goal_helper.cancel_goal()
+
+                outgoing_message = {
+                    "op": "action_result",
+                    "action": action,
+                    "result": False,
+                }
+                if cid is not None:
+                    outgoing_message["id"] = cid
+                # TODO: fragmentation, compression
+                self.protocol.send(outgoing_message)
 
     def _success(self, cid, action, fragment_size, compression, message):
         outgoing_message = {
