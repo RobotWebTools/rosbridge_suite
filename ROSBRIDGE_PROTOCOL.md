@@ -52,7 +52,7 @@ Optionally, a message can also provide an arbitrary string or integer ID:
 
 ```json
 { "op": "Example",
-  "id":"fred"
+  "id": "fred"
 }
 ```
 
@@ -81,16 +81,24 @@ Rosbridge status messages:
 
 ROS operations:
 
-  * **advertise** – advertise that you are publishing a topic
-  * **unadvertise** – stop advertising that you are publishing topic
-  * **publish** - a published ROS-message
-  * **subscribe** - a request to subscribe to a topic
-  * **unsubscribe** - a request to unsubscribe from a topic
-  * **call_service** - a service call
-  * **advertise_service** - advertise an external service server
-  * **unadvertise_service** - unadvertise an external service server
-  * **service_request** - a service request
-  * **service_response** - a service response
+  * Topics:
+    * **advertise** – advertise that you are publishing a topic
+    * **unadvertise** – stop advertising that you are publishing topic
+    * **publish** - a published ROS-message
+    * **subscribe** - a request to subscribe to a topic
+    * **unsubscribe** - a request to unsubscribe from a topic
+  * Services:
+    * **advertise_service** - advertise an external service server
+    * **unadvertise_service** - unadvertise an external service server
+    * **call_service** - a service call
+    * **service_response** - a service response
+  * Actions:
+   * **advertise_action** - advertise an external action server
+   * **unadvertise_action** - unadvertise an external action server
+   * **send_action_goal** - a goal sent to an action server
+   * **cancel_action_goal** - cancel an in-progress action goal
+   * **action_feedback** - feedback messages from an action server
+   * **action_result** - an action result
 
 In general, actions or operations that the client takes (such as publishing and
 subscribing) have opcodes which are verbs (subscribe, call_service, unadvertise
@@ -264,8 +272,7 @@ messages that already exist in the current version of rosbridge.
 
 #### 3.3.1 Advertise ( _advertise_ )
 
-If you wish to advertise that you are or will be publishing a topic, then use
-the advertise command.
+If you wish to advertise that you are or will be publishing a topic, then use the advertise command.
 
 ```json
 { "op": "advertise",
@@ -397,31 +404,7 @@ fragmentation size and publishing rate.
 If an id is provided, then only the corresponding subscription is unsubscribed.
 If no ID is provided, then all subscriptions are unsubscribed.
 
-#### 3.3.6 Call Service
-
-```json
-{ "op": "call_service",
-  (optional) "id": <string>,
-  "service": <string>,
-  (optional) "args": <list<json>>,
-  (optional) "fragment_size": <int>,
-  (optional) "compression": <string>
-}
-```
-
-Calls a ROS service
-
- * **service** – the name of the service to call
- * **args** – if the service has no args, then args does not have to be
-    provided, though an empty list is equally acceptable. Args should be a list
-    of json objects representing the arguments to the service
- * **id** – an optional id to distinguish this service call
- * **fragment_size** – the maximum size that the response message can take
-    before it is fragmented
- * **compression** – an optional string to specify the compression scheme to be
-    used on messages. Valid values are "none" and "png"
-
-#### 3.3.7 Advertise Service
+#### 3.3.6 Advertise Service
 
 ```json
 { "op": "advertise_service",
@@ -435,7 +418,7 @@ Advertises an external ROS service server. Requests come to the client via Call 
  * **service** – the name of the service to advertise
  * **type** – the advertised service message type
 
-#### 3.3.8 Unadvertise Service
+#### 3.3.7 Unadvertise Service
 
 ```json
 { "op": "unadvertise_service",
@@ -443,11 +426,38 @@ Advertises an external ROS service server. Requests come to the client via Call 
 }
 ```
 
+#### 3.3.8 Call Service
+
+Calls a ROS service.
+
+```json
+{ "op": "call_service",
+  (optional) "id": <string>,
+  "service": <string>,
+  (optional) "args": <list<json>>,
+  (optional) "fragment_size": <int>,
+  (optional) "compression": <string>
+}
+```
+
+ * **service** – the name of the service to call
+ * **args** – if the service has no args, then args does not have to be
+    provided, though an empty list is equally acceptable. Args should be a list
+    of json objects representing the arguments to the service
+ * **id** – an optional id to distinguish this service call
+ * **fragment_size** – the maximum size that the response message can take
+    before it is fragmented
+ * **compression** – an optional string to specify the compression scheme to be
+    used on messages. Valid values are "none" and "png"
+
+
 Stops advertising an external ROS service server
 
  * **service** – the name of the service to unadvertise
 
 #### 3.3.9 Service Response
+
+A response to a ROS service call.
 
 ```json
 { "op": "service_response",
@@ -458,8 +468,6 @@ Stops advertising an external ROS service server
 }
 ```
 
-A response to a ROS service call
-
  * **service** – the name of the service that was called
  * **values** – the return values. If the service had no return values, then
     this field can be omitted (and will be by the rosbridge server)
@@ -467,11 +475,108 @@ A response to a ROS service call
     response will contain the ID
  * **result** - return value of service callback. true means success, false failure.
 
+#### 3.3.10 Advertise Action
+
+Advertises an external ROS action server.
+
+```json
+{ "op": "advertise_action",
+  "type": <string>,
+  "action": <string>
+}
+```
+
+Goals come to the client via the Send Action Goal capability.
+
+ * **action** – the name of the action to advertise
+ * **type** – the advertised action message type
+
+#### 3.3.11 Unadvertise Action
+
+```json
+{ "op": "unadvertise_action",
+  "action": <string>
+}
+```
+
+#### 3.3.12 Send Action Goal
+
+Sends a goal to a ROS action server.
+
+```json
+{ "op": "send_action_goal",
+  (optional) "id": <string>,
+  "action": <string>,
+  "action_type: <string>,
+  (optional) "args": <list<json>>,
+  (optional) "feedback": <boolean>
+  (optional) "fragment_size": <int>,
+  (optional) "compression": <string>
+}
+```
+
+ * **action** – the name of the action to send a goal to
+ * **action_type** – the action message type
+ * **args** – if the goal has no args, then args does not have to be
+    provided, though an empty list is equally acceptable. Args should be a list of json objects representing the arguments to the service.
+ * **feedback** – if true, sends feedback messages over rosbridge. Defaults to false.
+ * **id** – an optional id to distinguish this goal handle
+ * **fragment_size** – the maximum size that the result and feedback messages can take before they are fragmented
+ * **compression** – an optional string to specify the compression scheme to be used on messages. Valid values are "none" and "png"
+
+#### 3.3.13 Cancel Action Goal
+
+Cancels an action goal.
+
+```json
+{ "op": "cancel_action_goal",
+  "id": <string>,
+  "action": <string>,
+}
+```
+
+The `id` field must match an already in-progress goal.
+
+#### 3.3.14 Action Feedback
+
+Used to send action feedback for a specific goal handle.
+
+```json
+{ "op": "action_feedback",
+  "id": <string>,
+  "action": <string>,
+  "values": <json>,
+}
+```
+
+The `id` field must match an already in-progress goal.
+
+#### 3.3.15 Action Result
+
+A result for a ROS action.
+
+```json
+{ "op": "action_result",
+  "id": <string>,
+  "action": <string>,
+  "values": <json>,
+  "result": <boolean>
+}
+```
+
+ * **action** – the name of the action that was executed
+ * **values** – the result values. If the service had no return values, then
+    this field can be omitted (and will be by the rosbridge server)
+ * **id** – if an ID was provided to the action goal, then the action result will contain the ID
+ * **result** - return value of the action. true means success, false failure.
+
+---
+
 ## 4 Further considerations
 
 Further considerations for the rosbridge protocol are listed below.
 
-### 4.1 Rosbridge psuedo-services
+### 4.1 Rosbridge pseudo-services
 
 Rosbridge no longer provides the ROS-api introspection pseudo services that it
 previously did. These are, for example rosbridge/topics and rosbridge/services.
