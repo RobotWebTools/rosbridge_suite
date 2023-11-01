@@ -83,7 +83,7 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertRaises(InvalidArgumentException, self.result.action_result, result_msg)
 
     def test_advertise_action(self):
-        action_path = "/fibonacci_1"
+        action_path = "/fibonacci_action_1"
         advertise_msg = loads(
             dumps(
                 {
@@ -97,7 +97,7 @@ class TestActionCapabilities(unittest.TestCase):
 
     def test_execute_advertised_action(self):
         # Advertise the action
-        action_path = "/fibonacci_2"
+        action_path = "/fibonacci_action_2"
         advertise_msg = loads(
             dumps(
                 {
@@ -200,7 +200,7 @@ class TestActionCapabilities(unittest.TestCase):
 
     def test_cancel_advertised_action(self):
         # Advertise the action
-        action_path = "/fibonacci_3"
+        action_path = "/fibonacci_action_3"
         advertise_msg = loads(
             dumps(
                 {
@@ -267,7 +267,7 @@ class TestActionCapabilities(unittest.TestCase):
     @unittest.skip("Currently raises an exception not catchable by unittest, need to fix this")
     def test_unadvertise_action(self):
         # Advertise the action
-        action_path = "/fibonacci_4"
+        action_path = "/fibonacci_action_4"
         advertise_msg = loads(
             dumps(
                 {
