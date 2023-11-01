@@ -107,8 +107,8 @@ class TestActionCapabilities(unittest.TestCase):
                 }
             )
         )
-        self.received_message = None
         self.advertise.advertise_action(advertise_msg)
+        time.sleep(0.1)
 
         # Send a goal to the advertised action using rosbridge
         self.received_message = None
@@ -151,7 +151,6 @@ class TestActionCapabilities(unittest.TestCase):
             sub_qos_profile,
         )
         time.sleep(0.1)
-
         feedback_msg = loads(
             dumps(
                 {
@@ -214,6 +213,7 @@ class TestActionCapabilities(unittest.TestCase):
         )
         self.received_message = None
         self.advertise.advertise_action(advertise_msg)
+        time.sleep(0.1)
 
         # Send a goal to the advertised action using rosbridge
         self.received_message = None
