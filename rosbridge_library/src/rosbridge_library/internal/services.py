@@ -32,7 +32,7 @@
 
 import time
 from threading import Thread
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional
 
 import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup

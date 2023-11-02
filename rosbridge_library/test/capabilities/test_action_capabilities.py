@@ -202,10 +202,10 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["op"], "action_result")
         self.assertEqual(self.received_message["values"]["result"]["sequence"], [0, 1, 1, 2, 3, 5])
 
-        @unittest.skip(
-            reason="Currently fails in Iron/Rolling due to https://github.com/ros2/rclpy/issues/1195, need to fix this"
-        )
-        def test_cancel_advertised_action(self):
+    @unittest.skip(
+        reason="Currently fails in Iron/Rolling due to https://github.com/ros2/rclpy/issues/1195, need to fix this"
+    )
+    def test_cancel_advertised_action(self):
         # Advertise the action
         action_path = "/fibonacci_action_3"
         advertise_msg = loads(
