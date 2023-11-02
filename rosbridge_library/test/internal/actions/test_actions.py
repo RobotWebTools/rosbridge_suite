@@ -12,6 +12,7 @@ from rclpy.node import Node
 from rosbridge_library.internal import actions
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader
+from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 
 
 class ActionTester:
@@ -109,15 +110,34 @@ class TestActions(unittest.TestCase):
 
     def test_populate_goal_args(self):
         # Test empty messages
-        for srv_type in ["TestEmpty", "TestFeedbackAndResult", "TestResultOnly"]:
-            cls = ros_loader.get_action_class("rosbridge_test_msgs/" + srv_type)
+        for action_type in ["TestEmpty", "TestFeedbackAndResult", "TestResultOnly"]:
+            cls = ros_loader.get_action_class("rosbridge_test_msgs/" + action_type)
             for args in [[], {}, None]:
                 # Should throw no exceptions
                 actions.args_to_action_goal_instance("", cls.Goal(), args)
 
-        # TODO: Test actions with data message
+        # Test actions with data message
+        for action_type in ["TestGoalOnly", "TestGoalAndResult", "TestGoalFeedbackAndResult"]:
+            cls = ros_loader.get_action_class("rosbridge_test_msgs/" + action_type)
+            for args in [[3], {"data": 3}]:
+                # Should throw no exceptions
+                actions.args_to_action_goal_instance("", cls.Goal(), args)
+            self.assertRaises(
+                FieldTypeMismatchException,
+                actions.args_to_action_goal_instance,
+                "",
+                cls.Goal(),
+                ["hello"],
+            )
 
-        # TODO: Test actions with multiple fields
+        # Test actions with multiple fields
+        cls = ros_loader.get_action_class("rosbridge_test_msgs/TestMultipleGoalFields")
+        for args in [
+            [3, 3.5, "hello", False],
+            {"int_value": 3, "float_value": 3.5, "string": "hello", "bool_value": False},
+        ]:
+            # Should throw no exceptions
+            actions.args_to_action_goal_instance("", cls.Goal(), args)
 
     def test_send_action_goal(self):
         """Test a simple action call"""

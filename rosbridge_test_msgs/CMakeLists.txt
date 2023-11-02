@@ -32,6 +32,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/TestResponseOnly.srv
   action/TestEmpty.action
   action/TestFeedbackAndResult.action
+  action/TestGoalAndResult.action
+  action/TestGoalFeedbackAndResult.action
+  action/TestGoalOnly.action
+  action/TestMultipleGoalFields.action
   action/TestResultOnly.action
   DEPENDENCIES builtin_interfaces geometry_msgs std_msgs
 )
