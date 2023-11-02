@@ -33,20 +33,21 @@
 import fnmatch
 
 from rosbridge_library.capability import Capability
+from rosbridge_library.protocol import Protocol
 
 
 class UnadvertiseAction(Capability):
 
     actions_glob = None
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
         # Register the operations that this capability provides
         protocol.register_operation("unadvertise_action", self.unadvertise_action)
 
-    def unadvertise_action(self, message):
+    def unadvertise_action(self, message: dict) -> None:
         # parse the message
         action_name = message["action"]
 

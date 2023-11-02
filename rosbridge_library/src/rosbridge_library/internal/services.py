@@ -32,10 +32,12 @@
 
 import time
 from threading import Thread
+from typing import Any, Callable, Optional, Union
 
 import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.expand_topic_name import expand_topic_name
+from rclpy.node import Node
 from rosbridge_library.internal.message_conversion import (
     extract_values,
     populate_instance,
@@ -47,12 +49,19 @@ from rosbridge_library.internal.ros_loader import (
 
 
 class InvalidServiceException(Exception):
-    def __init__(self, service_name):
+    def __init__(self, service_name) -> None:
         Exception.__init__(self, f"Service {service_name} does not exist")
 
 
 class ServiceCaller(Thread):
-    def __init__(self, service, args, success_callback, error_callback, node_handle):
+    def __init__(
+        self,
+        service: str,
+        args: dict,
+        success_callback: Callable[[str, str, int, bool, Any], None],
+        error_callback: Callable[[str, str, Exception], None],
+        node_handle: Node,
+    ) -> None:
         """Create a service caller for the specified service.  Use start()
         to start in a separate thread or run() to run in this thread.
 
@@ -76,7 +85,7 @@ class ServiceCaller(Thread):
         self.error = error_callback
         self.node_handle = node_handle
 
-    def run(self):
+    def run(self) -> None:
         try:
             # Call the service and pass the result to the success handler
             self.success(call_service(self.node_handle, self.service, args=self.args))
@@ -85,7 +94,7 @@ class ServiceCaller(Thread):
             self.error(e)
 
 
-def args_to_service_request_instance(service, inst, args):
+def args_to_service_request_instance(service: str, inst: Any, args: dict) -> Any:
     """Populate a service request instance with the provided args
 
     args can be a dictionary of values, or a list, or None
@@ -101,7 +110,13 @@ def args_to_service_request_instance(service, inst, args):
     populate_instance(msg, inst)
 
 
-def call_service(node_handle, service, args=None, server_timeout_time=1.0, sleep_time=0.001):
+def call_service(
+    node_handle: Node,
+    service: str,
+    args: Optional[dict] = None,
+    server_timeout_time: float = 1.0,
+    sleep_time: float = 0.001,
+) -> dict:
     # Given the service name, fetch the type and class of the service,
     # and a request instance
     service = expand_topic_name(service, node_handle.get_name(), node_handle.get_namespace())

@@ -32,6 +32,7 @@
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion, ros_loader
+from rosbridge_library.protocol import Protocol
 
 
 class ActionResult(Capability):
@@ -43,14 +44,14 @@ class ActionResult(Capability):
         (True, "result", bool),
     ]
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
         # Register the operations that this capability provides
         protocol.register_operation("action_result", self.action_result)
 
-    def action_result(self, message):
+    def action_result(self, message: dict) -> None:
         # Typecheck the args
         self.basic_type_check(message, self.action_result_msg_fields)
 

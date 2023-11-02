@@ -32,9 +32,12 @@
 
 import time
 from threading import Thread
+from typing import Any, Callable, Optional, Union
 
 from rclpy.action import ActionClient
 from rclpy.expand_topic_name import expand_topic_name
+from rclpy.node import Node
+from rclpy.task import Future
 from rosbridge_library.internal.message_conversion import (
     extract_values,
     populate_instance,
@@ -46,21 +49,21 @@ from rosbridge_library.internal.ros_loader import (
 
 
 class InvalidActionException(Exception):
-    def __init__(self, action_name):
+    def __init__(self, action_name) -> None:
         Exception.__init__(self, f"Action {action_name} does not exist")
 
 
 class ActionClientHandler(Thread):
     def __init__(
         self,
-        action,
-        action_type,
-        args,
-        success_callback,
-        error_callback,
-        feedback_callback,
-        node_handle,
-    ):
+        action: str,
+        action_type: str,
+        args: dict,
+        success_callback: Callable[[str, str, int, bool, dict], None],
+        error_callback: Callable[[str, str, Exception], None],
+        feedback_callback: Callable[[str, str, dict], None],
+        node_handle: Node,
+    ) -> None:
         """
         Create a client handler for the specified action.
         Use start() to start in a separate thread or run() to run in this thread.
@@ -89,7 +92,7 @@ class ActionClientHandler(Thread):
         self.node_handle = node_handle
         self.send_goal_helper = None
 
-    def run(self):
+    def run(self) -> None:
         try:
             # Call the service and pass the result to the success handler
             self.send_goal_helper = SendGoal()
@@ -107,7 +110,7 @@ class ActionClientHandler(Thread):
             self.error(e)
 
 
-def args_to_action_goal_instance(action, inst, args):
+def args_to_action_goal_instance(action: str, inst: Any, args: Union[list, dict]) -> Any:
     """ "
     Populate an action goal instance with the provided args
 
@@ -128,23 +131,30 @@ def args_to_action_goal_instance(action, inst, args):
 class SendGoal:
     """Helper class to send action goals."""
 
-    def __init__(self, server_timeout_time=1.0, sleep_time=0.001):
+    def __init__(self, server_timeout_time: float = 1.0, sleep_time: float = 0.001) -> None:
         self.server_timeout_time = server_timeout_time
         self.sleep_time = sleep_time
         self.goal_handle = None
         self.goal_canceled = False
 
-    def get_result_cb(self, future):
+    def get_result_cb(self, future: Future) -> None:
         self.result = future.result()
 
-    def goal_response_cb(self, future):
+    def goal_response_cb(self, future: Future) -> None:
         self.goal_handle = future.result()
         if not self.goal_handle.accepted:
             raise Exception("Action goal was rejected")
         result_future = self.goal_handle.get_result_async()
         result_future.add_done_callback(self.get_result_cb)
 
-    def send_goal(self, node_handle, action, action_type, args=None, feedback_cb=None):
+    def send_goal(
+        self,
+        node_handle: Node,
+        action: str,
+        action_type: str,
+        args: Optional[dict] = None,
+        feedback_cb: Optional[Callable[[str, str, dict], None]] = None,
+    ) -> dict:
         # Given the action name and type, fetch a request instance
         action_name = expand_topic_name(action, node_handle.get_name(), node_handle.get_namespace())
         action_class = get_action_class(action_type)
@@ -171,7 +181,7 @@ class SendGoal:
 
         return json_response
 
-    def cancel_goal(self):
+    def cancel_goal(self) -> None:
         if self.goal_handle is None:
             return
 

@@ -32,6 +32,7 @@
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion, ros_loader
+from rosbridge_library.protocol import Protocol
 
 
 class ActionFeedback(Capability):
@@ -42,14 +43,14 @@ class ActionFeedback(Capability):
         (False, "values", dict),
     ]
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
         # Register the operations that this capability provides
         protocol.register_operation("action_feedback", self.action_feedback)
 
-    def action_feedback(self, message):
+    def action_feedback(self, message: dict) -> None:
         # Typecheck the args
         self.basic_type_check(message, self.action_feedback_msg_fields)
 

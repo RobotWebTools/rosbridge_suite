@@ -36,6 +36,7 @@ from threading import Thread
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.actions import ActionClientHandler
+from rosbridge_library.protocol import Protocol
 
 
 class SendActionGoal(Capability):
@@ -51,7 +52,7 @@ class SendActionGoal(Capability):
     actions_glob = None
     client_handler_list = {}
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
@@ -75,7 +76,7 @@ class SendActionGoal(Capability):
 
         protocol.register_operation("cancel_action_goal", self.cancel_action_goal)
 
-    def send_action_goal(self, message):
+    def send_action_goal(self, message: dict) -> None:
         # Pull out the ID
         cid = message.get("id", None)
 
@@ -128,7 +129,7 @@ class SendActionGoal(Capability):
         client_handler.run()
         del self.client_handler_list[cid]
 
-    def cancel_action_goal(self, message):
+    def cancel_action_goal(self, message: dict) -> None:
         # Extract the args
         cid = message.get("id", None)
         action = message["action"]
@@ -146,7 +147,9 @@ class SendActionGoal(Capability):
             if client_handler.send_goal_helper is not None:
                 client_handler.send_goal_helper.cancel_goal()
 
-    def _success(self, cid, action, fragment_size, compression, message):
+    def _success(
+        self, cid: str, action: str, fragment_size: int, compression: bool, message: dict
+    ) -> None:
         outgoing_message = {
             "op": "action_result",
             "action": action,
@@ -158,8 +161,8 @@ class SendActionGoal(Capability):
         # TODO: fragmentation, compression
         self.protocol.send(outgoing_message)
 
-    def _failure(self, cid, action, exc):
-        self.protocol.log("error", "send_action_goal %s: %s" % (type(exc).__name__, str(exc)), cid)
+    def _failure(self, cid: str, action: str, exc: Exception) -> None:
+        self.protocol.log("error", f"send_action_goal {type(exc).__name__}: {cid}")
         # send response with result: false
         outgoing_message = {
             "op": "action_result",
@@ -171,7 +174,7 @@ class SendActionGoal(Capability):
             outgoing_message["id"] = cid
         self.protocol.send(outgoing_message)
 
-    def _feedback(self, cid, action, message):
+    def _feedback(self, cid: str, action: str, message: dict) -> None:
         outgoing_message = {
             "op": "action_feedback",
             "action": action,
@@ -183,13 +186,13 @@ class SendActionGoal(Capability):
         self.protocol.send(outgoing_message)
 
 
-def trim_action_name(action):
+def trim_action_name(action: str) -> str:
     if "#" in action:
         return action[: action.find("#")]
     return action
 
 
-def extract_id(action, cid):
+def extract_id(action: str, cid: str) -> str:
     if cid is not None:
         return cid
     elif "#" in action:

@@ -31,6 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import fnmatch
+from typing import Any
 
 import rclpy
 from rclpy.action import ActionServer
@@ -38,13 +39,16 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.internal.ros_loader import get_action_class
+from rosbridge_library.protocol import Protocol
 
 
 class AdvertisedActionHandler:
 
     id_counter = 1
 
-    def __init__(self, action_name, action_type, protocol, sleep_time=0.001):
+    def __init__(
+        self, action_name: str, action_type: str, protocol: Protocol, sleep_time: float = 0.001
+    ) -> None:
         self.goal_futures = {}
         self.goal_handles = {}
 
@@ -61,12 +65,12 @@ class AdvertisedActionHandler:
             callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
         )
 
-    def next_id(self):
+    def next_id(self) -> int:
         id = self.id_counter
         self.id_counter += 1
         return id
 
-    async def execute_callback(self, goal):
+    async def execute_callback(self, goal: Any) -> Any:
         # generate a unique ID
         goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
@@ -92,7 +96,7 @@ class AdvertisedActionHandler:
             del self.goal_futures[goal_id]
             del self.goal_handles[goal_id]
 
-    def handle_feedback(self, goal_id, feedback):
+    def handle_feedback(self, goal_id: str, feedback: Any) -> None:
         """
         Called by the ActionFeedback capability to handle action feedback from the external client.
         """
@@ -101,16 +105,16 @@ class AdvertisedActionHandler:
         else:
             self.protocol.log("warning", f"Received action feedback for unrecognized id: {goal_id}")
 
-    def handle_result(self, goal_id, res):
+    def handle_result(self, goal_id: str, result: Any) -> None:
         """
         Called by the ActionResult capability to handle an action result from the external client.
         """
         if goal_id in self.goal_futures:
-            self.goal_futures[goal_id].set_result(res)
+            self.goal_futures[goal_id].set_result(result)
         else:
             self.protocol.log("warning", f"Received action result for unrecognized id: {goal_id}")
 
-    def graceful_shutdown(self):
+    def graceful_shutdown(self) -> None:
         """
         Signal the AdvertisedActionHandler to shutdown.
         """
@@ -132,14 +136,14 @@ class AdvertiseAction(Capability):
 
     advertise_action_msg_fields = [(True, "action", str), (True, "type", str)]
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
         # Register the operations that this capability provides
         protocol.register_operation("advertise_action", self.advertise_action)
 
-    def advertise_action(self, message):
+    def advertise_action(self, message: dict) -> None:
         # Typecheck the args
         self.basic_type_check(message, self.advertise_action_msg_fields)
 
