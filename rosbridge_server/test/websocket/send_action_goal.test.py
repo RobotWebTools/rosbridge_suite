@@ -28,7 +28,7 @@ class TestSendActionGoal(unittest.TestCase):
         for i in range(1, goal.request.order):
             feedback_msg.sequence.append(feedback_msg.sequence[i] + feedback_msg.sequence[i - 1])
             goal.publish_feedback(feedback_msg)
-            time.sleep(0.1)
+            time.sleep(0.5)
 
         goal.succeed()
         result = Fibonacci.Result()
@@ -47,7 +47,7 @@ class TestSendActionGoal(unittest.TestCase):
 
         ws_client = await make_client()
         responses_future, ws_client.message_handler = expect_messages(
-            1, "WebSocket", node.get_logger()
+            5, "WebSocket", node.get_logger()
         )
         responses_future.add_done_callback(lambda _: node.executor.wake())
 
@@ -62,10 +62,16 @@ class TestSendActionGoal(unittest.TestCase):
         )
 
         responses = await responses_future
-        self.assertEqual(len(responses), 1)
-        self.assertEqual(responses[0]["op"], "action_result")
-        self.assertEqual(responses[0]["action"], "/test_fibonacci_action")
-        self.assertEqual(responses[0]["values"]["result"]["sequence"], [0, 1, 1, 2, 3, 5])
-        self.assertEqual(responses[0]["result"], True)
+        expected_result = [0, 1, 1, 2, 3, 5]
+        self.assertEqual(len(responses), 5)
+
+        for idx in range(4):
+            self.assertEqual(responses[idx]["op"], "action_feedback")
+            self.assertEqual(responses[idx]["values"]["sequence"], expected_result[: idx + 3])
+
+        self.assertEqual(responses[-1]["op"], "action_result")
+        self.assertEqual(responses[-1]["action"], "/test_fibonacci_action")
+        self.assertEqual(responses[-1]["values"]["result"]["sequence"], expected_result)
+        self.assertEqual(responses[-1]["result"], True)
 
         action_server.destroy()

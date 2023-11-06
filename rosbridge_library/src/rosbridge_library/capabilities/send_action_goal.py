@@ -36,6 +36,7 @@ from threading import Thread
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.actions import ActionClientHandler
+from rosbridge_library.internal.message_conversion import extract_values
 from rosbridge_library.protocol import Protocol
 
 
@@ -178,7 +179,7 @@ class SendActionGoal(Capability):
         outgoing_message = {
             "op": "action_feedback",
             "action": action,
-            "values": message,
+            "values": extract_values(message.feedback),
         }
         if cid is not None:
             outgoing_message["id"] = cid
