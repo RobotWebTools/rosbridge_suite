@@ -59,14 +59,18 @@ class ActionResult(Capability):
         action_name = message["action"]
         if action_name in self.protocol.external_action_list:
             action_handler = self.protocol.external_action_list[action_name]
-            # parse the message
             goal_id = message["id"]
-            values = message["values"]
-            # create a message instance
-            result = ros_loader.get_action_result_instance(action_handler.action_type)
-            message_conversion.populate_instance(values, result)
-            # pass along the result
-            action_handler.handle_result(goal_id, result)
+            if message["result"]:
+                # parse the message
+                values = message["values"]
+                # create a message instance
+                result = ros_loader.get_action_result_instance(action_handler.action_type)
+                message_conversion.populate_instance(values, result)
+                # pass along the result
+                action_handler.handle_result(goal_id, result)
+            else:
+                # Abort the goal
+                action_handler.handle_abort(goal_id)
         else:
             self.protocol.log(
                 "error",

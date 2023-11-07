@@ -74,8 +74,15 @@ class AdvertisedActionHandler:
         # generate a unique ID
         goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
+        def done_callback(fut: rclpy.task.Future()) -> None:
+            if fut.cancelled():
+                goal.abort()
+                fut.set_exception(RuntimeError(f"Aborted goal {goal_id}"))
+            else:
+                goal.succeed()
+
         future = rclpy.task.Future()
-        future.add_done_callback(lambda _: goal.succeed())
+        future.add_done_callback(done_callback)
         self.goal_handles[goal_id] = goal
         self.goal_futures[goal_id] = future
 
@@ -107,12 +114,23 @@ class AdvertisedActionHandler:
 
     def handle_result(self, goal_id: str, result: Any) -> None:
         """
-        Called by the ActionResult capability to handle an action result from the external client.
+        Called by the ActionResult capability to handle a successful action result from the external client.
         """
         if goal_id in self.goal_futures:
             self.goal_futures[goal_id].set_result(result)
         else:
             self.protocol.log("warning", f"Received action result for unrecognized id: {goal_id}")
+
+    def handle_abort(self, goal_id: str) -> None:
+        """
+        Called by the ActionResult capability to handle aborting action result from the external client.
+        """
+        if goal_id in self.goal_futures:
+            self.goal_futures[goal_id].cancel()
+        else:
+            self.protocol.log(
+                "warning", f"Received action abort request for unrecognized id: {goal_id}"
+            )
 
     def graceful_shutdown(self) -> None:
         """
