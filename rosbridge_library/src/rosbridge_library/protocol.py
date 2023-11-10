@@ -82,6 +82,8 @@ class Protocol:
     delay_between_messages = 0
     # global list of non-ros advertised services
     external_service_list = {}
+    # global list of non-ros advertised actions
+    external_action_list = {}
     # Use only BSON for the whole communication if the server has been started with bson_only_mode:=True
     bson_only_mode = False
 

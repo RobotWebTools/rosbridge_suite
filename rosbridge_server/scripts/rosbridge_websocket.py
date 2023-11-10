@@ -178,6 +178,10 @@ class RosbridgeWebsocketNode(Node):
             "call_services_in_new_thread", False
         ).value
 
+        RosbridgeWebSocket.send_action_goals_in_new_thread = self.declare_parameter(
+            "send_action_goals_in_new_thread", False
+        ).value
+
         # get RosbridgeProtocol parameters
         RosbridgeWebSocket.fragment_timeout = self.declare_parameter(
             "fragment_timeout", RosbridgeWebSocket.fragment_timeout

@@ -35,6 +35,7 @@
   <test_depend>builtin_interfaces</test_depend>
   <test_depend>diagnostic_msgs</test_depend>
   <test_depend>example_interfaces</test_depend>
+  <test_depend>control_msgs</test_depend>
   <test_depend>geometry_msgs</test_depend>
   <test_depend>nav_msgs</test_depend>
   <test_depend>sensor_msgs</test_depend>

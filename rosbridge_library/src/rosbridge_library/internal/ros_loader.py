@@ -33,6 +33,7 @@
 
 import importlib
 from threading import Lock
+from typing import Any
 
 """ ros_loader contains methods for dynamically loading ROS message classes at
 runtime.  It's achieved by using roslib to load the manifest files for the
@@ -44,17 +45,19 @@ Methods typically return the requested class or instance, or None if not found
 # Variable containing the loaded classes
 _loaded_msgs = {}
 _loaded_srvs = {}
+_loaded_actions = {}
 _msgs_lock = Lock()
 _srvs_lock = Lock()
+_actions_lock = Lock()
 
 
 class InvalidTypeStringException(Exception):
-    def __init__(self, typestring):
-        Exception.__init__(self, "%s is not a valid type string" % typestring)
+    def __init__(self, typestring: str) -> None:
+        Exception.__init__(self, f"{typestring} is not a valid type string")
 
 
 class InvalidModuleException(Exception):
-    def __init__(self, modname, subname, original_exception):
+    def __init__(self, modname: str, subname: str, original_exception: Exception) -> None:
         Exception.__init__(
             self,
             "Unable to import %s.%s from package %s. Caused by: %s"
@@ -63,7 +66,9 @@ class InvalidModuleException(Exception):
 
 
 class InvalidClassException(Exception):
-    def __init__(self, modname, subname, classname, original_exception):
+    def __init__(
+        self, modname: str, subname: str, classname: str, original_exception: Exception
+    ) -> None:
         Exception.__init__(
             self,
             "Unable to import %s class %s from package %s. Caused by %s"
@@ -71,88 +76,90 @@ class InvalidClassException(Exception):
         )
 
 
-def get_message_class(typestring):
+def get_message_class(typestring: str) -> Any:
     """Loads the message type specified.
 
     Returns the loaded class, or throws exceptions on failure"""
-    return _get_msg_class(typestring)
+    return _get_interface_class(typestring, "msg", _loaded_msgs, _msgs_lock)
 
 
-def get_service_class(typestring):
+def get_service_class(typestring: str) -> Any:
     """Loads the service type specified.
 
     Returns the loaded class, or None on failure"""
-    return _get_srv_class(typestring)
+    return _get_interface_class(typestring, "srv", _loaded_srvs, _srvs_lock)
 
 
-def get_message_instance(typestring):
+def get_action_class(typestring: str) -> Any:
+    """Loads the action type specified.
+    Returns the loaded class, or throws exceptions on failure"""
+    return _get_interface_class(typestring, "action", _loaded_actions, _actions_lock)
+
+
+def get_message_instance(typestring: str) -> Any:
     """If not loaded, loads the specified type.
     Then returns an instance of it, or None."""
     cls = get_message_class(typestring)
     return cls()
 
 
-def get_service_request_instance(typestring):
+def get_service_request_instance(typestring: str) -> Any:
     cls = get_service_class(typestring)
     return cls.Request()
 
 
-def get_service_response_instance(typestring):
+def get_service_response_instance(typestring: str) -> Any:
     cls = get_service_class(typestring)
     return cls.Response()
 
 
-def _get_msg_class(typestring):
-    """If not loaded, loads the specified msg class then returns an instance
-    of it
+def get_action_goal_instance(typestring: str) -> Any:
+    cls = get_action_class(typestring)
+    return cls.Goal()
 
-    Throws various exceptions if loading the msg class fails"""
-    global _loaded_msgs, _msgs_lock
+
+def get_action_feedback_instance(typestring: str) -> Any:
+    cls = get_action_class(typestring)
+    return cls.Feedback()
+
+
+def get_action_result_instance(typestring: str) -> Any:
+    cls = get_action_class(typestring)
+    return cls.Result()
+
+
+def _get_interface_class(
+    typestring: str, intf_type: str, loaded_intfs: dict[str, Any], intf_lock: Lock
+) -> Any:
+    """
+    If not loaded, loads the specified ROS interface class then returns an instance of it.
+
+    Throws various exceptions if loading the interface class fails.
+    """
     try:
         # The type string starts with the package and ends with the
         # class and contains module subnames in between. For
-        # compatibility with ROS1 style types, we fall back to use a
+        # compatibility with ROS 1 style types, we fall back to use a
         # standard "msg" subname.
         splits = [x for x in typestring.split("/") if x]
         if len(splits) > 2:
             subname = ".".join(splits[1:-1])
         else:
-            subname = "msg"
+            subname = intf_type
 
-        return _get_class(typestring, subname, _loaded_msgs, _msgs_lock)
+        return _get_class(typestring, subname, loaded_intfs, intf_lock)
     except (InvalidModuleException, InvalidClassException):
-        return _get_class(typestring, "msg", _loaded_msgs, _msgs_lock)
+        return _get_class(typestring, intf_type, loaded_intfs, intf_lock)
 
 
-def _get_srv_class(typestring):
-    """If not loaded, loads the specified srv class then returns an instance
-    of it
-
-    Throws various exceptions if loading the srv class fails"""
-    global _loaded_srvs, _srvs_lock
-    try:
-        # The type string starts with the package and ends with the
-        # class and contains module subnames in between. For
-        # compatibility with ROS1 style types, we fall back to use a
-        # standard "srv" subname.
-        splits = [x for x in typestring.split("/") if x]
-        if len(splits) > 2:
-            subname = ".".join(splits[1:-1])
-        else:
-            subname = "srv"
-
-        return _get_class(typestring, subname, _loaded_srvs, _srvs_lock)
-    except (InvalidModuleException, InvalidClassException):
-        return _get_class(typestring, "srv", _loaded_srvs, _srvs_lock)
-
-
-def _get_class(typestring, subname, cache, lock):
+def _get_class(typestring: str, subname: str, cache: dict[str, Any], lock: Lock) -> Any:
     """If not loaded, loads the specified class then returns an instance
     of it.
 
     Loaded classes are cached in the provided cache dict
 
-    Throws various exceptions if loading the msg class fails"""
+    Throws various exceptions if loading the msg class fails.
+    """
 
     # First, see if we have this type string cached
     cls = _get_from_cache(cache, lock, typestring)
@@ -178,7 +185,7 @@ def _get_class(typestring, subname, cache, lock):
     return cls
 
 
-def _load_class(modname, subname, classname):
+def _load_class(modname: str, subname: str, classname: str) -> None:
     """Loads the manifest and imports the module that contains the specified
     type.
 
@@ -199,7 +206,7 @@ def _load_class(modname, subname, classname):
         raise InvalidClassException(modname, subname, classname, exc)
 
 
-def _splittype(typestring):
+def _splittype(typestring: str) -> tuple[str, str]:
     """Split the string the / delimiter and strip out empty strings
 
     Performs similar logic to roslib.names.package_resource_name but is a bit
@@ -213,13 +220,13 @@ def _splittype(typestring):
     raise InvalidTypeStringException(typestring)
 
 
-def _add_to_cache(cache, lock, key, value):
+def _add_to_cache(cache: dict[str, Any], lock: Lock, key: str, value: any) -> None:
     lock.acquire()
     cache[key] = value
     lock.release()
 
 
-def _get_from_cache(cache, lock, key):
+def _get_from_cache(cache: dict[str, Any], lock: Lock, key: str) -> Any:
     """Returns the value for the specified key from the cache.
     Locks the lock before doing anything. Returns None if key not in cache"""
     lock.acquire()

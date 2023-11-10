@@ -30,17 +30,18 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from rosbridge_library.capabilities.action_feedback import ActionFeedback
+from rosbridge_library.capabilities.action_result import ActionResult
 from rosbridge_library.capabilities.advertise import Advertise
-
-# imports for external service_server
+from rosbridge_library.capabilities.advertise_action import AdvertiseAction
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.call_service import CallService
-
-# imports for defragmentation
 from rosbridge_library.capabilities.defragmentation import Defragment
 from rosbridge_library.capabilities.publish import Publish
+from rosbridge_library.capabilities.send_action_goal import SendActionGoal
 from rosbridge_library.capabilities.service_response import ServiceResponse
 from rosbridge_library.capabilities.subscribe import Subscribe
+from rosbridge_library.capabilities.unadvertise_action import UnadvertiseAction
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from rosbridge_library.protocol import Protocol
 
@@ -49,14 +50,19 @@ class RosbridgeProtocol(Protocol):
     """Adds the handlers for the rosbridge opcodes"""
 
     rosbridge_capabilities = [
-        CallService,
         Advertise,
         Publish,
         Subscribe,
         Defragment,
         AdvertiseService,
+        CallService,
         ServiceResponse,
         UnadvertiseService,
+        AdvertiseAction,
+        ActionFeedback,
+        ActionResult,
+        SendActionGoal,
+        UnadvertiseAction,
     ]
 
     print("registered capabilities (classes):")
