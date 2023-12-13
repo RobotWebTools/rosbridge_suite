@@ -112,6 +112,12 @@ class AdvertisedActionHandler:
             if cancel_request.goal_id == goal_handle.goal_id:
                 self.protocol.log("warning", f"Canceling action {goal_id}")
                 self.goal_futures[goal_id].cancel()
+                cancel_message = {
+                    "op": "cancel_action_goal",
+                    "id": goal_id,
+                    "action": self.action_name,
+                }
+                self.protocol.send(cancel_message)
         return CancelResponse.ACCEPT
 
     def handle_feedback(self, goal_id: str, feedback: Any) -> None:
