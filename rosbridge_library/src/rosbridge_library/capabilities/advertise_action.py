@@ -35,6 +35,7 @@ from typing import Any
 
 import rclpy
 from rclpy.action import ActionServer
+from rclpy.action.server import CancelResponse, ServerGoalHandle
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
@@ -62,6 +63,7 @@ class AdvertisedActionHandler:
             get_action_class(action_type),
             action_name,
             self.execute_callback,
+            cancel_callback=self.cancel_callback,
             callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
         )
 
@@ -71,6 +73,7 @@ class AdvertisedActionHandler:
         return id
 
     async def execute_callback(self, goal: Any) -> Any:
+        """Action server goal callback function."""
         # generate a unique ID
         goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
@@ -102,6 +105,20 @@ class AdvertisedActionHandler:
         finally:
             del self.goal_futures[goal_id]
             del self.goal_handles[goal_id]
+
+    def cancel_callback(self, cancel_request: ServerGoalHandle) -> CancelResponse:
+        """Action server cancel callback function."""
+        for goal_id, goal_handle in self.goal_handles.items():
+            if cancel_request.goal_id == goal_handle.goal_id:
+                self.protocol.log("warning", f"Canceling action {goal_id}")
+                self.goal_futures[goal_id].cancel()
+                cancel_message = {
+                    "op": "cancel_action_goal",
+                    "id": goal_id,
+                    "action": self.action_name,
+                }
+                self.protocol.send(cancel_message)
+        return CancelResponse.ACCEPT
 
     def handle_feedback(self, goal_id: str, feedback: Any) -> None:
         """
@@ -146,7 +163,10 @@ class AdvertisedActionHandler:
             for future_id in self.goal_futures:
                 future = self.goal_futures[future_id]
                 future.set_exception(RuntimeError(f"Action {self.action_name} was unadvertised"))
-        self.action_server.destroy()
+
+        # Uncommenting this, you may get a segfault.
+        # See https://github.com/ros2/rclcpp/issues/2163#issuecomment-1850925883
+        # self.action_server.destroy()
 
 
 class AdvertiseAction(Capability):
