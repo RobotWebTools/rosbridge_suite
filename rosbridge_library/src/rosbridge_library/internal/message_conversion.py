@@ -269,7 +269,7 @@ def _from_object_inst(inst, rostype):
     return msg
 
 
-def _to_inst(msg, rostype, roottype, clock, inst=None, stack=[]):
+def _to_inst(msg, rostype, roottype, clock=ROSClock(), inst=None, stack=[]):
     # Check if it's uint8[], and if it's a string, try to b64decode
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
