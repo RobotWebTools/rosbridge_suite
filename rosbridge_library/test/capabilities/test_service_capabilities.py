@@ -116,7 +116,7 @@ class TestServiceCapabilities(unittest.TestCase):
         loop_iterations = 0
         while self.received_message is None:
             rclpy.spin_once(self.node, timeout_sec=0.1)
-            time.sleep(0.5)
+            time.sleep(0.1)
             loop_iterations += 1
             if loop_iterations > 3:
                 self.fail("Timed out waiting for service call message.")
