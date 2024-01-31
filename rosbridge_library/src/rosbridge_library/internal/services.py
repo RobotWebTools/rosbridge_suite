@@ -117,7 +117,7 @@ def call_service(
     server_timeout_time: float = 1.0,
     sleep_time: float = 0.001,
 ) -> dict:
-    call_start_time = time.monotonic();
+    call_start_time = time.monotonic()
     # Given the service name, fetch the type and class of the service,
     # and a request instance
     service = expand_topic_name(service, node_handle.get_name(), node_handle.get_namespace())
@@ -146,8 +146,8 @@ def call_service(
     future = client.call_async(inst)
     while rclpy.ok() and not future.done():
         if call_start_time + server_timeout_time <= time.monotonic():
-            future.cancel();
-            break;
+            future.cancel()
+            break
         time.sleep(sleep_time)
     result = future.result()
 
