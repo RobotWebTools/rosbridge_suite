@@ -117,7 +117,6 @@ def call_service(
     server_timeout_time: float = 1.0,
     sleep_time: float = 0.001,
 ) -> dict:
-    call_start_time = time.monotonic()
     # Given the service name, fetch the type and class of the service,
     # and a request instance
     service = expand_topic_name(service, node_handle.get_name(), node_handle.get_namespace())
@@ -141,13 +140,13 @@ def call_service(
     client = node_handle.create_client(
         service_class, service, callback_group=ReentrantCallbackGroup()
     )
-    client.wait_for_service(server_timeout_time)
+
+    if not client.wait_for_service(server_timeout_time):
+        node_handle.destroy_client(client)
+        raise InvalidServiceException(service)
 
     future = client.call_async(inst)
     while rclpy.ok() and not future.done():
-        if call_start_time + server_timeout_time <= time.monotonic():
-            future.cancel()
-            break
         time.sleep(sleep_time)
     result = future.result()
 
