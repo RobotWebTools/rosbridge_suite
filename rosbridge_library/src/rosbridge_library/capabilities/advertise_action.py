@@ -80,7 +80,9 @@ class AdvertisedActionHandler:
         def done_callback(fut: rclpy.task.Future()) -> None:
             if fut.cancelled():
                 goal.abort()
-                fut.set_exception(RuntimeError(f"Aborted goal {goal_id}"))
+                self.protocol.log("info", f"Aborted goal {goal_id}")
+                # Send an empty result to avoid stack traces
+                fut.set_result(get_action_class(self.action_type).Result())
             else:
                 goal.succeed()
 
