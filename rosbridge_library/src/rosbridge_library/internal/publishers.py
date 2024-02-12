@@ -155,7 +155,7 @@ class MultiPublisher:
         inst = self.msg_class()
 
         # Populate the instance, propagating any exceptions that may be thrown
-        message_conversion.populate_instance(msg, inst)
+        message_conversion.populate_instance(msg, inst, self.node_handle.get_clock())
 
         # Publish the message
         self.publisher.publish(inst)
