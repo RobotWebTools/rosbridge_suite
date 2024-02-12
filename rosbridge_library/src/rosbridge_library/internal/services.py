@@ -125,6 +125,7 @@ def call_service(
     service_type = service_names_and_types.get(service)
     if service_type is None:
         raise InvalidServiceException(service)
+
     # service_type is a tuple of types at this point; only one type is supported.
     if len(service_type) > 1:
         node_handle.get_logger().warning(f"More than one service type detected: {service_type}")
@@ -139,7 +140,10 @@ def call_service(
     client = node_handle.create_client(
         service_class, service, callback_group=ReentrantCallbackGroup()
     )
-    client.wait_for_service(server_timeout_time)
+
+    if not client.wait_for_service(server_timeout_time):
+        node_handle.destroy_client(client)
+        raise InvalidServiceException(service)
 
     future = client.call_async(inst)
     while rclpy.ok() and not future.done():
