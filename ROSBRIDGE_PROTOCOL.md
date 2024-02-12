@@ -304,7 +304,7 @@ This stops advertising that you are publishing a topic.
   "topic": <string>
 }
 ```
-￼
+
  * **topic** – the string name of the topic being unadvertised
 
    * If the topic does not exist, a warning status message is sent and this
@@ -507,9 +507,9 @@ Sends a goal to a ROS action server.
 { "op": "send_action_goal",
   (optional) "id": <string>,
   "action": <string>,
-  "action_type: <string>,
+  "action_type": <string>,
   (optional) "args": <list<json>>,
-  (optional) "feedback": <boolean>
+  (optional) "feedback": <boolean>,
   (optional) "fragment_size": <int>,
   (optional) "compression": <string>
 }
@@ -531,7 +531,7 @@ Cancels an action goal.
 ```json
 { "op": "cancel_action_goal",
   "id": <string>,
-  "action": <string>,
+  "action": <string>
 }
 ```
 
@@ -545,7 +545,7 @@ Used to send action feedback for a specific goal handle.
 { "op": "action_feedback",
   "id": <string>,
   "action": <string>,
-  "values": <json>,
+  "values": <json>
 }
 ```
 
@@ -609,4 +609,3 @@ The meta-package will contain the following packages:
     tornado, a python server implementation.
  * **rosapi** – provides ROS services for various master API calls, such as
     listing all the topics, services, types currently in ROS
-￼

@@ -8,11 +8,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4.7.1
+      - uses: actions/setup-python@v5.0.0
         with:
           python-version: '3.8'
 
-      - uses: pre-commit/action@v3.0.0
+      - uses: pre-commit/action@v3.0.1
 
   test:
     strategy:
@@ -36,7 +36,7 @@ jobs:
         with:
           path: ros_ws/src
 
-      - uses: ros-tooling/setup-ros@0.7.0
+      - uses: ros-tooling/setup-ros@0.7.1
 
       - uses: ros-tooling/action-ros-ci@v0.3
         with:
