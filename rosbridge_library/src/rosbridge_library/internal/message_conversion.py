@@ -243,9 +243,9 @@ def _from_list_inst(inst, rostype):
         rostype = re.search(list_tokens, rostype).group(1)
     except AttributeError:
         rostype = re.search(bounded_array_tokens, rostype).group(1)
-    
+
     # Remove index number from rostype
-    rostype = rostype.split(',')[0]
+    rostype = rostype.split(",")[0]
 
     # Shortcut for primitives
     if rostype in ros_primitive_types:
