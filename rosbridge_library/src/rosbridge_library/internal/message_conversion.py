@@ -380,6 +380,9 @@ def _to_list_inst(msg, rostype, roottype, clock, inst, stack):
     except AttributeError:
         rostype = re.search(bounded_array_tokens, rostype).group(1)
 
+    # Remove index number from rostype
+    rostype = rostype.split(",")[0]
+
     # Call to _to_inst for every element of the list
     return [_to_inst(x, rostype, roottype, clock, None, stack) for x in msg]
 
