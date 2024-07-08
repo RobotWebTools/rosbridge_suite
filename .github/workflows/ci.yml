@@ -19,13 +19,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Test supported ROS 2 distributions
-          # https://docs.ros.org/en/rolling/Releases.html
+          # NOTE: Tests only Humble since the `ros2` branch tests later distros.
           - ros: humble
-            os: ubuntu-22.04
-          - ros: iron
-            os: ubuntu-22.04
-          - ros: rolling
             os: ubuntu-22.04
 
     name: ROS 2 ${{ matrix.ros }} (${{ matrix.os }})
