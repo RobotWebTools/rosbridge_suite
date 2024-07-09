@@ -4,13 +4,13 @@ on: [push, pull_request]
 
 jobs:
   lint:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5.0.0
+      - uses: actions/setup-python@v5.1.0
         with:
-          python-version: '3.8'
+          python-version: '3.10'
 
       - uses: pre-commit/action@v3.0.1
 
@@ -21,12 +21,13 @@ jobs:
         include:
           # Test supported ROS 2 distributions
           # https://docs.ros.org/en/rolling/Releases.html
-          - ros: humble
-            os: ubuntu-22.04
+          # NOTE: Humble does not work on the `ros2` branch, so it is tested in its own branch.
           - ros: iron
             os: ubuntu-22.04
+          - ros: jazzy
+            os: ubuntu-24.04
           - ros: rolling
-            os: ubuntu-22.04
+            os: ubuntu-24.04
 
     name: ROS 2 ${{ matrix.ros }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -36,7 +37,7 @@ jobs:
         with:
           path: ros_ws/src
 
-      - uses: ros-tooling/setup-ros@0.7.1
+      - uses: ros-tooling/setup-ros@v0.7
 
       - uses: ros-tooling/action-ros-ci@v0.3
         with:
