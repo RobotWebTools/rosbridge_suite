@@ -37,8 +37,9 @@ from json import dumps, loads
 import rclpy
 from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
 from rcl_interfaces.srv import ListParameters
+from rclpy.parameter import get_parameter_value
 from ros2node.api import get_absolute_node_name
-from ros2param.api import call_get_parameters, call_set_parameters, get_parameter_value
+from ros2param.api import call_get_parameters, call_set_parameters
 from rosapi.proxy import get_nodes
 
 """ Methods to interact with the param server.  Values have to be passed
