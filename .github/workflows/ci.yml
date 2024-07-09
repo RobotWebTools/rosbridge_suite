@@ -24,8 +24,10 @@ jobs:
           # NOTE: Humble does not work on the `ros2` branch, so it is tested in its own branch.
           - ros: iron
             os: ubuntu-22.04
+          - ros: jazzy
+            os: ubuntu-24.04
           - ros: rolling
-            os: ubuntu-22.04
+            os: ubuntu-24.04
 
     name: ROS 2 ${{ matrix.ros }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
