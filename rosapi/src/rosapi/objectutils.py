@@ -35,8 +35,9 @@ import inspect
 import logging
 import re
 
-from rosapi.stringify_field_types import stringify_field_types
 from rosbridge_library.internal import ros_loader
+
+from rosapi.stringify_field_types import stringify_field_types
 
 # Keep track of atomic types and special types
 atomics = [
