@@ -33,7 +33,7 @@
 
 import importlib
 from threading import Lock
-from typing import Any, Tuple, Dict
+from typing import Any, Dict, Tuple
 
 """ ros_loader contains methods for dynamically loading ROS message classes at
 runtime.  It's achieved by using roslib to load the manifest files for the
