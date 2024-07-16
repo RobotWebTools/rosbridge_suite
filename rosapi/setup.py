@@ -1,3 +1,4 @@
+import os
 from setuptools import find_packages, setup
 
 package_name = "rosapi"
@@ -6,7 +7,12 @@ setup(
     name=package_name,
     version="1.3.2",
     packages=find_packages(exclude=["test"]),
-    data_files=[],
+    data_files=[
+        # Install marker file in the package index
+        ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
+        # Include our package.xml file
+        (os.path.join("share", package_name), ["package.xml"]),
+    ],
     install_requires=["setuptools"],
     zip_safe=True,
     author="Jonathan Mace",
