@@ -93,12 +93,12 @@ ROS operations:
     * **call_service** - a service call
     * **service_response** - a service response
   * Actions:
-   * **advertise_action** - advertise an external action server
-   * **unadvertise_action** - unadvertise an external action server
-   * **send_action_goal** - a goal sent to an action server
-   * **cancel_action_goal** - cancel an in-progress action goal
-   * **action_feedback** - feedback messages from an action server
-   * **action_result** - an action result
+    * **advertise_action** - advertise an external action server
+    * **unadvertise_action** - unadvertise an external action server
+    * **send_action_goal** - a goal sent to an action server
+    * **cancel_action_goal** - cancel an in-progress action goal
+    * **action_feedback** - feedback messages from an action server
+    * **action_result** - an action result
 
 In general, actions or operations that the client takes (such as publishing and
 subscribing) have opcodes which are verbs (subscribe, call_service, unadvertise
