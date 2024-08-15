@@ -196,7 +196,7 @@ class MultiSubscriber:
         with self.rlock:
             if client_id in self.new_subscriptions:
                 del self.new_subscriptions[client_id]
-            else:
+            if client_id in self.subscriptions:
                 del self.subscriptions[client_id]
 
     def has_subscribers(self):

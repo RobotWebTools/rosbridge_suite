@@ -337,7 +337,13 @@ def main(args=None):
 
     executor = rclpy.executors.SingleThreadedExecutor()
     executor.add_node(node)
-    spin_callback = PeriodicCallback(lambda: executor.spin_once(timeout_sec=0.01), 1)
+
+    def spin_ros():
+        executor.spin_once(timeout_sec=0.01)
+        if not rclpy.ok():
+            shutdown_hook()
+
+    spin_callback = PeriodicCallback(spin_ros, 1)
     spin_callback.start()
     try:
         start_hook()
