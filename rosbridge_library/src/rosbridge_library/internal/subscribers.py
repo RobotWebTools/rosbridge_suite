@@ -176,6 +176,11 @@ class MultiSubscriber:
             # In any case, the first message is handled using new_sub_callback,
             # which adds the new callback to the subscriptions dictionary.
             self.new_subscriptions.update({client_id: callback})
+            infos = self.node_handle.get_publishers_info_by_topic(self.topic)
+            if any(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
+                self.qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
+            if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+                self.qos.reliability = ReliabilityPolicy.BEST_EFFORT
             if self.new_subscriber is None:
                 self.new_subscriber = self.node_handle.create_subscription(
                     self.msg_class,
@@ -196,7 +201,7 @@ class MultiSubscriber:
         with self.rlock:
             if client_id in self.new_subscriptions:
                 del self.new_subscriptions[client_id]
-            else:
+            if client_id in self.subscriptions:
                 del self.subscriptions[client_id]
 
     def has_subscribers(self):
