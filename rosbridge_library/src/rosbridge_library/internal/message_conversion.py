@@ -90,7 +90,8 @@ ros_primitive_types = [
 ]
 ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
 ros_binary_types = ["uint8[]", "char[]", "sequence<uint8>", "sequence<char>"]
-list_tokens = re.compile("<(.+?)>")
+# Remove the list type wrapper, and length specifier, from rostypes i.e. sequence<double, 3>
+list_tokens = re.compile(r"<(.+?)(, \d+)?>")
 bounded_array_tokens = re.compile(r"(.+)\[.*\]")
 ros_binary_types_list_braces = [
     ("uint8[]", re.compile(r"uint8\[[^\]]*\]")),
@@ -392,7 +393,6 @@ def _to_object_inst(msg, rostype, roottype, clock, inst, stack):
         inst.stamp = clock.now().to_msg()
 
     inst_fields = inst.get_fields_and_field_types()
-
     for field_name in msg:
         # Add this field to the field stack
         field_stack = stack + [field_name]
