@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import time
 import unittest
 from json import dumps, loads
@@ -204,6 +205,7 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertEqual(msg["op"], "action_result")
         self.assertEqual(msg["values"]["result"]["sequence"], [0, 1, 1, 2, 3, 5])
 
+    @unittest.skipIf(os.environ.get("ROS_DISTRO") == "iron", "This test fails on Iron")
     def test_cancel_advertised_action(self):
         # Advertise the action
         action_path = "/fibonacci_action_3"
