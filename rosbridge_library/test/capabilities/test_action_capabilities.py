@@ -42,7 +42,7 @@ class TestActionCapabilities(unittest.TestCase):
         self.result = ActionResult(self.proto)
         self.send_goal = SendActionGoal(self.proto)
         self.feedback = ActionFeedback(self.proto)
-        self.received_message = None
+        self.received_messages = []
         self.log_entries = []
 
         self.exec_thread = Thread(target=self.executor.spin)
@@ -54,7 +54,8 @@ class TestActionCapabilities(unittest.TestCase):
         rclpy.shutdown()
 
     def local_send_cb(self, msg):
-        self.received_message = msg
+        print(f"GOT MESSAGE:\n{msg}")
+        self.received_messages.append(msg)
 
     def feedback_subscriber_cb(self, msg):
         self.latest_feedback = msg
@@ -96,9 +97,6 @@ class TestActionCapabilities(unittest.TestCase):
         )
         self.advertise.advertise_action(advertise_msg)
 
-    @unittest.skip(
-        reason="Currently fails in Iron/Rolling due to https://github.com/ros2/rclpy/issues/1195, need to fix this"
-    )
     def test_execute_advertised_action(self):
         # Advertise the action
         action_path = "/fibonacci_action_2"
@@ -115,7 +113,7 @@ class TestActionCapabilities(unittest.TestCase):
         time.sleep(0.1)
 
         # Send a goal to the advertised action using rosbridge
-        self.received_message = None
+        self.received_messages = []
         goal_msg = loads(
             dumps(
                 {
@@ -130,16 +128,18 @@ class TestActionCapabilities(unittest.TestCase):
         Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
 
         loop_iterations = 0
-        while self.received_message is None:
+        while len(self.received_messages) < 1:
             time.sleep(0.5)
             loop_iterations += 1
             if loop_iterations > 3:
                 self.fail("Timed out waiting for action goal message.")
 
-        self.assertIsNotNone(self.received_message)
-        self.assertTrue("op" in self.received_message)
-        self.assertEqual(self.received_message["op"], "send_action_goal")
-        self.assertTrue("id" in self.received_message)
+        self.assertEqual(len(self.received_messages), 1)
+        msg = self.received_messages[0]
+        self.assertIsNotNone(msg)
+        self.assertTrue("op" in msg)
+        self.assertEqual(msg["op"], "send_action_goal")
+        self.assertTrue("id" in msg)
 
         # Send feedback message
         self.latest_feedback = None
@@ -160,7 +160,7 @@ class TestActionCapabilities(unittest.TestCase):
                 {
                     "op": "action_feedback",
                     "action": action_path,
-                    "id": self.received_message["id"],
+                    "id": msg["id"],
                     "values": {"sequence": [0, 1, 1]},
                 }
             )
@@ -182,29 +182,28 @@ class TestActionCapabilities(unittest.TestCase):
                 {
                     "op": "action_result",
                     "action": action_path,
-                    "id": self.received_message["id"],
+                    "id": msg["id"],
                     "values": {"sequence": [0, 1, 1, 2, 3, 5]},
                     "result": True,
                 }
             )
         )
-        self.received_message = None
+        self.received_messages = []
         self.result.action_result(result_msg)
 
         loop_iterations = 0
-        while self.received_message is None:
+        while len(self.received_messages) < 1:
             time.sleep(0.5)
             loop_iterations += 1
             if loop_iterations > 3:
                 self.fail("Timed out waiting for action result message.")
 
-        self.assertIsNotNone(self.received_message)
-        self.assertEqual(self.received_message["op"], "action_result")
-        self.assertEqual(self.received_message["values"]["result"]["sequence"], [0, 1, 1, 2, 3, 5])
+        self.assertEqual(len(self.received_messages), 1)
+        msg = self.received_messages[0]
+        self.assertIsNotNone(msg)
+        self.assertEqual(msg["op"], "action_result")
+        self.assertEqual(msg["values"]["result"]["sequence"], [0, 1, 1, 2, 3, 5])
 
-    @unittest.skip(
-        reason="Currently fails in Iron/Rolling due to https://github.com/ros2/rclpy/issues/1195, need to fix this"
-    )
     def test_cancel_advertised_action(self):
         # Advertise the action
         action_path = "/fibonacci_action_3"
@@ -221,7 +220,7 @@ class TestActionCapabilities(unittest.TestCase):
         time.sleep(0.1)
 
         # Send a goal to the advertised action using rosbridge
-        self.received_message = None
+        self.received_messages = []
         goal_msg = loads(
             dumps(
                 {
@@ -236,16 +235,18 @@ class TestActionCapabilities(unittest.TestCase):
         Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
 
         loop_iterations = 0
-        while self.received_message is None:
+        while len(self.received_messages) < 1:
             time.sleep(0.5)
             loop_iterations += 1
             if loop_iterations > 3:
                 self.fail("Timed out waiting for action goal message.")
 
-        self.assertIsNotNone(self.received_message)
-        self.assertTrue("op" in self.received_message)
-        self.assertEqual(self.received_message["op"], "send_action_goal")
-        self.assertTrue("id" in self.received_message)
+        self.assertEqual(len(self.received_messages), 1)
+        msg = self.received_messages[0]
+        self.assertIsNotNone(msg)
+        self.assertTrue("op" in msg)
+        self.assertEqual(msg["op"], "send_action_goal")
+        self.assertTrue("id" in msg)
 
         # Now cancel the goal
         cancel_msg = loads(
@@ -257,19 +258,29 @@ class TestActionCapabilities(unittest.TestCase):
                 }
             )
         )
-        self.received_message = None
+        self.received_messages = []
         self.send_goal.cancel_action_goal(cancel_msg)
 
         loop_iterations = 0
-        while self.received_message is None:
+        while len(self.received_messages) < 2:
             time.sleep(0.5)
             loop_iterations += 1
             if loop_iterations > 3:
                 self.fail("Timed out waiting for action result message.")
 
-        self.assertIsNotNone(self.received_message)
-        self.assertEqual(self.received_message["op"], "action_result")
-        self.assertFalse(self.received_message["result"])
+        self.assertEqual(len(self.received_messages), 2)
+        got_cancel_message = False
+        got_result_message = False
+        for msg in self.received_messages:
+            if msg["op"] == "cancel_action_goal":
+                got_cancel_message = True
+            elif msg["op"] == "action_result":
+                got_result_message = True
+                self.assertEqual(msg["values"]["status"], 6)  # Aborted
+                self.assertTrue(msg["values"]["result"]["sequence"] == [])
+
+        self.assertTrue(got_cancel_message)
+        self.assertTrue(got_result_message)
 
     @unittest.skip("Currently raises an exception not catchable by unittest, need to fix this")
     def test_unadvertise_action(self):
@@ -284,12 +295,12 @@ class TestActionCapabilities(unittest.TestCase):
                 }
             )
         )
-        self.received_message = None
+        self.received_messages = []
         self.advertise.advertise_action(advertise_msg)
         time.sleep(0.1)
 
         # Send a goal to the advertised action using rosbridge
-        self.received_message = None
+        self.received_messages = None
         goal_msg = loads(
             dumps(
                 {
@@ -304,26 +315,27 @@ class TestActionCapabilities(unittest.TestCase):
         Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
 
         loop_iterations = 0
-        while self.received_message is None:
+        while len(self.received_messages) < 1:
             time.sleep(0.5)
             loop_iterations += 1
             if loop_iterations > 3:
                 self.fail("Timed out waiting for action goal message.")
 
-        self.assertIsNotNone(self.received_message)
-        self.assertTrue("op" in self.received_message)
-        self.assertEqual(self.received_message["op"], "send_action_goal")
-        self.assertTrue("id" in self.received_message)
+        self.assertEqual(len(self.received_messages), 1)
+        msg = self.received_messages[0]
+        self.assertTrue("op" in msg)
+        self.assertEqual(msg["op"], "send_action_goal")
+        self.assertTrue("id" in msg)
 
         # Now unadvertise the action
         # TODO: This raises an exception, likely because of the following rclpy issue:
         # https://github.com/ros2/rclpy/issues/1098
         unadvertise_msg = loads(dumps({"op": "unadvertise_action", "action": action_path}))
-        self.received_message = None
+        self.received_messages = []
         self.unadvertise.unadvertise_action(unadvertise_msg)
 
         loop_iterations = 0
-        while self.received_message is None:
+        while len(self.received_messages) < 1:
             rclpy.spin_once(self.node, timeout_sec=0.1)
             time.sleep(0.5)
             loop_iterations += 1

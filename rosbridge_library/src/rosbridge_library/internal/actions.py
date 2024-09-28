@@ -135,7 +135,6 @@ class SendGoal:
         self.server_timeout_time = server_timeout_time
         self.sleep_time = sleep_time
         self.goal_handle = None
-        self.goal_canceled = False
 
     def get_result_cb(self, future: Future) -> None:
         self.result = future.result()
@@ -169,7 +168,7 @@ class SendGoal:
         send_goal_future = client.send_goal_async(inst, feedback_callback=feedback_cb)
         send_goal_future.add_done_callback(self.goal_response_cb)
 
-        while self.result is None and not self.goal_canceled:
+        while self.result is None:
             time.sleep(self.sleep_time)
 
         client.destroy()
@@ -188,4 +187,3 @@ class SendGoal:
         cancel_goal_future = self.goal_handle.cancel_goal_async()
         while not cancel_goal_future.done():
             time.sleep(self.sleep_time)
-        self.goal_canceled = True
