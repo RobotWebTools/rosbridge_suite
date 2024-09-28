@@ -55,7 +55,6 @@ class TestActionCapabilities(unittest.TestCase):
         rclpy.shutdown()
 
     def local_send_cb(self, msg):
-        print(f"GOT MESSAGE:\n{msg}")
         self.received_messages.append(msg)
 
     def feedback_subscriber_cb(self, msg):
