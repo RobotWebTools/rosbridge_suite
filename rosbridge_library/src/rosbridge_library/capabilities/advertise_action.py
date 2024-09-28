@@ -77,7 +77,7 @@ class AdvertisedActionHandler:
         # generate a unique ID
         goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
-        def done_callback(fut: rclpy.task.Future()) -> None:
+        def done_callback(fut: rclpy.task.Future) -> None:
             if fut.cancelled():
                 goal.abort()
                 self.protocol.log("info", f"Aborted goal {goal_id}")
