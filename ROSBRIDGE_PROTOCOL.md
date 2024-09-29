@@ -560,7 +560,8 @@ A result for a ROS action.
   "id": <string>,
   "action": <string>,
   "values": <json>,
-  "result": <int>
+  "status": <int>,
+  "result": <boolean>
 }
 ```
 
@@ -568,7 +569,8 @@ A result for a ROS action.
  * **id** – if an ID was provided to the action goal, then the action result will contain the ID
  * **values** – the result values. If the service had no return values, then
     this field can be omitted (and will be by the rosbridge server)
- * **result** - return status of the action. This matches the enumeration in the [`action_msgs/msg/GoalStatus`](https://docs.ros2.org/latest/api/action_msgs/msg/GoalStatus.html) ROS message.
+ * **status** - return status of the action. This matches the enumeration in the [`action_msgs/msg/GoalStatus`](https://docs.ros2.org/latest/api/action_msgs/msg/GoalStatus.html) ROS message.
+ * **result** - return value of action. True means success, false failure.
 
 ---
 
