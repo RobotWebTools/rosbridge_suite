@@ -137,7 +137,7 @@ class TestAdvertise(unittest.TestCase):
     def test_valid_msg_classes(self):
         assortedmsgs = [
             "geometry_msgs/Pose",
-            "actionlib_msgs/GoalStatus",
+            "action_msgs/GoalStatus",
             "geometry_msgs/WrenchStamped",
             "stereo_msgs/DisparityImage",
             "nav_msgs/OccupancyGrid",

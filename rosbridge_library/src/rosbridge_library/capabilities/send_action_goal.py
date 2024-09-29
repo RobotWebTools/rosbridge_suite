@@ -34,6 +34,7 @@ import fnmatch
 from functools import partial
 from threading import Thread
 
+from action_msgs.msg import GoalStatus
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.actions import ActionClientHandler
 from rosbridge_library.internal.message_conversion import extract_values
@@ -75,7 +76,11 @@ class SendActionGoal(Capability):
             protocol.node_handle.get_logger().info("Sending action goals in existing thread")
             protocol.register_operation("send_action_goal", self.send_action_goal)
 
-        protocol.register_operation("cancel_action_goal", self.cancel_action_goal)
+        # Always register goal canceling in a new thread.
+        protocol.register_operation(
+            "cancel_action_goal",
+            lambda msg: Thread(target=self.cancel_action_goal, args=(msg,)).start(),
+        )
 
     def send_action_goal(self, message: dict) -> None:
         # Pull out the ID
@@ -154,7 +159,8 @@ class SendActionGoal(Capability):
         outgoing_message = {
             "op": "action_result",
             "action": action,
-            "values": message,
+            "values": message["result"],
+            "status": message["status"],
             "result": True,
         }
         if cid is not None:
@@ -169,6 +175,7 @@ class SendActionGoal(Capability):
             "op": "action_result",
             "action": action,
             "values": str(exc),
+            "status": GoalStatus.STATUS_UNKNOWN,
             "result": False,
         }
         if cid is not None:
