@@ -185,7 +185,6 @@ class SendGoal:
         return json_response
 
     def cancel_goal(self) -> None:
-        print("\n\n CANCELING GOAL \n\n")
         if self.goal_handle is None:
             return
 
