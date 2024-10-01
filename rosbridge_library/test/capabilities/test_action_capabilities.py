@@ -135,7 +135,7 @@ class TestActionCapabilities(unittest.TestCase):
         while self.received_message is None:
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 3:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for action goal message.")
 
         self.assertIsNotNone(self.received_message)
@@ -172,7 +172,7 @@ class TestActionCapabilities(unittest.TestCase):
         while self.latest_feedback is None:
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 3:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for action feedback message.")
 
         self.assertIsNotNone(self.latest_feedback)
@@ -198,7 +198,7 @@ class TestActionCapabilities(unittest.TestCase):
         while self.received_message is None:
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 30000:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for action result message.")
 
         self.assertIsNotNone(self.received_message)
@@ -243,7 +243,7 @@ class TestActionCapabilities(unittest.TestCase):
         while self.received_message is None:
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 3:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for action goal message.")
 
         self.assertIsNotNone(self.received_message)
@@ -268,7 +268,7 @@ class TestActionCapabilities(unittest.TestCase):
         while self.received_message is None:
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 3:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for action result message.")
 
         self.assertIsNotNone(self.received_message)
@@ -294,7 +294,7 @@ class TestActionCapabilities(unittest.TestCase):
         while self.received_message is None:
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 30000:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for action result message.")
 
         self.assertIsNotNone(self.received_message)
@@ -338,7 +338,7 @@ class TestActionCapabilities(unittest.TestCase):
         while self.received_message is None:
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 3:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for action goal message.")
 
         self.assertIsNotNone(self.received_message)
@@ -358,7 +358,7 @@ class TestActionCapabilities(unittest.TestCase):
             rclpy.spin_once(self.node, timeout_sec=0.1)
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 3:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for unadvertise action message.")
 
 
