@@ -98,7 +98,9 @@ class TestActionCapabilities(unittest.TestCase):
         )
         self.advertise.advertise_action(advertise_msg)
 
-    @unittest.skipIf(os.environ.get("ROS_DISTRO") == "iron", "This test fails on Iron")
+    @unittest.skip(
+        reason="Currently fails in Iron due to https://github.com/ros2/rclpy/issues/1195. Unskip when Iron is EOL in Nov 2024."
+    )
     def test_execute_advertised_action(self):
         # Advertise the action
         action_path = "/fibonacci_action_2"
@@ -204,7 +206,9 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["values"]["sequence"], [0, 1, 1, 2, 3, 5])
         self.assertEqual(self.received_message["status"], GoalStatus.STATUS_SUCCEEDED)
 
-    @unittest.skipIf(os.environ.get("ROS_DISTRO") == "iron", "This test fails on Iron")
+    @unittest.skip(
+        reason="Currently fails in due to https://github.com/ros2/rclpy/issues/1195, need to fix this"
+    )
     def test_cancel_advertised_action(self):
         # Advertise the action
         action_path = "/fibonacci_action_3"
