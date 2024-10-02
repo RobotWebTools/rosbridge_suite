@@ -58,7 +58,7 @@ class TestMultiSubscriber(unittest.TestCase):
         msg_type = "std_msgs/String"
         othertypes = [
             "geometry_msgs/Pose",
-            "actionlib_msgs/GoalStatus",
+            "action_msgs/GoalStatus",
             "geometry_msgs/WrenchStamped",
             "stereo_msgs/DisparityImage",
             "nav_msgs/OccupancyGrid",

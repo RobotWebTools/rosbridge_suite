@@ -34,6 +34,7 @@ import fnmatch
 from typing import Any
 
 import rclpy
+from action_msgs.msg import GoalStatus
 from rclpy.action import ActionServer
 from rclpy.action.server import CancelResponse, ServerGoalHandle
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -52,6 +53,7 @@ class AdvertisedActionHandler:
     ) -> None:
         self.goal_futures = {}
         self.goal_handles = {}
+        self.goal_statuses = {}
 
         self.action_name = action_name
         self.action_type = action_type
@@ -84,7 +86,13 @@ class AdvertisedActionHandler:
                 # Send an empty result to avoid stack traces
                 fut.set_result(get_action_class(self.action_type).Result())
             else:
-                goal.succeed()
+                status = self.goal_statuses[goal_id]
+                if status == GoalStatus.STATUS_SUCCEEDED:
+                    goal.succeed()
+                elif status == GoalStatus.STATUS_CANCELED:
+                    goal.canceled()
+                else:
+                    goal.abort()
 
         future = rclpy.task.Future()
         future.add_done_callback(done_callback)
@@ -113,7 +121,6 @@ class AdvertisedActionHandler:
         for goal_id, goal_handle in self.goal_handles.items():
             if cancel_request.goal_id == goal_handle.goal_id:
                 self.protocol.log("warning", f"Canceling action {goal_id}")
-                self.goal_futures[goal_id].cancel()
                 cancel_message = {
                     "op": "cancel_action_goal",
                     "id": goal_id,
@@ -131,11 +138,12 @@ class AdvertisedActionHandler:
         else:
             self.protocol.log("warning", f"Received action feedback for unrecognized id: {goal_id}")
 
-    def handle_result(self, goal_id: str, result: Any) -> None:
+    def handle_result(self, goal_id: str, result: dict, status: int) -> None:
         """
         Called by the ActionResult capability to handle a successful action result from the external client.
         """
         if goal_id in self.goal_futures:
+            self.goal_statuses[goal_id] = status
             self.goal_futures[goal_id].set_result(result)
         else:
             self.protocol.log("warning", f"Received action result for unrecognized id: {goal_id}")

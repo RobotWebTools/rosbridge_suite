@@ -3,6 +3,7 @@ import os
 import sys
 import unittest
 
+from action_msgs.msg import GoalStatus
 from example_interfaces.action import Fibonacci
 from rclpy.action import ActionClient
 from rclpy.node import Node
@@ -74,6 +75,7 @@ class TestActionFeedback(unittest.TestCase):
                 "op": "action_result",
                 "action": "/test_fibonacci_action",
                 "values": {"sequence": [0, 1, 1, 2, 3, 5]},
+                "status": GoalStatus.STATUS_SUCCEEDED,
                 "id": requests[0]["id"],
                 "result": True,
             }

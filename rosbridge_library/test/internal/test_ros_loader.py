@@ -130,7 +130,7 @@ class TestROSLoader(unittest.TestCase):
     def test_assorted_msg_names(self):
         assortedmsgs = [
             "geometry_msgs/Pose",
-            "actionlib_msgs/GoalStatus",
+            "action_msgs/GoalStatus",
             "geometry_msgs/WrenchStamped",
             "stereo_msgs/DisparityImage",
             "nav_msgs/OccupancyGrid",
