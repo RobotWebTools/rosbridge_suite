@@ -41,6 +41,7 @@ class ActionResult(Capability):
         (True, "action", str),
         (False, "id", str),
         (False, "values", dict),
+        (True, "status", int),
         (True, "result", bool),
     ]
 
@@ -63,11 +64,12 @@ class ActionResult(Capability):
             if message["result"]:
                 # parse the message
                 values = message["values"]
+                status = message["status"]
                 # create a message instance
                 result = ros_loader.get_action_result_instance(action_handler.action_type)
                 message_conversion.populate_instance(values, result)
-                # pass along the result
-                action_handler.handle_result(goal_id, result)
+                # pass along the result and status
+                action_handler.handle_result(goal_id, result, status)
             else:
                 # Abort the goal
                 action_handler.handle_abort(goal_id)

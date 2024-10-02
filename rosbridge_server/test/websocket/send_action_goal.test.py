@@ -4,8 +4,9 @@ import sys
 import time
 import unittest
 
+from action_msgs.msg import GoalStatus
 from example_interfaces.action import Fibonacci
-from rclpy.action import ActionServer
+from rclpy.action import ActionServer, CancelResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
 from twisted.python import log
@@ -21,19 +22,24 @@ generate_test_description = common.generate_test_description
 
 
 class TestSendActionGoal(unittest.TestCase):
+    def cancel_callback(self, _):
+        return CancelResponse.ACCEPT
+
     def execute_callback(self, goal):
         feedback_msg = Fibonacci.Feedback()
         feedback_msg.sequence = [0, 1]
 
         for i in range(1, goal.request.order):
+            if goal.is_cancel_requested:
+                goal.canceled()
+                return Fibonacci.Result()
+
             feedback_msg.sequence.append(feedback_msg.sequence[i] + feedback_msg.sequence[i - 1])
             goal.publish_feedback(feedback_msg)
             time.sleep(0.5)
 
         goal.succeed()
-        result = Fibonacci.Result()
-        result.sequence = feedback_msg.sequence
-        return result
+        return Fibonacci.Result(sequence=feedback_msg.sequence)
 
     @websocket_test
     async def test_one_call(self, node: Node, make_client):
@@ -41,7 +47,8 @@ class TestSendActionGoal(unittest.TestCase):
             node,
             Fibonacci,
             "/test_fibonacci_action",
-            self.execute_callback,
+            execute_callback=self.execute_callback,
+            cancel_callback=self.cancel_callback,
             callback_group=ReentrantCallbackGroup(),
         )
 
@@ -71,7 +78,8 @@ class TestSendActionGoal(unittest.TestCase):
 
         self.assertEqual(responses[-1]["op"], "action_result")
         self.assertEqual(responses[-1]["action"], "/test_fibonacci_action")
-        self.assertEqual(responses[-1]["values"]["result"]["sequence"], expected_result)
+        self.assertEqual(responses[-1]["values"]["sequence"], expected_result)
+        self.assertEqual(responses[-1]["status"], GoalStatus.STATUS_SUCCEEDED)
         self.assertEqual(responses[-1]["result"], True)
 
         action_server.destroy()
