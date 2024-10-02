@@ -31,7 +31,7 @@ class AdvertisedServiceHandler:
 
     async def handle_request(self, req, res):
         # generate a unique ID
-        request_id = f"service_request:{self.service_name }:{self.next_id()}"
+        request_id = f"service_request:{self.service_name}:{self.next_id()}"
 
         future = rclpy.task.Future()
         self.request_futures[request_id] = future
