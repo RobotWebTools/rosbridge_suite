@@ -35,7 +35,7 @@ def request_service():
                 "position": {"y": 0.0, "x": 0.0, "z": 0.0},
                 "orientation": {"y": 0.0, "x": 0.0, "z": 0.0, "w": 0.0},
             }
-        }
+        },
         # "count" : request_byte_count           # count is the parameter for send_bytes as defined in srv-file (always put into args field!)
     }
     service_request = json.dumps(service_request_object)
