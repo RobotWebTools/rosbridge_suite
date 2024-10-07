@@ -311,7 +311,6 @@ class Protocol:
             return None
 
     def deserialize(self, msg, cid=None):
-
         """Turns the wire-level representation into a dictionary of values
 
         Default behaviour assumes JSON. Override to use a different container.

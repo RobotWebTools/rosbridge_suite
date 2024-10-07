@@ -486,7 +486,7 @@ Changelog for package rosbridge_server
 * merging changes of groovy-devel into hydro-devel
 * Specific IP address binding using roslauch
 * added parameter lookup to rosbridge_tcp.py, modules where those are used, and default parameters to launch file; internal default-values still get used when launch-file does not provide them; internal defaults can be changed within rosbridge_tcp.py
-* increaing max_msg_length - still hardcoded
+* increasing max_msg_length - still hardcoded
 * preparing pull request for upstream..
 * cleanup: files, notes, some code
 * cleanup tcp-server

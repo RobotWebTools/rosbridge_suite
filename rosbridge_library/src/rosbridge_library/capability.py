@@ -79,7 +79,7 @@ class Capability:
         """Performs basic typechecking on fields in msg.
 
         Keyword arguments:
-        msg        -- a message, deserialized into a dictoinary
+        msg        -- a message, deserialized into a dictionary
         types_info -- a list of tuples (mandatory, fieldname, fieldtype) where
                 mandatory - boolean, is the field mandatory
                 fieldname - the name of the field in the message
