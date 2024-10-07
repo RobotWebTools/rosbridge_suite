@@ -5,6 +5,7 @@ from json import dumps, loads
 from threading import Thread
 
 import rclpy
+from action_msgs.msg import GoalStatus
 from example_interfaces.action._fibonacci import Fibonacci_FeedbackMessage
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
@@ -97,7 +98,7 @@ class TestActionCapabilities(unittest.TestCase):
         self.advertise.advertise_action(advertise_msg)
 
     @unittest.skip(
-        reason="Currently fails in Iron/Rolling due to https://github.com/ros2/rclpy/issues/1195, need to fix this"
+        reason="Currently fails in Iron due to https://github.com/ros2/rclpy/issues/1195. Unskip when Iron is EOL in Nov 2024."
     )
     def test_execute_advertised_action(self):
         # Advertise the action
@@ -133,7 +134,7 @@ class TestActionCapabilities(unittest.TestCase):
         while self.received_message is None:
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 3:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for action goal message.")
 
         self.assertIsNotNone(self.received_message)
@@ -170,7 +171,7 @@ class TestActionCapabilities(unittest.TestCase):
         while self.latest_feedback is None:
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 3:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for action feedback message.")
 
         self.assertIsNotNone(self.latest_feedback)
@@ -184,6 +185,7 @@ class TestActionCapabilities(unittest.TestCase):
                     "action": action_path,
                     "id": self.received_message["id"],
                     "values": {"sequence": [0, 1, 1, 2, 3, 5]},
+                    "status": GoalStatus.STATUS_SUCCEEDED,
                     "result": True,
                 }
             )
@@ -195,15 +197,16 @@ class TestActionCapabilities(unittest.TestCase):
         while self.received_message is None:
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 3:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for action result message.")
 
         self.assertIsNotNone(self.received_message)
         self.assertEqual(self.received_message["op"], "action_result")
-        self.assertEqual(self.received_message["values"]["result"]["sequence"], [0, 1, 1, 2, 3, 5])
+        self.assertEqual(self.received_message["values"]["sequence"], [0, 1, 1, 2, 3, 5])
+        self.assertEqual(self.received_message["status"], GoalStatus.STATUS_SUCCEEDED)
 
     @unittest.skip(
-        reason="Currently fails in Iron/Rolling due to https://github.com/ros2/rclpy/issues/1195, need to fix this"
+        reason="Currently fails in due to https://github.com/ros2/rclpy/issues/1195, need to fix this"
     )
     def test_cancel_advertised_action(self):
         # Advertise the action
@@ -239,7 +242,7 @@ class TestActionCapabilities(unittest.TestCase):
         while self.received_message is None:
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 3:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for action goal message.")
 
         self.assertIsNotNone(self.received_message)
@@ -264,12 +267,39 @@ class TestActionCapabilities(unittest.TestCase):
         while self.received_message is None:
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 3:
+            if loop_iterations > 5:
+                self.fail("Timed out waiting for action result message.")
+
+        self.assertIsNotNone(self.received_message)
+        self.assertEqual(self.received_message["op"], "cancel_action_goal")
+
+        # Now send the cancel result
+        result_msg = loads(
+            dumps(
+                {
+                    "op": "action_result",
+                    "action": action_path,
+                    "id": self.received_message["id"],
+                    "values": {"sequence": []},
+                    "status": GoalStatus.STATUS_CANCELED,
+                    "result": True,
+                }
+            )
+        )
+        self.received_message = None
+        self.result.action_result(result_msg)
+
+        loop_iterations = 0
+        while self.received_message is None:
+            time.sleep(0.5)
+            loop_iterations += 1
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for action result message.")
 
         self.assertIsNotNone(self.received_message)
         self.assertEqual(self.received_message["op"], "action_result")
-        self.assertFalse(self.received_message["result"])
+        self.assertEqual(self.received_message["values"]["sequence"], [])
+        self.assertEqual(self.received_message["status"], GoalStatus.STATUS_CANCELED)
 
     @unittest.skip("Currently raises an exception not catchable by unittest, need to fix this")
     def test_unadvertise_action(self):
@@ -307,7 +337,7 @@ class TestActionCapabilities(unittest.TestCase):
         while self.received_message is None:
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 3:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for action goal message.")
 
         self.assertIsNotNone(self.received_message)
@@ -327,7 +357,7 @@ class TestActionCapabilities(unittest.TestCase):
             rclpy.spin_once(self.node, timeout_sec=0.1)
             time.sleep(0.5)
             loop_iterations += 1
-            if loop_iterations > 3:
+            if loop_iterations > 5:
                 self.fail("Timed out waiting for unadvertise action message.")
 
 
