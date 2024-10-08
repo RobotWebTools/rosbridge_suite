@@ -2,6 +2,12 @@
 Changelog for package rosbridge_suite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.0 (2024-10-08)
+------------------
+
+2.0.0 (2024-10-08)
+------------------
+
 1.3.2 (2023-09-27)
 ------------------
 * rosbridge_suite: depend on ament_cmake (`#848 <https://github.com/RobotWebTools/rosbridge_suite/issues/848>`_)

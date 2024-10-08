@@ -2,6 +2,18 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.0 (2024-10-08)
+------------------
+
+2.0.0 (2024-10-08)
+------------------
+* Fix action cancellation by passing status from JSON (`#953 <https://github.com/RobotWebTools/rosbridge_suite/issues/953>`_)
+* Update pre-commit and fix issues (`#954 <https://github.com/RobotWebTools/rosbridge_suite/issues/954>`_)
+* rosbridge_websocket: Stop websocket server if ROS shuts down (`#946 <https://github.com/RobotWebTools/rosbridge_suite/issues/946>`_)
+* Support actions in rosbridge protocol (`#886 <https://github.com/RobotWebTools/rosbridge_suite/issues/886>`_)
+* Port unit tests to ROS 2 + Fix CBOR conversion and PNG compression (`#882 <https://github.com/RobotWebTools/rosbridge_suite/issues/882>`_)
+* Contributors: Brad Martin, Sebastian Castro
+
 1.3.2 (2023-09-27)
 ------------------
 * Add option to call services in a separate thread (`#847 <https://github.com/RobotWebTools/rosbridge_suite/issues/847>`_)
