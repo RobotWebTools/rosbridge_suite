@@ -2,6 +2,13 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.0 (2024-10-08)
+------------------
+* rosapi: Don't start parameter services that aren't spun (`#944 <https://github.com/RobotWebTools/rosbridge_suite/issues/944>`_)
+* Handle ROS 2 types properly (`#883 <https://github.com/RobotWebTools/rosbridge_suite/issues/883>`_)
+* Port unit tests to ROS 2 + Fix CBOR conversion and PNG compression (`#882 <https://github.com/RobotWebTools/rosbridge_suite/issues/882>`_)
+* Contributors: Brad Martin, Scott Bell, Sebastian Castro
+
 1.3.2 (2023-09-27)
 ------------------
 * Fix ROS2 CI for iron & rolling (`#875 <https://github.com/RobotWebTools/rosbridge_suite/issues/875>`_)
