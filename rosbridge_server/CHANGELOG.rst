@@ -6,7 +6,7 @@ Changelog for package rosbridge_server
 ------------------
 * Fix action cancellation by passing status from JSON (`#953 <https://github.com/RobotWebTools/rosbridge_suite/issues/953>`_)
 * Update pre-commit and fix issues (`#954 <https://github.com/RobotWebTools/rosbridge_suite/issues/954>`_)
-* rosbridge_websocket: Stop websocket server if ROS shuts down (`#945 <https://github.com/RobotWebTools/rosbridge_suite/issues/945>`_) (`#946 <https://github.com/RobotWebTools/rosbridge_suite/issues/946>`_)
+* rosbridge_websocket: Stop websocket server if ROS shuts down (`#946 <https://github.com/RobotWebTools/rosbridge_suite/issues/946>`_)
 * Support actions in rosbridge protocol (`#886 <https://github.com/RobotWebTools/rosbridge_suite/issues/886>`_)
 * Port unit tests to ROS 2 + Fix CBOR conversion and PNG compression (`#882 <https://github.com/RobotWebTools/rosbridge_suite/issues/882>`_)
 * Contributors: Brad Martin, Sebastian Castro
