@@ -2,6 +2,11 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.0 (2024-10-08)
+------------------
+* Fix invalid import of get_parameter_value in rosapi for ROS2 Jazzy. (`#932 <https://github.com/RobotWebTools/rosbridge_suite/issues/932>`_)
+* Contributors: David Oberacker
+
 2.0.0 (2024-10-08)
 ------------------
 * rosapi: Don't start parameter services that aren't spun (`#944 <https://github.com/RobotWebTools/rosbridge_suite/issues/944>`_)

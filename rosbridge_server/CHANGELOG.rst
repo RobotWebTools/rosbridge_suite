@@ -2,6 +2,9 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.0 (2024-10-08)
+------------------
+
 2.0.0 (2024-10-08)
 ------------------
 * Fix action cancellation by passing status from JSON (`#953 <https://github.com/RobotWebTools/rosbridge_suite/issues/953>`_)
