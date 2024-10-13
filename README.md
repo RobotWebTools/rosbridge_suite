@@ -56,7 +56,7 @@ Releasing requires push access to [RobotWebTools/rosbridge_suite](https://github
 3. Run `catkin_prepare_release --bump [major/minor/patch]` to bump versions in package.xml and push changes to origin.
 4. Run bloom-release commands to create PRs to update rosdistro:
     - `bloom-release --rosdistro humble rosbridge_suite`
-    - `bloom-release --rosdistro humble rosbridge_suite`
+    - `bloom-release --rosdistro iron rosbridge_suite`
     - `bloom-release --rosdistro jazzy rosbridge_suite`
     - `bloom-release --rosdistro rolling rosbridge_suite`
 
