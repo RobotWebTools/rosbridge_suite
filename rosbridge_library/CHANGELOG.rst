@@ -2,6 +2,25 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.0 (2024-10-08)
+------------------
+
+2.0.0 (2024-10-08)
+------------------
+* Fix action cancellation by passing status from JSON (`#953 <https://github.com/RobotWebTools/rosbridge_suite/issues/953>`_)
+* Update pre-commit and fix issues (`#954 <https://github.com/RobotWebTools/rosbridge_suite/issues/954>`_)
+* Fix length-limited list types (`#840 <https://github.com/RobotWebTools/rosbridge_suite/issues/840>`_)
+* fix: update new subs with dds from publisher (`#940 <https://github.com/RobotWebTools/rosbridge_suite/issues/940>`_)
+* Avoid stale subscription when unsubscribing during resubscription (`#948 <https://github.com/RobotWebTools/rosbridge_suite/issues/948>`_)
+* Changed type hints in ros_loader.py to use imports from Typing (`#938 <https://github.com/RobotWebTools/rosbridge_suite/issues/938>`_)
+* Avoid stack traces when aborting an advertised action goal (`#906 <https://github.com/RobotWebTools/rosbridge_suite/issues/906>`_)
+* Timeout if service server not available within server_timeout_time (`#905 <https://github.com/RobotWebTools/rosbridge_suite/issues/905>`_)
+* Use ROS 2 Node Clock in Message Conversion (`#900 <https://github.com/RobotWebTools/rosbridge_suite/issues/900>`_)
+* Fix issues when canceling and unadvertising actions (`#896 <https://github.com/RobotWebTools/rosbridge_suite/issues/896>`_)
+* Support actions in rosbridge protocol (`#886 <https://github.com/RobotWebTools/rosbridge_suite/issues/886>`_)
+* Port unit tests to ROS 2 + Fix CBOR conversion and PNG compression (`#882 <https://github.com/RobotWebTools/rosbridge_suite/issues/882>`_)
+* Contributors: Brad Martin, Dimitri Nikitopoulos, EricGallimore, Ezra Brooks, Paul Gesel, Sebastian Castro, michael-cmt
+
 1.3.2 (2023-09-27)
 ------------------
 * Interpret call_services_in_new_thread as boolean (`#857 <https://github.com/RobotWebTools/rosbridge_suite/issues/857>`_)

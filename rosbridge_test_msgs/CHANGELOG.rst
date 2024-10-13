@@ -2,6 +2,16 @@
 Changelog for package rosbridge_test_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.0 (2024-10-08)
+------------------
+
+2.0.0 (2024-10-08)
+------------------
+* Fix action cancellation by passing status from JSON (`#953 <https://github.com/RobotWebTools/rosbridge_suite/issues/953>`_)
+* Fix length-limited list types (`#840 <https://github.com/RobotWebTools/rosbridge_suite/issues/840>`_)
+* Support actions in rosbridge protocol (`#886 <https://github.com/RobotWebTools/rosbridge_suite/issues/886>`_)
+* Contributors: Ezra Brooks, Sebastian Castro
+
 1.3.2 (2023-09-27)
 ------------------
 
