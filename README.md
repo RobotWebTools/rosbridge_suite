@@ -2,8 +2,8 @@ rosbridge_suite
 ===============
 
 [![ROS Humble version](https://img.shields.io/ros/v/humble/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#humble)
-[![ROS Iron version](https://img.shields.io/ros/v/humble/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#iron)
-[![ROS Jazzy version](https://img.shields.io/ros/v/humble/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#jazzy)
+[![ROS Iron version](https://img.shields.io/ros/v/iron/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#iron)
+[![ROS Jazzy version](https://img.shields.io/ros/v/jazzy/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#jazzy)
 [![ROS Rolling version](https://img.shields.io/ros/v/rolling/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#rolling)
 
 
