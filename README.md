@@ -59,6 +59,8 @@ Releasing requires push access to [RobotWebTools/rosbridge_suite](https://github
     - `bloom-release --rosdistro iron rosbridge_suite`
     - `bloom-release --rosdistro jazzy rosbridge_suite`
     - `bloom-release --rosdistro rolling rosbridge_suite`
+  
+Note that right now, the Humble release is tracked in the `humble` branch, while Iron and later are tracked in the `ros2` branch.
 
 Once the PRs are merged, packages will be available for each distro after the next sync.
 Build/sync status can be viewed at: [humble](http://repo.ros2.org/status_page/ros_humble_default.html), [iron](http://repo.ros2.org/status_page/ros_iron_default.html), [jazzy](http://repo.ros2.org/status_page/ros_jazzy_default.html), and [rolling](http://repo.ros2.org/status_page/ros_rolling_default.html).
