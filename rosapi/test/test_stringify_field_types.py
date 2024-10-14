@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import unittest
 
-from rosapi.stringify_field_types import stringify_field_types
 from rosbridge_library.internal.ros_loader import InvalidModuleException
+
+from rosapi.stringify_field_types import stringify_field_types
 
 
 class TestObjectUtils(unittest.TestCase):

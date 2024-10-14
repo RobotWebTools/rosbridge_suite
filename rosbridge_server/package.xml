@@ -14,8 +14,7 @@
   <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
   <maintainer email="ros-tooling@foxglove.dev">Foxglove</maintainer>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+  <buildtool_depend>ament_python</buildtool_depend>
 
   <exec_depend>python3-tornado</exec_depend>
   <exec_depend>python3-twisted</exec_depend>
@@ -34,6 +33,6 @@
   <test_depend>std_srvs</test_depend>
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>ament_python</build_type>
   </export>
 </package>
