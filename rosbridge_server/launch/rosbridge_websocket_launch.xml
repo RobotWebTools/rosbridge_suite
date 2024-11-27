@@ -6,6 +6,8 @@
   <arg name="certfile" default=""/>
   <arg name="keyfile" default="" />
 
+  <arg name="namespace" default="" />
+
   <arg name="retry_startup_delay" default="5.0" />
 
   <arg name="fragment_timeout" default="600" />
@@ -22,10 +24,12 @@
   <arg name="params_glob" default="" />
   <arg name="bson_only_mode" default="false" />
 
+  <arg name="respawn" default="false"/>
+
   <arg unless="$(var bson_only_mode)" name="binary_encoder" default="default"/>
 
   <group if="$(var ssl)">
-    <node name="rosbridge_websocket" pkg="rosbridge_server" exec="rosbridge_websocket" output="screen">
+    <node name="rosbridge_websocket" namespace="$(var namespace)" pkg="rosbridge_server" exec="rosbridge_websocket" output="screen" respawn="$(var respawn)" >
       <param name="certfile" value="$(var certfile)" />
       <param name="keyfile" value="$(var keyfile)" />
       <param name="port" value="$(var port)"/>
@@ -45,8 +49,9 @@
       <param name="params_glob" value="$(var params_glob)"/>
     </node>
   </group>
+
   <group unless="$(var ssl)">
-    <node name="rosbridge_websocket" pkg="rosbridge_server" exec="rosbridge_websocket" output="screen">
+    <node name="rosbridge_websocket" namespace="$(var namespace)" pkg="rosbridge_server" exec="rosbridge_websocket" output="screen" respawn="$(var respawn)">
       <param name="port" value="$(var port)"/>
       <param name="address" value="$(var address)"/>
       <param name="url_path" value="$(var url_path)"/>
@@ -67,7 +72,7 @@
     </node>
   </group>
 
-  <node name="rosapi" pkg="rosapi" exec="rosapi_node">
+  <node name="rosapi" namespace="$(var namespace)" pkg="rosapi" exec="rosapi_node" respawn="$(var respawn)">
     <param name="topics_glob" value="$(var topics_glob)"/>
     <param name="services_glob" value="$(var services_glob)"/>
     <param name="params_glob" value="$(var params_glob)"/>
