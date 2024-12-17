@@ -81,6 +81,7 @@ class CallService(Capability):
         fragment_size = message.get("fragment_size", None)
         compression = message.get("compression", "none")
         args = message.get("args", [])
+        timeout = message.get("timeout", 5.0)
 
         if CallService.services_glob is not None and CallService.services_glob:
             self.protocol.log(
@@ -112,7 +113,14 @@ class CallService(Capability):
         e_cb = partial(self._failure, cid, service)
 
         # Run service caller in the same thread.
-        ServiceCaller(trim_servicename(service), args, s_cb, e_cb, self.protocol.node_handle).run()
+        ServiceCaller(
+            trim_servicename(service),
+            args,
+            timeout,
+            s_cb,
+            e_cb,
+            self.protocol.node_handle,
+        ).run()
 
     def _success(self, cid, service, fragment_size, compression, message):
         outgoing_message = {
