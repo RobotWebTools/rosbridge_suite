@@ -7,7 +7,7 @@ from threading import Thread
 import rclpy
 from action_msgs.msg import GoalStatus
 from example_interfaces.action._fibonacci import Fibonacci_FeedbackMessage
-from rclpy.executors import SingleThreadedExecutor
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rosbridge_library.capabilities.action_feedback import ActionFeedback
@@ -25,7 +25,7 @@ from rosbridge_library.protocol import Protocol
 class TestActionCapabilities(unittest.TestCase):
     def setUp(self):
         rclpy.init()
-        self.executor = SingleThreadedExecutor()
+        self.executor = MultiThreadedExecutor()
         self.node = Node("test_action_capabilities")
         self.executor.add_node(self.node)
 
@@ -295,7 +295,6 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["values"]["sequence"], [])
         self.assertEqual(self.received_message["status"], GoalStatus.STATUS_CANCELED)
 
-    @unittest.skip("Currently raises an exception not catchable by unittest, need to fix this")
     def test_unadvertise_action(self):
         # Advertise the action
         action_path = "/fibonacci_action_4"
@@ -340,8 +339,6 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertTrue("id" in self.received_message)
 
         # Now unadvertise the action
-        # TODO: This raises an exception, likely because of the following rclpy issue:
-        # https://github.com/ros2/rclpy/issues/1098
         unadvertise_msg = loads(dumps({"op": "unadvertise_action", "action": action_path}))
         self.received_message = None
         self.unadvertise.unadvertise_action(unadvertise_msg)
