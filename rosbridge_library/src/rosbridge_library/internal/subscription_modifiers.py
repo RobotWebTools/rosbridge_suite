@@ -163,6 +163,7 @@ class QueueMessageHandler(MessageHandler, Thread):
                     traceback.print_exc(file=sys.stderr)
         while self.time_remaining() == 0 and len(self.queue) > 0:
             try:
-                MessageHandler.handle_message(self, self.queue[0])
+                msg = self.queue.popleft()
+                MessageHandler.handle_message(self, msg)
             except Exception:
                 traceback.print_exc(file=sys.stderr)
