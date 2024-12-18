@@ -146,9 +146,9 @@ class TestMessageHandlers(unittest.TestCase):
         handler.publish = cb
 
         self.assertTrue(handler.time_remaining() == 0)
-        t1 = time.time()
+        t1 = time.monotonic()
         handler.handle_message(msg)
-        t2 = time.time()
+        t2 = time.monotonic()
 
         self.assertEqual(received["msg"], msg)
         self.assertLessEqual(t1, handler.last_publish)
