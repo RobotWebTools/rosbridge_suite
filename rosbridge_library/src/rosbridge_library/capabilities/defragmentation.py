@@ -1,5 +1,5 @@
 import threading
-from datetime import datetime
+import time
 
 from rosbridge_library.capability import Capability
 
@@ -84,13 +84,13 @@ class Defragment(Capability, threading.Thread):
     #   4.b) pass the reconstructed message string to protocol.incoming()       # protocol.incoming is checking message fields by itself, so no need to do this before passing the reconstructed message to protocol
     #   4.c) remove the fragment list to free up memory
     def defragment(self, message):
-        now = datetime.now()
+        now = time.monotonic()
 
         if self.received_fragments is not None:
             for id in self.received_fragments.keys():
                 time_diff = now - self.received_fragments[id]["timestamp_last_append"]
                 if (
-                    time_diff.total_seconds() > self.fragment_timeout
+                    time_diff > self.fragment_timeout
                     and not self.received_fragments[id]["is_reconstructing"]
                 ):
                     log_msg = ["fragment list ", str(id), " timed out.."]
@@ -188,7 +188,7 @@ class Defragment(Capability, threading.Thread):
             log_msg = "".join(log_msg)
             self.protocol.log("debug", log_msg)
 
-            duration = datetime.now() - now
+            duration = time.monotonic() - now
 
             # Pass the reconstructed message to rosbridge
             self.protocol.incoming(reconstructed_msg)
@@ -196,7 +196,7 @@ class Defragment(Capability, threading.Thread):
             log_msg.extend([str(msg_total), " fragments. "])
             # cannot access msg.data if message is a service_response or else!
             # log_msg += "[message length: " + str(len(str(json.loads(reconstructed_msg)["msg"]["data"]))) +"]"
-            log_msg.extend(["[duration: ", str(duration.total_seconds()), " s]"])
+            log_msg.extend(["[duration: ", str(duration), " s]"])
             log_msg = "".join(log_msg)
             self.protocol.log("info", log_msg)
 
