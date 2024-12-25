@@ -32,7 +32,7 @@
 
 import time
 from threading import Thread
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional
 
 from rclpy.action import ActionClient
 from rclpy.expand_topic_name import expand_topic_name
@@ -59,9 +59,9 @@ class ActionClientHandler(Thread):
         action: str,
         action_type: str,
         args: dict,
-        success_callback: Callable[[str, str, int, bool, dict], None],
-        error_callback: Callable[[str, str, Exception], None],
-        feedback_callback: Callable[[str, str, dict], None],
+        success_callback: Callable[[dict], None],
+        error_callback: Callable[[Exception], None],
+        feedback_callback: Optional[Callable[[dict], None]],
         node_handle: Node,
     ) -> None:
         """
@@ -90,12 +90,11 @@ class ActionClientHandler(Thread):
         self.error = error_callback
         self.feedback = feedback_callback
         self.node_handle = node_handle
-        self.send_goal_helper = None
+        self.send_goal_helper = SendGoal()
 
     def run(self) -> None:
         try:
             # Call the service and pass the result to the success handler
-            self.send_goal_helper = SendGoal()
             self.success(
                 self.send_goal_helper.send_goal(
                     self.node_handle,
@@ -110,7 +109,7 @@ class ActionClientHandler(Thread):
             self.error(e)
 
 
-def args_to_action_goal_instance(action: str, inst: Any, args: Union[list, dict]) -> Any:
+def args_to_action_goal_instance(action: str, inst: Any, args: list | dict | None) -> Any:
     """ "
     Populate an action goal instance with the provided args
 
@@ -142,6 +141,7 @@ class SendGoal:
 
     def goal_response_cb(self, future: Future) -> None:
         self.goal_handle = future.result()
+        assert self.goal_handle is not None
         if not self.goal_handle.accepted:
             raise Exception("Action goal was rejected")
         result_future = self.goal_handle.get_result_async()
@@ -156,7 +156,7 @@ class SendGoal:
         action: str,
         action_type: str,
         args: Optional[dict] = None,
-        feedback_cb: Optional[Callable[[str, str, dict], None]] = None,
+        feedback_cb: Optional[Callable[[dict], None]] = None,
     ) -> dict:
         # Given the action name and type, fetch a request instance
         action_name = expand_topic_name(action, node_handle.get_name(), node_handle.get_namespace())

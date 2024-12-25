@@ -33,6 +33,7 @@
 import fnmatch
 from functools import partial
 from threading import Thread
+from typing import Any
 
 from action_msgs.msg import GoalStatus
 from rosbridge_library.capability import Capability
@@ -52,7 +53,7 @@ class SendActionGoal(Capability):
     cancel_action_goal_msg_fields = [(True, "action", str)]
 
     actions_glob = None
-    client_handler_list = {}
+    client_handler_list: dict[str, ActionClientHandler] = {}
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
@@ -182,7 +183,7 @@ class SendActionGoal(Capability):
             outgoing_message["id"] = cid
         self.protocol.send(outgoing_message)
 
-    def _feedback(self, cid: str, action: str, message: dict) -> None:
+    def _feedback(self, cid: str, action: str, message: Any) -> None:
         outgoing_message = {
             "op": "action_feedback",
             "action": action,

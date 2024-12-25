@@ -14,4 +14,7 @@ if (BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_capabilities "test/capabilities/")
   ament_add_pytest_test(test_internal "test/internal/")
+
+  find_package(ament_cmake_mypy REQUIRED)
+  ament_mypy()
 endif()

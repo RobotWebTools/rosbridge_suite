@@ -43,9 +43,9 @@ Methods typically return the requested class or instance, or None if not found
 """
 
 # Variable containing the loaded classes
-_loaded_msgs = {}
-_loaded_srvs = {}
-_loaded_actions = {}
+_loaded_msgs: dict[str, Any] = {}
+_loaded_srvs: dict[str, Any] = {}
+_loaded_actions: dict[str, Any] = {}
 _msgs_lock = Lock()
 _srvs_lock = Lock()
 _actions_lock = Lock()
@@ -185,7 +185,7 @@ def _get_class(typestring: str, subname: str, cache: Dict[str, Any], lock: Lock)
     return cls
 
 
-def _load_class(modname: str, subname: str, classname: str) -> None:
+def _load_class(modname: str, subname: str, classname: str) -> Any:
     """Loads the manifest and imports the module that contains the specified
     type.
 
@@ -220,7 +220,7 @@ def _splittype(typestring: str) -> Tuple[str, str]:
     raise InvalidTypeStringException(typestring)
 
 
-def _add_to_cache(cache: Dict[str, Any], lock: Lock, key: str, value: any) -> None:
+def _add_to_cache(cache: Dict[str, Any], lock: Lock, key: str, value: Any) -> None:
     lock.acquire()
     cache[key] = value
     lock.release()

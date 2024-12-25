@@ -2,7 +2,6 @@ rosbridge_suite
 ===============
 
 [![ROS Humble version](https://img.shields.io/ros/v/humble/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#humble)
-[![ROS Iron version](https://img.shields.io/ros/v/iron/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#iron)
 [![ROS Jazzy version](https://img.shields.io/ros/v/jazzy/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#jazzy)
 [![ROS Rolling version](https://img.shields.io/ros/v/rolling/rosbridge_suite)](https://index.ros.org/p/rosbridge_suite/github-RobotWebTools-rosbridge_suite/#rolling)
 
@@ -56,11 +55,10 @@ Releasing requires push access to [RobotWebTools/rosbridge_suite](https://github
 3. Run `catkin_prepare_release --bump [major/minor/patch]` to bump versions in package.xml and push changes to origin.
 4. Run bloom-release commands to create PRs to update rosdistro:
     - `bloom-release --rosdistro humble rosbridge_suite`
-    - `bloom-release --rosdistro iron rosbridge_suite`
     - `bloom-release --rosdistro jazzy rosbridge_suite`
     - `bloom-release --rosdistro rolling rosbridge_suite`
 
-Note that right now, the Humble release is tracked in the `humble` branch, while Iron and later are tracked in the `ros2` branch.
+Note that right now, the Humble release is tracked in the `humble` branch, while Jazzy and later are tracked in the `ros2` branch.
 
 Once the PRs are merged, packages will be available for each distro after the next sync.
-Build/sync status can be viewed at: [humble](http://repo.ros2.org/status_page/ros_humble_default.html), [iron](http://repo.ros2.org/status_page/ros_iron_default.html), [jazzy](http://repo.ros2.org/status_page/ros_jazzy_default.html), and [rolling](http://repo.ros2.org/status_page/ros_rolling_default.html).
+Build/sync status can be viewed at: [humble](http://repo.ros2.org/status_page/ros_humble_default.html), [jazzy](http://repo.ros2.org/status_page/ros_jazzy_default.html), and [rolling](http://repo.ros2.org/status_page/ros_rolling_default.html).

@@ -32,4 +32,7 @@ if(BUILD_TESTING)
   add_launch_test(test/websocket/transient_local_publisher.test.py)
   add_launch_test(test/websocket/best_effort_publisher.test.py)
   add_launch_test(test/websocket/multiple_subscribers_raw.test.py)
+
+  find_package(ament_cmake_mypy REQUIRED)
+  ament_mypy()
 endif()

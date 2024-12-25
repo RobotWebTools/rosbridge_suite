@@ -31,6 +31,7 @@
 
   <test_depend>rosbridge_test_msgs</test_depend>
   <test_depend>action_msgs</test_depend>
+  <test_depend>ament_cmake_mypy</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>builtin_interfaces</test_depend>
   <test_depend>diagnostic_msgs</test_depend>

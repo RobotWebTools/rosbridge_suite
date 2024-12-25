@@ -34,6 +34,7 @@ class TestAdvertiseService(unittest.TestCase):
         requests_future, ws_client.message_handler = expect_messages(
             2, "WebSocket", node.get_logger()
         )
+        assert node.executor is not None
         requests_future.add_done_callback(lambda _: node.executor.wake())
 
         response1_future = client.call_async(SetBool.Request(data=True))

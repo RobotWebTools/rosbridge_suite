@@ -58,8 +58,8 @@ class ServiceCaller(Thread):
         self,
         service: str,
         args: dict,
-        success_callback: Callable[[str, str, int, bool, Any], None],
-        error_callback: Callable[[str, str, Exception], None],
+        success_callback: Callable[[dict], None],
+        error_callback: Callable[[Exception], None],
         node_handle: Node,
     ) -> None:
         """Create a service caller for the specified service.  Use start()
@@ -94,7 +94,7 @@ class ServiceCaller(Thread):
             self.error(e)
 
 
-def args_to_service_request_instance(service: str, inst: Any, args: dict) -> Any:
+def args_to_service_request_instance(service: str, inst: Any, args: list | dict | None) -> Any:
     """Populate a service request instance with the provided args
 
     args can be a dictionary of values, or a list, or None
@@ -122,14 +122,14 @@ def call_service(
     service = expand_topic_name(service, node_handle.get_name(), node_handle.get_namespace())
 
     service_names_and_types = dict(node_handle.get_service_names_and_types())
-    service_type = service_names_and_types.get(service)
-    if service_type is None:
+    service_types = service_names_and_types.get(service)
+    if service_types is None:
         raise InvalidServiceException(service)
 
     # service_type is a tuple of types at this point; only one type is supported.
-    if len(service_type) > 1:
-        node_handle.get_logger().warning(f"More than one service type detected: {service_type}")
-    service_type = service_type[0]
+    if len(service_types) > 1:
+        node_handle.get_logger().warning(f"More than one service type detected: {service_types}")
+    service_type = service_types[0]
 
     service_class = get_service_class(service_type)
     inst = get_service_request_instance(service_type)
