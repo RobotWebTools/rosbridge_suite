@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import socket
+from typing import Any
 
 from rosbridge_library.util import json
 
@@ -63,13 +64,13 @@ try:
         try:
             incoming = sock.recv(max_msg_length)  # receive service_response from rosbridge
             if buffer == "":
-                buffer = incoming
+                buffer = incoming.decode("utf-8")
                 if incoming == "":
                     print("closing socket")
                     sock.close()
                     break
             else:
-                buffer = buffer + incoming
+                buffer = buffer + incoming.decode("utf-8")
             # print "buffer-length:", len(buffer)
             try:  # try to access service_request directly (not fragmented)
                 data_object = json.loads(buffer)
@@ -86,14 +87,14 @@ try:
                     "}{"
                 )  # split buffer into fragments and re-fill curly brackets
                 result = []
-                for fragment in result_string:
-                    if fragment[0] != "{":
-                        fragment = "{" + fragment
-                    if fragment[len(fragment) - 1] != "}":
-                        fragment = fragment + "}"
+                for fragment_str in result_string:
+                    if fragment_str[0] != "{":
+                        fragment_str = "{" + fragment_str
+                    if fragment_str[len(fragment_str) - 1] != "}":
+                        fragment_str = fragment_str + "}"
                     try:
                         result.append(
-                            json.loads(fragment)
+                            json.loads(fragment_str)
                         )  # try to parse json from string, and append if successful
                     except Exception:
                         # print(e)
@@ -105,7 +106,7 @@ try:
                 announced = int(result[0]["total"])
                 if fragment_count == announced:  # if all fragments received --> sort and defragment
                     # sort fragments
-                    sorted_result = [None] * fragment_count
+                    sorted_result: list[Any] = [None] * fragment_count
                     unsorted_result = []
                     for fragment in result:
                         unsorted_result.append(fragment)

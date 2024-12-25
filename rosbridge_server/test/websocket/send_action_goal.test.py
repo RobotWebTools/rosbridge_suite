@@ -56,6 +56,7 @@ class TestSendActionGoal(unittest.TestCase):
         responses_future, ws_client.message_handler = expect_messages(
             5, "WebSocket", node.get_logger()
         )
+        assert node.executor is not None
         responses_future.add_done_callback(lambda _: node.executor.wake())
 
         ws_client.sendJson(

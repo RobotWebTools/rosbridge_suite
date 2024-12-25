@@ -24,6 +24,7 @@
   <exec_depend>rosbridge_msgs</exec_depend>
   <exec_depend>rosapi</exec_depend>
 
+  <test_depend>ament_cmake_mypy</test_depend>
   <test_depend>example_interfaces</test_depend>
   <test_depend>python3-autobahn</test_depend>
   <test_depend>launch</test_depend>

@@ -37,6 +37,7 @@ class TestWebsocketSmoke(unittest.TestCase):
         ws_completed_future, ws_client.message_handler = expect_messages(
             NUM_MSGS, "WebSocket", node.get_logger()
         )
+        assert node.executor is not None
         ws_completed_future.add_done_callback(lambda _: node.executor.wake())
 
         sub_a = node.create_subscription(String, A_TOPIC, sub_handler, NUM_MSGS)
