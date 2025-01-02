@@ -14,6 +14,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/GetROSVersion.srv
   srv/GetTime.srv
   srv/HasParam.srv
+  srv/Interfaces.srv
   srv/MessageDetails.srv
   srv/Nodes.srv
   srv/NodeDetails.srv
