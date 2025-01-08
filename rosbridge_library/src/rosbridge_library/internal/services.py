@@ -30,7 +30,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from threading import Thread, Condition
+from threading import Condition, Thread
 from typing import Any, Callable, Optional
 
 from rclpy.callback_groups import ReentrantCallbackGroup
