@@ -25,4 +25,7 @@ if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(${PROJECT_NAME}_test_stringify_field_types test/test_stringify_field_types.py)
   ament_add_pytest_test(${PROJECT_NAME}_test_typedefs test/test_typedefs.py)
+
+  find_package(ament_cmake_mypy REQUIRED)
+  ament_mypy()
 endif()

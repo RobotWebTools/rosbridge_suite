@@ -31,10 +31,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import sys
+import time
 import traceback
 from collections import deque
 from threading import Condition, Thread
-from time import time
 
 """ Sits between incoming messages from a subscription, and the outgoing
 publish method.  Provides throttling / buffering capabilities.
@@ -66,10 +66,10 @@ class MessageHandler:
         return self.transition()
 
     def time_remaining(self):
-        return max((self.last_publish + self.throttle_rate) - time(), 0)
+        return max((self.last_publish + self.throttle_rate) - time.monotonic(), 0)
 
     def handle_message(self, msg):
-        self.last_publish = time()
+        self.last_publish = time.monotonic()
         self.publish(msg)
 
     def transition(self):
@@ -163,6 +163,7 @@ class QueueMessageHandler(MessageHandler, Thread):
                     traceback.print_exc(file=sys.stderr)
         while self.time_remaining() == 0 and len(self.queue) > 0:
             try:
-                MessageHandler.handle_message(self, self.queue[0])
+                msg = self.queue.popleft()
+                MessageHandler.handle_message(self, msg)
             except Exception:
                 traceback.print_exc(file=sys.stderr)

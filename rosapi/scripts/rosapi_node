@@ -48,6 +48,7 @@ from rosapi_msgs.srv import (
     GetROSVersion,
     GetTime,
     HasParam,
+    Interfaces,
     MessageDetails,
     NodeDetails,
     Nodes,
@@ -89,6 +90,7 @@ class Rosapi(Node):
             full_name = self.get_namespace() + "/" + self.get_name()
         params.init(full_name)
         self.create_service(Topics, "/rosapi/topics", self.get_topics)
+        self.create_service(Interfaces, "/rosapi/interfaces", self.get_interfaces)
         self.create_service(TopicsForType, "/rosapi/topics_for_type", self.get_topics_for_type)
         self.create_service(
             TopicsAndRawTypes,
@@ -135,6 +137,11 @@ class Rosapi(Node):
     def get_topics(self, request, response):
         """Called by the rosapi/Topics service. Returns a list of all the topics being published."""
         response.topics, response.types = proxy.get_topics_and_types(self.globs.topics)
+        return response
+
+    def get_interfaces(self, request, response):
+        """Called by the rosapi/Types service. Returns a list of all the types in the system."""
+        response.interfaces = proxy.get_interfaces()
         return response
 
     def get_topics_for_type(self, request, response):

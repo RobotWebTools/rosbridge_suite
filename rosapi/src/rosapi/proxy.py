@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from ros2interface.api import type_completer
 from ros2node.api import (
     get_node_names,
     get_publisher_info,
@@ -58,6 +59,11 @@ def get_topics(topics_glob, include_hidden=False):
     """Returns a list of all the active topics in the ROS system"""
     topic_names = get_topic_names(node=_node, include_hidden_topics=include_hidden)
     return filter_globs(topics_glob, topic_names)
+
+
+def get_interfaces():
+    """Returns a list of all the types in the ROS system"""
+    return type_completer()
 
 
 def get_topics_and_types(topics_glob, include_hidden=False):
