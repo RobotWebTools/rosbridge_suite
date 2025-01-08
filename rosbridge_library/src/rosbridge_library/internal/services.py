@@ -31,7 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import time
-from threading import Thread
+from threading import Thread, Condition
 from typing import Any, Callable, Optional
 
 import rclpy
@@ -72,7 +72,8 @@ class ServiceCaller(Thread):
         ordered list, or a dict of name-value pairs.  Anything else will be
         treated as though no arguments were provided (which is still valid for
         some kinds of service)
-        timeout -- the time, in seconds, to wait for a response from the server
+        timeout          -- the time, in seconds, to wait for a response from the server.
+                            A non-positive value means no timeout.
         success_callback -- a callback to call with the JSON result of the
         service call
         error_callback   -- a callback to call if an error occurs.  The
@@ -126,7 +127,6 @@ def call_service(
     args: Optional[dict] = None,
     server_ready_timeout: float = 1.0,
     server_response_timeout: float = 5.0,
-    sleep_time: float = 0.001,
 ) -> dict:
     # Given the service name, fetch the type and class of the service,
     # and a request instance
@@ -157,16 +157,22 @@ def call_service(
         raise InvalidServiceException(service)
 
     future = client.call_async(inst)
-    start_time = time.monotonic()
-    while (
-        rclpy.ok() and not future.done() and time.monotonic() - start_time < server_response_timeout
-    ):
-        time.sleep(sleep_time)
+    condition = Condition()
 
-    if not future.done():
-        future.cancel()
-        node_handle.destroy_client(client)
-        raise Exception("Timeout exceeded while waiting for service response")
+    def future_done_callback():
+        with condition:
+            condition.notify_all()
+
+    future.add_done_callback(lambda future: future_done_callback())
+
+    with condition:
+        if not condition.wait_for(
+            lambda: future.done(),
+            timeout=(server_response_timeout if server_response_timeout > 0 else None),
+        ):
+            future.cancel()
+            node_handle.destroy_client(client)
+            raise Exception("Timeout exceeded while waiting for service response")
 
     result = future.result()
 
