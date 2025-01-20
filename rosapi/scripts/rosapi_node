@@ -89,47 +89,52 @@ class Rosapi(Node):
         else:
             full_name = self.get_namespace() + "/" + self.get_name()
         params.init(full_name)
-        self.create_service(Topics, "/rosapi/topics", self.get_topics)
-        self.create_service(Interfaces, "/rosapi/interfaces", self.get_interfaces)
-        self.create_service(TopicsForType, "/rosapi/topics_for_type", self.get_topics_for_type)
+
+        self.create_service(Topics, "~/topics", self.get_topics)
+        self.create_service(Interfaces, "~/interfaces", self.get_interfaces)
+        self.create_service(TopicsForType, "~/topics_for_type", self.get_topics_for_type)
         self.create_service(
             TopicsAndRawTypes,
-            "/rosapi/topics_and_raw_types",
+            "~/topics_and_raw_types",
             self.get_topics_and_raw_types,
         )
-        self.create_service(Services, "/rosapi/services", self.get_services)
+        self.create_service(Services, "~/services", self.get_services)
         self.create_service(
-            ServicesForType, "/rosapi/services_for_type", self.get_services_for_type
+            ServicesForType,
+            "~/services_for_type",
+            self.get_services_for_type,
         )
-        self.create_service(Nodes, "/rosapi/nodes", self.get_nodes)
-        self.create_service(NodeDetails, "/rosapi/node_details", self.get_node_details)
-        self.create_service(GetActionServers, "/rosapi/action_servers", self.get_action_servers)
-        self.create_service(TopicType, "/rosapi/topic_type", self.get_topic_type)
-        self.create_service(ServiceType, "/rosapi/service_type", self.get_service_type)
-        self.create_service(Publishers, "/rosapi/publishers", self.get_publishers)
-        self.create_service(Subscribers, "/rosapi/subscribers", self.get_subscribers)
+        self.create_service(Nodes, "~/nodes", self.get_nodes)
+        self.create_service(NodeDetails, "~/node_details", self.get_node_details)
+        self.create_service(GetActionServers, "~/action_servers", self.get_action_servers)
+        self.create_service(TopicType, "~/topic_type", self.get_topic_type)
+        self.create_service(ServiceType, "~/service_type", self.get_service_type)
+        self.create_service(Publishers, "~/publishers", self.get_publishers)
+        self.create_service(Subscribers, "~/subscribers", self.get_subscribers)
         self.create_service(
-            ServiceProviders, "/rosapi/service_providers", self.get_service_providers
+            ServiceProviders,
+            "~/service_providers",
+            self.get_service_providers,
         )
-        self.create_service(ServiceNode, "/rosapi/service_node", self.get_service_node)
-        self.create_service(MessageDetails, "/rosapi/message_details", self.get_message_details)
+        self.create_service(ServiceNode, "~/service_node", self.get_service_node)
+        self.create_service(MessageDetails, "~/message_details", self.get_message_details)
         self.create_service(
             ServiceRequestDetails,
-            "/rosapi/service_request_details",
+            "~/service_request_details",
             self.get_service_request_details,
         )
         self.create_service(
             ServiceResponseDetails,
-            "/rosapi/service_response_details",
+            "~/service_response_details",
             self.get_service_response_details,
         )
-        self.create_service(SetParam, "/rosapi/set_param", self.set_param)
-        self.create_service(GetParam, "/rosapi/get_param", self.get_param)
-        self.create_service(HasParam, "/rosapi/has_param", self.has_param)
-        self.create_service(DeleteParam, "/rosapi/delete_param", self.delete_param)
-        self.create_service(GetParamNames, "/rosapi/get_param_names", self.get_param_names)
-        self.create_service(GetTime, "/rosapi/get_time", self.get_time)
-        self.create_service(GetROSVersion, "/rosapi/get_ros_version", self.get_ros_version)
+        self.create_service(SetParam, "~/set_param", self.set_param)
+        self.create_service(GetParam, "~/get_param", self.get_param)
+        self.create_service(HasParam, "~/has_param", self.has_param)
+        self.create_service(DeleteParam, "~/delete_param", self.delete_param)
+        self.create_service(GetParamNames, "~/get_param_names", self.get_param_names)
+        self.create_service(GetTime, "~/get_time", self.get_time)
+        self.create_service(GetROSVersion, "~/get_ros_version", self.get_ros_version)
 
     def get_globs(self):
         return glob_helper.get_globs(self)
