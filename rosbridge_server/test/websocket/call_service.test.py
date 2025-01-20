@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
+import time
 import unittest
 
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -52,5 +53,57 @@ class TestCallService(unittest.TestCase):
         self.assertEqual(responses[0]["service"], "/test_service")
         self.assertEqual(responses[0]["values"], {"success": True, "message": "Hello, world!"})
         self.assertEqual(responses[0]["result"], True)
+
+        node.destroy_service(service)
+
+        def service_long_cb(req, res):
+            time.sleep(0.2)
+            self.assertTrue(req.data)
+            res.success = True
+            res.message = "Hello, world!"
+            return res
+
+        service = node.create_service(
+            SetBool, "/test_service_long", service_long_cb, callback_group=ReentrantCallbackGroup()
+        )
+
+        responses_future, ws_client.message_handler = expect_messages(
+            2, "WebSocket", node.get_logger()
+        )
+        responses_future.add_done_callback(lambda _: node.executor.wake())
+
+        ws_client.sendJson(
+            {
+                "op": "call_service",
+                "type": "std_srvs/SetBool",
+                "service": "/test_service_long",
+                "args": {"data": True},
+                "timeout": 0.1,
+            }
+        )
+
+        ws_client.sendJson(
+            {
+                "op": "call_service",
+                "type": "std_srvs/SetBool",
+                "service": "/test_service_long",
+                "args": {"data": True},
+                "timeout": 0.5,
+            }
+        )
+
+        responses = await responses_future
+        self.assertEqual(len(responses), 2)
+        self.assertEqual(responses[0]["op"], "service_response")
+        self.assertEqual(responses[0]["service"], "/test_service_long")
+        self.assertEqual(
+            responses[0]["values"], "Timeout exceeded while waiting for service response"
+        )
+        self.assertEqual(responses[0]["result"], False)
+
+        self.assertEqual(responses[1]["op"], "service_response")
+        self.assertEqual(responses[1]["service"], "/test_service_long")
+        self.assertEqual(responses[1]["values"], {"success": True, "message": "Hello, world!"})
+        self.assertEqual(responses[1]["result"], True)
 
         node.destroy_service(service)

@@ -30,11 +30,9 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import time
-from threading import Thread
+from threading import Event, Thread
 from typing import Any, Callable, Optional
 
-import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.expand_topic_name import expand_topic_name
 from rclpy.node import Node
@@ -58,6 +56,7 @@ class ServiceCaller(Thread):
         self,
         service: str,
         args: dict,
+        timeout: float,
         success_callback: Callable[[str, str, int, bool, Any], None],
         error_callback: Callable[[str, str, Exception], None],
         node_handle: Node,
@@ -71,6 +70,8 @@ class ServiceCaller(Thread):
         ordered list, or a dict of name-value pairs.  Anything else will be
         treated as though no arguments were provided (which is still valid for
         some kinds of service)
+        timeout          -- the time, in seconds, to wait for a response from the server.
+                            A non-positive value means no timeout.
         success_callback -- a callback to call with the JSON result of the
         service call
         error_callback   -- a callback to call if an error occurs.  The
@@ -81,6 +82,7 @@ class ServiceCaller(Thread):
         self.daemon = True
         self.service = service
         self.args = args
+        self.timeout = timeout
         self.success = success_callback
         self.error = error_callback
         self.node_handle = node_handle
@@ -88,7 +90,14 @@ class ServiceCaller(Thread):
     def run(self) -> None:
         try:
             # Call the service and pass the result to the success handler
-            self.success(call_service(self.node_handle, self.service, args=self.args))
+            self.success(
+                call_service(
+                    self.node_handle,
+                    self.service,
+                    args=self.args,
+                    server_response_timeout=self.timeout,
+                )
+            )
         except Exception as e:
             # On error, just pass the exception to the error handler
             self.error(e)
@@ -114,8 +123,8 @@ def call_service(
     node_handle: Node,
     service: str,
     args: Optional[dict] = None,
-    server_timeout_time: float = 1.0,
-    sleep_time: float = 0.001,
+    server_ready_timeout: float = 1.0,
+    server_response_timeout: float = 5.0,
 ) -> dict:
     # Given the service name, fetch the type and class of the service,
     # and a request instance
@@ -141,20 +150,32 @@ def call_service(
         service_class, service, callback_group=ReentrantCallbackGroup()
     )
 
-    if not client.wait_for_service(server_timeout_time):
+    if not client.wait_for_service(server_ready_timeout):
         node_handle.destroy_client(client)
         raise InvalidServiceException(service)
 
     future = client.call_async(inst)
-    while rclpy.ok() and not future.done():
-        time.sleep(sleep_time)
-    result = future.result()
+    event = Event()
+
+    def future_done_callback():
+        event.set()
+
+    future.add_done_callback(lambda _: future_done_callback())
+
+    if not event.wait(timeout=(server_response_timeout if server_response_timeout > 0 else None)):
+        future.cancel()
+        node_handle.destroy_client(client)
+        raise Exception("Timeout exceeded while waiting for service response")
 
     node_handle.destroy_client(client)
+
+    result = future.result()
+
     if result is not None:
         # Turn the response into JSON and pass to the callback
         json_response = extract_values(result)
     else:
-        raise Exception(result)
+        exception = future.exception()
+        raise Exception("Service call exception: " + str(exception))
 
     return json_response
