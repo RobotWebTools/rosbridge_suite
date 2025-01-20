@@ -30,7 +30,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from threading import Condition, Thread
+from threading import Event, Thread
 from typing import Any, Callable, Optional
 
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -155,30 +155,27 @@ def call_service(
         raise InvalidServiceException(service)
 
     future = client.call_async(inst)
-    condition = Condition()
+    event = Event()
 
     def future_done_callback():
-        with condition:
-            condition.notify_all()
+        event.set()
 
-    future.add_done_callback(lambda future: future_done_callback())
+    future.add_done_callback(lambda _: future_done_callback())
 
-    with condition:
-        if not condition.wait_for(
-            lambda: future.done(),
-            timeout=(server_response_timeout if server_response_timeout > 0 else None),
-        ):
-            future.cancel()
-            node_handle.destroy_client(client)
-            raise Exception("Timeout exceeded while waiting for service response")
+    if not event.wait(timeout=(server_response_timeout if server_response_timeout > 0 else None)):
+        future.cancel()
+        node_handle.destroy_client(client)
+        raise Exception("Timeout exceeded while waiting for service response")
+
+    node_handle.destroy_client(client)
 
     result = future.result()
 
-    node_handle.destroy_client(client)
     if result is not None:
         # Turn the response into JSON and pass to the callback
         json_response = extract_values(result)
     else:
-        raise Exception("Service call returned None")
+        exception = future.exception()
+        raise Exception("Service call exception: " + str(exception))
 
     return json_response
