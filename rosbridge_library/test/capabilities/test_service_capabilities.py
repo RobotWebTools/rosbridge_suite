@@ -150,6 +150,62 @@ class TestServiceCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["op"], "service_response")
         self.assertTrue(self.received_message["result"])
 
+    def test_call_advertised_service_with_timeout(self):
+        # Advertise the service
+        service_path = "/set_bool_3"
+        advertise_msg = loads(
+            dumps(
+                {
+                    "op": "advertise_service",
+                    "type": "std_srvs/SetBool",
+                    "service": service_path,
+                }
+            )
+        )
+        self.received_message = None
+        self.advertise.advertise_service(advertise_msg)
+
+        # Call the advertised service using rosbridge
+        self.received_message = None
+        call_msg = loads(
+            dumps(
+                {
+                    "op": "call_service",
+                    "id": "foo",
+                    "service": service_path,
+                    "args": {"data": True},
+                    "timeout": 0.5,
+                }
+            )
+        )
+        Thread(target=self.call_service.call_service, args=(call_msg,)).start()
+
+        start_time = time.monotonic()
+        while self.received_message is None:
+            rclpy.spin_once(self.node, timeout_sec=0.1)
+            if time.monotonic() - start_time > 0.3:
+                self.fail("Timed out waiting for service call message.")
+
+        self.assertFalse(self.received_message is None)
+        self.assertTrue("op" in self.received_message)
+        self.assertEqual(self.received_message["op"], "call_service")
+        self.assertTrue("id" in self.received_message)
+
+        self.received_message = None
+
+        start_time = time.monotonic()
+        while self.received_message is None:
+            rclpy.spin_once(self.node, timeout_sec=0.1)
+            if time.monotonic() - start_time > 1.0:
+                self.fail("Timed out waiting for service response message.")
+
+        self.assertFalse(self.received_message is None)
+        self.assertEqual(self.received_message["op"], "service_response")
+        self.assertFalse(self.received_message["result"])
+        self.assertEqual(
+            self.received_message["values"], "Timeout exceeded while waiting for service response"
+        )
+
     def test_unadvertise_with_live_request(self):
         # Advertise the service
         service_path = "/set_bool_3"
