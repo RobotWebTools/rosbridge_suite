@@ -179,7 +179,7 @@ class RosbridgeWebsocketNode(Node):
         ).value
 
         RosbridgeWebSocket.default_call_service_timeout = self.declare_parameter(
-            "default_call_service_timeout", 5.0
+            "default_call_service_timeout", 0.0
         ).value
 
         RosbridgeWebSocket.send_action_goals_in_new_thread = self.declare_parameter(
