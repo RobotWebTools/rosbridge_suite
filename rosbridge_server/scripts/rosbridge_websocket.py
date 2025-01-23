@@ -341,6 +341,14 @@ class RosbridgeWebsocketNode(Node):
                 "will be updated to 5.0 seconds."
             )
 
+        if RosbridgeWebSocket.call_services_in_new_thread == False:
+            self.get_logger().warn(
+                "The 'call_services_in_new_thread' parameter is currently set to False, "
+                "which means service calls will block the main thread. "
+                "Please note that in the Jazzy and later releases, the default value for this parameter "
+                "will be updated to True."
+            )
+
 
 def main(args=None):
     if args is None:
