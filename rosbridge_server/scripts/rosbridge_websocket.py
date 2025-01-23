@@ -341,7 +341,7 @@ class RosbridgeWebsocketNode(Node):
                 "will be updated to 5.0 seconds."
             )
 
-        if RosbridgeWebSocket.call_services_in_new_thread == False:
+        if RosbridgeWebSocket.call_services_in_new_thread is False:
             self.get_logger().warn(
                 "The 'call_services_in_new_thread' parameter is currently set to False, "
                 "which means service calls will block the main thread. "
