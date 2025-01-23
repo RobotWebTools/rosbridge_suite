@@ -16,7 +16,7 @@
   <arg name="unregister_timeout" default="10.0" />
 
   <arg name="use_compression" default="false" />
-  <arg name="call_services_in_new_thread" default="false" />
+  <arg name="call_services_in_new_thread" default="true" />
   <arg name="default_call_service_timeout" default="5.0" />
   <arg name="send_action_goals_in_new_thread" default="false" />
 

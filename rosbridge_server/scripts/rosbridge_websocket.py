@@ -175,7 +175,7 @@ class RosbridgeWebsocketNode(Node):
         RosbridgeWebSocket.use_compression = self.declare_parameter("use_compression", False).value
 
         RosbridgeWebSocket.call_services_in_new_thread = self.declare_parameter(
-            "call_services_in_new_thread", False
+            "call_services_in_new_thread", True
         ).value
 
         RosbridgeWebSocket.default_call_service_timeout = self.declare_parameter(
