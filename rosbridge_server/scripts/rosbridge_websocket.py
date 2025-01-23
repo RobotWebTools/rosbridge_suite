@@ -349,6 +349,14 @@ class RosbridgeWebsocketNode(Node):
                 "will be updated to True."
             )
 
+        if RosbridgeWebSocket.send_action_goals_in_new_thread is False:
+            self.get_logger().warn(
+                "The 'send_action_goals_in_new_thread' parameter is currently set to False, "
+                "which means sending action goals will block the main thread. "
+                "Please note that in the Jazzy and later releases, the default value for this parameter "
+                "will be updated to True."
+            )
+
 
 def main(args=None):
     if args is None:
