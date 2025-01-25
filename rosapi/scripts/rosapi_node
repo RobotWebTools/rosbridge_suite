@@ -78,6 +78,7 @@ class Rosapi(Node):
         self.declare_parameter("topics_glob", "[*]")
         self.declare_parameter("services_glob", "[*]")
         self.declare_parameter("params_glob", "[*]")
+        self.declare_parameter("params_timeout", 5.0)
         self.globs = self.get_globs()
         self.register_services()
 
@@ -88,7 +89,10 @@ class Rosapi(Node):
             full_name = self.get_namespace() + self.get_name()
         else:
             full_name = self.get_namespace() + "/" + self.get_name()
-        params.init(full_name)
+
+        timeout_sec = self.get_parameter("params_timeout").value
+        params.init(full_name, timeout_sec)
+
         self.create_service(Topics, "/rosapi/topics", self.get_topics)
         self.create_service(Interfaces, "/rosapi/interfaces", self.get_interfaces)
         self.create_service(TopicsForType, "/rosapi/topics_for_type", self.get_topics_for_type)
