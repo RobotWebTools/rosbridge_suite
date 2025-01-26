@@ -44,10 +44,14 @@ from rosapi.proxy import get_nodes
 """ Methods to interact with the param server.  Values have to be passed
 as JSON in order to facilitate dynamically typed SRV messages """
 
+# Constants
+DEFAULT_PARAM_TIMEOUT_SEC = 5.0
+
 # Ensure thread safety for setting / getting parameters.
 param_server_lock = threading.RLock()
 _node = None
 _parent_node_name = ""
+_timeout_sec = DEFAULT_PARAM_TIMEOUT_SEC
 
 _parameter_type_mapping = [
     "",
@@ -63,12 +67,12 @@ _parameter_type_mapping = [
 ]
 
 
-def init(parent_node_name):
+def init(parent_node_name, timeout_sec=DEFAULT_PARAM_TIMEOUT_SEC):
     """
     Initializes params module with a rclpy.node.Node for further use.
     This function has to be called before any other for the module to work.
     """
-    global _node, _parent_node_name
+    global _node, _parent_node_name, _timeout_sec
     # TODO(@jubeira): remove this node; use rosapi node with MultiThreadedExecutor or
     # async / await to prevent the service calls from blocking.
     parent_node_basename = parent_node_name.split("/")[-1]
@@ -79,6 +83,10 @@ def init(parent_node_name):
         start_parameter_services=False,
     )
     _parent_node_name = get_absolute_node_name(parent_node_name)
+
+    if not isinstance(timeout_sec, (int, float)) or timeout_sec <= 0:
+        raise ValueError("Parameter timeout must be a positive number")
+    _timeout_sec = timeout_sec
 
 
 def set_param(node_name, name, value, params_glob):
@@ -225,21 +233,20 @@ def _get_param_names(node_name):
     # This method is called in a service callback; calling a service of the same node
     # will cause a deadlock.
     global _parent_node_name
-    if node_name == _parent_node_name:
+    if node_name == _parent_node_name or node_name == _node.get_fully_qualified_name():
         return []
 
     client = _node.create_client(ListParameters, f"{node_name}/list_parameters")
 
-    ready = client.wait_for_service(timeout_sec=5.0)
-    if not ready:
-        raise RuntimeError("Wait for list_parameters service timed out")
+    if not client.service_is_ready():
+        return []
 
     request = ListParameters.Request()
     future = client.call_async(request)
     if _node.executor:
-        _node.executor.spin_until_future_complete(future)
+        _node.executor.spin_until_future_complete(future, timeout_sec=_timeout_sec)
     else:
-        rclpy.spin_until_future_complete(_node, future)
+        rclpy.spin_until_future_complete(_node, future, timeout_sec=_timeout_sec)
     response = future.result()
 
     if response is not None:

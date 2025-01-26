@@ -78,6 +78,7 @@ class Rosapi(Node):
         self.declare_parameter("topics_glob", "[*]")
         self.declare_parameter("services_glob", "[*]")
         self.declare_parameter("params_glob", "[*]")
+        self.declare_parameter("params_timeout", 5.0)
         self.declare_parameter("use_private_service_names", False)
         self.globs = self.get_globs()
         self.register_services()
@@ -89,7 +90,9 @@ class Rosapi(Node):
             full_name = self.get_namespace() + self.get_name()
         else:
             full_name = self.get_namespace() + "/" + self.get_name()
-        params.init(full_name)
+
+        timeout_sec = self.get_parameter("params_timeout").value
+        params.init(full_name, timeout_sec)
 
         use_private_service_names = (
             self.get_parameter("use_private_service_names").get_parameter_value().bool_value
