@@ -1,4 +1,5 @@
 string name
-string default_value
 ---
 string value
+bool successful
+string reason

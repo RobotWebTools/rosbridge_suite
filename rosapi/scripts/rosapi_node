@@ -85,13 +85,9 @@ class Rosapi(Node):
     # Initialises the ROS node
     def register_services(self):
         proxy.init(self)
-        if self.get_namespace() == "/":
-            full_name = self.get_namespace() + self.get_name()
-        else:
-            full_name = self.get_namespace() + "/" + self.get_name()
 
         timeout_sec = self.get_parameter("params_timeout").value
-        params.init(full_name, timeout_sec)
+        params.init(self, timeout_sec)
 
         self.create_service(Topics, "~/topics", self.get_topics)
         self.create_service(Interfaces, "~/interfaces", self.get_interfaces)
@@ -262,38 +258,66 @@ class Rosapi(Node):
         ]
         return response
 
-    def set_param(self, request, response):
+    async def set_param(self, request, response):
         try:
             node_name, param_name = self._get_node_and_param_name(request.name)
-            params.set_param(node_name, param_name, request.value, self.globs.params)
         except ValueError:
             self._print_malformed_param_name_warning(request.name)
+
+        try:
+            await params.set_param(node_name, param_name, request.value, self.globs.params)
+        except Exception as e:
+            response.successful = False
+            response.reason = str(e)
+        else:
+            response.successful = True
+
         return response
 
-    def get_param(self, request, response):
+    async def get_param(self, request, response):
         try:
             node_name, param_name = self._get_node_and_param_name(request.name)
-            response.value = params.get_param(
-                node_name, param_name, request.default_value, self.globs.params
-            )
         except ValueError:
             self._print_malformed_param_name_warning(request.name)
+
+        try:
+            response.value = await params.get_param(node_name, param_name, self.globs.params)
+        except Exception as e:
+            response.successful = False
+            response.reason = str(e)
+        else:
+            response.successful = True
+
         return response
 
-    def has_param(self, request, response):
+    async def has_param(self, request, response):
         try:
             node_name, param_name = self._get_node_and_param_name(request.name)
-            response.exists = params.has_param(node_name, param_name, self.globs.params)
         except ValueError:
             self._print_malformed_param_name_warning(request.name)
+
+        response.exists = await params.has_param(node_name, param_name, self.globs.params)
+
         return response
 
-    def delete_param(self, request, response):
-        params.delete_param(request.node_name, request.name, self.globs.params)
+    async def delete_param(self, request, response):
+        try:
+            node_name, param_name = self._get_node_and_param_name(request.name)
+        except ValueError:
+            self._print_malformed_param_name_warning(request.name)
+
+        try:
+            await params.delete_param(node_name, param_name, self.globs.params)
+        except Exception as e:
+            response.successful = False
+            response.reason = str(e)
+        else:
+            response.successful = True
+
         return response
 
-    def get_param_names(self, request, response):
-        response.names = params.get_param_names(self.globs.params)
+    async def get_param_names(self, request, response):
+        response.names = await params.get_param_names(self.globs.params)
         return response
 
     def get_time(self, request, response):
