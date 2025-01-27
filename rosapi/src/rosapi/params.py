@@ -128,7 +128,7 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
     )
 
     if not client.service_is_ready():
-        return
+        raise Exception(f"Service {client.srv_name} is not available")
 
     request = SetParameters.Request()
     request.parameters = [parameter]
