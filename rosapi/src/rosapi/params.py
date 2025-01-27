@@ -139,7 +139,7 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
 
     if not future.done():
         future.cancel()
-        raise Exception(f"Timeout occurred")
+        raise Exception("Timeout occurred")
 
     result = future.result()
 
@@ -186,7 +186,7 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
 
     if not future.done():
         future.cancel()
-        raise Exception(f"Timeout occurred")
+        raise Exception("Timeout occurred")
 
     result = future.result()
     if len(result.values) == 0:
