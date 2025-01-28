@@ -255,11 +255,10 @@ async def get_param_names(params_glob: str | None) -> list[str]:
             future.cancel()
             continue
 
-        try:
-            result = future.result()
-        except Exception:
+        if future.exception() is not None:
             continue
 
+        result = future.result()
         if result is not None:
             params.extend([f"{node_name}:{param_name}" for param_name in result.result.names])
 
