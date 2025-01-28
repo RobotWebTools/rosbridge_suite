@@ -143,6 +143,7 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
 
     result = future.result()
 
+    assert result is not None
     if not result.results[0].successful:
         raise Exception(result.results[0].reason)
 
@@ -189,6 +190,8 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
         raise Exception("Timeout occurred")
 
     result = future.result()
+
+    assert result is not None
     if len(result.values) == 0:
         raise Exception(f"Parameter {name} not found")
 

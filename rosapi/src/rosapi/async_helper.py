@@ -36,7 +36,7 @@ from rclpy.task import Future
 
 async def futures_wait_for(node: Node, futures: list[Future], timeout_sec: float):
     """await a list of futures with a timeout"""
-    first_done_future = Future()
+    first_done_future: Future = Future()
 
     def timeout_callback():
         first_done_future.set_result(None)
