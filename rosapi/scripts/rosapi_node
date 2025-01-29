@@ -285,6 +285,8 @@ class Rosapi(Node):
         except Exception as e:
             response.successful = False
             response.reason = str(e)
+            # return empty JSON string so the client doesn't fail if it tries to parse it
+            response.value = '""'
         else:
             response.successful = True
 
