@@ -176,7 +176,7 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     )
 
     if not client.service_is_ready():
-        return
+        raise Exception(f"Service {client.srv_name} is not available")
 
     request = GetParameters.Request()
     request.names = [name]
