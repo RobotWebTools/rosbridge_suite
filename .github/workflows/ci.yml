@@ -39,11 +39,11 @@ jobs:
         with:
           path: ros_ws/src
 
-      - uses: ros-tooling/setup-ros@0.4.1
+      - uses: ros-tooling/setup-ros@v0.7
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
 
-      - uses: ros-tooling/action-ros-ci@v0.2
+      - uses: ros-tooling/action-ros-ci@v0.3
         env:
           SETUPTOOLS_USE_DISTUTILS: stdlib
         with:
