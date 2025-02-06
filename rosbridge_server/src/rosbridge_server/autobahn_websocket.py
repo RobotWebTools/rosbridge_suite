@@ -42,6 +42,21 @@ from functools import wraps
 from collections import deque
 
 from autobahn.twisted.websocket import WebSocketServerProtocol
+
+SendException = Exception
+try:
+    # Newer autobahn versions (>= 20.1.3) raise an exception when sending to a closed socket
+    # PR: https://github.com/crossbario/autobahn-python/pull/1299
+    # Changelog: https://autobahn.readthedocs.io/en/latest/changelog.html
+    from autobahn.exception import Disconnected
+    SendException = Disconnected
+except ImportError:
+    # Older versions fail silently, so create a fake exception we can pretend to catch
+    # so we can ignore the error.
+    class NeverException(Exception):
+        pass
+    SendException = NeverException
+
 from twisted.internet import interfaces, reactor
 from zope.interface import implementer
 
@@ -242,7 +257,10 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
             binary = False
             message = message.encode('utf-8')
 
-        self.sendMessage(message, binary)
+        try:
+            self.sendMessage(message, binary)
+        except SendException as e:
+            rospy.loginfo(f"Tried to send message (beginning with '{message[:30]}') to disconnected channel. The connection should be cleaned up soon.")
 
     def onClose(self, was_clean, code, reason):
         if not hasattr(self, 'protocol'):
