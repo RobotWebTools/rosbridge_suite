@@ -201,11 +201,10 @@ def msg_class_type_repr(msg_class):
 
 def _from_inst(inst, rostype):
     global bson_only_mode
-    # Special case for uint8[], we encode the string
+    # Special case for uint8[]
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
-            encoded = get_encoder()(inst)
-            return encoded.decode("ascii")
+            return inst
 
     # Check for time or duration
     if rostype in ros_time_types:
