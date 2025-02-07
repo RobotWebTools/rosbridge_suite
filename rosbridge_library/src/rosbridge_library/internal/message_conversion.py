@@ -135,7 +135,7 @@ def _from_inst(inst, rostype):
     # Special case for uint8[]
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
-            return inst
+            return _to_binary_inst(inst)
 
     # Check for time or duration
     if rostype in ros_time_types:
