@@ -11,8 +11,7 @@
   <url type="repository">https://github.com/RobotWebTools/rosbridge_suite</url>
 
   <author email="jonathan.c.mace@gmail.com">Jonathan Mace</author>
-  <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
-  <maintainer email="ros-tooling@foxglove.dev">Foxglove</maintainer>
+  <maintainer email="blazej@fictionlab.pl">Błażej Sowa</maintainer>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_cmake_ros</buildtool_depend>

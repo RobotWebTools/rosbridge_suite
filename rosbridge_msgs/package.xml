@@ -5,8 +5,7 @@
   <description>Package containing message files</description>
 
   <author email="achim@intermodalics.eu">Hans-Joachim Krauch</author>
-  <maintainer email="achim@intermodalics.eu">Hans-Joachim Krauch</maintainer>
-  <maintainer email="ros-tooling@foxglove.dev">Foxglove</maintainer>
+  <maintainer email="blazej@fictionlab.pl">Błażej Sowa</maintainer>
 
   <license>BSD</license>
 
