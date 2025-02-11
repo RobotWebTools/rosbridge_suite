@@ -128,6 +128,7 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
     )
 
     if not client.service_is_ready():
+        _node.destroy_client(client)
         raise Exception(f"Service {client.srv_name} is not available")
 
     request = SetParameters.Request()
@@ -136,6 +137,8 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
     future = client.call_async(request)
 
     await futures_wait_for(_node, [future], _timeout_sec)
+
+    _node.destroy_client(client)
 
     if not future.done():
         future.cancel()
@@ -176,6 +179,7 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     )
 
     if not client.service_is_ready():
+        _node.destroy_client(client)
         raise Exception(f"Service {client.srv_name} is not available")
 
     request = GetParameters.Request()
@@ -184,6 +188,8 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     future = client.call_async(request)
 
     await futures_wait_for(_node, [future], _timeout_sec)
+
+    _node.destroy_client(client)
 
     if not future.done():
         future.cancel()
@@ -236,6 +242,7 @@ async def get_param_names(params_glob: str | None) -> list[str]:
     nodes = [get_absolute_node_name(node) for node in get_nodes()]
 
     futures: list[tuple[str, Future]] = []
+    clients = []
     for node_name in nodes:
         if node_name == _node.get_fully_qualified_name():
             continue
@@ -248,10 +255,16 @@ async def get_param_names(params_glob: str | None) -> list[str]:
         if client.service_is_ready():
             future = client.call_async(ListParameters.Request())
             futures.append((node_name, future))
+            clients.append(client)
+        else:
+            _node.destroy_client(client)
 
     params = []
 
     await futures_wait_for(_node, [future for _, future in futures], _timeout_sec)
+
+    for client in clients:
+        _node.destroy_client(client)
 
     for node_name, future in futures:
         if not future.done():
