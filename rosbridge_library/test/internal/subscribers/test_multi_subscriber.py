@@ -93,6 +93,7 @@ class TestMultiSubscriber(unittest.TestCase):
         self.assertEqual(len(multi.new_subscriptions), 0)
 
         multi.unregister()
+        time.sleep(0.1)
         self.assertFalse(is_topic_subscribed(self.node, topic))
 
     def test_subscribe_receive_json(self):
