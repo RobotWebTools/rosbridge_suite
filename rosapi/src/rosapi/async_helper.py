@@ -58,7 +58,7 @@ async def futures_wait_for(node: Node, futures: list[Future], timeout_sec: float
 
 async def async_sleep(node: Node, delay_sec: float):
     """Block the coroutine for a given time."""
-    sleep_future = Future()
+    sleep_future: Future = Future()
 
     def timeout_callback():
         sleep_future.set_result(None)
