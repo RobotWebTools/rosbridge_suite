@@ -38,6 +38,7 @@ import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.clock import Clock, ClockType
 from rclpy.node import Node
+from rclpy.qos import qos_profile_parameters
 
 from rosapi import glob_helper, objectutils, params, proxy
 from rosapi_msgs.msg import TypeDef
@@ -129,25 +130,39 @@ class Rosapi(Node):
             self.get_service_response_details,
         )
         self.create_service(
-            SetParam, "~/set_param", self.set_param, callback_group=ReentrantCallbackGroup()
+            SetParam,
+            "~/set_param",
+            self.set_param,
+            callback_group=ReentrantCallbackGroup(),
+            qos_profile=qos_profile_parameters,
         )
         self.create_service(
-            GetParam, "~/get_param", self.get_param, callback_group=ReentrantCallbackGroup()
+            GetParam,
+            "~/get_param",
+            self.get_param,
+            callback_group=ReentrantCallbackGroup(),
+            qos_profile=qos_profile_parameters,
         )
         self.create_service(
-            HasParam, "~/has_param", self.has_param, callback_group=ReentrantCallbackGroup()
+            HasParam,
+            "~/has_param",
+            self.has_param,
+            callback_group=ReentrantCallbackGroup(),
+            qos_profile=qos_profile_parameters,
         )
         self.create_service(
             DeleteParam,
             "~/delete_param",
             self.delete_param,
             callback_group=ReentrantCallbackGroup(),
+            qos_profile=qos_profile_parameters,
         )
         self.create_service(
             GetParamNames,
             "~/get_param_names",
             self.get_param_names,
             callback_group=ReentrantCallbackGroup(),
+            qos_profile=qos_profile_parameters,
         )
         self.create_service(GetTime, "~/get_time", self.get_time)
         self.create_service(GetROSVersion, "~/get_ros_version", self.get_ros_version)
