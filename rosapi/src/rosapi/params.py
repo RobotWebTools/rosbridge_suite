@@ -41,9 +41,8 @@ from rclpy.node import Node
 from rclpy.parameter import get_parameter_value
 from rclpy.task import Future
 from ros2node.api import get_absolute_node_name
+from rosapi.async_helper import futures_wait_for
 from rosapi.proxy import get_nodes
-
-from .async_helper import futures_wait_for
 
 """ Methods to interact with the param server.  Values have to be passed
 as JSON in order to facilitate dynamically typed SRV messages """
