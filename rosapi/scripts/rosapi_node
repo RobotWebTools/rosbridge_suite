@@ -33,6 +33,7 @@
 
 import os
 import sys
+from json import dumps, loads
 
 import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -317,8 +318,17 @@ class Rosapi(Node):
         except Exception as e:
             response.successful = False
             response.reason = str(e)
-            # return empty JSON string so the client doesn't fail if it tries to parse it
-            response.value = '""'
+
+            default = ""
+            if request.default_value != "":
+                try:
+                    default = loads(request.default_value)
+                except ValueError:
+                    self.get_logger().error(
+                        "Failed to parse default value: {}".format(request.default_value)
+                    )
+
+            response.value = dumps(default)
         else:
             response.successful = True
 
