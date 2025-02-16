@@ -1,6 +1,7 @@
 <launch>
   <arg name="port" default="9090" />
   <arg name="address" default="" />
+  <arg name="url_path" default="/" />
   <arg name="ssl" default="false" />
   <arg name="certfile" default=""/>
   <arg name="keyfile" default="" />
@@ -31,6 +32,7 @@
       <param name="keyfile" value="$(var keyfile)" />
       <param name="port" value="$(var port)"/>
       <param name="address" value="$(var address)"/>
+      <param name="url_path" value="$(var url_path)"/>
       <param name="retry_startup_delay" value="$(var retry_startup_delay)"/>
       <param name="fragment_timeout" value="$(var fragment_timeout)"/>
       <param name="delay_between_messages" value="$(var delay_between_messages)"/>
@@ -50,6 +52,7 @@
     <node name="rosbridge_websocket" pkg="rosbridge_server" exec="rosbridge_websocket" output="screen">
       <param name="port" value="$(var port)"/>
       <param name="address" value="$(var address)"/>
+      <param name="url_path" value="$(var url_path)"/>
       <param name="retry_startup_delay" value="$(var retry_startup_delay)"/>
       <param name="fragment_timeout" value="$(var fragment_timeout)"/>
       <param name="delay_between_messages" value="$(var delay_between_messages)"/>
