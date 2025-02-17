@@ -33,10 +33,13 @@
 
 import os
 import sys
+from json import dumps, loads
 
 import rclpy
+from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.clock import Clock, ClockType
 from rclpy.node import Node
+from rclpy.qos import qos_profile_parameters
 
 from rosapi import glob_helper, objectutils, params, proxy
 from rosapi_msgs.msg import TypeDef
@@ -85,13 +88,9 @@ class Rosapi(Node):
     # Initialises the ROS node
     def register_services(self):
         proxy.init(self)
-        if self.get_namespace() == "/":
-            full_name = self.get_namespace() + self.get_name()
-        else:
-            full_name = self.get_namespace() + "/" + self.get_name()
 
         timeout_sec = self.get_parameter("params_timeout").value
-        params.init(full_name, timeout_sec)
+        params.init(self, timeout_sec)
 
         self.create_service(Topics, "~/topics", self.get_topics)
         self.create_service(Interfaces, "~/interfaces", self.get_interfaces)
@@ -131,11 +130,41 @@ class Rosapi(Node):
             "~/service_response_details",
             self.get_service_response_details,
         )
-        self.create_service(SetParam, "~/set_param", self.set_param)
-        self.create_service(GetParam, "~/get_param", self.get_param)
-        self.create_service(HasParam, "~/has_param", self.has_param)
-        self.create_service(DeleteParam, "~/delete_param", self.delete_param)
-        self.create_service(GetParamNames, "~/get_param_names", self.get_param_names)
+        self.create_service(
+            SetParam,
+            "~/set_param",
+            self.set_param,
+            callback_group=ReentrantCallbackGroup(),
+            qos_profile=qos_profile_parameters,
+        )
+        self.create_service(
+            GetParam,
+            "~/get_param",
+            self.get_param,
+            callback_group=ReentrantCallbackGroup(),
+            qos_profile=qos_profile_parameters,
+        )
+        self.create_service(
+            HasParam,
+            "~/has_param",
+            self.has_param,
+            callback_group=ReentrantCallbackGroup(),
+            qos_profile=qos_profile_parameters,
+        )
+        self.create_service(
+            DeleteParam,
+            "~/delete_param",
+            self.delete_param,
+            callback_group=ReentrantCallbackGroup(),
+            qos_profile=qos_profile_parameters,
+        )
+        self.create_service(
+            GetParamNames,
+            "~/get_param_names",
+            self.get_param_names,
+            callback_group=ReentrantCallbackGroup(),
+            qos_profile=qos_profile_parameters,
+        )
         self.create_service(GetTime, "~/get_time", self.get_time)
         self.create_service(GetROSVersion, "~/get_ros_version", self.get_ros_version)
 
@@ -262,38 +291,77 @@ class Rosapi(Node):
         ]
         return response
 
-    def set_param(self, request, response):
+    async def set_param(self, request, response):
         try:
             node_name, param_name = self._get_node_and_param_name(request.name)
-            params.set_param(node_name, param_name, request.value, self.globs.params)
         except ValueError:
             self._print_malformed_param_name_warning(request.name)
+
+        try:
+            await params.set_param(node_name, param_name, request.value, self.globs.params)
+        except Exception as e:
+            response.successful = False
+            response.reason = str(e)
+        else:
+            response.successful = True
+
         return response
 
-    def get_param(self, request, response):
+    async def get_param(self, request, response):
         try:
             node_name, param_name = self._get_node_and_param_name(request.name)
-            response.value = params.get_param(
-                node_name, param_name, request.default_value, self.globs.params
-            )
         except ValueError:
             self._print_malformed_param_name_warning(request.name)
+
+        try:
+            response.value = await params.get_param(node_name, param_name, self.globs.params)
+        except Exception as e:
+            response.successful = False
+            response.reason = str(e)
+
+            default = ""
+            if request.default_value != "":
+                try:
+                    default = loads(request.default_value)
+                except ValueError:
+                    self.get_logger().error(
+                        "Failed to parse default value: {}".format(request.default_value)
+                    )
+
+            response.value = dumps(default)
+        else:
+            response.successful = True
+
         return response
 
-    def has_param(self, request, response):
+    async def has_param(self, request, response):
         try:
             node_name, param_name = self._get_node_and_param_name(request.name)
-            response.exists = params.has_param(node_name, param_name, self.globs.params)
         except ValueError:
             self._print_malformed_param_name_warning(request.name)
+
+        response.exists = await params.has_param(node_name, param_name, self.globs.params)
+
         return response
 
-    def delete_param(self, request, response):
-        params.delete_param(request.node_name, request.name, self.globs.params)
+    async def delete_param(self, request, response):
+        try:
+            node_name, param_name = self._get_node_and_param_name(request.name)
+        except ValueError:
+            self._print_malformed_param_name_warning(request.name)
+
+        try:
+            await params.delete_param(node_name, param_name, self.globs.params)
+        except Exception as e:
+            response.successful = False
+            response.reason = str(e)
+        else:
+            response.successful = True
+
         return response
 
-    def get_param_names(self, request, response):
-        response.names = params.get_param_names(self.globs.params)
+    async def get_param_names(self, request, response):
+        response.names = await params.get_param_names(self.globs.params)
         return response
 
     def get_time(self, request, response):
