@@ -192,6 +192,8 @@ class SendGoal:
             # The action has already completed
             return
 
+        assert self.goal_handle is not None
+
         cancel_goal_future = self.goal_handle.cancel_goal_async()
         cancel_goal_future.add_done_callback(self.goal_cancel_cb)
         while not cancel_goal_future.done():
