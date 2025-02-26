@@ -127,11 +127,10 @@ class TestActionCapabilities(unittest.TestCase):
         )
         Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
 
-        loop_iterations = 0
+        start_time = time.monotonic()
         while self.received_message is None:
-            time.sleep(0.5)
-            loop_iterations += 1
-            if loop_iterations > 5:
+            time.sleep(0.1)
+            if time.monotonic() - start_time > 1.0:
                 self.fail("Timed out waiting for action goal message.")
 
         self.assertIsNotNone(self.received_message)
@@ -164,14 +163,20 @@ class TestActionCapabilities(unittest.TestCase):
             )
         )
         self.feedback.action_feedback(feedback_msg)
-        loop_iterations = 0
-        while self.latest_feedback is None:
-            time.sleep(0.5)
-            loop_iterations += 1
-            if loop_iterations > 5:
+
+        start_time = time.monotonic()
+        while self.received_message is None:
+            # self.executor.spin_once(timeout_sec=0.1)
+            time.sleep(0.1)
+            if time.monotonic() - start_time > 1.0:
                 self.fail("Timed out waiting for action feedback message.")
 
-        self.assertIsNotNone(self.latest_feedback)
+        start_time = time.monotonic()
+        while self.latest_feedback is None:
+            time.sleep(0.1)
+            if time.monotonic() - start_time > 1.0:
+                self.fail("Timed out waiting for action feedback callback.")
+
         self.assertEqual(list(self.latest_feedback.feedback.sequence), [0, 1, 1])
 
         # Now send the result
@@ -190,11 +195,10 @@ class TestActionCapabilities(unittest.TestCase):
         self.received_message = None
         self.result.action_result(result_msg)
 
-        loop_iterations = 0
+        start_time = time.monotonic()
         while self.received_message is None:
-            time.sleep(0.5)
-            loop_iterations += 1
-            if loop_iterations > 5:
+            time.sleep(0.1)
+            if time.monotonic() - start_time > 1.0:
                 self.fail("Timed out waiting for action result message.")
 
         self.assertIsNotNone(self.received_message)
@@ -232,11 +236,10 @@ class TestActionCapabilities(unittest.TestCase):
         )
         Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
 
-        loop_iterations = 0
+        start_time = time.monotonic()
         while self.received_message is None:
-            time.sleep(0.5)
-            loop_iterations += 1
-            if loop_iterations > 5:
+            time.sleep(0.1)
+            if time.monotonic() - start_time > 1.0:
                 self.fail("Timed out waiting for action goal message.")
 
         self.assertIsNotNone(self.received_message)
@@ -257,12 +260,11 @@ class TestActionCapabilities(unittest.TestCase):
         self.received_message = None
         self.send_goal.cancel_action_goal(cancel_msg)
 
-        loop_iterations = 0
+        start_time = time.monotonic()
         while self.received_message is None:
-            time.sleep(0.5)
-            loop_iterations += 1
-            if loop_iterations > 5:
-                self.fail("Timed out waiting for action result message.")
+            time.sleep(0.1)
+            if time.monotonic() - start_time > 1.0:
+                self.fail("Timed out waiting for cancel action message.")
 
         self.assertIsNotNone(self.received_message)
         self.assertEqual(self.received_message["op"], "cancel_action_goal")
@@ -283,11 +285,10 @@ class TestActionCapabilities(unittest.TestCase):
         self.received_message = None
         self.result.action_result(result_msg)
 
-        loop_iterations = 0
+        start_time = time.monotonic()
         while self.received_message is None:
-            time.sleep(0.5)
-            loop_iterations += 1
-            if loop_iterations > 5:
+            time.sleep(0.1)
+            if time.monotonic() - start_time > 1.0:
                 self.fail("Timed out waiting for action result message.")
 
         self.assertIsNotNone(self.received_message)
@@ -326,11 +327,10 @@ class TestActionCapabilities(unittest.TestCase):
         )
         Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
 
-        loop_iterations = 0
+        start_time = time.monotonic()
         while self.received_message is None:
-            time.sleep(0.5)
-            loop_iterations += 1
-            if loop_iterations > 5:
+            time.sleep(0.1)
+            if time.monotonic() - start_time > 1.0:
                 self.fail("Timed out waiting for action goal message.")
 
         self.assertIsNotNone(self.received_message)
@@ -343,12 +343,10 @@ class TestActionCapabilities(unittest.TestCase):
         self.received_message = None
         self.unadvertise.unadvertise_action(unadvertise_msg)
 
-        loop_iterations = 0
+        start_time = time.monotonic()
         while self.received_message is None:
-            rclpy.spin_once(self.node, timeout_sec=0.1)
-            time.sleep(0.5)
-            loop_iterations += 1
-            if loop_iterations > 5:
+            time.sleep(0.1)
+            if time.monotonic() - start_time > 1.0:
                 self.fail("Timed out waiting for unadvertise action message.")
 
 

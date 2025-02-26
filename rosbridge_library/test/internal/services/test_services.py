@@ -52,6 +52,7 @@ class ServiceTester:
         thread = services.ServiceCaller(
             self.name,
             gen,
+            5.0,
             self.success,
             self.error,
             self.node,
@@ -201,6 +202,7 @@ class TestServices(unittest.TestCase):
         services.ServiceCaller(
             self.node.get_name() + "/list_parameters",
             None,
+            5.0,
             success,
             error,
             self.node,

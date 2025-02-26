@@ -23,6 +23,7 @@ class TestServiceCapabilities(unittest.TestCase):
         self.node = Node("test_service_capabilities")
 
         self.node.declare_parameter("call_services_in_new_thread", False)
+        self.node.declare_parameter("default_call_service_timeout", 5.0)
         self.node.declare_parameter("send_action_goals_in_new_thread", False)
 
         self.proto = Protocol(self._testMethodName, self.node)
@@ -113,12 +114,10 @@ class TestServiceCapabilities(unittest.TestCase):
         )
         Thread(target=self.call_service.call_service, args=(call_msg,)).start()
 
-        loop_iterations = 0
+        start_time = time.monotonic()
         while self.received_message is None:
             rclpy.spin_once(self.node, timeout_sec=0.1)
-            time.sleep(0.1)
-            loop_iterations += 1
-            if loop_iterations > 3:
+            if time.monotonic() - start_time > 0.3:
                 self.fail("Timed out waiting for service call message.")
 
         self.assertFalse(self.received_message is None)
@@ -141,17 +140,71 @@ class TestServiceCapabilities(unittest.TestCase):
         self.received_message = None
         self.response.service_response(response_msg)
 
-        loop_iterations = 0
+        start_time = time.monotonic()
         while self.received_message is None:
             rclpy.spin_once(self.node, timeout_sec=0.1)
-            time.sleep(0.5)
-            loop_iterations += 1
-            if loop_iterations > 3:
+            if time.monotonic() - start_time > 0.3:
                 self.fail("Timed out waiting for service response message.")
 
         self.assertFalse(self.received_message is None)
         self.assertEqual(self.received_message["op"], "service_response")
         self.assertTrue(self.received_message["result"])
+
+    def test_call_advertised_service_with_timeout(self):
+        # Advertise the service
+        service_path = "/set_bool_3"
+        advertise_msg = loads(
+            dumps(
+                {
+                    "op": "advertise_service",
+                    "type": "std_srvs/SetBool",
+                    "service": service_path,
+                }
+            )
+        )
+        self.received_message = None
+        self.advertise.advertise_service(advertise_msg)
+
+        # Call the advertised service using rosbridge
+        self.received_message = None
+        call_msg = loads(
+            dumps(
+                {
+                    "op": "call_service",
+                    "id": "foo",
+                    "service": service_path,
+                    "args": {"data": True},
+                    "timeout": 0.5,
+                }
+            )
+        )
+        Thread(target=self.call_service.call_service, args=(call_msg,)).start()
+
+        start_time = time.monotonic()
+        while self.received_message is None:
+            rclpy.spin_once(self.node, timeout_sec=0.1)
+            if time.monotonic() - start_time > 0.3:
+                self.fail("Timed out waiting for service call message.")
+
+        self.assertFalse(self.received_message is None)
+        self.assertTrue("op" in self.received_message)
+        self.assertEqual(self.received_message["op"], "call_service")
+        self.assertTrue("id" in self.received_message)
+
+        self.received_message = None
+
+        start_time = time.monotonic()
+        while self.received_message is None:
+            rclpy.spin_once(self.node, timeout_sec=0.1)
+            if time.monotonic() - start_time > 1.0:
+                self.fail("Timed out waiting for service response message.")
+
+        self.assertFalse(self.received_message is None)
+        self.assertEqual(self.received_message["op"], "service_response")
+        self.assertFalse(self.received_message["result"])
+        self.assertEqual(
+            self.received_message["values"], "Timeout exceeded while waiting for service response"
+        )
 
     def test_unadvertise_with_live_request(self):
         # Advertise the service
@@ -182,12 +235,10 @@ class TestServiceCapabilities(unittest.TestCase):
         self.received_message = None
         Thread(target=self.call_service.call_service, args=(call_msg,)).start()
 
-        loop_iterations = 0
+        start_time = time.monotonic()
         while self.received_message is None:
             rclpy.spin_once(self.node, timeout_sec=0.1)
-            time.sleep(0.5)
-            loop_iterations += 1
-            if loop_iterations > 3:
+            if time.monotonic() - start_time > 0.3:
                 self.fail("Timed out waiting for service call message.")
 
         self.assertFalse(self.received_message is None)
@@ -203,12 +254,10 @@ class TestServiceCapabilities(unittest.TestCase):
         self.unadvertise.unadvertise_service(unadvertise_msg)
 
         with self.assertRaises(RuntimeError) as context:
-            loop_iterations = 0
+            start_time = time.monotonic()
             while self.received_message is None:
                 rclpy.spin_once(self.node, timeout_sec=0.1)
-                time.sleep(0.5)
-                loop_iterations += 1
-                if loop_iterations > 3:
+                if time.monotonic() - start_time > 0.3:
                     self.fail("Timed out waiting for unadvertise service message.")
 
             self.assertTrue(f"Service {service_path} was unadvertised" in context.exception)

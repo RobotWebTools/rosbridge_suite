@@ -14,8 +14,7 @@
   <url type="repository">https://github.com/RobotWebTools/rosbridge_suite</url>
 
   <author email="jonathan.c.mace@gmail.com">Jonathan Mace</author>
-  <maintainer email="jihoonlee.in@gmail.com">Jihoon Lee</maintainer>
-  <maintainer email="ros-tooling@foxglove.dev">Foxglove</maintainer>
+  <maintainer email="blazej@fictionlab.pl">Błażej Sowa</maintainer>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
 
@@ -25,14 +24,8 @@
   <exec_depend>rcl_interfaces</exec_depend>
   <exec_depend>rosbridge_library</exec_depend>
   <exec_depend>ros2node</exec_depend>
-  <exec_depend>ros2param</exec_depend>
-  <exec_depend>ros2pkg</exec_depend>
   <exec_depend>ros2service</exec_depend>
   <exec_depend>ros2topic</exec_depend>
-  <!--
-  <exec_depend>rosnode</exec_depend>
-  <exec_depend>rosgraph</exec_depend>
-  -->
 
   <test_depend>ament_cmake_mypy</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
