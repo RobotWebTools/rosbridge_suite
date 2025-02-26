@@ -11,7 +11,7 @@ Changelog for package rosbridge_server
 * Add ament_mypy test and fix all mypy errors (`#980 <https://github.com/RobotWebTools/rosbridge_suite/issues/980>`_)
 * Add namespace and respawn parameters to the nodes in the launch file (`#977 <https://github.com/RobotWebTools/rosbridge_suite/issues/977>`_)
 * fix: add url_path parameter in rosbridge_websocket_launch.xml (`#963 <https://github.com/RobotWebTools/rosbridge_suite/issues/963>`_)
-* Contributors: Błażej Sowa, Lebecque Florian, Mehsias, Matthias Rathauscher,  SeanPai
+* Contributors: Błażej Sowa, Lebecque Florian, Mehsias, Matthias Rathauscher, SeanPai
 
 2.1.0 (2024-10-08)
 ------------------
