@@ -97,9 +97,6 @@ class TestActionCapabilities(unittest.TestCase):
         )
         self.advertise.advertise_action(advertise_msg)
 
-    @unittest.skip(
-        reason="Currently fails in Iron due to https://github.com/ros2/rclpy/issues/1195. Unskip when Iron is EOL in Nov 2024."
-    )
     def test_execute_advertised_action(self):
         # Advertise the action
         action_path = "/fibonacci_action_2"
@@ -209,9 +206,6 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["values"]["sequence"], [0, 1, 1, 2, 3, 5])
         self.assertEqual(self.received_message["status"], GoalStatus.STATUS_SUCCEEDED)
 
-    @unittest.skip(
-        reason="Currently fails in due to https://github.com/ros2/rclpy/issues/1195, need to fix this"
-    )
     def test_cancel_advertised_action(self):
         # Advertise the action
         action_path = "/fibonacci_action_3"
@@ -302,7 +296,6 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["values"]["sequence"], [])
         self.assertEqual(self.received_message["status"], GoalStatus.STATUS_CANCELED)
 
-    @unittest.skip("Currently raises an exception not catchable by unittest, need to fix this")
     def test_unadvertise_action(self):
         # Advertise the action
         action_path = "/fibonacci_action_4"
@@ -346,8 +339,6 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertTrue("id" in self.received_message)
 
         # Now unadvertise the action
-        # TODO: This raises an exception, likely because of the following rclpy issue:
-        # https://github.com/ros2/rclpy/issues/1098
         unadvertise_msg = loads(dumps({"op": "unadvertise_action", "action": action_path}))
         self.received_message = None
         self.unadvertise.unadvertise_action(unadvertise_msg)
