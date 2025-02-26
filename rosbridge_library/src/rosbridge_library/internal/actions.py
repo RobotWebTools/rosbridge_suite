@@ -185,8 +185,14 @@ class SendGoal:
         return json_response
 
     def cancel_goal(self) -> None:
-        if self.goal_handle is None:
+        while self.goal_handle is None and self.result is None:
+            time.sleep(self.sleep_time)
+
+        if self.result is not None:
+            # The action has already completed
             return
+
+        assert self.goal_handle is not None
 
         cancel_goal_future = self.goal_handle.cancel_goal_async()
         cancel_goal_future.add_done_callback(self.goal_cancel_cb)
