@@ -345,7 +345,6 @@ class TestActionCapabilities(unittest.TestCase):
 
         loop_iterations = 0
         while self.received_message is None:
-            rclpy.spin_once(self.node, timeout_sec=0.1)
             time.sleep(0.5)
             loop_iterations += 1
             if loop_iterations > 5:
