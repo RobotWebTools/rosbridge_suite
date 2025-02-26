@@ -2,6 +2,11 @@
 Changelog for package rosbridge_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update maintainers (`#1000 <https://github.com/RobotWebTools/rosbridge_suite/issues/1000>`_)
+* Contributors: Błażej Sowa
+
 2.1.0 (2024-10-08)
 ------------------
 

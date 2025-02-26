@@ -2,6 +2,16 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* New async rosapi params module implementation (`#1001 <https://github.com/RobotWebTools/rosbridge_suite/issues/1001>`_)
+* Update maintainers (`#1000 <https://github.com/RobotWebTools/rosbridge_suite/issues/1000>`_)
+* Prevent parameter retrieval crashes (`#978 <https://github.com/RobotWebTools/rosbridge_suite/issues/978>`_)
+* Add namespace to services names (`#992 <https://github.com/RobotWebTools/rosbridge_suite/issues/992>`_)
+* Add new service to retrieve the different interfaces in the ROS Network (`#988 <https://github.com/RobotWebTools/rosbridge_suite/issues/988>`_)
+* Add ament_mypy test and fix all mypy errors (`#980 <https://github.com/RobotWebTools/rosbridge_suite/issues/980>`_)
+* Contributors: Błażej Sowa, Lebecque Florian, Mehsias, Matthias Rathauscher, Lebecque Florian
+
 2.1.0 (2024-10-08)
 ------------------
 * Fix invalid import of get_parameter_value in rosapi for ROS2 Jazzy. (`#932 <https://github.com/RobotWebTools/rosbridge_suite/issues/932>`_)

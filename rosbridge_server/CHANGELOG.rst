@@ -2,6 +2,17 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update maintainers (`#1000 <https://github.com/RobotWebTools/rosbridge_suite/issues/1000>`_)
+* Prevent parameter retrieval crashes (`#978 <https://github.com/RobotWebTools/rosbridge_suite/issues/978>`_)
+* Call services and send action goals in new threads by default (`#996 <https://github.com/RobotWebTools/rosbridge_suite/issues/996>`_)
+* Add timeout option to call_service messages (`#984 <https://github.com/RobotWebTools/rosbridge_suite/issues/984>`_)
+* Add ament_mypy test and fix all mypy errors (`#980 <https://github.com/RobotWebTools/rosbridge_suite/issues/980>`_)
+* Add namespace and respawn parameters to the nodes in the launch file (`#977 <https://github.com/RobotWebTools/rosbridge_suite/issues/977>`_)
+* fix: add url_path parameter in rosbridge_websocket_launch.xml (`#963 <https://github.com/RobotWebTools/rosbridge_suite/issues/963>`_)
+* Contributors: Błażej Sowa, Lebecque Florian, Mehsias, Matthias Rathauscher,  SeanPai
+
 2.1.0 (2024-10-08)
 ------------------
 
