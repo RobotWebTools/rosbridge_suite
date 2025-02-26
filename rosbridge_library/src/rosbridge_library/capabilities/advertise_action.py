@@ -86,6 +86,10 @@ class AdvertisedActionHandler:
                 # Send an empty result to avoid stack traces
                 fut.set_result(get_action_class(self.action_type).Result())
             else:
+                if goal_id not in self.goal_statuses:
+                    goal.abort()
+                    return
+
                 status = self.goal_statuses[goal_id]
                 if status == GoalStatus.STATUS_SUCCEEDED:
                     goal.succeed()
