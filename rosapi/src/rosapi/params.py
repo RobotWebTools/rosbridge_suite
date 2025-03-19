@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import array
 import fnmatch
 from json import dumps, loads
 
@@ -163,6 +164,12 @@ async def get_param(node_name: str, name: str, params_glob: str) -> str:
     node_name = get_absolute_node_name(node_name)
     pvalue = await _get_param(node_name, name)
     value = getattr(pvalue, _parameter_type_mapping[pvalue.type])
+
+    # Convert array types to lists for JSON serialization
+    if hasattr(value, "tolist"):  # This will catch numpy arrays and Python arrays
+        value = value.tolist()
+    elif isinstance(value, array.array):
+        value = list(value)
 
     return dumps(value)
 
