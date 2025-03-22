@@ -164,6 +164,10 @@ def get_param(node_name, name, default, params_glob):
             # If either the node or the parameter does not exist, return default.
             value = default
 
+    # Convert array types to lists for JSON serialization
+    if hasattr(value, "tolist"):  # This will catch numpy arrays and Python arrays
+        value = value.tolist()
+
     return dumps(value)
 
 
