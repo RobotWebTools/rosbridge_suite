@@ -44,6 +44,9 @@ from rclpy.qos import qos_profile_parameters
 from rosapi import glob_helper, objectutils, params, proxy
 from rosapi_msgs.msg import TypeDef
 from rosapi_msgs.srv import (
+    ActionFeedbackDetails,
+    ActionGoalDetails,
+    ActionResultDetails,
     DeleteParam,
     GetActionServers,
     GetParam,
@@ -129,6 +132,21 @@ class Rosapi(Node):
             ServiceResponseDetails,
             "~/service_response_details",
             self.get_service_response_details,
+        )
+        self.create_service(
+            ActionGoalDetails,
+            "~/action_goal_details",
+            self.get_action_goal_details,
+        )
+        self.create_service(
+            ActionResultDetails,
+            "~/action_result_details",
+            self.get_action_result_details,
+        )
+        self.create_service(
+            ActionFeedbackDetails,
+            "~/action_feedback_details",
+            self.get_action_feedback_details,
         )
         self.create_service(
             SetParam,
@@ -283,11 +301,37 @@ class Rosapi(Node):
         return response
 
     def get_service_response_details(self, request, response):
-        """Called by the rosapi/ServiceResponseDetails service. Given the name of a service type, returns the TypeDef
-        for the response message of that service type."""
+        """Called by the rosapi/ServiceResponseDetails service. Given the name of a service type,
+        returns the TypeDef for the response message of that service type."""
         response.typedefs = [
             dict_to_typedef(d)
             for d in objectutils.get_service_response_typedef_recursive(request.type)
+        ]
+        return response
+
+    def get_action_goal_details(self, request, response):
+        """Called by the rosapi/ActionGoalDetails service. Given the name of an action type,
+        returns the TypeDef for the goal message of that action type."""
+        response.typedefs = [
+            dict_to_typedef(d) for d in objectutils.get_action_goal_typedef_recursive(request.type)
+        ]
+        return response
+
+    def get_action_result_details(self, request, response):
+        """Called by the rosapi/ActionResultDetails service. Given the name of an action type,
+        returns the TypeDef for the result message of that action type."""
+        response.typedefs = [
+            dict_to_typedef(d)
+            for d in objectutils.get_action_result_typedef_recursive(request.type)
+        ]
+        return response
+
+    def get_action_feedback_details(self, request, response):
+        """Called by the rosapi/ActionFeedbackDetails service. Given the name of an action type,
+        returns the TypeDef for the feedback message of that action type."""
+        response.typedefs = [
+            dict_to_typedef(d)
+            for d in objectutils.get_action_feedback_typedef_recursive(request.type)
         ]
         return response
 
