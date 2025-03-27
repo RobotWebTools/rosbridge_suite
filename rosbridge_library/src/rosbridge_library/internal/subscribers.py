@@ -119,12 +119,26 @@ class MultiSubscriber:
             reliability=ReliabilityPolicy.BEST_EFFORT,
         )
 
+        reliable_end_points_count = 0
+        transient_local_end_points_count = 0
+
         infos = node_handle.get_publishers_info_by_topic(topic)
-        if any(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
-            qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
+
+        for info in infos:
+            if info.qos_profile.reliability == ReliabilityPolicy.RELIABLE:
+                reliable_end_points_count += 1
+            if info.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL:
+                transient_local_end_points_count += 1
+
+        if not infos and reliable_end_points_count == len(infos):
             qos.reliability = ReliabilityPolicy.RELIABLE
-        if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+        else:
             qos.reliability = ReliabilityPolicy.BEST_EFFORT
+
+        if not infos and transient_local_end_points_count == len(infos):
+            qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
+        else:
+            qos.durability = DurabilityPolicy.VOLATILE
 
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
@@ -181,11 +195,25 @@ class MultiSubscriber:
             # In any case, the first message is handled using new_sub_callback,
             # which adds the new callback to the subscriptions dictionary.
             self.new_subscriptions.update({client_id: callback})
+            
             infos = self.node_handle.get_publishers_info_by_topic(self.topic)
-            if any(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
-                self.qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
-            if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+
+            for info in infos:
+                if info.qos_profile.reliability == ReliabilityPolicy.RELIABLE:
+                    reliable_end_points_count += 1
+                if info.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL:
+                    transient_local_end_points_count += 1
+
+            if not infos and reliable_end_points_count == len(infos):
+                self.qos.reliability = ReliabilityPolicy.RELIABLE
+            else:
                 self.qos.reliability = ReliabilityPolicy.BEST_EFFORT
+
+            if not infos and transient_local_end_points_count == len(infos):
+                self.qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
+            else:
+                self.qos.durability = DurabilityPolicy.VOLATILE
+
             if self.new_subscriber is None:
                 self.new_subscriber = self.node_handle.create_subscription(
                     self.msg_class,
