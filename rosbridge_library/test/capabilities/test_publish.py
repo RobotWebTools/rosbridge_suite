@@ -62,7 +62,7 @@ class TestAdvertise(unittest.TestCase):
 
         subscriber_qos = QoSProfile(
             depth=10,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.VOLATILE,
         )
         self.node.create_subscription(String, topic, cb, subscriber_qos)
 

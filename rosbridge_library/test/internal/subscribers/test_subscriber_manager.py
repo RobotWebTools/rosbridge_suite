@@ -147,7 +147,7 @@ class TestSubscriberManager(unittest.TestCase):
 
         subscriber_qos = QoSProfile(
             depth=10,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.VOLATILE,
         )
         self.node.create_subscription(String, topic, lambda *args: None, subscriber_qos)
 
@@ -207,7 +207,7 @@ class TestSubscriberManager(unittest.TestCase):
 
         publisher_qos = QoSProfile(
             depth=10,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.VOLATILE,
         )
         pub = self.node.create_publisher(String, topic, publisher_qos)
         received = {"msg": None}

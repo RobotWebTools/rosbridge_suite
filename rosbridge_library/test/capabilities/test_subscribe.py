@@ -121,7 +121,7 @@ class TestSubscribe(unittest.TestCase):
 
         publisher_qos = QoSProfile(
             depth=10,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.VOLATILE,
         )
         pub = self.node.create_publisher(String, topic, publisher_qos)
         pub.publish(msg)

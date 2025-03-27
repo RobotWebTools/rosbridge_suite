@@ -118,7 +118,7 @@ class TestMultiPublisher(unittest.TestCase):
 
         subscriber_qos = QoSProfile(
             depth=10,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.VOLATILE,
         )
         self.node.create_subscription(
             ros_loader.get_message_class(msg_type), topic, cb, subscriber_qos
@@ -142,7 +142,7 @@ class TestMultiPublisher(unittest.TestCase):
 
         subscriber_qos = QoSProfile(
             depth=10,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.VOLATILE,
         )
         self.node.create_subscription(
             ros_loader.get_message_class(msg_type), topic, cb, subscriber_qos
