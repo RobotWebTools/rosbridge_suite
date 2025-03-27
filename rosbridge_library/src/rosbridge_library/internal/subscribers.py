@@ -198,7 +198,6 @@ class MultiSubscriber:
 
             reliable_end_points_count = 0
             transient_local_end_points_count = 0
-            
             infos = self.node_handle.get_publishers_info_by_topic(self.topic)
 
             for info in infos:

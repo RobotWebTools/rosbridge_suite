@@ -104,8 +104,7 @@ class MultiPublisher:
         # Adding a lifespan solves the problem of late-joining subscribers
         # without the need of a custom message publisher implementation.
         publisher_qos = QoSProfile(
-            depth=queue_size,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            depth=queue_size
         )
 
         # For latched clients, no lifespan has to be specified (i.e. latch forever).
