@@ -135,6 +135,36 @@ def get_service_response_typedef_recursive(servicetype):
     return _get_subtypedefs_recursive(typedef, [])
 
 
+def get_action_goal_typedef_recursive(actiontype):
+    """Returns a list of typedef dicts for this type and all contained type fields"""
+    # Get an instance of the action goal class and get its typedef
+    instance = ros_loader.get_action_goal_instance(actiontype)
+    typedef = _get_typedef(instance)
+
+    # Return the list of sub-typedefs
+    return _get_subtypedefs_recursive(typedef, [])
+
+
+def get_action_result_typedef_recursive(actiontype):
+    """Returns a list of typedef dicts for this type and all contained type fields"""
+    # Get an instance of the action result class and get its typedef
+    instance = ros_loader.get_action_result_instance(actiontype)
+    typedef = _get_typedef(instance)
+
+    # Return the list of sub-typedefs
+    return _get_subtypedefs_recursive(typedef, [])
+
+
+def get_action_feedback_typedef_recursive(actiontype):
+    """Returns a list of typedef dicts for this type and all contained type fields"""
+    # Get an instance of the action feedback class and get its typedef
+    instance = ros_loader.get_action_feedback_instance(actiontype)
+    typedef = _get_typedef(instance)
+
+    # Return the list of sub-typedefs
+    return _get_subtypedefs_recursive(typedef, [])
+
+
 def get_typedef_full_text(ty):
     """Returns the full text (similar to `gendeps --cat`) for the specified message type"""
     try:
