@@ -87,7 +87,8 @@ class MultiSubscriber:
         # topic_type is a list of types or None at this point; only one type is supported.
         if topic_type is not None:
             if len(topic_type) > 1:
-                node_handle.get_logger().warning(f"More than one topic type detected: {topic_type}")
+                node_handle.get_logger().warning(
+                    f"More than one topic type detected: {topic_type}")
             topic_type = topic_type[0]
 
         # Use the established topic type if none was specified
@@ -119,26 +120,13 @@ class MultiSubscriber:
             reliability=ReliabilityPolicy.BEST_EFFORT,
         )
 
-        reliable_end_points_count = 0
-        transient_local_end_points_count = 0
-
         infos = node_handle.get_publishers_info_by_topic(topic)
 
-        for info in infos:
-            if info.qos_profile.reliability == ReliabilityPolicy.RELIABLE:
-                reliable_end_points_count += 1
-            if info.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL:
-                transient_local_end_points_count += 1
-
-        if not infos and reliable_end_points_count == len(infos):
-            qos.reliability = ReliabilityPolicy.RELIABLE
-        else:
-            qos.reliability = ReliabilityPolicy.BEST_EFFORT
-
-        if not infos and transient_local_end_points_count == len(infos):
+        if all(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
             qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
-        else:
-            qos.durability = DurabilityPolicy.VOLATILE
+            qos.reliability = ReliabilityPolicy.RELIABLE
+        if all(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+            qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
@@ -178,7 +166,8 @@ class MultiSubscriber:
 
         """
         if not ros_loader.get_message_class(msg_type) is self.msg_class:
-            raise TypeConflictException(self.topic, msg_class_type_repr(self.msg_class), msg_type)
+            raise TypeConflictException(
+                self.topic, msg_class_type_repr(self.msg_class), msg_type)
 
     def subscribe(self, client_id, callback):
         """Subscribe the specified client to this subscriber.
@@ -195,26 +184,12 @@ class MultiSubscriber:
             # In any case, the first message is handled using new_sub_callback,
             # which adds the new callback to the subscriptions dictionary.
             self.new_subscriptions.update({client_id: callback})
-
-            reliable_end_points_count = 0
-            transient_local_end_points_count = 0
             infos = self.node_handle.get_publishers_info_by_topic(self.topic)
 
-            for info in infos:
-                if info.qos_profile.reliability == ReliabilityPolicy.RELIABLE:
-                    reliable_end_points_count += 1
-                if info.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL:
-                    transient_local_end_points_count += 1
-
-            if not infos and reliable_end_points_count == len(infos):
-                self.qos.reliability = ReliabilityPolicy.RELIABLE
-            else:
-                self.qos.reliability = ReliabilityPolicy.BEST_EFFORT
-
-            if not infos and transient_local_end_points_count == len(infos):
+            if all(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
                 self.qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
-            else:
-                self.qos.durability = DurabilityPolicy.VOLATILE
+            if all(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+                self.qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
             if self.new_subscriber is None:
                 self.new_subscriber = self.node_handle.create_subscription(
