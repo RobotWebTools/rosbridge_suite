@@ -105,7 +105,7 @@ class TestMultiSubscriber(unittest.TestCase):
 
         publisher_qos = QoSProfile(
             depth=10,
-            durability=DurabilityPolicy.VOLATILE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
         )
         pub = self.node.create_publisher(String, topic, publisher_qos)
         received = {"msg": None}
@@ -127,7 +127,7 @@ class TestMultiSubscriber(unittest.TestCase):
 
         publisher_qos = QoSProfile(
             depth=10,
-            durability=DurabilityPolicy.VOLATILE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
         )
         pub = self.node.create_publisher(Int32, topic, publisher_qos)
         received = {"msgs": []}
@@ -154,7 +154,7 @@ class TestMultiSubscriber(unittest.TestCase):
 
         publisher_qos = QoSProfile(
             depth=10,
-            durability=DurabilityPolicy.VOLATILE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
         )
         pub = self.node.create_publisher(String, topic, publisher_qos)
         received = {"count": 0}
@@ -184,7 +184,7 @@ class TestMultiSubscriber(unittest.TestCase):
 
         publisher_qos = QoSProfile(
             depth=10,
-            durability=DurabilityPolicy.VOLATILE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
         )
         pub = self.node.create_publisher(String, topic, publisher_qos)
 
