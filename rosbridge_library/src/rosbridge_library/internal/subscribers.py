@@ -87,8 +87,7 @@ class MultiSubscriber:
         # topic_type is a list of types or None at this point; only one type is supported.
         if topic_type is not None:
             if len(topic_type) > 1:
-                node_handle.get_logger().warning(
-                    f"More than one topic type detected: {topic_type}")
+                node_handle.get_logger().warning(f"More than one topic type detected: {topic_type}")
             topic_type = topic_type[0]
 
         # Use the established topic type if none was specified
@@ -166,8 +165,7 @@ class MultiSubscriber:
 
         """
         if not ros_loader.get_message_class(msg_type) is self.msg_class:
-            raise TypeConflictException(
-                self.topic, msg_class_type_repr(self.msg_class), msg_type)
+            raise TypeConflictException(self.topic, msg_class_type_repr(self.msg_class), msg_type)
 
     def subscribe(self, client_id, callback):
         """Subscribe the specified client to this subscriber.
