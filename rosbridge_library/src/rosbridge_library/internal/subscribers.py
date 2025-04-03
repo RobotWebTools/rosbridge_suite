@@ -124,7 +124,7 @@ class MultiSubscriber:
         if all(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
             qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
             qos.reliability = ReliabilityPolicy.RELIABLE
-        if all(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+        if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
             qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
         # Create the subscriber and associated member variables
@@ -186,7 +186,7 @@ class MultiSubscriber:
 
             if all(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
                 self.qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
-            if all(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+            if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
                 self.qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
             if self.new_subscriber is None:
