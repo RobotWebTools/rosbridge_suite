@@ -163,7 +163,7 @@ class TestPublisherManager(unittest.TestCase):
 
         publisher_qos = QoSProfile(
             depth=10,
-            durability=DurabilityPolicy.VOLATILE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
         )
         self.node.create_publisher(String, topic, publisher_qos)
         time.sleep(0.1)
