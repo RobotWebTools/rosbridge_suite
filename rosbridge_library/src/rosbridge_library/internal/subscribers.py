@@ -126,9 +126,7 @@ class MultiSubscriber:
         ):
             qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
             qos.reliability = ReliabilityPolicy.RELIABLE
-        if len(infos) > 0 and any(
-            pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos
-        ):
+        if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
             qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
         # Create the subscriber and associated member variables
@@ -188,7 +186,9 @@ class MultiSubscriber:
             self.new_subscriptions.update({client_id: callback})
             infos = self.node_handle.get_publishers_info_by_topic(self.topic)
 
-            if all(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
+            if len(infos) > 0 and all(
+                pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
+            ):
                 self.qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
             if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
                 self.qos.reliability = ReliabilityPolicy.BEST_EFFORT
