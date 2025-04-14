@@ -120,7 +120,10 @@ class MultiSubscriber:
         )
 
         infos = node_handle.get_publishers_info_by_topic(topic)
-        if any(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
+
+        if len(infos) > 0 and all(
+            pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
+        ):
             qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
             qos.reliability = ReliabilityPolicy.RELIABLE
         if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
@@ -182,10 +185,14 @@ class MultiSubscriber:
             # which adds the new callback to the subscriptions dictionary.
             self.new_subscriptions.update({client_id: callback})
             infos = self.node_handle.get_publishers_info_by_topic(self.topic)
-            if any(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
+
+            if len(infos) > 0 and all(
+                pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
+            ):
                 self.qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
             if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
                 self.qos.reliability = ReliabilityPolicy.BEST_EFFORT
+
             if self.new_subscriber is None:
                 self.new_subscriber = self.node_handle.create_subscription(
                     self.msg_class,
