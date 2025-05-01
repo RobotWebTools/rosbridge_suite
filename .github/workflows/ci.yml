@@ -4,11 +4,11 @@ on: [push, pull_request]
 
 jobs:
   lint:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5.0.0
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.8'
 
