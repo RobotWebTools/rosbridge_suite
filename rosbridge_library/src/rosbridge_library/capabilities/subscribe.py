@@ -110,6 +110,18 @@ class Subscription:
         compression is to be used (current valid values are 'png')
 
         """
+        if sid is None:
+            self.protocol.log(
+                "WARNING: subscribe called with no subscription id, "
+                + "this is not supported by ROSBridge"
+            )
+            raise ValueError("Subscription ID cannot be None")
+        if sid in self.clients:
+            self.protocol.log(
+                "WARNING: subscribe called with existing subscription id, "
+                + "this is not supported by ROSBridge"
+            )
+            raise KeyError(f"Subscription ID {sid} already exists")
 
         client_details = {
             "throttle_rate": throttle_rate,
@@ -296,38 +308,33 @@ class Subscribe(Capability):
         self.protocol.log("info", "Unsubscribed from %s" % topic)
 
     def publish(self, topic, message, fragment_size=None, compression="none"):
-        """Publish a message to the client
+        # 遍历当前主题下的所有订阅客户端
+        subscription = self._subscriptions.get(topic)
+        if subscription:
+            # 为每个客户端生成独立的消息
+            for sid in subscription.clients:
+                outgoing_msg = {"op": "publish", "topic": topic, "id": sid}
+                if compression == "png":
+                    outgoing_msg["msg"] = message.get_json_values()
+                    outgoing_msg_dumped = encode_json(outgoing_msg)
+                    outgoing_msg = {"op": "png", "data": encode_png(outgoing_msg_dumped), "id": sid}
+                elif compression == "cbor":
+                    outgoing_msg = message.get_cbor(outgoing_msg)
+                    outgoing_msg["id"] = sid
+                elif compression == "cbor-raw":
+                    (secs, nsecs) = self.protocol.node_handle.get_clock().now().seconds_nanoseconds()
+                    outgoing_msg["msg"] = {
+                        "secs": secs,
+                        "nsecs": nsecs,
+                        "bytes": message.message,
+                    }
+                    outgoing_msg = message.get_cbor_raw(outgoing_msg)
+                    outgoing_msg["id"] = sid
+                else:
+                    outgoing_msg["msg"] = message.get_json_values()
+                    outgoing_msg["id"] = sid
 
-        Keyword arguments:
-        topic   -- the topic to publish the message on
-        message -- a ROS message wrapped by OutgoingMessage
-        fragment_size -- (optional) fragment the serialized message into msgs
-        with payloads not greater than this value
-        compression   -- (optional) compress the message. valid values are
-        'png' and 'none'
-
-        """
-        # TODO: fragmentation, proper ids
-
-        outgoing_msg = {"op": "publish", "topic": topic}
-        if compression == "png":
-            outgoing_msg["msg"] = message.get_json_values()
-            outgoing_msg_dumped = encode_json(outgoing_msg)
-            outgoing_msg = {"op": "png", "data": encode_png(outgoing_msg_dumped)}
-        elif compression == "cbor":
-            outgoing_msg = message.get_cbor(outgoing_msg)
-        elif compression == "cbor-raw":
-            (secs, nsecs) = self.protocol.node_handle.get_clock().now().seconds_nanoseconds()
-            outgoing_msg["msg"] = {
-                "secs": secs,
-                "nsecs": nsecs,
-                "bytes": message.message,
-            }
-            outgoing_msg = message.get_cbor_raw(outgoing_msg)
-        else:
-            outgoing_msg["msg"] = message.get_json_values()
-
-        self.protocol.send(outgoing_msg, compression=compression)
+                self.protocol.send(outgoing_msg, compression=compression)
 
     def finish(self):
         for subscription in self._subscriptions.values():
