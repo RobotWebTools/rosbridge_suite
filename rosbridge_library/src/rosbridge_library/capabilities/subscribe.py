@@ -308,10 +308,20 @@ class Subscribe(Capability):
         self.protocol.log("info", "Unsubscribed from %s" % topic)
 
     def publish(self, topic, message, fragment_size=None, compression="none"):
-        # 遍历当前主题下的所有订阅客户端
+        """Publish a message to the client
+
+        Keyword arguments:
+        topic   -- the topic to publish the message on
+        message -- a ROS message wrapped by OutgoingMessage
+        fragment_size -- (optional) fragment the serialized message into msgs
+        with payloads not greater than this value
+        compression   -- (optional) compress the message. valid values are
+        'png' and 'none'
+        
+        """
+
         subscription = self._subscriptions.get(topic)
         if subscription:
-            # 为每个客户端生成独立的消息
             for sid in subscription.clients:
                 outgoing_msg = {"op": "publish", "topic": topic, "id": sid}
                 if compression == "png":
