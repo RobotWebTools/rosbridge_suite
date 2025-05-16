@@ -317,7 +317,7 @@ class Subscribe(Capability):
         with payloads not greater than this value
         compression   -- (optional) compress the message. valid values are
         'png' and 'none'
-        
+
         """
 
         subscription = self._subscriptions.get(topic)
@@ -332,7 +332,9 @@ class Subscribe(Capability):
                     outgoing_msg = message.get_cbor(outgoing_msg)
                     outgoing_msg["id"] = sid
                 elif compression == "cbor-raw":
-                    (secs, nsecs) = self.protocol.node_handle.get_clock().now().seconds_nanoseconds()
+                    (secs, nsecs) = (
+                        self.protocol.node_handle.get_clock().now().seconds_nanoseconds()
+                    )
                     outgoing_msg["msg"] = {
                         "secs": secs,
                         "nsecs": nsecs,
