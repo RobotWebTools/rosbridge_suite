@@ -201,18 +201,18 @@ def _handle_array_information(instance):
     fieldtypes = []
     fieldarraylen = []
     examples = []
-    for i in range(len(instance.__slots__)):
-        name = instance.__slots__[i]
-        fieldnames.append(name)
+    for slot in instance.__slots__:
+        key = slot[1:] if slot.startswith("_") else slot
+        if key not in instance._fields_and_field_types:
+            continue
 
-        field_type, arraylen = _handle_type_and_array_len(instance, name)
+        fieldnames.append(key)
+        field_type, arraylen = _handle_type_and_array_len(instance, slot)
         fieldarraylen.append(arraylen)
 
-        field_instance = getattr(instance, name)
-        fieldtypes.append(_type_name(field_type, field_instance))
-
-        example = _handle_example(arraylen, field_type, field_instance)
-        examples.append(str(example))
+        value = getattr(instance, slot)
+        fieldtypes.append(_type_name(field_type, value))
+        examples.append(str(_handle_example(arraylen, field_type, value)))
 
     return fieldnames, fieldtypes, fieldarraylen, examples
 
