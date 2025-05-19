@@ -2,6 +2,11 @@
 Changelog for package rosapi_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add new service to retrieve the different interfaces in the ROS Network (`#993 <https://github.com/RobotWebTools/rosbridge_suite/issues/993>`_)
+* Contributors: Lebecque Florian
+
 2.0.0 (2024-10-08)
 ------------------
 
