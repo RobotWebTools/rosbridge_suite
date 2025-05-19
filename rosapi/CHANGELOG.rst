@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.1 (2025-05-19)
+------------------
 * Fix array-like parameter serialization in rosbridge get_param (`#1019 <https://github.com/RobotWebTools/rosbridge_suite/issues/1019>`_)
 * Add namespace to services names (`#999 <https://github.com/RobotWebTools/rosbridge_suite/issues/999>`_)
 * Prevent parameter retrieval crashes (`#998 <https://github.com/RobotWebTools/rosbridge_suite/issues/998>`_)

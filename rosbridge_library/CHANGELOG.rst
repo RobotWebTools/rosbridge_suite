@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.1 (2025-05-19)
+------------------
 * Default subscriber QOS to BestEffort, account for TRANSIENT_LOCAL (`#1033 <https://github.com/RobotWebTools/rosbridge_suite/issues/1033>`_)
 * Fix randomly failing subscribe unsubscribe test (`#1015 <https://github.com/RobotWebTools/rosbridge_suite/issues/1015>`_)
 * Fix action cancelling/aborting (`#1014 <https://github.com/RobotWebTools/rosbridge_suite/issues/1014>`_)
