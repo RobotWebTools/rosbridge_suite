@@ -2,6 +2,11 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.3.0 (2025-05-19)
+------------------
+* Add missing service timeout parameter to conditional launch (`#1028 <https://github.com/RobotWebTools/rosbridge_suite/issues/1028>`_)
+* Contributors: Ana
+
 2.2.0 (2025-02-26)
 ------------------
 * Update maintainers (`#1000 <https://github.com/RobotWebTools/rosbridge_suite/issues/1000>`_)
