@@ -2,6 +2,16 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.1 (2025-05-19)
+------------------
+* Default subscriber QOS to BestEffort, account for TRANSIENT_LOCAL (`#1033 <https://github.com/RobotWebTools/rosbridge_suite/issues/1033>`_)
+* Fix randomly failing subscribe unsubscribe test (`#1015 <https://github.com/RobotWebTools/rosbridge_suite/issues/1015>`_)
+* Fix action cancelling/aborting (`#1014 <https://github.com/RobotWebTools/rosbridge_suite/issues/1014>`_)
+* Add timeout option to call_service messages (`#994 <https://github.com/RobotWebTools/rosbridge_suite/issues/994>`_)
+* Fix infinite loop in QueueMessageHandler (`#987 <https://github.com/RobotWebTools/rosbridge_suite/issues/987>`_)
+* Use monotonic clock for time measuring (`#986 <https://github.com/RobotWebTools/rosbridge_suite/issues/986>`_)
+* Contributors: ewak, William Wedler, Mike Wake, Talha Işık, Daisuke Sato, Błażej Sowa
+
 2.0.0 (2024-10-08)
 ------------------
 * Fix action cancellation by passing status from JSON (`#953 <https://github.com/RobotWebTools/rosbridge_suite/issues/953>`_)

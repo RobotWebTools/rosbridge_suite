@@ -2,6 +2,15 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.1 (2025-05-19)
+------------------
+* Add missing service timeout parameter to conditional launch (`#1030 <https://github.com/RobotWebTools/rosbridge_suite/issues/1030>`_)
+* fix: add url_path parameter in rosbridge_websocket_launch.xml (`#1011 <https://github.com/RobotWebTools/rosbridge_suite/issues/1011>`_)
+* Prevent parameter retrieval crashes (`#998 <https://github.com/RobotWebTools/rosbridge_suite/issues/998>`_)
+* Add warnings about default parameter values changes (`#997 <https://github.com/RobotWebTools/rosbridge_suite/issues/997>`_)
+* Add timeout option to call_service messages (`#994 <https://github.com/RobotWebTools/rosbridge_suite/issues/994>`_)
+* Contributors: Ana, Matthias Rathauscher, Lebecque Florian, Błażej Sowa, SeanPai
+
 2.0.0 (2024-10-08)
 ------------------
 * Fix action cancellation by passing status from JSON (`#953 <https://github.com/RobotWebTools/rosbridge_suite/issues/953>`_)

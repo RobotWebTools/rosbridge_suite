@@ -2,6 +2,14 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.1 (2025-05-19)
+------------------
+* Fix array-like parameter serialization in rosbridge get_param (`#1019 <https://github.com/RobotWebTools/rosbridge_suite/issues/1019>`_)
+* Add namespace to services names (`#999 <https://github.com/RobotWebTools/rosbridge_suite/issues/999>`_)
+* Prevent parameter retrieval crashes (`#998 <https://github.com/RobotWebTools/rosbridge_suite/issues/998>`_)
+* Add new service to retrieve the different interfaces in the ROS Network (`#993 <https://github.com/RobotWebTools/rosbridge_suite/issues/993>`_)
+* Contributors: Noah Wardlow, Matthias Rathauscher, Lebecque Florian, Błażej Sowa
+
 2.0.0 (2024-10-08)
 ------------------
 * rosapi: Don't start parameter services that aren't spun (`#944 <https://github.com/RobotWebTools/rosbridge_suite/issues/944>`_)
