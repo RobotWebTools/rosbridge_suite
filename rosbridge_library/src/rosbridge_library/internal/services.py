@@ -31,7 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from threading import Event, Thread
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.expand_topic_name import expand_topic_name
