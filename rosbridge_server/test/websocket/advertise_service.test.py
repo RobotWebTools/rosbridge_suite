@@ -2,10 +2,14 @@
 import os
 import sys
 import unittest
+from typing import TYPE_CHECKING
 
 from rclpy.node import Node
 from std_srvs.srv import SetBool
 from twisted.python import log
+
+if TYPE_CHECKING:
+    from rclpy.client import Client
 
 sys.path.append(os.path.dirname(__file__))  # enable importing from common.py in this directory
 
@@ -28,7 +32,7 @@ class TestAdvertiseService(unittest.TestCase):
                 "service": "/test_service",
             }
         )
-        client = node.create_client(SetBool, "/test_service")
+        client: Client = node.create_client(SetBool, "/test_service")
         client.wait_for_service()
 
         requests_future, ws_client.message_handler = expect_messages(

@@ -33,6 +33,7 @@
 
 import fnmatch
 from json import dumps, loads
+from typing import TYPE_CHECKING
 
 from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
 from rcl_interfaces.srv import GetParameters, ListParameters, SetParameters
@@ -43,6 +44,9 @@ from rclpy.task import Future
 from ros2node.api import get_absolute_node_name
 from rosapi.async_helper import futures_wait_for
 from rosapi.proxy import get_nodes
+
+if TYPE_CHECKING:
+    from rclpy.client import Client
 
 """ Methods to interact with the param server.  Values have to be passed
 as JSON in order to facilitate dynamically typed SRV messages """
@@ -120,7 +124,7 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
             setattr(parameter.value, _parameter_type_mapping[parameter_type], loads(value))
 
     assert _node is not None
-    client = _node.create_client(
+    client: Client = _node.create_client(
         SetParameters,
         f"{node_name}/set_parameters",
         callback_group=MutuallyExclusiveCallbackGroup(),
@@ -175,7 +179,7 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     """Internal helper function for get_param"""
 
     assert _node is not None
-    client = _node.create_client(
+    client: Client = _node.create_client(
         GetParameters,
         f"{node_name}/get_parameters",
         callback_group=MutuallyExclusiveCallbackGroup(),
@@ -250,7 +254,7 @@ async def get_param_names(params_glob: str | None) -> list[str]:
         if node_name == _node.get_fully_qualified_name():
             continue
 
-        client = _node.create_client(
+        client: Client = _node.create_client(
             ListParameters,
             f"{node_name}/list_parameters",
             callback_group=MutuallyExclusiveCallbackGroup(),
