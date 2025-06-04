@@ -167,7 +167,7 @@ class SendGoal:
         args_to_action_goal_instance(action_name, inst, args)
 
         self.result = None
-        client = ActionClient(node_handle, action_class, action_name)
+        client: ActionClient = ActionClient(node_handle, action_class, action_name)
         client.wait_for_server(timeout_sec=self.server_timeout_time)
         send_goal_future = client.send_goal_async(inst, feedback_callback=feedback_cb)
         send_goal_future.add_done_callback(self.goal_response_cb)

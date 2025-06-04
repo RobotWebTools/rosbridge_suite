@@ -1,6 +1,6 @@
 import functools
 import json
-from typing import Any, Awaitable, Callable
+from typing import TYPE_CHECKING, Any, Awaitable, Callable
 
 import launch
 import launch_ros
@@ -14,6 +14,9 @@ from rclpy.node import Node
 from rclpy.task import Future
 from twisted.internet import reactor
 from twisted.internet.endpoints import TCP4ClientEndpoint
+
+if TYPE_CHECKING:
+    from rclpy.client import Client
 
 
 class TestClientProtocol(WebSocketClientProtocol):
@@ -83,7 +86,7 @@ async def get_server_port(node: Node) -> int:
     """
     Returns the port which the WebSocket server is running on
     """
-    client = node.create_client(GetParameters, "/rosbridge_websocket/get_parameters")
+    client: Client = node.create_client(GetParameters, "/rosbridge_websocket/get_parameters")
     try:
         if not client.wait_for_service(5):
             raise RuntimeError("GetParameters service not available")
