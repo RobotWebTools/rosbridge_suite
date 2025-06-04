@@ -24,6 +24,8 @@ jobs:
           # NOTE: Humble does not work on the `ros2` branch, so it is tested in its own branch.
           - ros: jazzy
             os: ubuntu-24.04
+          - ros: kilted
+            os: ubuntu-24.04
           - ros: rolling
             os: ubuntu-24.04
 
