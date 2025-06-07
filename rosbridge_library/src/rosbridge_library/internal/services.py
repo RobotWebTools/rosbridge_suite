@@ -34,7 +34,6 @@ from threading import Event, Thread
 from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from rclpy.callback_groups import ReentrantCallbackGroup
-from rclpy.expand_topic_name import expand_topic_name
 from rclpy.node import Node
 from rosbridge_library.internal.message_conversion import (
     extract_values,
@@ -129,10 +128,10 @@ def call_service(
     server_ready_timeout: float = 1.0,
     server_response_timeout: float = 5.0,
 ) -> dict:
-    # Given the service name, fetch the type and class of the service,
-    # and a request instance
-    service = expand_topic_name(service, node_handle.get_name(), node_handle.get_namespace())
+    # Get the fully qualified service name with remappings applied
+    service = node_handle.resolve_service_name(service)
 
+    # Given the service name, fetch the type and class of the service, and a request instance
     service_names_and_types = dict(node_handle.get_service_names_and_types())
     service_types = service_names_and_types.get(service)
     if service_types is None:
