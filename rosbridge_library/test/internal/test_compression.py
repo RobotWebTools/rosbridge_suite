@@ -10,10 +10,11 @@ class TestCompression(unittest.TestCase):
         string = str(bytearray(bytes_data))
         encoded = pngcompression.encode(string)
         self.assertNotEqual(string, encoded)
+        self.assertIsInstance(encoded, str)
 
     def test_compress_decompress(self):
         bytes_data = list(range(128)) * 10000
-        string = str(bytes(bytes_data))
+        string = str(bytearray(bytes_data))
         encoded = pngcompression.encode(string)
         self.assertNotEqual(string, encoded)
         decoded = pngcompression.decode(encoded)
