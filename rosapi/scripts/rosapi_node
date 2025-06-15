@@ -47,6 +47,7 @@ from rosapi_msgs.srv import (
     ActionFeedbackDetails,
     ActionGoalDetails,
     ActionResultDetails,
+    ActionType,
     DeleteParam,
     GetActionServers,
     GetParam,
@@ -112,6 +113,7 @@ class Rosapi(Node):
         self.create_service(Nodes, "~/nodes", self.get_nodes)
         self.create_service(NodeDetails, "~/node_details", self.get_node_details)
         self.create_service(GetActionServers, "~/action_servers", self.get_action_servers)
+        self.create_service(ActionType, "~/action_type", self.get_action_type)
         self.create_service(TopicType, "~/topic_type", self.get_topic_type)
         self.create_service(ServiceType, "~/service_type", self.get_service_type)
         self.create_service(Publishers, "~/publishers", self.get_publishers)
@@ -333,6 +335,12 @@ class Rosapi(Node):
             dict_to_typedef(d)
             for d in objectutils.get_action_feedback_typedef_recursive(request.type)
         ]
+        return response
+
+    def get_action_type(self, request, response):
+        """Called by the rosapi/ActionType service. Given the name of an action, returns its type.
+        If the action does not exist, an empty string is returned."""
+        response.type = proxy.get_action_type(request.action)
         return response
 
     async def set_param(self, request, response):
