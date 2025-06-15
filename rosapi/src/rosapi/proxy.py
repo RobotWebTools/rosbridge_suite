@@ -279,7 +279,9 @@ def get_action_type(action_name, include_hidden=True):
         action_topics = [t for t in topics if t.startswith(action_name + "/_action/")]
         if action_topics:
             # Get the type from one of the action topics
-            topic_names_and_types = get_topic_names_and_types(node=_node, include_hidden_topics=include_hidden)
+            topic_names_and_types = get_topic_names_and_types(
+                node=_node, include_hidden_topics=include_hidden
+            )
             topic_dict = {name: types[0] for name, types in topic_names_and_types}
 
             for topic in action_topics:
@@ -288,7 +290,7 @@ def get_action_type(action_name, include_hidden=True):
                     # We need to extract 'example_interfaces/action/Fibonacci'
                     full_type = topic_dict[topic]
                     # Remove the _Feedback, _Result, etc. suffix
-                    return full_type.rsplit('_', 1)[0]
+                    return full_type.rsplit("_", 1)[0]
 
     # If action not found or no type found
     return ""
