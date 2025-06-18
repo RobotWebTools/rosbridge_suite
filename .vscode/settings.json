@@ -7,7 +7,7 @@
     "[python]": {
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-            "source.organizeImports": "explicit"
+            "source.organizeImports": true
         }
     },
     "python.linting.banditArgs": [
