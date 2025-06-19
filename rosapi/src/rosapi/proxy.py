@@ -267,7 +267,7 @@ def get_service_node(queried_type, services_glob, include_hidden=False):
         return ""
 
 
-def get_action_type(action_name, include_hidden=True):
+def get_action_type(action_name, include_hidden=False):
     """Returns the type of the specified ROS action.
     If the action does not exist, an empty string is returned."""
 
