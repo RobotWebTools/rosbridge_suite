@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from ros2action.api import get_action_names_and_types
 from ros2interface.api import type_completer
 from ros2node.api import (
     get_node_names,
@@ -269,28 +270,11 @@ def get_service_node(queried_type, services_glob, include_hidden=False):
 def get_action_type(action_name, include_hidden=True):
     """Returns the type of the specified ROS action.
     If the action does not exist, an empty string is returned."""
-    # Get all topics with _action prefix
-    topics = get_topic_names(node=_node, include_hidden_topics=include_hidden)
-    action_servers = filter_action_servers(topics)
 
-    # If the action exists in our list
-    if action_name in action_servers:
-        # Get all topics for this action
-        action_topics = [t for t in topics if t.startswith(action_name + "/_action/")]
-        if action_topics:
-            # Get the type from one of the action topics
-            topic_names_and_types = get_topic_names_and_types(
-                node=_node, include_hidden_topics=include_hidden
-            )
-            topic_dict = {name: types[0] for name, types in topic_names_and_types}
+    names_and_types = get_action_names_and_types(node=_node, include_hidden_actions=include_hidden)
 
-            for topic in action_topics:
-                if topic in topic_dict:
-                    # The type will be something like 'example_interfaces/action/Fibonacci_Feedback'
-                    # We need to extract 'example_interfaces/action/Fibonacci'
-                    full_type = topic_dict[topic]
-                    # Remove the _Feedback, _Result, etc. suffix
-                    return full_type.rsplit("_", 1)[0]
+    for name, types in names_and_types:
+        if name == action_name and types:
+            return types[0]
 
-    # If action not found or no type found
     return ""
