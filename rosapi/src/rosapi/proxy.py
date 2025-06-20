@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from ros2action.api import get_action_names_and_types
 from ros2interface.api import type_completer
 from ros2node.api import (
     get_node_names,
@@ -264,3 +265,16 @@ def get_service_node(queried_type, services_glob, include_hidden=False):
         return node_name[0]
     else:
         return ""
+
+
+def get_action_type(action_name, include_hidden=False):
+    """Returns the type of the specified ROS action.
+    If the action does not exist, an empty string is returned."""
+
+    names_and_types = get_action_names_and_types(node=_node, include_hidden_actions=include_hidden)
+
+    for name, types in names_and_types:
+        if name == action_name and types:
+            return types[0]
+
+    return ""
