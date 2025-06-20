@@ -25,6 +25,7 @@
   <exec_depend>rosbridge_library</exec_depend>
   <exec_depend>ros2node</exec_depend>
   <exec_depend>ros2service</exec_depend>
+  <exec_depend>ros2action</exec_depend>
   <exec_depend>ros2topic</exec_depend>
 
   <test_depend>ament_cmake_mypy</test_depend>
