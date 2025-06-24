@@ -31,10 +31,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from threading import Event, Thread
-from typing import Any, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from rclpy.callback_groups import ReentrantCallbackGroup
-from rclpy.expand_topic_name import expand_topic_name
 from rclpy.node import Node
 from rosbridge_library.internal.message_conversion import (
     extract_values,
@@ -44,6 +43,9 @@ from rosbridge_library.internal.ros_loader import (
     get_service_class,
     get_service_request_instance,
 )
+
+if TYPE_CHECKING:
+    from rclpy.client import Client
 
 
 class InvalidServiceException(Exception):
@@ -126,10 +128,10 @@ def call_service(
     server_ready_timeout: float = 1.0,
     server_response_timeout: float = 5.0,
 ) -> dict:
-    # Given the service name, fetch the type and class of the service,
-    # and a request instance
-    service = expand_topic_name(service, node_handle.get_name(), node_handle.get_namespace())
+    # Get the fully qualified service name with remappings applied
+    service = node_handle.resolve_service_name(service)
 
+    # Given the service name, fetch the type and class of the service, and a request instance
     service_names_and_types = dict(node_handle.get_service_names_and_types())
     service_types = service_names_and_types.get(service)
     if service_types is None:
@@ -146,7 +148,7 @@ def call_service(
     # Populate the instance with the provided args
     args_to_service_request_instance(service, inst, args)
 
-    client = node_handle.create_client(
+    client: Client = node_handle.create_client(
         service_class, service, callback_group=ReentrantCallbackGroup()
     )
 

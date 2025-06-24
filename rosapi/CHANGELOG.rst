@@ -2,6 +2,13 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.3.0 (2025-05-19)
+------------------
+* Handle extra IDL slots when doing array introspection (`#1031 <https://github.com/RobotWebTools/rosbridge_suite/issues/1031>`_)
+* Add services to return Action interface details (`#1021 <https://github.com/RobotWebTools/rosbridge_suite/issues/1021>`_)
+* Fix array-like parameter serialization in rosbridge get_param (`#1018 <https://github.com/RobotWebTools/rosbridge_suite/issues/1018>`_)
+* Contributors: David Fernàndez López, Noah Wardlow, Scott Bell, Błażej Sowa
+
 2.2.0 (2025-02-26)
 ------------------
 * New async rosapi params module implementation (`#1001 <https://github.com/RobotWebTools/rosbridge_suite/issues/1001>`_)

@@ -2,6 +2,11 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.3.0 (2025-05-19)
+------------------
+* Don't subscribe with Transient local QoS when there are volatile publishers (`#1023 <https://github.com/RobotWebTools/rosbridge_suite/issues/1023>`_)
+* Contributors: Talha Işık
+
 2.2.0 (2025-02-26)
 ------------------
 * Default subscriber QOS to BestEffort, account for TRANSIENT_LOCAL (`#991 <https://github.com/RobotWebTools/rosbridge_suite/issues/991>`_)

@@ -46,7 +46,7 @@ class TestAdvertiseAction(unittest.TestCase):
                 "type": "example_interfaces/Fibonacci",
             }
         )
-        client = ActionClient(node, Fibonacci, "/test_fibonacci_action")
+        client: ActionClient = ActionClient(node, Fibonacci, "/test_fibonacci_action")
         client.wait_for_server()
 
         requests_future, ws_client.message_handler = expect_messages(
