@@ -340,8 +340,8 @@ class Subscribe(Capability):
                         "nsecs": nsecs,
                         "bytes": message.message,
                     }
-                    outgoing_msg = message.get_cbor_raw(outgoing_msg)
                     outgoing_msg["id"] = sid
+                    outgoing_msg = message.get_cbor_raw(outgoing_msg)
                 else:
                     outgoing_msg["msg"] = message.get_json_values()
                     outgoing_msg["id"] = sid
