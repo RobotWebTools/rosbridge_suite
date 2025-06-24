@@ -31,6 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import fnmatch
+import uuid
 from functools import partial
 from threading import Lock
 
@@ -38,7 +39,6 @@ from rosbridge_library.capability import Capability
 from rosbridge_library.internal.pngcompression import encode as encode_png
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
-import uuid
 
 try:
     from ujson import dumps as encode_json  # type: ignore[import-untyped]
@@ -117,14 +117,13 @@ class Subscription:
                 + "this is not supported by ROSBridge"
             )
             sid = uuid.uuid4()
-            #raise ValueError("Subscription ID cannot be None")
+
         if sid in self.clients:
             self.protocol.log(
                 "WARNING: subscribe called with existing subscription id, "
                 + "this is not supported by ROSBridge"
             )
             sid = uuid.uuid4()
-            #raise KeyError(f"Subscription ID {sid} already exists")
 
         client_details = {
             "throttle_rate": throttle_rate,
