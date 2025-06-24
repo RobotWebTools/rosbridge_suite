@@ -331,8 +331,8 @@ class Subscribe(Capability):
                     outgoing_msg_dumped = encode_json(outgoing_msg)
                     outgoing_msg = {"op": "png", "data": encode_png(outgoing_msg_dumped), "id": sid}
                 elif compression == "cbor":
-                    outgoing_msg = message.get_cbor(outgoing_msg)
                     outgoing_msg["id"] = sid
+                    outgoing_msg = message.get_cbor(outgoing_msg)
                 elif compression == "cbor-raw":
                     (secs, nsecs) = (
                         self.protocol.node_handle.get_clock().now().seconds_nanoseconds()
