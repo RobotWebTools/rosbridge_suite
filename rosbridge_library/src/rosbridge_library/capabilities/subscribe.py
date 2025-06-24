@@ -333,7 +333,6 @@ class Subscribe(Capability):
                 elif compression == "cbor":
                     outgoing_msg["id"] = sid
                     outgoing_msg = message.get_cbor(outgoing_msg)
-                    
                 elif compression == "cbor-raw":
                     (secs, nsecs) = (
                         self.protocol.node_handle.get_clock().now().seconds_nanoseconds()
