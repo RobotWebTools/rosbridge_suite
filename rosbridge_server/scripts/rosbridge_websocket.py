@@ -339,7 +339,7 @@ def main(args=None):
     rclpy.init(args=args)
     node = RosbridgeWebsocketNode()
 
-    executor = rclpy.executors.SingleThreadedExecutor()
+    executor = rclpy.executors.MultiThreadedExecutor()
     executor.add_node(node)
 
     def spin_ros():
@@ -355,6 +355,7 @@ def main(args=None):
         rclpy.shutdown()
     except KeyboardInterrupt:
         print("Exiting due to SIGINT")
+        spin_callback.stop()
     finally:
         shutdown_hook()  # shutdown hook to stop the server
 
