@@ -3,7 +3,7 @@
   <arg name="address" default="" />
   <arg name="url_path" default="/" />
   <arg name="ssl" default="false" />
-  <arg name="certfile" default=""/>
+  <arg name="certfile" default="" />
   <arg name="keyfile" default="" />
 
   <arg name="namespace" default="" />
@@ -26,60 +26,65 @@
   <arg name="params_timeout" default="5.0" />
   <arg name="bson_only_mode" default="false" />
 
-  <arg name="respawn" default="false"/>
+  <arg name="respawn" default="false" />
 
-  <arg unless="$(var bson_only_mode)" name="binary_encoder" default="default"/>
+  <arg name="output" default="screen" />
+
+  <arg unless="$(var bson_only_mode)" name="binary_encoder" default="default" />
 
   <group if="$(var ssl)">
-    <node name="rosbridge_websocket" namespace="$(var namespace)" pkg="rosbridge_server" exec="rosbridge_websocket" output="screen" respawn="$(var respawn)" >
+    <node name="rosbridge_websocket" namespace="$(var namespace)" pkg="rosbridge_server"
+      exec="rosbridge_websocket" output="$(var output)" respawn="$(var respawn)">
       <param name="certfile" value="$(var certfile)" />
       <param name="keyfile" value="$(var keyfile)" />
-      <param name="port" value="$(var port)"/>
-      <param name="address" value="$(var address)"/>
-      <param name="url_path" value="$(var url_path)"/>
-      <param name="retry_startup_delay" value="$(var retry_startup_delay)"/>
-      <param name="fragment_timeout" value="$(var fragment_timeout)"/>
-      <param name="delay_between_messages" value="$(var delay_between_messages)"/>
-      <param name="max_message_size" value="$(var max_message_size)"/>
-      <param name="unregister_timeout" value="$(var unregister_timeout)"/>
-      <param name="use_compression" value="$(var use_compression)"/>
-      <param name="call_services_in_new_thread" value="$(var call_services_in_new_thread)"/>
-      <param name="default_call_service_timeout" value="$(var default_call_service_timeout)"/>
-      <param name="send_action_goals_in_new_thread" value="$(var send_action_goals_in_new_thread)"/>
+      <param name="port" value="$(var port)" />
+      <param name="address" value="$(var address)" />
+      <param name="url_path" value="$(var url_path)" />
+      <param name="retry_startup_delay" value="$(var retry_startup_delay)" />
+      <param name="fragment_timeout" value="$(var fragment_timeout)" />
+      <param name="delay_between_messages" value="$(var delay_between_messages)" />
+      <param name="max_message_size" value="$(var max_message_size)" />
+      <param name="unregister_timeout" value="$(var unregister_timeout)" />
+      <param name="use_compression" value="$(var use_compression)" />
+      <param name="call_services_in_new_thread" value="$(var call_services_in_new_thread)" />
+      <param name="default_call_service_timeout" value="$(var default_call_service_timeout)" />
+      <param name="send_action_goals_in_new_thread" value="$(var send_action_goals_in_new_thread)" />
 
-      <param name="topics_glob" value="$(var topics_glob)"/>
-      <param name="services_glob" value="$(var services_glob)"/>
-      <param name="params_glob" value="$(var params_glob)"/>
+      <param name="topics_glob" value="$(var topics_glob)" />
+      <param name="services_glob" value="$(var services_glob)" />
+      <param name="params_glob" value="$(var params_glob)" />
     </node>
   </group>
 
   <group unless="$(var ssl)">
-    <node name="rosbridge_websocket" namespace="$(var namespace)" pkg="rosbridge_server" exec="rosbridge_websocket" output="screen" respawn="$(var respawn)">
-      <param name="port" value="$(var port)"/>
-      <param name="address" value="$(var address)"/>
-      <param name="url_path" value="$(var url_path)"/>
-      <param name="retry_startup_delay" value="$(var retry_startup_delay)"/>
-      <param name="fragment_timeout" value="$(var fragment_timeout)"/>
-      <param name="delay_between_messages" value="$(var delay_between_messages)"/>
-      <param name="max_message_size" value="$(var max_message_size)"/>
-      <param name="unregister_timeout" value="$(var unregister_timeout)"/>
-      <param name="use_compression" value="$(var use_compression)"/>
-      <param name="call_services_in_new_thread" value="$(var call_services_in_new_thread)"/>
-      <param name="default_call_service_timeout" value="$(var default_call_service_timeout)"/>
-      <param name="send_action_goals_in_new_thread" value="$(var send_action_goals_in_new_thread)"/>
+    <node name="rosbridge_websocket" namespace="$(var namespace)" pkg="rosbridge_server"
+      exec="rosbridge_websocket" output="$(var output)" respawn="$(var respawn)">
+      <param name="port" value="$(var port)" />
+      <param name="address" value="$(var address)" />
+      <param name="url_path" value="$(var url_path)" />
+      <param name="retry_startup_delay" value="$(var retry_startup_delay)" />
+      <param name="fragment_timeout" value="$(var fragment_timeout)" />
+      <param name="delay_between_messages" value="$(var delay_between_messages)" />
+      <param name="max_message_size" value="$(var max_message_size)" />
+      <param name="unregister_timeout" value="$(var unregister_timeout)" />
+      <param name="use_compression" value="$(var use_compression)" />
+      <param name="call_services_in_new_thread" value="$(var call_services_in_new_thread)" />
+      <param name="default_call_service_timeout" value="$(var default_call_service_timeout)" />
+      <param name="send_action_goals_in_new_thread" value="$(var send_action_goals_in_new_thread)" />
 
-      <param name="topics_glob" value="$(var topics_glob)"/>
-      <param name="services_glob" value="$(var services_glob)"/>
-      <param name="params_glob" value="$(var params_glob)"/>
+      <param name="topics_glob" value="$(var topics_glob)" />
+      <param name="services_glob" value="$(var services_glob)" />
+      <param name="params_glob" value="$(var params_glob)" />
 
-      <param name="bson_only_mode" value="$(var bson_only_mode)"/>
+      <param name="bson_only_mode" value="$(var bson_only_mode)" />
     </node>
   </group>
 
-  <node name="rosapi" namespace="$(var namespace)" pkg="rosapi" exec="rosapi_node" respawn="$(var respawn)">
-    <param name="topics_glob" value="$(var topics_glob)"/>
-    <param name="services_glob" value="$(var services_glob)"/>
-    <param name="params_glob" value="$(var params_glob)"/>
-    <param name="params_timeout" value="$(var params_timeout)"/>
+  <node name="rosapi" namespace="$(var namespace)" pkg="rosapi" exec="rosapi_node"
+    respawn="$(var respawn)">
+    <param name="topics_glob" value="$(var topics_glob)" />
+    <param name="services_glob" value="$(var services_glob)" />
+    <param name="params_glob" value="$(var params_glob)" />
+    <param name="params_timeout" value="$(var params_timeout)" />
   </node>
 </launch>
