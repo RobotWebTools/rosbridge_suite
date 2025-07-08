@@ -339,10 +339,13 @@ def main(args=None):
     rclpy.init(args=args)
     node = RosbridgeWebsocketNode()
 
-    executor = rclpy.executors.MultiThreadedExecutor()
+    executor = rclpy.executors.SingleThreadedExecutor()
     executor.add_node(node)
 
     def spin_ros():
+        if not rclpy.ok():
+            shutdown_hook()
+            return
         executor.spin_once(timeout_sec=0.01)
         if not rclpy.ok():
             shutdown_hook()
