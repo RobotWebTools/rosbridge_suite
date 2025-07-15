@@ -347,8 +347,6 @@ def main(args=None):
             shutdown_hook()
             return
         executor.spin_once(timeout_sec=0.01)
-        if not rclpy.ok():
-            shutdown_hook()
 
     spin_callback = PeriodicCallback(spin_ros, 1)
     spin_callback.start()
@@ -358,8 +356,8 @@ def main(args=None):
         rclpy.shutdown()
     except KeyboardInterrupt:
         print("Exiting due to SIGINT")
-        spin_callback.stop()
     finally:
+        spin_callback.stop()
         shutdown_hook()  # shutdown hook to stop the server
 
 
