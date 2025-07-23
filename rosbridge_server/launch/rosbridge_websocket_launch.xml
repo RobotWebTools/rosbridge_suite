@@ -33,8 +33,7 @@
   <arg unless="$(var bson_only_mode)" name="binary_encoder" default="default" />
 
   <group if="$(var ssl)">
-    <node name="rosbridge_websocket" namespace="$(var namespace)" pkg="rosbridge_server"
-      exec="rosbridge_websocket" output="$(var output)" respawn="$(var respawn)">
+    <node name="rosbridge_websocket" namespace="$(var namespace)" pkg="rosbridge_server" exec="rosbridge_websocket" output="$(var output)" respawn="$(var respawn)">
       <param name="certfile" value="$(var certfile)" />
       <param name="keyfile" value="$(var keyfile)" />
       <param name="port" value="$(var port)" />
@@ -57,8 +56,7 @@
   </group>
 
   <group unless="$(var ssl)">
-    <node name="rosbridge_websocket" namespace="$(var namespace)" pkg="rosbridge_server"
-      exec="rosbridge_websocket" output="$(var output)" respawn="$(var respawn)">
+    <node name="rosbridge_websocket" namespace="$(var namespace)" pkg="rosbridge_server" exec="rosbridge_websocket" output="$(var output)" respawn="$(var respawn)">
       <param name="port" value="$(var port)" />
       <param name="address" value="$(var address)" />
       <param name="url_path" value="$(var url_path)" />
@@ -80,8 +78,7 @@
     </node>
   </group>
 
-  <node name="rosapi" namespace="$(var namespace)" pkg="rosapi" exec="rosapi_node"
-    respawn="$(var respawn)">
+  <node name="rosapi" namespace="$(var namespace)" pkg="rosapi" exec="rosapi_node" respawn="$(var respawn)">
     <param name="topics_glob" value="$(var topics_glob)" />
     <param name="services_glob" value="$(var services_glob)" />
     <param name="params_glob" value="$(var params_glob)" />
