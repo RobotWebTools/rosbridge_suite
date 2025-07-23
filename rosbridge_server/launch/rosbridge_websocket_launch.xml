@@ -29,8 +29,7 @@
   <arg unless="$(var bson_only_mode)" name="binary_encoder" default="default" />
 
   <group if="$(var ssl)">
-    <node name="rosbridge_websocket" pkg="rosbridge_server" exec="rosbridge_websocket"
-      output="$(var output)">
+    <node name="rosbridge_websocket" pkg="rosbridge_server" exec="rosbridge_websocket" output="$(var output)">
       <param name="certfile" value="$(var certfile)" />
       <param name="keyfile" value="$(var keyfile)" />
       <param name="port" value="$(var port)" />
@@ -52,8 +51,7 @@
     </node>
   </group>
   <group unless="$(var ssl)">
-    <node name="rosbridge_websocket" pkg="rosbridge_server" exec="rosbridge_websocket"
-      output="$(var output)">
+    <node name="rosbridge_websocket" pkg="rosbridge_server" exec="rosbridge_websocket" output="$(var output)">
       <param name="port" value="$(var port)" />
       <param name="address" value="$(var address)" />
       <param name="url_path" value="$(var url_path)" />
