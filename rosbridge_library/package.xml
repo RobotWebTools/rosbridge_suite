@@ -22,7 +22,6 @@
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>python3-pil</exec_depend>
-  <exec_depend>rosidl_default_runtime</exec_depend>
   <exec_depend>python3-bson</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-ujson</exec_depend>
