@@ -30,8 +30,6 @@
   <test_depend>python3-twisted</test_depend>
   <test_depend>launch</test_depend>
   <test_depend>launch_ros</test_depend>
-  <test_depend>launch_testing</test_depend>
-  <test_depend>launch_testing_ros</test_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>
   <test_depend>rcl_interfaces</test_depend>
   <test_depend>std_srvs</test_depend>
