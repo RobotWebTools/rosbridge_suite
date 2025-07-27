@@ -17,7 +17,6 @@
   <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <exec_depend>python3-tornado</exec_depend>
-  <exec_depend>python3-twisted</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>rosbridge_library</exec_depend>
   <exec_depend>rosbridge_msgs</exec_depend>
