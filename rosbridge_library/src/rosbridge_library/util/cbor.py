@@ -71,7 +71,7 @@ _CBOR_TAG_BIGNUM_BYTES = struct.pack("B", CBOR_TAG | CBOR_TAG_BIGNUM)
 
 
 def dumps_int(val):
-    "return bytes representing int val in CBOR"
+    """Return bytes representing int val in CBOR."""
     if val >= 0:
         # CBOR_UINT is 0, so I'm lazy/efficient about not OR-ing it in.
         if val <= 23:
@@ -106,7 +106,7 @@ _CBOR_TAG_NEGBIGNUM_BYTES = struct.pack("B", CBOR_TAG | CBOR_TAG_NEGBIGNUM)
 
 
 def _encode_type_num(cbor_type, val):
-    """For some CBOR primary type [0..7] and an auxiliary unsigned number, return CBOR encoded bytes"""
+    """For some CBOR primary type [0..7] and an auxiliary unsigned number, return CBOR encoded bytes."""
     assert val >= 0
     if val <= 23:
         return struct.pack("B", cbor_type | val)
@@ -203,8 +203,10 @@ def dumps(ob, sort_keys=False):
 # same basic signature as json.dump, but with no options (yet)
 def dump(obj, fp, sort_keys=False):
     """
-    obj: Python object to serialize
-    fp: file-like object capable of .write(bytes)
+    Serialize obj to CBOR and write it to fp.
+
+    :param obj: Python object to serialize
+    :param fp: file-like object capable of .write(bytes)
     """
     # this is kinda lame, but probably not inefficient for non-huge objects
     # TODO: .write() to fp as we go as each inner object is serialized
@@ -227,9 +229,7 @@ class Tag:
 
 
 def loads(data):
-    """
-    Parse CBOR bytes and return Python objects.
-    """
+    """Parse CBOR bytes and return Python objects."""
     if data is None:
         raise ValueError("got None for buffer to decode in loads")
     fp = BytesIO(data)
@@ -237,9 +237,7 @@ def loads(data):
 
 
 def load(fp):
-    """
-    Parse and return object from fp, a file-like object supporting .read(n)
-    """
+    """Parse and return object from fp, a file-like object supporting .read(n)."""
     return _loads(fp)[0]
 
 
@@ -328,7 +326,7 @@ def _loads_map(fp, limit, depth, returntags, aux, bytes_read):
 
 
 def _loads(fp, limit=None, depth=0, returntags=False):
-    "return (object, bytes read)"
+    """Return (object, bytes read)."""
     if depth > _MAX_DEPTH:
         raise Exception("hit CBOR loads recursion depth limit")
 

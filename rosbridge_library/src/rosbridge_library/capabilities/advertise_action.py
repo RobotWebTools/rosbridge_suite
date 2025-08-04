@@ -75,7 +75,11 @@ class AdvertisedActionHandler:
         return id
 
     async def execute_callback(self, goal: Any) -> Any:
-        """Action server goal callback function."""
+        """
+        Execute action goal.
+        
+        ActionServer callback for executing an action goal.
+        """
         # generate a unique ID
         goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
@@ -121,7 +125,11 @@ class AdvertisedActionHandler:
             del self.goal_handles[goal_id]
 
     def cancel_callback(self, cancel_request: ServerGoalHandle) -> CancelResponse:
-        """Action server cancel callback function."""
+        """
+        Cancel action goal.
+        
+        ActionServer callback for canceling an action goal.
+        """
         for goal_id, goal_handle in self.goal_handles.items():
             if cancel_request.goal_id == goal_handle.goal_id:
                 self.protocol.log("warning", f"Canceling action {goal_id}")
@@ -135,6 +143,8 @@ class AdvertisedActionHandler:
 
     def handle_feedback(self, goal_id: str, feedback: Any) -> None:
         """
+        Handle action feedback.
+
         Called by the ActionFeedback capability to handle action feedback from the external client.
         """
         if goal_id in self.goal_handles:
@@ -144,6 +154,8 @@ class AdvertisedActionHandler:
 
     def handle_result(self, goal_id: str, result: dict, status: int) -> None:
         """
+        Handle action result.
+
         Called by the ActionResult capability to handle a successful action result from the external client.
         """
         if goal_id in self.goal_futures:
@@ -154,6 +166,8 @@ class AdvertisedActionHandler:
 
     def handle_abort(self, goal_id: str) -> None:
         """
+        Handle action abort.
+
         Called by the ActionResult capability to handle aborting action result from the external client.
         """
         if goal_id in self.goal_futures:
@@ -164,9 +178,7 @@ class AdvertisedActionHandler:
             )
 
     def graceful_shutdown(self) -> None:
-        """
-        Signal the AdvertisedActionHandler to shutdown.
-        """
+        """Signal the AdvertisedActionHandler to shutdown."""
         if self.goal_futures:
             incomplete_ids = ", ".join(self.goal_futures.keys())
             self.protocol.log(
