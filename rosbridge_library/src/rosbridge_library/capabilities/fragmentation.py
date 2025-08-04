@@ -65,7 +65,7 @@ class Fragmentation(Capability):
         :param message: the message dict object to be fragmented
         :param fragment_size: the max size for the fragments
         :param mid: (optional) if provided, the fragment messages will be given this id.
-        Otherwise an id will be auto-generated.
+            Otherwise an id will be auto-generated.
 
         :return: A generator of message dict objects representing the fragments
         """
