@@ -12,7 +12,7 @@ ignore = [
     "D105",
     "D106",
     "D107",
-    
+
     # Conflicting pydocstyle rules
     "D203",
     "D212",
