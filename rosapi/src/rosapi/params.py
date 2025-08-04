@@ -73,8 +73,15 @@ _parameter_type_mapping = [
 
 def init(node: Node, timeout_sec: float | int = DEFAULT_PARAM_TIMEOUT_SEC):
     """
-    Initializes params module with a rclpy.node.Node for further use.
+    Initialize params module with a rclpy.node.Node for further use.
+
     This function has to be called before any other for the module to work.
+
+    :param node: The rclpy node to use for service calls.
+    :type node: Node
+    :param timeout_sec: The timeout in seconds for service calls.
+    :type timeout_sec: float | int, optional
+    :raises ValueError: If the timeout is not a positive number.
     """
     global _node, _timeout_sec
     _node = node
@@ -85,8 +92,7 @@ def init(node: Node, timeout_sec: float | int = DEFAULT_PARAM_TIMEOUT_SEC):
 
 
 async def set_param(node_name: str, name: str, value: str, params_glob: list[str]):
-    """Sets a parameter in a given node"""
-
+    """Set a parameter in a given node."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to set the parameter.
@@ -108,6 +114,8 @@ async def set_param(node_name: str, name: str, value: str, params_glob: list[str
 
 async def _set_param(node_name: str, name: str, value: str, parameter_type=None):
     """
+    Set a parameter in a given node.
+
     Internal helper function for set_param.
     Attempts to set the given parameter in the target node with the desired value,
     deducing the parameter type if it's not specified.
@@ -155,8 +163,7 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
 
 
 async def get_param(node_name: str, name: str, params_glob: str) -> str:
-    """Gets a parameter from a given node"""
-
+    """Get a parameter from a given node."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to get the parameter.
@@ -176,8 +183,11 @@ async def get_param(node_name: str, name: str, params_glob: str) -> str:
 
 
 async def _get_param(node_name: str, name: str) -> ParameterValue:
-    """Internal helper function for get_param"""
+    """
+    Get a parameter from a given node.
 
+    Internal helper function for get_param.
+    """
     assert _node is not None
     client: Client = _node.create_client(
         GetParameters,
@@ -212,8 +222,7 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
 
 
 async def has_param(node_name: str, name: str, params_glob: str) -> bool:
-    """Checks whether a given node has a parameter or not"""
-
+    """Check whether a given node has a parameter or not."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to set the parameter.
@@ -230,8 +239,7 @@ async def has_param(node_name: str, name: str, params_glob: str) -> bool:
 
 
 async def delete_param(node_name, name, params_glob):
-    """Deletes a parameter in a given node"""
-
+    """Delete a parameter in a given node."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to delete the parameter.

@@ -62,16 +62,20 @@ specials = ["time", "duration"]
 
 
 def get_typedef(type):
-    """A typedef is a dict containing the following fields:
-         - string type
-         - string[] fieldnames
-         - string[] fieldtypes
-         - int[] fieldarraylen
-         - string[] examples
-         - string[] constnames
-         - string[] constvalues
-    get_typedef will return a typedef dict for the specified message type"""
+    """
+    Get the typedef for a message type.
 
+    A typedef is a dict containing the following fields:
+        - string type
+        - string[] fieldnames
+        - string[] fieldtypes
+        - int[] fieldarraylen
+        - string[] examples
+        - string[] constnames
+        - string[] constvalues
+
+    get_typedef will return a typedef dict for the specified message type.
+    """
     # Check if the type string indicates a sequence (array) type
     if matches := re.findall("sequence<([^<]+)>", type):
         # Extract the inner type and continue processing
@@ -96,27 +100,27 @@ def get_typedef(type):
 
 
 def get_service_request_typedef(servicetype):
-    """Returns a typedef dict for the service request class for the specified service type"""
+    """Return a typedef dict for the service request class for the specified service type."""
     # Get an instance of the service request class and return its typedef
     instance = ros_loader.get_service_request_instance(servicetype)
     return _get_typedef(instance)
 
 
 def get_service_response_typedef(servicetype):
-    """Returns a typedef dict for the service response class for the specified service type"""
+    """Return a typedef dict for the service response class for the specified service type."""
     # Get an instance of the service response class and return its typedef
     instance = ros_loader.get_service_response_instance(servicetype)
     return _get_typedef(instance)
 
 
 def get_typedef_recursive(type):
-    """Returns a list of typedef dicts for this type and all contained type fields"""
+    """Return a list of typedef dicts for this type and all contained type fields."""
     # Just go straight into the recursive method
     return _get_typedefs_recursive(type, [])
 
 
 def get_service_request_typedef_recursive(servicetype):
-    """Returns a list of typedef dicts for this type and all contained type fields"""
+    """Return a list of typedef dicts for this type and all contained type fields."""
     # Get an instance of the service request class and get its typedef
     instance = ros_loader.get_service_request_instance(servicetype)
     typedef = _get_typedef(instance)
@@ -126,7 +130,7 @@ def get_service_request_typedef_recursive(servicetype):
 
 
 def get_service_response_typedef_recursive(servicetype):
-    """Returns a list of typedef dicts for this type and all contained type fields"""
+    """Return a list of typedef dicts for this type and all contained type fields."""
     # Get an instance of the service response class and get its typedef
     instance = ros_loader.get_service_response_instance(servicetype)
     typedef = _get_typedef(instance)
@@ -136,7 +140,7 @@ def get_service_response_typedef_recursive(servicetype):
 
 
 def get_action_goal_typedef_recursive(actiontype):
-    """Returns a list of typedef dicts for this type and all contained type fields"""
+    """Return a list of typedef dicts for this type and all contained type fields."""
     # Get an instance of the action goal class and get its typedef
     instance = ros_loader.get_action_goal_instance(actiontype)
     typedef = _get_typedef(instance)
@@ -146,7 +150,7 @@ def get_action_goal_typedef_recursive(actiontype):
 
 
 def get_action_result_typedef_recursive(actiontype):
-    """Returns a list of typedef dicts for this type and all contained type fields"""
+    """Return a list of typedef dicts for this type and all contained type fields."""
     # Get an instance of the action result class and get its typedef
     instance = ros_loader.get_action_result_instance(actiontype)
     typedef = _get_typedef(instance)
@@ -156,7 +160,7 @@ def get_action_result_typedef_recursive(actiontype):
 
 
 def get_action_feedback_typedef_recursive(actiontype):
-    """Returns a list of typedef dicts for this type and all contained type fields"""
+    """Return a list of typedef dicts for this type and all contained type fields."""
     # Get an instance of the action feedback class and get its typedef
     instance = ros_loader.get_action_feedback_instance(actiontype)
     typedef = _get_typedef(instance)
@@ -166,7 +170,7 @@ def get_action_feedback_typedef_recursive(actiontype):
 
 
 def get_typedef_full_text(ty):
-    """Returns the full text (similar to `gendeps --cat`) for the specified message type"""
+    """Return the full text (similar to `gendeps --cat`) for the specified message type."""
     try:
         return stringify_field_types(ty)
     except Exception as e:
@@ -174,7 +178,7 @@ def get_typedef_full_text(ty):
 
 
 def _get_typedef(instance):
-    """Gets a typedef dict for the specified instance"""
+    """Get a typedef dict for the specified instance."""
     if _valid_instance(instance):
         fieldnames, fieldtypes, fieldarraylen, examples = _handle_array_information(instance)
         constnames, constvalues = _handle_constant_information(instance)
@@ -185,8 +189,11 @@ def _get_typedef(instance):
 
 
 def _valid_instance(instance):
-    """Check if instance is valid i.e.,
-    not None, has __slots__ and _fields_and_field_types attributes"""
+    """
+    Check if instance is valid.
+
+    A valid instance is not None, has __slots__ and _fields_and_field_types attributes.
+    """
     return not (
         instance is None
         or not hasattr(instance, "__slots__")
@@ -195,8 +202,11 @@ def _valid_instance(instance):
 
 
 def _handle_array_information(instance):
-    """Handles extraction of array information including field names, types,
-    lengths and examples"""
+    """
+    Handle extraction of array information.
+
+    Handles extraction of field names, types, lengths and examples.
+    """
     fieldnames = []
     fieldtypes = []
     fieldarraylen = []
@@ -218,8 +228,7 @@ def _handle_array_information(instance):
 
 
 def _handle_type_and_array_len(instance, name):
-    """Extracts field type and determines its length if it's an array"""
-
+    """Extract field type and determine its length if it's an array."""
     # Get original field type using instance's _fields_and_field_types property
     field_type = instance._fields_and_field_types[name[1:]]
 
@@ -245,7 +254,7 @@ def _handle_type_and_array_len(instance, name):
 
 
 def _handle_example(arraylen, field_type, field_instance):
-    """Determines the example of a field instance, whether it's an array or atomic type"""
+    """Determine the example of a field instance, whether it's an array or atomic type."""
     if arraylen >= 0:
         example = []
     elif field_type not in atomics:
@@ -256,7 +265,7 @@ def _handle_example(arraylen, field_type, field_instance):
 
 
 def _handle_constant_information(instance):
-    """Handles extraction of constants information including constant names and values"""
+    """Handle extraction of constants information including constant names and values."""
     constnames = []
     constvalues = []
     attributes = inspect.getmembers(instance)
@@ -274,7 +283,7 @@ def _handle_constant_information(instance):
 def _build_typedef_dictionary(
     instance, fieldnames, fieldtypes, fieldarraylen, examples, constnames, constvalues
 ):
-    """Builds the typedef dictionary from multiple inputs collected from instance"""
+    """Build the typedef dictionary from multiple inputs collected from instance."""
     typedef = {
         "type": _type_name_from_instance(instance),
         "fieldnames": fieldnames,
@@ -303,7 +312,7 @@ def _get_special_typedef(type):
 
 
 def _get_typedefs_recursive(type, typesseen):
-    """returns the type def for this type as well as the type defs for any fields within the type"""
+    """Return the type def for this type as well as the type defs for any fields within the type."""
     if type in typesseen:
         # Don't put a type if it's already been seen
         return []
@@ -330,8 +339,7 @@ def _get_subtypedefs_recursive(typedef, typesseen):
 
 
 def _type_name(type, instance):
-    """given a short type, and an object instance of that type,
-    determines and returns the fully qualified type"""
+    """Get the fully qualified type name for a given type and instance."""
     # The fully qualified type of atomic and special types is just their original name
     if type in atomics or type in specials:
         return type
