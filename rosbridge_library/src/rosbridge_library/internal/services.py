@@ -65,7 +65,7 @@ class ServiceCaller(Thread):
     ) -> None:
         """
         Create a service caller for the specified service.
-        
+
         Use start() to start in a separate thread or run() to run in this thread.
 
         :param service: The name of the service to call

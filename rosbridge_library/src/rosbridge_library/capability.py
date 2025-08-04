@@ -52,7 +52,7 @@ class Capability:
     def __init__(self, protocol):
         """
         Abstract class constructor.
-        
+
         All capabilities require a handle to the containing protocol.
 
         :param protocol: The protocol instance for this capability instance
@@ -72,7 +72,7 @@ class Capability:
     def finish(self):
         """
         Notify this capability that the client is finished.
-         
+
         Tells the capability that it's time to free up resources.
         """
         pass

@@ -173,7 +173,7 @@ def extract_values(inst):
 def populate_instance(msg, inst, clock=ROSClock()):
     """
     Populate a ROS message instance with the provided values.
-    
+
     Return an instance of the provided class, with its fields populated
     according to the values in msg.
     """

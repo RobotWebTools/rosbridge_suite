@@ -58,7 +58,7 @@ class Subscription:
     def __init__(self, client_id, topic, publish, node_handle):
         """
         Create a subscription.
-        
+
         Create a subscription for the specified client on the specified
         topic, with callback publish.
 
@@ -178,7 +178,7 @@ class Subscription:
     def update_params(self):
         """
         Update the parameters of the message handler based on current subscriptions.
-        
+
         Determine the 'lowest common denominator' params to satisfy all
         subscribed clients.
         """

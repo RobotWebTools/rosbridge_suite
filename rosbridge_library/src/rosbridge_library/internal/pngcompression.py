@@ -40,7 +40,7 @@ from PIL import Image
 def encode(string):
     r"""
     PNG-compress the string in a square RGB image padded with '\n'.
-     
+
     :return: The b64 encoded bytes.
     """
     string_bytes = string.encode("utf-8")

@@ -101,7 +101,7 @@ def get_service_class(typestring: str) -> Any:
 def get_action_class(typestring: str) -> Any:
     """
     Load the action type specified.
-    
+
     Throws exceptions on failure.
 
     :return: the loaded class
