@@ -20,24 +20,24 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_cmake_python</buildtool_depend>
 
-  <exec_depend>rosapi_msgs</exec_depend>
   <exec_depend>builtin_interfaces</exec_depend>
-  <exec_depend>rclpy</exec_depend>
   <exec_depend>rcl_interfaces</exec_depend>
-  <exec_depend>rosbridge_library</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>ros2interface</exec_depend>
   <exec_depend>ros2node</exec_depend>
   <exec_depend>ros2param</exec_depend>
   <exec_depend>ros2service</exec_depend>
   <exec_depend>ros2topic</exec_depend>
-  <exec_depend>ros2interface</exec_depend>
+  <exec_depend>rosapi_msgs</exec_depend>
+  <exec_depend>rosbridge_library</exec_depend>
   <exec_depend>rosidl_adapter</exec_depend>
   <exec_depend>rosidl_runtime_py</exec_depend>
 
   <test_depend>ament_cmake_pytest</test_depend>
-  <test_depend>sensor_msgs</test_depend>
-  <test_depend>shape_msgs</test_depend>
   <test_depend>geometry_msgs</test_depend>
   <test_depend>rmw_dds_common</test_depend>
+  <test_depend>sensor_msgs</test_depend>
+  <test_depend>shape_msgs</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
