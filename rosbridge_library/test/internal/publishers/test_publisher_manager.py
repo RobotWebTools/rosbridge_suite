@@ -37,7 +37,7 @@ class TestPublisherManager(unittest.TestCase):
         rclpy.shutdown()
 
     def test_register_publisher(self):
-        """Register a publisher on a clean topic with a good msg type"""
+        """Register a publisher on a clean topic with a good msg type."""
         topic = "/test_register_publisher"
         msg_type = "std_msgs/String"
         client = "client_test_register_publisher"
@@ -223,7 +223,7 @@ class TestPublisherManager(unittest.TestCase):
         )
 
     def test_publisher_manager_publish(self):
-        """Make sure that publishing works"""
+        """Make sure that publishing works."""
         topic = "/test_publisher_manager_publish"
         msg = {"data": "test publisher manager publish"}
         client = "client_test_publisher_manager_publish"
@@ -244,7 +244,7 @@ class TestPublisherManager(unittest.TestCase):
         self.assertEqual(received["msg"].data, msg["data"])
 
     def test_publisher_manager_bad_publish(self):
-        """Make sure that bad publishing fails"""
+        """Make sure that bad publishing fails."""
         topic = "/test_publisher_manager_bad_publish"
         client = "client_test_publisher_manager_bad_publish"
         msg_type = "std_msgs/String"

@@ -137,7 +137,13 @@ class QueueMessageHandler(MessageHandler, Thread):
             return self
 
     def finish(self, block=True):
-        """If throttle was set to 0, this pushes all buffered messages"""
+        """
+        Notify the thread to finish, and optionally wait for it to finish.
+
+        If throttle was set to 0, this pushes all buffered messages.
+
+        :param block: If True, wait for the thread to finish before returning
+        """
         # Notify the thread to finish
         with self.c:
             self.alive = False

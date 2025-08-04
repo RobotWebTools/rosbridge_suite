@@ -19,20 +19,20 @@ from std_srvs.srv import SetBool, Trigger
 
 class TestCallService(unittest.TestCase):
     def trigger_cb(self, request, response):
-        """Helper callback function for a test service with no arguments."""
+        """Handle request for a test service with no arguments."""
         response.success = True
         response.message = "called trigger service successfully"
         return response
 
     def trigger_long_cb(self, request, response):
-        """Helper callback function for a long running test service with no arguments."""
+        """Handle request for a long running test service with no arguments."""
         time.sleep(0.5)
         response.success = True
         response.message = "called trigger service successfully"
         return response
 
     def set_bool_cb(self, request, response):
-        """Helper callback function for a test service with arguments."""
+        """Handle request for a test service with arguments."""
         response.success = request.data
         if request.data:
             response.message = "set bool to true"

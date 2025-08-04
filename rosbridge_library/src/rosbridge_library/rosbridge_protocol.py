@@ -47,7 +47,7 @@ from rosbridge_library.protocol import Protocol
 
 
 class RosbridgeProtocol(Protocol):
-    """Adds the handlers for the rosbridge opcodes"""
+    """Adds the handlers for the rosbridge opcodes."""
 
     rosbridge_capabilities = [
         Advertise,

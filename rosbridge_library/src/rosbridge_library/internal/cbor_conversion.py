@@ -44,7 +44,8 @@ TAGGED_ARRAY_FORMATS = {
 
 
 def extract_cbor_values(msg):
-    """Extract a dictionary of CBOR-friendly values from a ROS message.
+    """
+    Extract a dictionary of CBOR-friendly values from a ROS message.
 
     Primitive values will be casted to specific Python primitives.
 

@@ -32,7 +32,7 @@ class TestMultiSubscriber(unittest.TestCase):
         rclpy.shutdown()
 
     def test_register_multisubscriber(self):
-        """Register a subscriber on a clean topic with a good msg type"""
+        """Register a subscriber on a clean topic with a good msg type."""
         topic = "/test_register_multisubscriber"
         msg_type = "std_msgs/String"
 
@@ -41,7 +41,7 @@ class TestMultiSubscriber(unittest.TestCase):
         self.assertTrue(is_topic_subscribed(self.node, topic))
 
     def test_unregister_multisubscriber(self):
-        """Register and unregister a subscriber on a clean topic with a good msg type"""
+        """Register and unregister a subscriber on a clean topic with a good msg type."""
         topic = "/test_unregister_multisubscriber"
         msg_type = "std_msgs/String"
 
