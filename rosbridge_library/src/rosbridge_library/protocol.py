@@ -226,7 +226,7 @@ class Protocol:
     def outgoing(self, message, compression="none"):
         """
         Pass an outgoing message to the client.
-        
+
         This method should be overridden.
 
         :param message: The wire-level message to send to the client
@@ -373,7 +373,7 @@ class Protocol:
     def log(self, level, message, lid=None):
         """
         Log a message to the client.
-        
+
         By default just sends the message to the node logger.
 
         :param level: The logger level of this message

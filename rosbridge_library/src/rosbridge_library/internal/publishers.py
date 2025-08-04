@@ -244,7 +244,7 @@ class PublisherManager:
     def unregister(self, client_id, topic):
         """
         Unregister a client from the publisher for the given topic.
-        
+
         Will wait some time before actually unregistering, it is done in _unregister_impl/
 
         If there are no clients remaining for that publisher, then the publisher is unregistered

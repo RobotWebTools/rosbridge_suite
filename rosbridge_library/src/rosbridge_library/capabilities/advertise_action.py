@@ -77,7 +77,7 @@ class AdvertisedActionHandler:
     async def execute_callback(self, goal: Any) -> Any:
         """
         Execute action goal.
-        
+
         ActionServer callback for executing an action goal.
         """
         # generate a unique ID
@@ -127,7 +127,7 @@ class AdvertisedActionHandler:
     def cancel_callback(self, cancel_request: ServerGoalHandle) -> CancelResponse:
         """
         Cancel action goal.
-        
+
         ActionServer callback for canceling an action goal.
         """
         for goal_id, goal_handle in self.goal_handles.items():
