@@ -1,5 +1,39 @@
-[tool.bandit]
-skips = ["B101", "B110", "B311"]
+[tool.codespell]
+ignore-words-list = ["miror"]
 
-[tool.black]
+[tool.ruff]
 line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "D", # pydocstyle
+    "S", # bandit
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "C", # mccabe
+    "I", # isort
+]
+ignore = [
+    # Undocumented code
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+
+    # Conflicting pydocstyle rules
+    "D203", # incorrect-blank-line-before-class
+    "D212", # multi-line-summary-first-line
+
+    "S101", # assert
+    "S110", # try-except-pass
+    "S311", # suspicious-non-cryptographic-random-usage
+]
+
+mccabe.max-complexity = 36
+
+pycodestyle.max-line-length = 217
