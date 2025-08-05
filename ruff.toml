@@ -6,6 +6,7 @@ select = [
     "W", # pycodestyle warnings
     "F", # pyflakes
     "C", # mccabe
+    "I", # isort
 ]
 ignore = [
     # Undocumented code
