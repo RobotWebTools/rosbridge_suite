@@ -2,6 +2,10 @@
 select = [
     "D", # pydocstyle
     "S", # bandit
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "C", # mccabe
 ]
 ignore = [
     # Undocumented code
@@ -22,3 +26,7 @@ ignore = [
     "S110", # try-except-pass
     "S311", # suspicious-non-cryptographic-random-usage
 ]
+
+mccabe.max-complexity = 36
+
+pycodestyle.max-line-length = 217
