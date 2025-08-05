@@ -4,7 +4,7 @@ rosapi
 ## Nodes
 
 ### rosapi (Executable: `rosapi_node`)
-Provides services for getting various ROS meta-information, including ROS topic, services, intefaces or
+Provides services for getting various ROS meta-information, including ROS topic, services, interfaces or
 action servers and managing ROS parameters.
 
 #### Services
@@ -12,7 +12,7 @@ action servers and managing ROS parameters.
   * `~/topics` (type: `rosapi_msgs/srv/Topics`)
 
     Return a list of all the topics being published.
-  
+
   * `~/interfaces` (type: `rosapi_msgs/srv/Interfaces`)
 
     Return a list of all the interfaces in the system.
