@@ -202,9 +202,9 @@ class Rosapi(Node):
 
     def get_interfaces(self, request, response):
         """
-        Return a list of all the types in the system.
+        Return a list of all the interfaces in the system.
 
-        Called by the rosapi/Types service.
+        Called by the rosapi/Interfaces service.
         """
         response.interfaces = proxy.get_interfaces()
         return response
