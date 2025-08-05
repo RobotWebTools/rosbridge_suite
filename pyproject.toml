@@ -1,6 +1,3 @@
-[tool.codespell]
-ignore-words-list = ["miror"]
-
 [tool.black]
 # We use ruff for formatting, but black formatter should be compatible with ruff.
 line-length = 100
