@@ -388,7 +388,6 @@ def _to_list_inst(msg, rostype, roottype, clock, inst, stack):
 
 
 def _to_object_inst(msg, rostype, roottype, clock, inst, stack):
-
     # Typecheck the msg
     if not isinstance(msg, dict):
         raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))

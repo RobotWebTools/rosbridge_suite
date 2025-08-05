@@ -36,7 +36,6 @@ from rosbridge_library.protocol import Protocol
 
 
 class ActionFeedback(Capability):
-
     action_feedback_msg_fields = [
         (True, "action", str),
         (False, "id", str),

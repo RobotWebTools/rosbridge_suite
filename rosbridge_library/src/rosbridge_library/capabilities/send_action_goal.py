@@ -44,7 +44,6 @@ from rosbridge_library.protocol import Protocol
 
 
 class SendActionGoal(Capability):
-
     send_action_goal_msg_fields = [
         (True, "action", str),
         (True, "action_type", str),

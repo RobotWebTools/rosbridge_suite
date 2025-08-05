@@ -39,7 +39,6 @@ from rosbridge_library.internal.services import ServiceCaller
 
 
 class CallService(Capability):
-
     call_service_msg_fields = [
         (True, "service", str),
         (False, "fragment_size", (int, type(None))),

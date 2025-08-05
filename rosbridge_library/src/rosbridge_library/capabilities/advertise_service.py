@@ -9,7 +9,6 @@ from rosbridge_library.internal.ros_loader import get_service_class
 
 
 class AdvertisedServiceHandler:
-
     id_counter = 1
 
     def __init__(self, service_name, service_type, protocol):

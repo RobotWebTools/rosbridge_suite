@@ -36,7 +36,6 @@ from rosbridge_library.protocol import Protocol
 
 
 class ActionResult(Capability):
-
     action_result_msg_fields = [
         (True, "action", str),
         (False, "id", str),
