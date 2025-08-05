@@ -36,8 +36,12 @@ from rosbridge_library.capability import Capability
 
 
 class Fragmentation(Capability):
-    """The Fragmentation capability doesn't define any incoming operation
-    handlers, but provides methods to fragment outgoing messages"""
+    """
+    A capability to fragment outgoing messages into smaller parts.
+
+    The Fragmentation capability doesn't define any incoming operation
+    handlers, but provides methods to fragment outgoing messages.
+    """
 
     fragmentation_seed = 0
 
@@ -46,7 +50,10 @@ class Fragmentation(Capability):
         Capability.__init__(self, protocol)
 
     def fragment(self, message, fragment_size, mid=None):
-        """Serializes the provided message, then splits the serialized
+        """
+        Fragment a message into smaller parts.
+
+        Serializes the provided message, then splits the serialized
         message according to fragment_size, then sends the fragments.
 
         If the size of the message is less than the fragment size, then
@@ -55,13 +62,12 @@ class Fragmentation(Capability):
         Since fragmentation is typically only used for very large messages,
         this method returns a generator for fragments rather than a list
 
-        Keyword Arguments
-        message       -- the message dict object to be fragmented
-        fragment_size -- the max size for the fragments
-        mid           -- (optional) if provided, the fragment messages
-        will be given this id.  Otherwise an id will be auto-generated.
+        :param message: the message dict object to be fragmented
+        :param fragment_size: the max size for the fragments
+        :param mid: (optional) if provided, the fragment messages will be given this id.
+            Otherwise an id will be auto-generated.
 
-        Returns a generator of message dict objects representing the fragments
+        :return: A generator of message dict objects representing the fragments
         """
         # All fragmented messages need an ID so they can be reconstructed
         if mid is None:
@@ -96,7 +102,7 @@ class Fragmentation(Capability):
         return self._fragment_generator(serialized, fragment_size, mid)
 
     def _fragment_generator(self, msg, size, mid):
-        """Returns a generator of fragment messages"""
+        """Return a generator of fragment messages."""
         total = ((len(msg) - 1) / size) + 1
         n = 0
         for i in range(0, len(msg), size):
@@ -105,8 +111,12 @@ class Fragmentation(Capability):
             n = n + 1
 
     def _create_fragment(self, fragment, num, total, mid):
-        """Given a string fragment of the original message, creates
-        the appropriate fragment message"""
+        """
+        Create a fragment message.
+
+        Given a string fragment of the original message, creates
+        the appropriate fragment message.
+        """
         return {
             "op": "fragment",
             "id": mid,

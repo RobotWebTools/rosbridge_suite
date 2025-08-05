@@ -40,3 +40,8 @@ repos:
     rev: v2.3.0
     hooks:
       - id: codespell
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.7
+    hooks:
+      - id: ruff-check

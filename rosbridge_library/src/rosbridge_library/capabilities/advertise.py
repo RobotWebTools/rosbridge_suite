@@ -38,13 +38,12 @@ from rosbridge_library.internal.publishers import manager
 
 
 class Registration:
-    """Keeps track of how many times a client has requested to advertise
-    a publisher.
+    """
+    Keeps track of how many times a client has requested to advertise a publisher.
 
     A client could advertise and unadvertise a topic multiple times, and we
     must make sure that the underlying publisher is only created and destroyed
     at the appropriate moments
-
     """
 
     def __init__(self, client_id, topic, node_handle):

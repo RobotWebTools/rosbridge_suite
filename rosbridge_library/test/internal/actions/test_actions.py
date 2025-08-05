@@ -140,7 +140,7 @@ class TestActions(unittest.TestCase):
             actions.args_to_action_goal_instance("", cls.Goal(), args)
 
     def test_send_action_goal(self):
-        """Test a simple action call"""
+        """Test a simple action call."""
         ActionTester(self.executor)
         self.result = None
 
@@ -178,7 +178,7 @@ class TestActions(unittest.TestCase):
         self.assertEqual(list(json_ret["result"]["sequence"]), [0, 1, 1, 2, 3, 5])
 
     def test_action_client_handler(self):
-        """Same as test_service_call but via the thread caller"""
+        """Test service_call via the thread caller."""
         ActionTester(self.executor)
 
         received = {"json": None}

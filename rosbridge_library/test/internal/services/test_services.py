@@ -157,7 +157,7 @@ class TestServices(unittest.TestCase):
             services.args_to_service_request_instance("", cls.Request(), args)
 
     def test_service_call(self):
-        """Test a simple list_parameters service call"""
+        """Test a simple list_parameters service call."""
         # Prepare parameter
         self.node.declare_parameter("test_parameter", 1.0)
 
@@ -178,7 +178,7 @@ class TestServices(unittest.TestCase):
             self.assertEqual(x, y)
 
     def test_service_caller(self):
-        """Same as test_service_call but via the thread caller"""
+        """Same as test_service_call but via the thread caller."""
         # Prepare parameter
         self.node.declare_parameter("test_parameter", 1.0)
 

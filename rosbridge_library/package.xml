@@ -3,9 +3,8 @@
   <name>rosbridge_library</name>
   <version>2.3.0</version>
   <description>
-    The core rosbridge package, responsible for interpreting JSON andperforming
-    the appropriate ROS action, like subscribe, publish, call service, and
-    interact with params.
+The core rosbridge package, responsible for interpreting JSON and performing the appropriate
+ROS action, like subscribe, publish, call service, and interact with params.
   </description>
 
   <license>BSD</license>

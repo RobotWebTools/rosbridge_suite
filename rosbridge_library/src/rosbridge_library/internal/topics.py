@@ -30,7 +30,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-""" Exceptions and code common to both publishers and subscribers """
+"""Exceptions and code common to both publishers and subscribers."""
 
 
 class TopicNotEstablishedException(Exception):
