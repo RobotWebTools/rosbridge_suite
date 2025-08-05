@@ -1,6 +1,7 @@
 [lint]
 select = [
     "D", # pydocstyle
+    "S", # bandit
 ]
 ignore = [
     # Undocumented code
@@ -14,6 +15,10 @@ ignore = [
     "D107",
 
     # Conflicting pydocstyle rules
-    "D203",
-    "D212",
+    "D203", # incorrect-blank-line-before-class
+    "D212", # multi-line-summary-first-line
+
+    "S101", # assert
+    "S110", # try-except-pass
+    "S311", # suspicious-non-cryptographic-random-usage
 ]
