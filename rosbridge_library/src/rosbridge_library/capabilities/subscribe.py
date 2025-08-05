@@ -139,7 +139,7 @@ class Subscription:
         """
         Unsubscribe this particular client's subscription.
 
-        :param sid: The individual subscription id.  If None, all are unsubscribed
+        :param sid: The individual subscription id. If None, all are unsubscribed
         """
         if sid is None:
             self.clients.clear()
