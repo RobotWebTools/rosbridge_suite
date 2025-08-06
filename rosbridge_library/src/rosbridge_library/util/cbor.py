@@ -444,7 +444,7 @@ def tagify(ob, aux):
         # TODO: parse RFC3339 date string
         pass
     if aux == CBOR_TAG_DATE_ARRAY:
-        return datetime.datetime.utcfromtimestamp(ob)
+        return datetime.datetime.fromtimestamp(ob, tz=datetime.timezone.utc)
     if aux == CBOR_TAG_BIGNUM:
         return _bytes_to_biguint(ob)
     if aux == CBOR_TAG_NEGBIGNUM:
