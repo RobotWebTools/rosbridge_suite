@@ -299,5 +299,4 @@ async def get_param_names(params_glob: str | None) -> list[str]:
         return list(
             filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob), params)
         )
-    else:
-        return params
+    return params

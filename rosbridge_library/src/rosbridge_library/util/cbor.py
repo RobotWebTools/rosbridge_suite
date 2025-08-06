@@ -353,11 +353,11 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
         if hibyte & 0x80:
             val = -1.0 * val
         return (val, 3)
-    elif tb == CBOR_FLOAT32:
+    if tb == CBOR_FLOAT32:
         data = fp.read(4)
         pf = struct.unpack_from("!f", data, 0)
         return (pf[0], 5)
-    elif tb == CBOR_FLOAT64:
+    if tb == CBOR_FLOAT64:
         data = fp.read(8)
         pf = struct.unpack_from("!d", data, 0)
         return (pf[0], 9)
@@ -366,24 +366,24 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
 
     if tag == CBOR_UINT:
         return (aux, bytes_read)
-    elif tag == CBOR_NEGINT:
+    if tag == CBOR_NEGINT:
         return (-1 - aux, bytes_read)
-    elif tag == CBOR_BYTES:
+    if tag == CBOR_BYTES:
         ob, subpos = loads_bytes(fp, aux)
         return (ob, bytes_read + subpos)
-    elif tag == CBOR_TEXT:
+    if tag == CBOR_TEXT:
         raw, subpos = loads_bytes(fp, aux, btag=CBOR_TEXT)
         ob = raw.decode("utf8")
         return (ob, bytes_read + subpos)
-    elif tag == CBOR_ARRAY:
+    if tag == CBOR_ARRAY:
         if aux is None:
             return _loads_var_array(fp, limit, depth, returntags, bytes_read)
         return _loads_array(fp, limit, depth, returntags, aux, bytes_read)
-    elif tag == CBOR_MAP:
+    if tag == CBOR_MAP:
         if aux is None:
             return _loads_var_map(fp, limit, depth, returntags, bytes_read)
         return _loads_map(fp, limit, depth, returntags, aux, bytes_read)
-    elif tag == CBOR_TAG:
+    if tag == CBOR_TAG:
         ob, subpos = _loads(fp)
         bytes_read += subpos
         if returntags:
@@ -393,7 +393,7 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
             # attempt to interpret the tag and the value into a Python object.
             ob = tagify(ob, aux)
         return ob, bytes_read
-    elif tag == CBOR_7:
+    if tag == CBOR_7:
         if tb == CBOR_TRUE:
             return (True, bytes_read)
         if tb == CBOR_FALSE:
@@ -403,6 +403,7 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
         if tb == CBOR_UNDEFINED:
             return (None, bytes_read)
         raise ValueError(f"unknown cbor tag 7 byte: {tb:02x}")
+    return None
 
 
 def loads_bytes(fp, aux, btag=CBOR_BYTES):

@@ -61,8 +61,7 @@ def calculate_service_response(request):
         "service": service_name,
         "values": service_response_data,  # put service response in "data"-field of response object (in this case it's twice "data", because response value is also named data (in srv-file)
     }
-    response_message = json.dumps(response_object)
-    return response_message
+    return json.dumps(response_object)
 
 
 # ##################### service_calculation end ################################

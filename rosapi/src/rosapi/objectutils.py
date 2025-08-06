@@ -91,8 +91,7 @@ def get_typedef(type_name):
     # Fetch an instance and return its typedef
     try:
         instance = ros_loader.get_message_instance(type_name)
-        type_def = _get_typedef(instance)
-        return type_def
+        return _get_typedef(instance)
     except (ros_loader.InvalidModuleException, ros_loader.InvalidClassException) as e:
         logging.error(f"An error occurred trying to get the type definition for {type_name}: {e}")
         return None
@@ -181,10 +180,10 @@ def _get_typedef(instance):
     if _valid_instance(instance):
         fieldnames, fieldtypes, fieldarraylen, examples = _handle_array_information(instance)
         constnames, constvalues = _handle_constant_information(instance)
-        typedef = _build_typedef_dictionary(
+        return _build_typedef_dictionary(
             instance, fieldnames, fieldtypes, fieldarraylen, examples, constnames, constvalues
         )
-        return typedef
+    return None
 
 
 def _valid_instance(instance):
@@ -283,7 +282,7 @@ def _build_typedef_dictionary(
     instance, fieldnames, fieldtypes, fieldarraylen, examples, constnames, constvalues
 ):
     """Build the typedef dictionary from multiple inputs collected from instance."""
-    typedef = {
+    return {
         "type": _type_name_from_instance(instance),
         "fieldnames": fieldnames,
         "fieldtypes": fieldtypes,
@@ -292,7 +291,6 @@ def _build_typedef_dictionary(
         "constnames": constnames,
         "constvalues": constvalues,
     }
-    return typedef
 
 
 def _get_special_typedef(type_name):
@@ -354,5 +352,4 @@ def _type_name(type_name, instance):
 
 def _type_name_from_instance(instance):
     mod = instance.__module__
-    type_name = mod[0 : mod.find(".")] + "/" + instance.__class__.__name__
-    return type_name
+    return mod[0 : mod.find(".")] + "/" + instance.__class__.__name__

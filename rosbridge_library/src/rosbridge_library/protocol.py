@@ -302,8 +302,7 @@ class Protocol:
                 return msg
             if has_binary(msg) or self.bson_only_mode:
                 return bson.BSON.encode(msg)
-            else:
-                return json.dumps(msg)
+            return json.dumps(msg)
         except Exception as e:
             self.log("error", f"Unable to serialize message '{msg}': {e}")
             return None
@@ -323,8 +322,7 @@ class Protocol:
             if self.bson_only_mode:
                 bson_message = bson.BSON(msg)
                 return bson_message.decode()
-            else:
-                return json.loads(msg)
+            return json.loads(msg)
         except Exception:
             # if we did try to deserialize whole buffer .. first try to let self.incoming check for multiple/partial json-decodes before logging error
             # .. this means, if buffer is not == msg --> we tried to decode part of buffer

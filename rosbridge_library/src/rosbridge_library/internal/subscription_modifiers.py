@@ -75,10 +75,9 @@ class MessageHandler:
     def transition(self):
         if self.throttle_rate == 0 and self.queue_length == 0:
             return self
-        elif self.queue_length == 0:
+        if self.queue_length == 0:
             return ThrottleMessageHandler(self)
-        else:
-            return QueueMessageHandler(self)
+        return QueueMessageHandler(self)
 
     def finish(self, block=True):
         pass
@@ -92,10 +91,9 @@ class ThrottleMessageHandler(MessageHandler):
     def transition(self):
         if self.throttle_rate == 0 and self.queue_length == 0:
             return MessageHandler(self)
-        elif self.queue_length == 0:
+        if self.queue_length == 0:
             return self
-        else:
-            return QueueMessageHandler(self)
+        return QueueMessageHandler(self)
 
     def finish(self, block=True):
         pass
@@ -124,17 +122,16 @@ class QueueMessageHandler(MessageHandler, Thread):
         if self.throttle_rate == 0 and self.queue_length == 0:
             self.finish()
             return MessageHandler(self)
-        elif self.queue_length == 0:
+        if self.queue_length == 0:
             self.finish()
             return ThrottleMessageHandler(self)
-        else:
-            with self.c:
-                old_queue = self.queue
-                self.queue = deque(maxlen=self.queue_length)
-                while len(old_queue) > 0:
-                    self.queue.append(old_queue.popleft())
-                self.c.notify()
-            return self
+        with self.c:
+            old_queue = self.queue
+            self.queue = deque(maxlen=self.queue_length)
+            while len(old_queue) > 0:
+                self.queue.append(old_queue.popleft())
+            self.c.notify()
+        return self
 
     def finish(self, block=True):
         """

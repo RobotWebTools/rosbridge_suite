@@ -361,7 +361,7 @@ def _to_primitive_inst(msg, rostype, roottype, stack):
     msgtype = type(msg)
     if msgtype in primitive_types and rostype in type_map[msgtype.__name__]:
         return msg
-    elif isinstance(msg, str) and rostype in type_map[msgtype.__name__]:
+    if isinstance(msg, str) and rostype in type_map[msgtype.__name__]:
         return msg
     raise FieldTypeMismatchException(roottype, stack, rostype, msgtype)
 

@@ -42,7 +42,7 @@ select = [
     # "PT", # flake8-pytest-style
     "Q", # flake8-quotes
     "RSE", # flake8-raise
-    # "RET", # flake8-return
+    "RET", # flake8-return
     # "SLF", # flake8-self
     # "SIM", # flake8-simplify
     "SLOT", # flake8-slots

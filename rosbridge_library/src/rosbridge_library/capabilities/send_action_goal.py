@@ -204,5 +204,6 @@ def trim_action_name(action: str) -> str:
 def extract_id(action: str, cid: str) -> str:
     if cid is not None:
         return cid
-    elif "#" in action:
+    if "#" in action:
         return action[action.find("#") + 1 :]
+    return None

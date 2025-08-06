@@ -21,16 +21,15 @@ def populate_random_args(d):
         for x in d:
             d[x] = populate_random_args(d[x])
         return d
-    elif isinstance(d, str):
+    if isinstance(d, str):
         return str(random.random())
-    elif isinstance(d, bool):
+    if isinstance(d, bool):
         return True
-    elif isinstance(d, int):
+    if isinstance(d, int):
         return random.randint(100, 200)
-    elif isinstance(d, float):
+    if isinstance(d, float):
         return 3.5
-    else:
-        return d
+    return d
 
 
 class ServiceTester:

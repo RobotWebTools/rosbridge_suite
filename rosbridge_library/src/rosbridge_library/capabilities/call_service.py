@@ -162,5 +162,6 @@ def trim_servicename(service):
 def extract_id(service, cid):
     if cid is not None:
         return cid
-    elif "#" in service:
+    if "#" in service:
         return service[service.find("#") + 1 :]
+    return None
