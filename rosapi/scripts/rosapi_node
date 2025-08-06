@@ -227,7 +227,7 @@ class Rosapi(Node):
         """
         response.topics, response.types = proxy.get_topics_and_types(self.globs.topics)
         response.typedefs_full_text = [
-            objectutils.get_typedef_full_text(type) for type in response.types
+            objectutils.get_typedef_full_text(type_name) for type_name in response.types
         ]
         return response
 
