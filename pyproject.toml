@@ -29,7 +29,7 @@ select = [
     # "EM", # flake8-errmsg
     "EXE", # flake8-executable
     # "FIX", # flake8-fixme
-    # "FA", # flake8-future-annotations
+    "FA", # flake8-future-annotations
     "INT", # flake8-gettext
     # "ISC", # flake8-implicit-str-concat
     "ICN", # flake8-import-conventions
