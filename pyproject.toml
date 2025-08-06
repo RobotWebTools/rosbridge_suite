@@ -31,7 +31,7 @@ select = [
     # "FIX", # flake8-fixme
     "FA", # flake8-future-annotations
     "INT", # flake8-gettext
-    # "ISC", # flake8-implicit-str-concat
+    "ISC", # flake8-implicit-str-concat
     "ICN", # flake8-import-conventions
     # "LOG", # flake8-logging
     # "G", # flake8-logging-format
