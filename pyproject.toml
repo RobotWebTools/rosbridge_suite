@@ -41,7 +41,7 @@ select = [
     # "PYI", # flake8-pyi
     # "PT", # flake8-pytest-style
     "Q", # flake8-quotes
-    # "RSE", # flake8-raise
+    "RSE", # flake8-raise
     # "RET", # flake8-return
     # "SLF", # flake8-self
     # "SIM", # flake8-simplify

@@ -197,7 +197,7 @@ class TestServices(unittest.TestCase):
             rcvd["json"] = json
 
         def error():
-            raise Exception()
+            raise Exception
 
         # Now, call using the services
         services.ServiceCaller(

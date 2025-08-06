@@ -187,7 +187,7 @@ class TestActions(unittest.TestCase):
             received["json"] = json
 
         def error():
-            raise Exception()
+            raise Exception
 
         # Now, call using the services
         order = 5

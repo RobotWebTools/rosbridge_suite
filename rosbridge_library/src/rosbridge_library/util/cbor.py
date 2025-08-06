@@ -276,7 +276,7 @@ def _read_byte(fp):
     tb = fp.read(1)
     if len(tb) == 0:
         # I guess not all file-like objects do this
-        raise EOFError()
+        raise EOFError
     return ord(tb)
 
 
