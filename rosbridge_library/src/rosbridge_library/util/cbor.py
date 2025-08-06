@@ -307,7 +307,7 @@ def _loads_var_map(fp, limit, depth, returntags, bytes_read):
 
 def _loads_array(fp, limit, depth, returntags, aux, bytes_read):
     ob = []
-    for i in range(aux):
+    for _ in range(aux):
         subob, subpos = _loads(fp)
         bytes_read += subpos
         ob.append(subob)
@@ -316,7 +316,7 @@ def _loads_array(fp, limit, depth, returntags, aux, bytes_read):
 
 def _loads_map(fp, limit, depth, returntags, aux, bytes_read):
     ob = {}
-    for i in range(aux):
+    for _ in range(aux):
         subk, subpos = _loads(fp)
         bytes_read += subpos
         subv, subpos = _loads(fp)

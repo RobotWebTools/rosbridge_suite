@@ -18,7 +18,7 @@ select = [
     "S", # flake8-bandit
     # "BLE", # flake8-blind-except
     # "FBT", # flake8-boolean-trap
-    # "B", # flake8-bugbear
+    "B", # flake8-bugbear
     # "A", # flake8-builtins
     # "COM", # flake8-commas
     "C4", # flake8-comprehensions

@@ -104,10 +104,10 @@ async def set_param(node_name: str, name: str, value: str, params_glob: list[str
     try:
         d = loads(value)
         value = d if isinstance(d, str) else value
-    except ValueError:
+    except ValueError as exc:
         raise Exception(
             "Due to the type flexibility of the ROS parameter server, the value argument to set_param must be a JSON-formatted string."
-        )
+        ) from exc
 
     node_name = get_absolute_node_name(node_name)
     await _set_param(node_name, name, value)

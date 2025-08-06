@@ -171,13 +171,16 @@ def extract_values(inst):
     return _from_inst(inst, rostype)
 
 
-def populate_instance(msg, inst, clock=ROSClock()):
+def populate_instance(msg, inst, clock=None):
     """
     Populate a ROS message instance with the provided values.
 
     Return an instance of the provided class, with its fields populated
     according to the values in msg.
     """
+    if clock is None:
+        clock = ROSClock()
+
     inst_type = msg_instance_type_repr(inst)
 
     return _to_inst(msg, inst_type, inst_type, clock, inst)
@@ -275,7 +278,12 @@ def _from_object_inst(inst, rostype):
     return msg
 
 
-def _to_inst(msg, rostype, roottype, clock=ROSClock(), inst=None, stack=[]):
+def _to_inst(msg, rostype, roottype, clock=None, inst=None, stack=None):
+    if clock is None:
+        clock = ROSClock()
+    if stack is None:
+        stack = []
+
     # Check if it's uint8[], and if it's a string, try to b64decode
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
@@ -330,11 +338,11 @@ def _to_time_inst(msg, rostype, clock, inst=None):
     # Copy across the fields, try ROS1 and ROS2 fieldnames
     for field in ["sec", "secs"]:
         if field in msg:
-            setattr(inst, "sec", msg[field])
+            inst.sec = msg[field]
             break
     for field in ["nanosec", "nsecs"]:
         if field in msg:
-            setattr(inst, "nanosec", msg[field])
+            inst.nanosec = msg[field]
             break
 
     return inst

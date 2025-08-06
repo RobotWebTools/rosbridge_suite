@@ -215,12 +215,12 @@ def _load_class(modname: str, subname: str, classname: str) -> Any:
     try:
         pypkg = importlib.import_module(f"{modname}.{subname}")
     except Exception as exc:
-        raise InvalidModuleException(modname, subname, exc)
+        raise InvalidModuleException(modname, subname, exc) from exc
 
     try:
         return getattr(pypkg, classname)
     except Exception as exc:
-        raise InvalidClassException(modname, subname, classname, exc)
+        raise InvalidClassException(modname, subname, classname, exc) from exc
 
 
 def _splittype(typestring: str) -> Tuple[str, str]:
