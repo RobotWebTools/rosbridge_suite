@@ -164,7 +164,7 @@ class Defragment(Capability, threading.Thread):
             self.protocol.log("debug", log_msg)
             # Check each fragment matches up
             received_all_fragments = True
-            for i in range(0, announced_total):
+            for i in range(announced_total):
                 if i not in self.received_fragments[msg_id]["fragment_list"]:
                     received_all_fragments = False
                     log_msg = "fragment #" + str(i)

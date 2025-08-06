@@ -162,7 +162,6 @@ def wait_for_service_request():  # receive data from rosbridge
             except Exception as e:
                 print("defrag_error:", buffer)
                 print(e)
-                pass
     except Exception:
         # print "network-error(?):", e
         pass
@@ -246,7 +245,6 @@ try:  # allows to catch KeyboardInterrupt
                     )  # (not needed if using patched rosbridge protocol.py)
         except Exception as e:
             print(e)
-            pass
 except KeyboardInterrupt:
     try:
         unadvertise_service()  # unadvertise service

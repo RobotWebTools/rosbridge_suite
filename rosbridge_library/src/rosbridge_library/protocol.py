@@ -232,7 +232,6 @@ class Protocol:
 
         :param message: The wire-level message to send to the client
         """
-        pass
 
     def send(self, message, cid=None, compression="none"):
         """

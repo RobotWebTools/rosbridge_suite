@@ -67,7 +67,6 @@ class Capability:
 
         :param message: The incoming message, deserialized into a dictionary
         """
-        pass
 
     def finish(self):
         """
@@ -75,7 +74,6 @@ class Capability:
 
         Tells the capability that it's time to free up resources.
         """
-        pass
 
     def basic_type_check(self, msg, types_info):
         """
