@@ -17,10 +17,10 @@ class TestUtils(unittest.TestCase):
         global ros_loader
         ros_loader = self.original_ros_loader
 
-    def _mock_get_message_instance(self, type):
+    def _mock_get_message_instance(self, type_name):
         class MockInstance(object):
-            __slots__ = ["_" + type]
-            _fields_and_field_types = {type: type}
+            __slots__ = ["_" + type_name]
+            _fields_and_field_types = {type_name: type_name}
 
         return MockInstance()
 

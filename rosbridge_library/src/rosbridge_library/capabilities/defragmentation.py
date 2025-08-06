@@ -84,17 +84,17 @@ class Defragment(Capability, threading.Thread):
         now = time.monotonic()
 
         if self.received_fragments is not None:
-            for id in self.received_fragments.keys():
-                time_diff = now - self.received_fragments[id]["timestamp_last_append"]
+            for frag_id in self.received_fragments.keys():
+                time_diff = now - self.received_fragments[frag_id]["timestamp_last_append"]
                 if (
                     time_diff > self.fragment_timeout
-                    and not self.received_fragments[id]["is_reconstructing"]
+                    and not self.received_fragments[frag_id]["is_reconstructing"]
                 ):
-                    log_msg = ["fragment list ", str(id), " timed out.."]
+                    log_msg = ["fragment list ", str(frag_id), " timed out.."]
 
-                    if message["id"] != id:
+                    if message["id"] != frag_id:
                         log_msg.append(" -> removing it..")
-                        del self.received_fragments[id]
+                        del self.received_fragments[frag_id]
                     else:
                         log_msg.extend([" -> but we're just about to add fragment #"])
                         log_msg.extend([str(message.get("num")), " of "])

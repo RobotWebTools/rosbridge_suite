@@ -61,7 +61,7 @@ atomics = [
 specials = ["time", "duration"]
 
 
-def get_typedef(type):
+def get_typedef(type_name):
     """
     Get the typedef for a message type.
 
@@ -77,25 +77,25 @@ def get_typedef(type):
     get_typedef will return a typedef dict for the specified message type.
     """
     # Check if the type string indicates a sequence (array) type
-    if matches := re.findall("sequence<([^<]+)>", type):
+    if matches := re.findall("sequence<([^<]+)>", type_name):
         # Extract the inner type and continue processing
-        type = matches[0]
+        type_name = matches[0]
 
-    if type in atomics:
+    if type_name in atomics:
         # Atomics don't get a typedef
         return None
 
-    if type in specials:
+    if type_name in specials:
         # Specials get their type def mocked up
-        return _get_special_typedef(type)
+        return _get_special_typedef(type_name)
 
     # Fetch an instance and return its typedef
     try:
-        instance = ros_loader.get_message_instance(type)
+        instance = ros_loader.get_message_instance(type_name)
         type_def = _get_typedef(instance)
         return type_def
     except (ros_loader.InvalidModuleException, ros_loader.InvalidClassException) as e:
-        logging.error(f"An error occurred trying to get the type definition for {type}: {e}")
+        logging.error(f"An error occurred trying to get the type definition for {type_name}: {e}")
         return None
 
 
@@ -113,10 +113,10 @@ def get_service_response_typedef(servicetype):
     return _get_typedef(instance)
 
 
-def get_typedef_recursive(type):
+def get_typedef_recursive(type_name):
     """Return a list of typedef dicts for this type and all contained type fields."""
     # Just go straight into the recursive method
-    return _get_typedefs_recursive(type, [])
+    return _get_typedefs_recursive(type_name, [])
 
 
 def get_service_request_typedef_recursive(servicetype):
@@ -296,9 +296,9 @@ def _build_typedef_dictionary(
     return typedef
 
 
-def _get_special_typedef(type):
+def _get_special_typedef(type_name):
     example = None
-    if type == "time" or type == "duration":
+    if type_name == "time" or type_name == "duration":
         example = {
             "type": type,
             "fieldnames": ["secs", "nsecs"],
@@ -311,17 +311,17 @@ def _get_special_typedef(type):
     return example
 
 
-def _get_typedefs_recursive(type, typesseen):
+def _get_typedefs_recursive(type_name, typesseen):
     """Return the type def for this type as well as the type defs for any fields within the type."""
-    if type in typesseen:
+    if type_name in typesseen:
         # Don't put a type if it's already been seen
         return []
 
     # Note that we have now seen this type
-    typesseen.append(type)
+    typesseen.append(type_name)
 
     # Get the typedef for this type and make sure it's not None
-    typedef = get_typedef(type)
+    typedef = get_typedef(type_name)
 
     return _get_subtypedefs_recursive(typedef, typesseen)
 
@@ -338,16 +338,16 @@ def _get_subtypedefs_recursive(typedef, typesseen):
     return typedefs
 
 
-def _type_name(type, instance):
+def _type_name(type_name, instance):
     """Get the fully qualified type name for a given type and instance."""
     # The fully qualified type of atomic and special types is just their original name
-    if type in atomics or type in specials:
-        return type
+    if type_name in atomics or type_name in specials:
+        return type_name
 
     # If the instance is a list, then we can get no more information from the instance.
     # However, luckily, the 'type' field for list types is usually already inflated to the full type.
     if isinstance(instance, list):
-        return type
+        return type_name
 
     # Otherwise, the type will come from the module and class name of the instance
     return _type_name_from_instance(instance)
@@ -355,5 +355,5 @@ def _type_name(type, instance):
 
 def _type_name_from_instance(instance):
     mod = instance.__module__
-    type = mod[0 : mod.find(".")] + "/" + instance.__class__.__name__
-    return type
+    type_name = mod[0 : mod.find(".")] + "/" + instance.__class__.__name__
+    return type_name

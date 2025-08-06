@@ -25,9 +25,9 @@ class AdvertisedServiceHandler:
         )
 
     def next_id(self):
-        id = self.id_counter
+        next_id_value = self.id_counter
         self.id_counter += 1
-        return id
+        return next_id_value
 
     async def handle_request(self, req, res):
         # generate a unique ID

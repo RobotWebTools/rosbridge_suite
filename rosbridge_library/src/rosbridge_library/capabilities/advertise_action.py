@@ -70,9 +70,9 @@ class AdvertisedActionHandler:
         )
 
     def next_id(self) -> int:
-        id = self.id_counter
+        next_id_value = self.id_counter
         self.id_counter += 1
-        return id
+        return next_id_value
 
     async def execute_callback(self, goal: Any) -> Any:
         """
