@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import unittest
 
 from rosapi.stringify_field_types import stringify_field_types

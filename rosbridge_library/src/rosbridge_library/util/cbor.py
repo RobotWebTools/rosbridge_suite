@@ -1,4 +1,3 @@
-#!python
 # -*- Python -*-
 # Copyright 2014-2015 Brian Olson
 #

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import fnmatch
 from collections import namedtuple
 
