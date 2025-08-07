@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import unittest
 
-from rosbridge_library.internal import ros_loader
 from rosidl_runtime_py.utilities import get_message
+
+from rosbridge_library.internal import ros_loader
 
 
 class TestROSLoader(unittest.TestCase):

@@ -35,6 +35,7 @@ from threading import Timer
 
 from rclpy.duration import Duration
 from rclpy.qos import DurabilityPolicy, QoSProfile
+
 from rosbridge_library.internal import message_conversion, ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.topics import (
@@ -131,7 +132,7 @@ class MultiPublisher:
         :raises TypeConflictException: If the msg_type is different than the type of this
             publisher
         """
-        if not ros_loader.get_message_class(msg_type) is self.msg_class:
+        if ros_loader.get_message_class(msg_type) is not self.msg_class:
             raise TypeConflictException(self.topic, msg_class_type_repr(self.msg_class), msg_type)
         return
 

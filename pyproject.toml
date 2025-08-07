@@ -1,5 +1,96 @@
-[tool.bandit]
-skips = ["B101", "B110", "B311"]
-
 [tool.black]
+# We use ruff for formatting, but black formatter should be compatible with ruff.
 line-length = 100
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    # "AIR", # Airflow
+    # "ERA", # Eradicate
+    # "FAST", # FastAPI
+
+    # flake8 extensions
+    "YTT", # flake8-2020
+    # "ANN", # flake8-annotations
+    "ASYNC", # flake8-async
+    "S", # flake8-bandit
+    # "BLE", # flake8-blind-except
+    # "FBT", # flake8-boolean-trap
+    # "B", # flake8-bugbear
+    # "A", # flake8-builtins
+    # "COM", # flake8-commas
+    "C4", # flake8-comprehensions
+    # "CPY", # flake8-copyright
+    # "DTZ", # flake8-datetimez
+    "T10", # flake8-debugger
+    # "DJ", # flake8-django
+    # "EM", # flake8-errmsg
+    # "EXE", # flake8-executable
+    # "FIX", # flake8-fixme
+    # "FA", # flake8-future-annotations
+    "INT", # flake8-gettext
+    # "ISC", # flake8-implicit-str-concat
+    "ICN", # flake8-import-conventions
+    # "LOG", # flake8-logging
+    # "G", # flake8-logging-format
+    # "INP", # flake8-no-pep420
+    # "PIE", # flake8-pie
+    # "T20", # flake8-print
+    # "PYI", # flake8-pyi
+    # "PT", # flake8-pytest-style
+    "Q", # flake8-quotes
+    # "RSE", # flake8-raise
+    # "RET", # flake8-return
+    # "SLF", # flake8-self
+    # "SIM", # flake8-simplify
+    "SLOT", # flake8-slots
+    "TID", # flake8-tidy-imports
+    # "TD", # flake8-todos
+    # "TC", # flake8-type-checking
+    # "ARG", # flake8-unused-arguments
+    # "PTH", # flake8-use-pathlib
+
+    "FLY", # flynt
+    "I", # isort
+    "C90", # mccabe
+    "NPY", # numpy
+    "PD", # pandas-vet
+    # "N", # pep8-naming
+    # "PERF", # Perflint
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    # "DOC", # pydoclint
+    "D", # pydocstyle
+    "F", # pyflakes
+    "PGH", # pygrep-hooks
+    # "PL", # pylint
+    # "UP", # pyupgrade
+    # "FURB", # refurb
+    # "RUF", # ruff
+    # "TRY", # tryceratops
+]
+ignore = [
+    # Undocumented code
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+
+    # Conflicting pydocstyle rules
+    "D203", # incorrect-blank-line-before-class
+    "D212", # multi-line-summary-first-line
+
+    "S101", # assert
+    "S110", # try-except-pass
+    "S311", # suspicious-non-cryptographic-random-usage
+]
+
+mccabe.max-complexity = 36
+
+pycodestyle.max-line-length = 217

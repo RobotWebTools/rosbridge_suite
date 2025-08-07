@@ -38,6 +38,7 @@ from rclpy.action import ActionServer
 from rclpy.action.server import CancelResponse, ServerGoalHandle
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.task import Future
+
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.internal.ros_loader import get_action_class
@@ -45,7 +46,6 @@ from rosbridge_library.protocol import Protocol
 
 
 class AdvertisedActionHandler:
-
     id_counter = 1
 
     def __init__(

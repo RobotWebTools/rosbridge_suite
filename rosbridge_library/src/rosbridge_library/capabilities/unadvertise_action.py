@@ -37,7 +37,6 @@ from rosbridge_library.protocol import Protocol
 
 
 class UnadvertiseAction(Capability):
-
     actions_glob = None
 
     def __init__(self, protocol: Protocol) -> None:

@@ -214,7 +214,6 @@ class Subscription:
 
 
 class Subscribe(Capability):
-
     subscribe_msg_fields = [
         (True, "topic", str),
         (False, "type", str),

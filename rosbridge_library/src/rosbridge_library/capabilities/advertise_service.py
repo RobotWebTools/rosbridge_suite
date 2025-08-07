@@ -2,13 +2,13 @@ import fnmatch
 
 import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup
+
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.internal.ros_loader import get_service_class
 
 
 class AdvertisedServiceHandler:
-
     id_counter = 1
 
     def __init__(self, service_name, service_type, protocol):

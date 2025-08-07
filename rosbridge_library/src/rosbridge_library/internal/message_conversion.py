@@ -40,6 +40,7 @@ import numpy as np
 from rcl_interfaces.msg import Parameter
 from rclpy.clock import ROSClock
 from rclpy.time import Duration, Time
+
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.util import bson
 
@@ -387,7 +388,6 @@ def _to_list_inst(msg, rostype, roottype, clock, inst, stack):
 
 
 def _to_object_inst(msg, rostype, roottype, clock, inst, stack):
-
     # Typecheck the msg
     if not isinstance(msg, dict):
         raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))

@@ -80,7 +80,6 @@ class Registration:
 
 
 class Advertise(Capability):
-
     advertise_msg_fields = [(True, "topic", str), (True, "type", str)]
     unadvertise_msg_fields = [(True, "topic", str)]
 
