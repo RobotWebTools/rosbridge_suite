@@ -223,9 +223,12 @@ def _from_inst(inst, rostype):
     # Check for primitive types
     if rostype in ros_primitive_types:
         # JSON does not support Inf and NaN. They are mapped to None and encoded as null
-        if (not bson_only_mode) and (rostype in type_map.get("float")):
-            if math.isnan(inst) or math.isinf(inst):
-                return None
+        if (
+            not bson_only_mode
+            and rostype in type_map.get("float")
+            and (math.isnan(inst) or math.isinf(inst))
+        ):
+            return None
 
         # JSON does not support byte array. They are converted to int
         if (not bson_only_mode) and (rostype == "octet"):

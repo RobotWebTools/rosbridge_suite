@@ -44,7 +44,7 @@ select = [
     "RSE", # flake8-raise
     "RET", # flake8-return
     # "SLF", # flake8-self
-    # "SIM", # flake8-simplify
+    "SIM", # flake8-simplify
     "SLOT", # flake8-slots
     "TID", # flake8-tidy-imports
     # "TD", # flake8-todos
@@ -72,6 +72,8 @@ select = [
     # "TRY", # tryceratops
 ]
 ignore = [
+    "SIM108", # Opinionated: ternary operator does not always look simpler
+
     # Undocumented code
     "D100",
     "D101",

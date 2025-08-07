@@ -85,7 +85,7 @@ class SendActionGoal(Capability):
 
     def send_action_goal(self, message: dict) -> None:
         # Pull out the ID
-        cid = message.get("id", None)
+        cid = message.get("id")
 
         # Typecheck the args
         self.basic_type_check(message, self.send_action_goal_msg_fields)
@@ -93,7 +93,7 @@ class SendActionGoal(Capability):
         # Extract the args
         action = message["action"]
         action_type = message["action_type"]
-        fragment_size = message.get("fragment_size", None)
+        fragment_size = message.get("fragment_size")
         compression = message.get("compression", "none")
         args = message.get("args", [])
 
@@ -123,10 +123,7 @@ class SendActionGoal(Capability):
         # Create the callbacks
         s_cb = partial(self._success, cid, action, fragment_size, compression)
         e_cb = partial(self._failure, cid, action)
-        if message.get("feedback", False):
-            f_cb = partial(self._feedback, cid, action)
-        else:
-            f_cb = None
+        f_cb = partial(self._feedback, cid, action) if message.get("feedback", False) else None
 
         # Run action client handler in the same thread.
         client_handler = ActionClientHandler(
@@ -138,7 +135,7 @@ class SendActionGoal(Capability):
 
     def cancel_action_goal(self, message: dict) -> None:
         # Extract the args
-        cid = message.get("id", None)
+        cid = message.get("id")
         action = message["action"]
 
         # Typecheck the args

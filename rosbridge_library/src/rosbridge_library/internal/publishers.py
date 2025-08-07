@@ -278,7 +278,7 @@ class PublisherManager:
 
         :param client_id: The ID of the client making this request
         """
-        for topic in self._publishers.keys():
+        for topic in self._publishers:
             self.unregister(client_id, topic)
 
     def publish(self, client_id, topic, msg, node_handle, latch=False, queue_size=100):

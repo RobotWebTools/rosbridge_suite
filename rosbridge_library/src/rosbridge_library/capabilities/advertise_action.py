@@ -241,7 +241,7 @@ class AdvertiseAction(Capability):
             )
 
         # check for an existing entry
-        if action_name in self.protocol.external_action_list.keys():
+        if action_name in self.protocol.external_action_list:
             self.protocol.log("warn", f"Duplicate action advertised. Overwriting {action_name}.")
             self.protocol.external_action_list[action_name].graceful_shutdown()
             del self.protocol.external_action_list[action_name]

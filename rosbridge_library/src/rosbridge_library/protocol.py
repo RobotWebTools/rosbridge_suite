@@ -202,12 +202,12 @@ class Protocol:
             return
         # this way a client can change/overwrite it's active values anytime by just including parameter field in any message sent to rosbridge
         #  maybe need to be improved to bind parameter values to specific operation..
-        if "fragment_size" in msg.keys():
+        if "fragment_size" in msg:
             self.fragment_size = msg["fragment_size"]
             # print "fragment size set to:", self.fragment_size
-        if "message_intervall" in msg.keys() and is_number(msg["message_intervall"]):
+        if "message_intervall" in msg and is_number(msg["message_intervall"]):
             self.delay_between_messages = msg["message_intervall"]
-        if "png" in msg.keys():
+        if "png" in msg:
             self.png = msg["msg"]
 
         # now try to pass message to according operation
@@ -218,11 +218,10 @@ class Protocol:
 
         # if anything left in buffer .. re-call self.incoming
         # TODO: check what happens if we have "garbage" on tcp-stack --> infinite loop might be triggered! .. might get out of it when next valid JSON arrives since only data after last 'valid' closing bracket is kept
-        if len(self.buffer) > 0:
+        if len(self.buffer) > 0 and self.old_buffer != self.buffer:
             # try to avoid infinite loop..
-            if self.old_buffer != self.buffer:
-                self.old_buffer = self.buffer
-                self.incoming()
+            self.old_buffer = self.buffer
+            self.incoming()
 
     def outgoing(self, message, compression="none"):
         """
@@ -379,10 +378,11 @@ class Protocol:
         :param lid: An associated for this log message
         """
         stdout_formatted_msg = None
-        if lid is not None:
-            stdout_formatted_msg = f"[Client {self.client_id}] [id: {lid}] {message}"
-        else:
-            stdout_formatted_msg = f"[Client {self.client_id}] {message}"
+        stdout_formatted_msg = (
+            f"[Client {self.client_id}] [id: {lid}] {message}"
+            if lid is not None
+            else f"[Client {self.client_id}] {message}"
+        )
 
         if level == "error" or level == "err":
             self.node_handle.get_logger().error(stdout_formatted_msg)

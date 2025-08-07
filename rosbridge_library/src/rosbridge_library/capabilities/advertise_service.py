@@ -130,7 +130,7 @@ class AdvertiseService(Capability):
             )
 
         # check for an existing entry
-        if service_name in self.protocol.external_service_list.keys():
+        if service_name in self.protocol.external_service_list:
             self.protocol.log(
                 "warn", "Duplicate service advertised. Overwriting %s." % service_name
             )
