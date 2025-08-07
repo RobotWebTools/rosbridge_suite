@@ -122,7 +122,7 @@ def configure(node_handle=None):
         elif binary_encoder_type == "default" or binary_encoder_type == "b64":
             binary_encoder = standard_b64encode
         else:
-            print("Unknown encoder type '%s'" % binary_encoder_type)
+            print(f"Unknown encoder type '{binary_encoder_type}'")
             exit(0)
 
 
@@ -135,7 +135,7 @@ class InvalidMessageException(Exception):
     def __init__(self, inst):
         Exception.__init__(
             self,
-            "Unable to extract message values from %s instance" % type(inst).__name__,
+            f"Unable to extract message values from {type(inst).__name__} instance",
         )
 
 

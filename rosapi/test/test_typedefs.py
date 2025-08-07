@@ -17,7 +17,7 @@ class TestUtils(unittest.TestCase):
         ros_loader = self.original_ros_loader
 
     def _mock_get_message_instance(self, type_name):
-        class MockInstance(object):
+        class MockInstance:
             __slots__ = ["_" + type_name]
             _fields_and_field_types = {type_name: type_name}
 

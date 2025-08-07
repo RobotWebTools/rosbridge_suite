@@ -32,7 +32,7 @@
 from __future__ import annotations
 
 from threading import Event, Thread
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable
 
 from rclpy.callback_groups import ReentrantCallbackGroup
 
@@ -127,7 +127,7 @@ def args_to_service_request_instance(inst: Any, args: list | dict | None) -> Any
 def call_service(
     node_handle: Node,
     service: str,
-    args: Optional[dict] = None,
+    args: dict | None = None,
     server_ready_timeout: float = 1.0,
     server_response_timeout: float = 5.0,
 ) -> dict:

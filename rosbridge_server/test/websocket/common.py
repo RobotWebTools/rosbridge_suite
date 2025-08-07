@@ -1,6 +1,7 @@
 import functools
 import json
-from typing import TYPE_CHECKING, Any, Awaitable, Callable
+from collections.abc import Awaitable
+from typing import TYPE_CHECKING, Any, Callable
 
 import launch
 import launch_ros

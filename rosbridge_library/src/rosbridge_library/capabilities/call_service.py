@@ -140,7 +140,7 @@ class CallService(Capability):
         self.protocol.send(outgoing_message)
 
     def _failure(self, cid, service, exc):
-        self.protocol.log("error", "call_service %s: %s" % (type(exc).__name__, str(exc)), cid)
+        self.protocol.log("error", f"call_service {type(exc).__name__}: {str(exc)}", cid)
         # send response with result: false
         outgoing_message = {
             "op": "service_response",

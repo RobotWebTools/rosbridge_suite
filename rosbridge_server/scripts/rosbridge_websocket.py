@@ -167,7 +167,7 @@ class RosbridgeWebsocketNode(Node):
                 connected = True
             except OSError as e:  # noqa: PERF203
                 self.get_logger().warn(
-                    "Unable to start server: {} Retrying in {}s.".format(e, retry_startup_delay)
+                    f"Unable to start server: {e} Retrying in {retry_startup_delay}s."
                 )
                 time.sleep(retry_startup_delay)
 

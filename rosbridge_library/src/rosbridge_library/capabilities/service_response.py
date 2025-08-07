@@ -36,5 +36,5 @@ class ServiceResponse(Capability):
         else:
             self.protocol.log(
                 "error",
-                "Service %s has not been advertised via rosbridge." % service_name,
+                f"Service {service_name} has not been advertised via rosbridge.",
             )

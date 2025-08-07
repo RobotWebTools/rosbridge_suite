@@ -284,7 +284,7 @@ class Subscribe(Capability):
         }
         self._subscriptions[topic].subscribe(**subscribe_args)
 
-        self.protocol.log("info", "Subscribed to %s" % topic)
+        self.protocol.log("info", f"Subscribed to {topic}")
 
     def unsubscribe(self, msg):
         # Pull out the ID
@@ -302,7 +302,7 @@ class Subscribe(Capability):
             self._subscriptions[topic].unregister()
             del self._subscriptions[topic]
 
-        self.protocol.log("info", "Unsubscribed from %s" % topic)
+        self.protocol.log("info", f"Unsubscribed from {topic}")
 
     def publish(self, topic, message, _fragment_size=None, compression="none"):
         """

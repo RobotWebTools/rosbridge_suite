@@ -182,8 +182,7 @@ class Protocol:
             if "receiver" in msg:
                 self.log(
                     "error",
-                    "Received a rosbridge v1.0 message.  Please refer to rosbridge.org for the correct format of rosbridge v2.0 messages.  Original message was: %s"
-                    % message_string,
+                    f"Received a rosbridge v1.0 message.  Please refer to rosbridge.org for the correct format of rosbridge v2.0 messages.  Original message was: {message_string}",
                 )
             else:
                 self.log(

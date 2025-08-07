@@ -131,9 +131,7 @@ class AdvertiseService(Capability):
 
         # check for an existing entry
         if service_name in self.protocol.external_service_list:
-            self.protocol.log(
-                "warn", "Duplicate service advertised. Overwriting %s." % service_name
-            )
+            self.protocol.log("warn", f"Duplicate service advertised. Overwriting {service_name}.")
             self.protocol.external_service_list[service_name].graceful_shutdown()
             del self.protocol.external_service_list[service_name]
 

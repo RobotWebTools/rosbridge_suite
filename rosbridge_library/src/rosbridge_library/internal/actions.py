@@ -33,7 +33,7 @@ from __future__ import annotations
 
 import time
 from threading import Thread
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable
 
 from rclpy.action import ActionClient
 from rclpy.expand_topic_name import expand_topic_name
@@ -65,7 +65,7 @@ class ActionClientHandler(Thread):
         args: dict,
         success_callback: Callable[[dict], None],
         error_callback: Callable[[Exception], None],
-        feedback_callback: Optional[Callable[[dict], None]],
+        feedback_callback: Callable[[dict], None] | None,
         node_handle: Node,
     ) -> None:
         """
@@ -157,8 +157,8 @@ class SendGoal:
         node_handle: Node,
         action: str,
         action_type: str,
-        args: Optional[dict] = None,
-        feedback_cb: Optional[Callable[[dict], None]] = None,
+        args: dict | None = None,
+        feedback_cb: Callable[[dict], None] | None = None,
     ) -> dict:
         # Given the action name and type, fetch a request instance
         action_name = expand_topic_name(action, node_handle.get_name(), node_handle.get_namespace())
