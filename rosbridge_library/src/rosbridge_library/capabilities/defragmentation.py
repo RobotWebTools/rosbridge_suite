@@ -5,15 +5,13 @@ from rosbridge_library.capability import Capability
 
 
 class ReceivedFragments:
-    """
-    Singleton class to hold lists of received fragments in one 'global' object
-    """
+    """Singleton class to hold lists of received fragments in one 'global' object."""
 
     class __impl:
-        """Implementation of the singleton interface"""
+        """Implementation of the singleton interface."""
 
         def spam(self):
-            """Test method, return singleton id"""
+            """Test method, return singleton id."""
             return id(self)
 
     __instance = None
@@ -33,7 +31,7 @@ class ReceivedFragments:
     lists: dict[str, dict] = {}
 
     def __init__(self):
-        """Create singleton instance"""
+        """Create singleton instance."""
         if ReceivedFragments.__instance is None:
             ReceivedFragments.__instance = ReceivedFragments.__impl()
             self.lists = {}
@@ -41,16 +39,15 @@ class ReceivedFragments:
         self.__dict__["_ReceivedFragments__instance"] = ReceivedFragments.__instance
 
     def __getattr__(self, attr):
-        """Delegate access to implementation"""
+        """Delegate access to implementation."""
         return getattr(self.__instance, attr)
 
     def __setattr__(self, attr, value):
-        """Delegate access to implementation"""
+        """Delegate access to implementation."""
         return setattr(self.__instance, attr, value)
 
 
 class Defragment(Capability, threading.Thread):
-
     fragment_timeout = 600
     opcode = "fragment"
     global received_fragments

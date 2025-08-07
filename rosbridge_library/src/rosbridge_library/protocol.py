@@ -46,8 +46,7 @@ def is_number(s):
 
 
 def has_binary(obj):
-    """Returns True if obj is a binary or contains a binary attribute"""
-
+    """Return True if obj is a binary or contains a binary attribute."""
     if isinstance(obj, list):
         return any(has_binary(item) for item in obj)
 
@@ -58,7 +57,8 @@ def has_binary(obj):
 
 
 class Protocol:
-    """The interface for a single client to interact with ROS.
+    """
+    The interface for a single client to interact with ROS.
 
     See rosbridge_protocol for the default protocol used by rosbridge
 
@@ -66,7 +66,6 @@ class Protocol:
     - Pass incoming messages from the client to incoming
     - Propagate outgoing messages to the client by overriding outgoing
     - Call finish to clean up resources when the client is finished
-
     """
 
     # fragment_size can be set per client (each client has its own instance of protocol)
@@ -91,12 +90,12 @@ class Protocol:
     parameters = None
 
     def __init__(self, client_id, node_handle):
-        """Keyword arguments:
-        client_id -- a unique ID for this client to take.  Uniqueness is
-        important otherwise there will be conflicts between multiple clients
-        with shared resources
-        node_handle -- a ROS2 node handle.
+        """
+        Initialize the protocol with a client ID and a ROS2 node handle.
 
+        :param client_id: A unique ID for this client to take. Uniqueness is important, otherwise
+            there will be conflicts between multiple clients with shared resources
+        :param node_handle: A ROS2 node handle
         """
         self.client_id = client_id
         self.capabilities = []
@@ -111,11 +110,10 @@ class Protocol:
     # added default message_string="" to allow recalling incoming until buffer is empty without giving a parameter
     # --> allows to get rid of (..or minimize) delay between client-side sends
     def incoming(self, message_string=""):
-        """Process an incoming message from the client
+        """
+        Process an incoming message from the client.
 
-        Keyword arguments:
-        message_string -- the wire-level message sent by the client
-
+        :param message_string: The wire-level message sent by the client
         """
         if len(self.buffer) > 0:
             self.buffer = self.buffer + message_string
@@ -227,25 +225,26 @@ class Protocol:
                 self.incoming()
 
     def outgoing(self, message, compression="none"):
-        """Pass an outgoing message to the client.  This method should be
-        overridden.
+        """
+        Pass an outgoing message to the client.
 
-        Keyword arguments:
-        message -- the wire-level message to send to the client
+        This method should be overridden.
 
+        :param message: The wire-level message to send to the client
         """
         pass
 
     def send(self, message, cid=None, compression="none"):
-        """Called internally in preparation for sending messages to the client
+        """
+        Prepare a message for sending to the client.
+
+        Called internally in preparation for sending messages to the client.
 
         This method pre-processes the message then passes it to the overridden
         outgoing method.
 
-        Keyword arguments:
-        message -- a dict of message values to be marshalled and sent
-        cid     -- (optional) an associated id
-
+        :param message: A dict of message values to be marshalled and sent
+        :param cid: (optional) An associated id
         """
         serialized = (
             message if compression in ["cbor", "cbor-raw"] else self.serialize(message, cid)
@@ -280,25 +279,24 @@ class Protocol:
                 time.sleep(self.delay_between_messages)
 
     def finish(self):
-        """Indicate that the client is finished and clean up resources.
+        """
+        Indicate that the client is finished and clean up resources.
 
         All clients should call this method after disconnecting.
-
         """
         for capability in self.capabilities:
             capability.finish()
 
     def serialize(self, msg, cid=None):
-        """Turns a dictionary of values into the appropriate wire-level
-        representation.
+        """
+        Turn a dictionary of values into the appropriate wire-level representation.
 
-        Default behaviour uses JSON.  Override to use a different container.
+        Default behaviour uses JSON. Override to use a different container.
 
-        Keyword arguments:
-        msg -- the dictionary of values to serialize
-        cid -- (optional) an ID associated with this.  Will be logged on err.
+        :param msg: The dictionary of values to serialize
+        :param cid: (optional) An ID associated with this. Will be logged on err.
 
-        Returns a JSON string representing the dictionary
+        :return: a JSON string representing the dictionary
         """
         try:
             if isinstance(msg, bytearray):
@@ -312,16 +310,15 @@ class Protocol:
             return None
 
     def deserialize(self, msg, cid=None):
-        """Turns the wire-level representation into a dictionary of values
+        """
+        Turn the wire-level representation into a dictionary of values.
 
         Default behaviour assumes JSON. Override to use a different container.
 
-        Keyword arguments:
-        msg -- the wire-level message to deserialize
-        cid -- (optional) an ID associated with this.  Is logged on error
+        :param msg: The wire-level message to deserialize
+        :param cid: (optional) An ID associated with this. Is logged on error
 
-        Returns a dictionary of values
-
+        :return: a dictionary of values
         """
         try:
             if self.bson_only_mode:
@@ -347,45 +344,42 @@ class Protocol:
             # return None
 
     def register_operation(self, opcode, handler):
-        """Register a handler for an opcode
+        """
+        Register a handler for an opcode.
 
-        Keyword arguments:
-        opcode  -- the opcode to register this handler for
-        handler -- a callback function to call for messages with this opcode
-
+        :param opcode: The opcode to register this handler for
+        :param handler: A callback function to call for messages with this opcode
         """
         self.operations[opcode] = handler
 
     def unregister_operation(self, opcode):
-        """Unregister a handler for an opcode
+        """
+        Unregister a handler for an opcode.
 
-        Keyword arguments:
-        opcode -- the opcode to unregister the handler for
-
+        :param opcode: The opcode to unregister the handler for
         """
         if opcode in self.operations:
             del self.operations[opcode]
 
     def add_capability(self, capability_class):
-        """Add a capability to the protocol.
+        """
+        Add a capability to the protocol.
 
-        This method is for convenience; assumes the default capability
-        constructor
+        This method is for convenience; assumes the default capability constructor.
 
-        Keyword arguments:
-        capability_class -- the class of the capability to add
-
+        :param capability_class: The class of the capability to add
         """
         self.capabilities.append(capability_class(self))
 
     def log(self, level, message, lid=None):
-        """Log a message to the client.  By default just sends to stdout
+        """
+        Log a message to the client.
 
-        Keyword arguments:
-        level   -- the logger level of this message
-        message -- the string message to send to the user
-        lid     -- an associated for this log message
+        By default just sends the message to the node logger.
 
+        :param level: The logger level of this message
+        :param message: The string message to send to the user
+        :param lid: An associated for this log message
         """
         stdout_formatted_msg = None
         if lid is not None:

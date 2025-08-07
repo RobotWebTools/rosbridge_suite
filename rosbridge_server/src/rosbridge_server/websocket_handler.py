@@ -37,11 +37,12 @@ import uuid
 from collections import deque
 from functools import partial, wraps
 
-from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-from rosbridge_library.util import bson
 from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
+
+from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
+from rosbridge_library.util import bson
 
 _io_loop = IOLoop.instance()
 
@@ -53,7 +54,7 @@ def _log_exception():
 
 
 def log_exceptions(f):
-    """Decorator for logging exceptions to ROS."""
+    """Log exceptions to ROS."""
 
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -67,7 +68,8 @@ def log_exceptions(f):
 
 
 class IncomingQueue(threading.Thread):
-    """Decouples incoming messages from the Tornado thread.
+    """
+    Decouples incoming messages from the Tornado thread.
 
     This mitigates cases where outgoing messages are blocked by incoming,
     and vice versa.

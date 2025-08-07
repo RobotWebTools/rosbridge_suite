@@ -2,13 +2,13 @@ import fnmatch
 
 import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup
+
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.internal.ros_loader import get_service_class
 
 
 class AdvertisedServiceHandler:
-
     id_counter = 1
 
     def __init__(self, service_name, service_type, protocol):
@@ -52,6 +52,8 @@ class AdvertisedServiceHandler:
 
     def handle_response(self, request_id, res):
         """
+        Handle service response.
+
         Called by the ServiceResponse capability to handle a service response from the external client.
         """
         if request_id in self.request_futures:
@@ -63,7 +65,7 @@ class AdvertisedServiceHandler:
 
     def graceful_shutdown(self):
         """
-        Signal the AdvertisedServiceHandler to shutdown
+        Signal the AdvertisedServiceHandler to shutdown.
 
         Using this, rather than just node_handle.destroy_service, allows us
         time to stop any active service requests, ending their busy wait

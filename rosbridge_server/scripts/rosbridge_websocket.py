@@ -38,18 +38,18 @@ import time
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
-from rosbridge_library.capabilities.advertise import Advertise
-from rosbridge_library.capabilities.advertise_service import AdvertiseService
-from rosbridge_library.capabilities.call_service import CallService
-from rosbridge_library.capabilities.publish import Publish
-from rosbridge_library.capabilities.subscribe import Subscribe
-from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from std_msgs.msg import Int32
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado.netutil import bind_sockets
 from tornado.web import Application
 
+from rosbridge_library.capabilities.advertise import Advertise
+from rosbridge_library.capabilities.advertise_service import AdvertiseService
+from rosbridge_library.capabilities.call_service import CallService
+from rosbridge_library.capabilities.publish import Publish
+from rosbridge_library.capabilities.subscribe import Subscribe
+from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from rosbridge_server import ClientManager, RosbridgeWebSocket
 
 
@@ -167,7 +167,7 @@ class RosbridgeWebsocketNode(Node):
                 connected = True
             except OSError as e:
                 self.get_logger().warn(
-                    "Unable to start server: {} " "Retrying in {}s.".format(e, retry_startup_delay)
+                    "Unable to start server: {} Retrying in {}s.".format(e, retry_startup_delay)
                 )
                 time.sleep(retry_startup_delay)
 

@@ -7,10 +7,11 @@ import rclpy
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
+from std_msgs.msg import Int32, String
+
 from rosbridge_library.internal.subscribers import MultiSubscriber
 from rosbridge_library.internal.topics import TypeConflictException
 from rosbridge_library.util.ros import is_topic_subscribed
-from std_msgs.msg import Int32, String
 
 
 class TestMultiSubscriber(unittest.TestCase):
@@ -32,7 +33,7 @@ class TestMultiSubscriber(unittest.TestCase):
         rclpy.shutdown()
 
     def test_register_multisubscriber(self):
-        """Register a subscriber on a clean topic with a good msg type"""
+        """Register a subscriber on a clean topic with a good msg type."""
         topic = "/test_register_multisubscriber"
         msg_type = "std_msgs/String"
 
@@ -41,7 +42,7 @@ class TestMultiSubscriber(unittest.TestCase):
         self.assertTrue(is_topic_subscribed(self.node, topic))
 
     def test_unregister_multisubscriber(self):
-        """Register and unregister a subscriber on a clean topic with a good msg type"""
+        """Register and unregister a subscriber on a clean topic with a good msg type."""
         topic = "/test_unregister_multisubscriber"
         msg_type = "std_msgs/String"
 

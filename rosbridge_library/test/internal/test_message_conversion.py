@@ -5,14 +5,18 @@ from json import dumps, loads
 
 import numpy as np
 from rclpy.serialization import deserialize_message, serialize_message
+
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader
 
 
 class TestMessageConversion(unittest.TestCase):
     def validate_instance(self, inst1):
-        """Serializes and deserializes the inst to typecheck and ensure that
-        instances are correct"""
+        """
+        Validate that the instance is correct by serializing and deserializing it.
+
+        Serializes and deserializes the inst to typecheck and ensure that instances are correct.
+        """
         inst2 = deserialize_message(serialize_message(inst1), type(inst1))
         self.assertEqual(inst1, inst2)
 

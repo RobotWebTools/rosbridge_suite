@@ -8,31 +8,32 @@ import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
+from std_srvs.srv import SetBool, Trigger
+
 from rosbridge_library.capabilities.call_service import CallService
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
     MissingArgumentException,
 )
 from rosbridge_library.protocol import Protocol
-from std_srvs.srv import SetBool, Trigger
 
 
 class TestCallService(unittest.TestCase):
     def trigger_cb(self, request, response):
-        """Helper callback function for a test service with no arguments."""
+        """Handle request for a test service with no arguments."""
         response.success = True
         response.message = "called trigger service successfully"
         return response
 
     def trigger_long_cb(self, request, response):
-        """Helper callback function for a long running test service with no arguments."""
+        """Handle request for a long running test service with no arguments."""
         time.sleep(0.5)
         response.success = True
         response.message = "called trigger service successfully"
         return response
 
     def set_bool_cb(self, request, response):
-        """Helper callback function for a test service with arguments."""
+        """Handle request for a test service with arguments."""
         response.success = request.data
         if request.data:
             response.message = "set bool to true"
@@ -150,7 +151,6 @@ class TestCallService(unittest.TestCase):
         self.assertEqual(values["message"], "set bool to true")
 
     def test_call_service_fails(self):
-
         client = self.node.create_client(Trigger, self.trigger_srv.srv_name)
         assert client.wait_for_service(1.0)
 
@@ -181,7 +181,6 @@ class TestCallService(unittest.TestCase):
         self.assertFalse(received["msg"]["result"])
 
     def test_call_service_timeout(self):
-
         client = self.node.create_client(Trigger, self.trigger_long_srv.srv_name)
         assert client.wait_for_service(1.0)
 

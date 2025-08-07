@@ -35,6 +35,7 @@ from threading import Timer
 
 from rclpy.duration import Duration
 from rclpy.qos import DurabilityPolicy, QoSProfile
+
 from rosbridge_library.internal import message_conversion, ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.topics import (
@@ -44,30 +45,28 @@ from rosbridge_library.internal.topics import (
 
 
 class MultiPublisher:
-    """Keeps track of the clients that are using a particular publisher.
+    """
+    Keeps track of the clients that are using a particular publisher.
 
     Provides an API to publish messages and register clients that are using
-    this publisher"""
+    this publisher.
+    """
 
     def __init__(self, topic, node_handle, msg_type=None, latched_client_id=None, queue_size=100):
-        """Register a publisher on the specified topic.
+        """
+        Register a publisher on the specified topic.
 
-        Keyword arguments:
-        topic    -- the name of the topic to register the publisher to
-        node_handle -- Handle to a rclpy node to create the publisher.
-        msg_type -- (optional) the type to register the publisher as.  If not
-        provided, an attempt will be made to infer the topic type
-        latch    -- (optional) if a client requested this publisher to be latched,
-                    provide the client_id of that client here
+        :param topic: The name of the topic to register the publisher to
+        :param node_handle: Handle to a rclpy node to create the publisher.
+        :param msg_type: (optional) The type to register the publisher as. If not provided, an
+            attempt will be made to infer the topic type
+        :param latch: (optional) If a client requested this publisher to be latched,
+            provide the client_id of that client here
 
-        Throws:
-        TopicNotEstablishedException -- if no msg_type was specified by the
-        caller and the topic is not yet established, so a topic type cannot
-        be inferred
-        TypeConflictException        -- if the msg_type was specified by the
-        caller and the topic is established, and the established type is
-        different to the user-specified msg_type
-
+        :raises TopicNotEstablishedException: If no msg_type was specified by the caller and the
+            topic is not yet established, so a topic type cannot be inferred
+        :raises TypeConflictException: If the msg_type was specified by the caller and the topic
+            is established, and the established type is different to the user-specified msg_type
         """
         # First check to see if the topic is already established
         topics_names_and_types = dict(node_handle.get_topic_names_and_types())
@@ -119,37 +118,32 @@ class MultiPublisher:
         self.publisher = node_handle.create_publisher(msg_class, topic, qos_profile=publisher_qos)
 
     def unregister(self):
-        """Unregisters the publisher and clears the clients"""
+        """Unregister the publisher and clear the clients."""
         self.node_handle.destroy_publisher(self.publisher)
         self.clients.clear()
 
     def verify_type(self, msg_type):
-        """Verify that the publisher publishes messages of the specified type.
-
-        Keyword arguments:
-        msg_type -- the type to check this publisher against
-
-        Throws:
-        Exception -- if ros_loader cannot load the specified msg type
-        TypeConflictException -- if the msg_type is different than the type of
-        this publisher
-
         """
-        if not ros_loader.get_message_class(msg_type) is self.msg_class:
+        Verify that the publisher publishes messages of the specified type.
+
+        :param msg_type: The type to check this publisher against
+
+        :raises Exception: If ros_loader cannot load the specified msg type
+        :raises TypeConflictException: If the msg_type is different than the type of this
+            publisher
+        """
+        if ros_loader.get_message_class(msg_type) is not self.msg_class:
             raise TypeConflictException(self.topic, msg_class_type_repr(self.msg_class), msg_type)
         return
 
     def publish(self, msg):
-        """Publish a message using this publisher.
+        """
+        Publish a message using this publisher.
 
-        Keyword arguments:
-        msg -- the dict (json) message to publish
+        :param msg: The dict (json) message to publish
 
-        Throws:
-        Exception -- propagates exceptions from message conversion if the
-        provided msg does not properly conform to the message type of this
-        publisher
-
+        :raises Exception: Propagates exceptions from message conversion if the provided msg does
+            not properly conform to the message type of this publisher
         """
         # Create a message instance
         inst = self.msg_class()
@@ -161,23 +155,21 @@ class MultiPublisher:
         self.publisher.publish(inst)
 
     def register_client(self, client_id):
-        """Register the specified client as a client of this publisher.
+        """
+        Register the specified client as a client of this publisher.
 
-        Keyword arguments:
-        client_id -- the ID of the client using the publisher
-
+        :param client_id: The ID of the client using the publisher
         """
         self.clients[client_id] = True
 
     def unregister_client(self, client_id):
-        """Unregister the specified client from this publisher.
+        """
+        Unregister the specified client from this publisher.
 
         If the specified client_id is not a client of this publisher, nothing
         happens.
 
-        Keyword arguments:
-        client_id -- the ID of the client to remove
-
+        :param client_id: The ID of the client to remove
         """
         if client_id in self.clients:
             del self.clients[client_id]
@@ -188,12 +180,13 @@ class MultiPublisher:
 
 
 class PublisherManager:
-    """The PublisherManager keeps track of ROS publishers
+    """
+    The PublisherManager keeps track of ROS publishers.
 
-    It maintains a MultiPublisher instance for each registered topic
+    It maintains a MultiPublisher instance for each registered topic.
 
     When unregistering a client, if there are no more clients for a publisher,
-    then that publisher is unregistered from the ROS Master
+    then that publisher is unregistered from the ROS Master.
     """
 
     def __init__(self):
@@ -202,24 +195,21 @@ class PublisherManager:
         self.unregister_timeout = 10.0
 
     def register(self, client_id, topic, node_handle, msg_type=None, latch=False, queue_size=100):
-        """Register a publisher on the specified topic.
+        """
+        Register a publisher on the specified topic.
 
         Publishers are shared between clients, so a single MultiPublisher
         instance is created per topic, even if multiple clients register.
 
-        Keyword arguments:
-        client_id  -- the ID of the client making this request
-        topic      -- the name of the topic to publish on
-        node_handle -- Handle to a rclpy node to create the publisher.
-        msg_type   -- (optional) the type to publish
-        latch      -- (optional) whether to make this publisher latched
-        queue_size -- (optional) publisher queue_size to use
+        :param client_id: The ID of the client making this request
+        :param topic: The name of the topic to publish on
+        :param node_handle: Handle to a rclpy node to create the publisher
+        :param msg_type: (optional) The type to publish
+        :param latch: (optional) Whether to make this publisher latched
+        :param queue_size: (optional) Publisher queue_size to use
 
-        Throws:
-        Exception -- exceptions are propagated from the MultiPublisher if
-        there is a problem loading the specified msg class or establishing
-        the publisher
-
+        :raises Exception: exceptions are propagated from the MultiPublisher if there is a problem
+            loading the specified msg class or establishing the publisher
         """
         latched_client_id = client_id if latch else None
         if topic not in self._publishers:
@@ -253,17 +243,16 @@ class PublisherManager:
         self._publishers[topic].register_client(client_id)
 
     def unregister(self, client_id, topic):
-        """Unregister a client from the publisher for the given topic.
-            Will wait some time before actually unregistering, it is done in
-            _unregister_impl
+        """
+        Unregister a client from the publisher for the given topic.
 
-        If there are no clients remaining for that publisher, then the
-        publisher is unregistered from the ROS Master
+        Will wait some time before actually unregistering, it is done in _unregister_impl/
 
-        Keyword arguments:
-        client_id -- the ID of the client making this request
-        topic     -- the topic to unregister the publisher for
+        If there are no clients remaining for that publisher, then the publisher is unregistered
+        from the ROS Master.
 
+        :param client_id: The ID of the client making this request
+        :param topic: The topic to unregister the publisher for
         """
         if topic not in self._publishers:
             return
@@ -284,32 +273,30 @@ class PublisherManager:
         del self.unregister_timers[topic]
 
     def unregister_all(self, client_id):
-        """Unregisters a client from all publishers that they are registered
-        to.
+        """
+        Unregister a client from all publishers that they are registered to.
 
-        Keyword arguments:
-        client_id -- the ID of the client making this request"""
+        :param client_id: The ID of the client making this request
+        """
         for topic in self._publishers.keys():
             self.unregister(client_id, topic)
 
     def publish(self, client_id, topic, msg, node_handle, latch=False, queue_size=100):
-        """Publish a message on the given topic.
+        """
+        Publish a message on the given topic.
 
         Tries to create a publisher on the topic if one does not already exist.
 
-        Keyword arguments:
-        client_id -- the ID of the client making this request
-        topic     -- the topic to publish the message on
-        msg       -- a JSON-like dict of fields and values
-        node_handle -- Handle to a rclpy node to create the publisher.
-        latch     -- (optional) whether to make this publisher latched
-        queue_size -- (optional) publisher queue_size to use
+        :param client_id: The ID of the client making this request
+        :param topic: The topic to publish the message on
+        :param msg: A JSON-like dict of fields and values
+        :param node_handle: Handle to a rclpy node to create the publisher
+        :param latch: (optional) Whether to make this publisher latched
+        :param queue_size: (optional) Publisher queue_size to use
 
-        Throws:
-        Exception -- a variety of exceptions are propagated.  They can be
-        thrown if there is a problem setting up or getting the publisher,
-        or if the provided msg does not map to the msg class of the publisher.
-
+        :raises Exception: A variety of exceptions are propagated. They can be thrown if there is
+            a problem setting up or getting the publisher, or if the provided msg does not map to
+            the msg class of the publisher.
         """
         self.register(client_id, topic, node_handle, latch=latch, queue_size=queue_size)
 

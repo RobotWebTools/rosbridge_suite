@@ -14,23 +14,24 @@
   <maintainer email="blazej@fictionlab.pl">Błażej Sowa</maintainer>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <exec_depend>python3-tornado</exec_depend>
-  <exec_depend>python3-twisted</exec_depend>
   <exec_depend>rclpy</exec_depend>
+  <exec_depend>rosapi</exec_depend>
   <exec_depend>rosbridge_library</exec_depend>
   <exec_depend>rosbridge_msgs</exec_depend>
-  <exec_depend>rosapi</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
 
+  <test_depend>action_msgs</test_depend>
   <test_depend>ament_cmake_mypy</test_depend>
   <test_depend>example_interfaces</test_depend>
-  <test_depend>python3-autobahn</test_depend>
   <test_depend>launch</test_depend>
   <test_depend>launch_ros</test_depend>
-  <test_depend>launch_testing</test_depend>
-  <test_depend>launch_testing_ros</test_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>
+  <test_depend>python3-autobahn</test_depend>
+  <test_depend>python3-twisted</test_depend>
+  <test_depend>rcl_interfaces</test_depend>
   <test_depend>std_srvs</test_depend>
 
   <export>

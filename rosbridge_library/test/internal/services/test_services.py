@@ -9,6 +9,7 @@ import rclpy
 from rcl_interfaces.srv import ListParameters
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
+
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader, services
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
@@ -157,7 +158,7 @@ class TestServices(unittest.TestCase):
             services.args_to_service_request_instance("", cls.Request(), args)
 
     def test_service_call(self):
-        """Test a simple list_parameters service call"""
+        """Test a simple list_parameters service call."""
         # Prepare parameter
         self.node.declare_parameter("test_parameter", 1.0)
 
@@ -178,7 +179,7 @@ class TestServices(unittest.TestCase):
             self.assertEqual(x, y)
 
     def test_service_caller(self):
-        """Same as test_service_call but via the thread caller"""
+        """Same as test_service_call but via the thread caller."""
         # Prepare parameter
         self.node.declare_parameter("test_parameter", 1.0)
 

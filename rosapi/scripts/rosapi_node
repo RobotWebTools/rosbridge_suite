@@ -77,7 +77,6 @@ from rosapi_msgs.srv import (
 
 
 class Rosapi(Node):
-
     NAME = "rosapi"
 
     def __init__(self):
@@ -192,23 +191,40 @@ class Rosapi(Node):
         return glob_helper.get_globs(self)
 
     def get_topics(self, request, response):
-        """Called by the rosapi/Topics service. Returns a list of all the topics being published."""
+        """
+        Return a list of all the topics being published.
+
+        Called by the rosapi/Topics service.
+        """
         response.topics, response.types = proxy.get_topics_and_types(self.globs.topics)
         return response
 
     def get_interfaces(self, request, response):
-        """Called by the rosapi/Types service. Returns a list of all the types in the system."""
+        """
+        Return a list of all the interfaces in the system.
+
+        Called by the rosapi/Interfaces service.
+        """
         response.interfaces = proxy.get_interfaces()
         return response
 
     def get_topics_for_type(self, request, response):
-        """Called by the rosapi/TopicsForType service. Returns a list of all the topics that are publishing a given type"""
+        """
+        Return a list of all the topics that are publishing a given type.
+
+        Called by the rosapi/TopicsForType service.
+        """
         response.topics = proxy.get_topics_for_type(request.type, self.globs.topics)
         return response
 
     def get_topics_and_raw_types(self, request, response):
-        """Called by the rosapi/TopicsAndRawTypes service. Returns a list of all the topics being published, and their
-        raw types, similar to `gendeps --cat`."""
+        """
+        Return a list of all the topics being published, and their raw types.
+
+        Similar to `gendeps --cat`.
+
+        Called by the rosapi/TopicsAndRawTypes service.
+        """
         response.topics, response.types = proxy.get_topics_and_types(self.globs.topics)
         response.typedefs_full_text = [
             objectutils.get_typedef_full_text(type) for type in response.types
@@ -216,22 +232,38 @@ class Rosapi(Node):
         return response
 
     def get_services(self, request, response):
-        """Called by the rosapi/Services service. Returns a list of all the services being advertised."""
+        """
+        Return a list of all the services being advertised.
+
+        Called by the rosapi/Services service.
+        """
         response.services = proxy.get_services(self.globs.services)
         return response
 
     def get_services_for_type(self, request, response):
-        """Called by the rosapi/ServicesForType service. Returns a list of all the services that are publishing a given type"""
+        """
+        Return a list of all the services that are publishing a given type.
+
+        Called by the rosapi/ServicesForType service.
+        """
         response.services = proxy.get_services_for_type(request.type, self.globs.services)
         return response
 
     def get_nodes(self, request, response):
-        """Called by the rosapi/Nodes service. Returns a list of all the nodes that are registered"""
+        """
+        Return a list of all the nodes that are registered.
+
+        Called by the rosapi/Nodes service.
+        """
         response.nodes = proxy.get_nodes()
         return response
 
     def get_node_details(self, request, response):
-        """Called by the rosapi/Nodes service. Returns a node description"""
+        """
+        Return a node description.
+
+        Called by the rosapi/Nodes service.
+        """
         (
             response.subscribing,
             response.publishing,
@@ -240,62 +272,94 @@ class Rosapi(Node):
         return response
 
     def get_action_servers(self, request, response):
-        """Called by the rosapi/GetActionServers service. Returns a list of action servers based on actions standard topics"""
+        """
+        Return a list of action servers based on actions standard topics.
+
+        Called by the rosapi/GetActionServers service.
+        """
         topics = proxy.get_topics(self.globs.topics, include_hidden=True)
         response.action_servers = proxy.filter_action_servers(topics)
         return response
 
     def get_topic_type(self, request, response):
-        """Called by the rosapi/TopicType service.  Given the name of a topic, returns the name of the type of that topic.
-        Request class has one field, 'topic', which is a string value (the name of the topic)
-        Response class has one field, 'type', which is a string value (the type of the topic)
-        If the topic does not exist, an empty string is returned."""
+        """
+        Given the name of a topic, return the name of the type of that topic.
+
+        Request class has one field, 'topic', which is a string value (the name of the topic).
+        Response class has one field, 'type', which is a string value (the type of the topic).
+        If the topic does not exist, an empty string is returned.
+
+        Called by the rosapi/TopicType service.
+        """
         response.type = proxy.get_topic_type(request.topic, self.globs.topics)
         return response
 
     def get_service_type(self, request, response):
-        """Called by the rosapi/ServiceType service.  Given the name of a service, returns the type of that service
-        Request class has one field, 'service', which is a string value (the name of the service)
-        Response class has one field, 'type', which is a string value (the type of the service)
-        If the service does not exist, an empty string is returned."""
+        """
+        Given the name of a service, return the type of that service.
+
+        Request class has one field, 'service', which is a string value (the name of the service).
+        Response class has one field, 'type', which is a string value (the type of the service).
+        If the service does not exist, an empty string is returned.
+
+        Called by the rosapi/ServiceType service.
+        """
         response.type = proxy.get_service_type(request.service, self.globs.services)
         return response
 
     def get_publishers(self, request, response):
-        """Called by the rosapi/Publishers service.  Given the name of a topic, returns a list of node names
-        that are publishing on that topic."""
+        """
+        Given the name of a topic, return a list of node names that are publishing on that topic.
+
+        Called by the rosapi/Publishers service.
+        """
         response.publishers = proxy.get_publishers(request.topic, self.globs.topics)
         return response
 
     def get_subscribers(self, request, response):
-        """Called by the rosapi/Subscribers service.  Given the name of a topic, returns a list of node names
-        that are subscribing to that topic."""
+        """
+        Given the name of a topic, return a list of node names that are subscribing to that topic.
+
+        Called by the rosapi/Subscribers service.
+        """
         response.subscribers = proxy.get_subscribers(request.topic, self.globs.topics)
         return response
 
     def get_service_providers(self, request, response):
-        """Called by the rosapi/ServiceProviders service.  Given the name of a topic, returns a list of node names
-        that are advertising that service type"""
+        """
+        Given the name of a topic, returns a list of node names that are advertising that service type.
+
+        Called by the rosapi/ServiceProviders service.
+        """
         response.providers = proxy.get_service_providers(request.service, self.globs.services)
         return response
 
     def get_service_node(self, request, response):
-        """Called by the rosapi/ServiceNode service.  Given the name of a service, returns the name of the node
-        that is providing that service."""
+        """
+        Given the name of a service, returns the name of the node that is providing that service.
+
+        Called by the rosapi/ServiceNode service.
+        """
         response.node = proxy.get_service_node(request.service, self.globs.services)
         return response
 
     def get_message_details(self, request, response):
-        """Called by the rosapi/MessageDetails service.  Given the name of a message type, returns the TypeDef
-        for that type."""
+        """
+        Given the name of a message type, return the TypeDef for that type.
+
+        Called by the rosapi/MessageDetails service.
+        """
         response.typedefs = [
             dict_to_typedef(d) for d in objectutils.get_typedef_recursive(request.type)
         ]
         return response
 
     def get_service_request_details(self, request, response):
-        """Called by the rosapi/ServiceRequestDetails service. Given the name of a service type, returns the TypeDef
-        for the request message of that service type."""
+        """
+        Given the name of a service type, return the TypeDef for the request message of that service type.
+
+        Called by the rosapi/ServiceRequestDetails service.
+        """
         response.typedefs = [
             dict_to_typedef(d)
             for d in objectutils.get_service_request_typedef_recursive(request.type)
@@ -303,8 +367,11 @@ class Rosapi(Node):
         return response
 
     def get_service_response_details(self, request, response):
-        """Called by the rosapi/ServiceResponseDetails service. Given the name of a service type,
-        returns the TypeDef for the response message of that service type."""
+        """
+        Given the name of a service type, return the TypeDef for the response message of that service type.
+
+        Called by the rosapi/ServiceResponseDetails service.
+        """
         response.typedefs = [
             dict_to_typedef(d)
             for d in objectutils.get_service_response_typedef_recursive(request.type)
@@ -312,16 +379,22 @@ class Rosapi(Node):
         return response
 
     def get_action_goal_details(self, request, response):
-        """Called by the rosapi/ActionGoalDetails service. Given the name of an action type,
-        returns the TypeDef for the goal message of that action type."""
+        """
+        Given the name of an action type, return the TypeDef for the goal message of that action type.
+
+        Called by the rosapi/ActionGoalDetails service.
+        """
         response.typedefs = [
             dict_to_typedef(d) for d in objectutils.get_action_goal_typedef_recursive(request.type)
         ]
         return response
 
     def get_action_result_details(self, request, response):
-        """Called by the rosapi/ActionResultDetails service. Given the name of an action type,
-        returns the TypeDef for the result message of that action type."""
+        """
+        Given the name of an action type, return the TypeDef for the result message of that action type.
+
+        Called by the rosapi/ActionResultDetails service.
+        """
         response.typedefs = [
             dict_to_typedef(d)
             for d in objectutils.get_action_result_typedef_recursive(request.type)
@@ -329,8 +402,11 @@ class Rosapi(Node):
         return response
 
     def get_action_feedback_details(self, request, response):
-        """Called by the rosapi/ActionFeedbackDetails service. Given the name of an action type,
-        returns the TypeDef for the feedback message of that action type."""
+        """
+        Given the name of an action type, return the TypeDef for the feedback message of that action type.
+
+        Called by the rosapi/ActionFeedbackDetails service.
+        """
         response.typedefs = [
             dict_to_typedef(d)
             for d in objectutils.get_action_feedback_typedef_recursive(request.type)
@@ -338,8 +414,13 @@ class Rosapi(Node):
         return response
 
     def get_action_type(self, request, response):
-        """Called by the rosapi/ActionType service. Given the name of an action, returns its type.
-        If the action does not exist, an empty string is returned."""
+        """
+        Given the name of an action, return its type.
+
+        If the action does not exist, an empty string is returned.
+
+        Called by the rosapi/ActionType service.
+        """
         response.type = proxy.get_action_type(request.action)
         return response
 

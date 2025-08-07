@@ -35,6 +35,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
+
 from rosbridge_library.internal.message_conversion import (
     extract_values,
     populate_instance,
@@ -63,22 +64,21 @@ class ServiceCaller(Thread):
         error_callback: Callable[[Exception], None],
         node_handle: Node,
     ) -> None:
-        """Create a service caller for the specified service.  Use start()
-        to start in a separate thread or run() to run in this thread.
+        """
+        Create a service caller for the specified service.
 
-        Keyword arguments:
-        service          -- the name of the service to call
-        args             -- arguments to pass to the service.  Can be an
-        ordered list, or a dict of name-value pairs.  Anything else will be
-        treated as though no arguments were provided (which is still valid for
-        some kinds of service)
-        timeout          -- the time, in seconds, to wait for a response from the server.
-                            A non-positive value means no timeout.
-        success_callback -- a callback to call with the JSON result of the
-        service call
-        error_callback   -- a callback to call if an error occurs.  The
-        callback will be passed the exception that caused the failure
-        node_handle      -- a ROS 2 node handle to call services.
+        Use start() to start in a separate thread or run() to run in this thread.
+
+        :param service: The name of the service to call
+        :param args: Arguments to pass to the service.  Can be an ordered list, or a dict of
+            name-value pairs. Anything else will be treated as though no arguments were provided
+            (which is still valid for some kinds of service)
+        :param timeout: The time, in seconds, to wait for a response from the server.
+            A non-positive value means no timeout.
+        :param success_callback: A callback to call with the JSON result of the service call
+        :param error_callback: A callback to call if an error occurs. The callback will be passed
+            the exception that caused the failure
+        :param node_handle: A ROS 2 node handle to call services
         """
         Thread.__init__(self)
         self.daemon = True
@@ -106,11 +106,13 @@ class ServiceCaller(Thread):
 
 
 def args_to_service_request_instance(service: str, inst: Any, args: list | dict | None) -> Any:
-    """Populate a service request instance with the provided args
+    """
+    Populate a service request instance with the provided args.
 
-    args can be a dictionary of values, or a list, or None
+    Propagates any exceptions that may be raised.
 
-    Propagates any exceptions that may be raised."""
+    :param args: Can be a dictionary of values, or a list, or None
+    """
     msg = {}
     if isinstance(args, list):
         msg = dict(zip(inst.get_fields_and_field_types().keys(), args))

@@ -40,6 +40,7 @@ import numpy as np
 from rcl_interfaces.msg import Parameter
 from rclpy.clock import ROSClock
 from rclpy.time import Duration, Time
+
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.util import bson
 
@@ -171,15 +172,19 @@ def extract_values(inst):
 
 
 def populate_instance(msg, inst, clock=ROSClock()):
-    """Returns an instance of the provided class, with its fields populated
-    according to the values in msg"""
+    """
+    Populate a ROS message instance with the provided values.
+
+    Return an instance of the provided class, with its fields populated
+    according to the values in msg.
+    """
     inst_type = msg_instance_type_repr(inst)
 
     return _to_inst(msg, inst_type, inst_type, clock, inst)
 
 
 def msg_instance_type_repr(msg_inst):
-    """Returns a string representation of a ROS2 message type from a message instance"""
+    """Return a string representation of a ROS2 message type from a message instance."""
     # Message representation: '{package}.msg.{message_name}({fields})'.
     # A representation like '_type' member in ROS1 messages is needed: '{package}/{message_name}'.
     # E.g: 'std_msgs/Header'
@@ -191,7 +196,7 @@ def msg_instance_type_repr(msg_inst):
 
 
 def msg_class_type_repr(msg_class):
-    """Returns a string representation of a ROS2 message type from a class representation."""
+    """Return a string representation of a ROS2 message type from a class representation."""
     # The string representation of the class is <class '{package}.msg._{message}.{Message}'>
     # (e.g. <class 'std_msgs.msg._string.String'>).
     # This has to be converted to {package}/msg/{Message} (e.g. std_msgs/msg/String).
@@ -383,7 +388,6 @@ def _to_list_inst(msg, rostype, roottype, clock, inst, stack):
 
 
 def _to_object_inst(msg, rostype, roottype, clock, inst, stack):
-
     # Typecheck the msg
     if not isinstance(msg, dict):
         raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))

@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(rosbridge_test_msgs)
 
-find_package(ament_cmake_core REQUIRED)
-find_package(ament_cmake_python REQUIRED)
+find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)

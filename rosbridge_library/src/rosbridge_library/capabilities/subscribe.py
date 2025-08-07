@@ -49,20 +49,23 @@ except ImportError:
 
 
 class Subscription:
-    """Keeps track of the clients multiple calls to subscribe.
+    """
+    Keeps track of the clients multiple calls to subscribe.
 
-    Chooses the most appropriate settings to send messages"""
+    Chooses the most appropriate settings to send messages.
+    """
 
     def __init__(self, client_id, topic, publish, node_handle):
-        """Create a subscription for the specified client on the specified
-        topic, with callback publish
+        """
+        Create a subscription.
 
-        Keyword arguments:
-        client_id -- the ID of the client making this subscription
-        topic     -- the name of the topic to subscribe to
-        publish   -- the callback function for incoming messages
-        node_handle -- Handle to a rclpy node to create the publisher.
+        Create a subscription for the specified client on the specified
+        topic, with callback publish.
 
+        :param client_id: The ID of the client making this subscription
+        :param topic: The name of the topic to subscribe to
+        :param publish: The callback function for incoming messages
+        :param node_handle: Handle to a rclpy node to create the publisher.
         """
         self.client_id = client_id
         self.topic = topic
@@ -76,7 +79,7 @@ class Subscription:
         self.update_params()
 
     def unregister(self):
-        """Unsubscribes this subscription and cleans up resources"""
+        """Unsubscribe this subscription and clean up resources."""
         manager.unsubscribe(self.client_id, self.topic)
         with self.handler_lock:
             self.handler.finish(block=False)
@@ -91,26 +94,24 @@ class Subscription:
         fragment_size=None,
         compression="none",
     ):
-        """Add another client's subscription request
+        """
+        Add another client's subscription request.
 
         If there are multiple calls to subscribe, the values actually used for
         queue_length, fragment_size, compression and throttle_rate are
         chosen to encompass all subscriptions' requirements
 
-        Keyword arguments:
-        sid             -- the subscription id from the client
-        msg_type        -- the type of the message to subscribe to
-        throttle_rate   -- the minimum time (in ms) allowed between messages
-        being sent.  If multiple subscriptions, the lower of these is used
-        queue_length    -- the number of messages that can be buffered.  If
-        multiple subscriptions, the lower of these is used
-        fragment_size   -- None if no fragmentation, or the maximum length of
-        allowed outgoing messages
-        compression     -- "none" if no compression, or some other value if
-        compression is to be used (current valid values are 'png')
-
+        :param sid: The subscription id from the client
+        :param msg_type: The type of the message to subscribe to
+        :param throttle_rate: The minimum time (in ms) allowed between messages
+            being sent. If multiple subscriptions, the lower of these is used
+        :param queue_length: The number of messages that can be buffered.  If
+            multiple subscriptions, the lower of these is used
+        :param fragment_size: None if no fragmentation, or the maximum length of
+            allowed outgoing messages
+        :param compression: "none" if no compression, or some other value if
+            compression is to be used (current valid values are 'png')
         """
-
         client_details = {
             "throttle_rate": throttle_rate,
             "queue_length": queue_length,
@@ -135,11 +136,10 @@ class Subscription:
         )
 
     def unsubscribe(self, sid=None):
-        """Unsubscribe this particular client's subscription
+        """
+        Unsubscribe this particular client's subscription.
 
-        Keyword arguments:
-        sid -- the individual subscription id.  If None, all are unsubscribed
-
+        :param sid: The individual subscription id. If None, all are unsubscribed
         """
         if sid is None:
             self.clients.clear()
@@ -150,28 +150,38 @@ class Subscription:
             self.update_params()
 
     def is_empty(self):
-        """Return true if there are no subscriptions currently"""
+        """Return True if there are no subscriptions currently."""
         return len(self.clients) == 0
 
     def _publish(self, message):
-        """Internal method to propagate published messages to the registered
-        publish callback"""
+        """
+        Publish a message to the subscribed clients.
+
+        Internal method to propagate published messages to the registered
+        publish callback.
+        """
         self.publish(message, self.fragment_size, self.compression)
 
     def on_msg(self, msg):
-        """Raw callback called by subscription manager for all incoming
+        """
+        Handle incoming messages.
+
+        Raw callback called by subscription manager for all incoming
         messages.
 
         Incoming messages are passed to the message handler which may drop,
-        buffer, or propagate the message
-
+        buffer, or propagate the message.
         """
         with self.handler_lock:
             self.handler.handle_message(msg)
 
     def update_params(self):
-        """Determine the 'lowest common denominator' params to satisfy all
-        subscribed clients."""
+        """
+        Update the parameters of the message handler based on current subscriptions.
+
+        Determine the 'lowest common denominator' params to satisfy all
+        subscribed clients.
+        """
         if len(self.clients) == 0:
             self.throttle_rate = 0
             self.queue_length = 0
@@ -204,7 +214,6 @@ class Subscription:
 
 
 class Subscribe(Capability):
-
     subscribe_msg_fields = [
         (True, "topic", str),
         (False, "type", str),
@@ -296,16 +305,15 @@ class Subscribe(Capability):
         self.protocol.log("info", "Unsubscribed from %s" % topic)
 
     def publish(self, topic, message, fragment_size=None, compression="none"):
-        """Publish a message to the client
+        """
+        Publish a message to the client.
 
-        Keyword arguments:
-        topic   -- the topic to publish the message on
-        message -- a ROS message wrapped by OutgoingMessage
-        fragment_size -- (optional) fragment the serialized message into msgs
-        with payloads not greater than this value
-        compression   -- (optional) compress the message. valid values are
-        'png' and 'none'
-
+        :param topic: The topic to publish the message on
+        :param message: A ROS message wrapped by OutgoingMessage
+        :param fragment_size: (optional) If provided, fragment the serialized message into msgs
+            with payloads not greater than this value
+        :param compression: (optional) compress the message. valid values are
+            'png' and 'none'
         """
         # TODO: fragmentation, proper ids
 
