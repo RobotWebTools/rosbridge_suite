@@ -369,9 +369,10 @@ def main(args=None):
     executor.add_node(node)
 
     def spin_ros():
-        executor.spin_once(timeout_sec=0.01)
         if not rclpy.ok():
             shutdown_hook()
+            return
+        executor.spin_once(timeout_sec=0.01)
 
     spin_callback = PeriodicCallback(spin_ros, 1)
     spin_callback.start()
@@ -382,6 +383,7 @@ def main(args=None):
     except KeyboardInterrupt:
         print("Exiting due to SIGINT")
     finally:
+        spin_callback.stop()
         shutdown_hook()  # shutdown hook to stop the server
 
 
