@@ -58,7 +58,7 @@ select = [
     "NPY", # numpy
     "PD", # pandas-vet
     # "N", # pep8-naming
-    # "PERF", # Perflint
+    "PERF", # Perflint
     "E", # pycodestyle errors
     "W", # pycodestyle warnings
     # "DOC", # pydoclint

@@ -168,5 +168,5 @@ class QueueMessageHandler(MessageHandler, Thread):
             try:
                 msg = self.queue.popleft()
                 MessageHandler.handle_message(self, msg)
-            except Exception:
+            except Exception:  # noqa: PERF203
                 traceback.print_exc(file=sys.stderr)

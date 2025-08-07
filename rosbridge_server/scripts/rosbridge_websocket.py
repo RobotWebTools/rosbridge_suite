@@ -165,7 +165,7 @@ class RosbridgeWebsocketNode(Node):
                 self.declare_parameter("actual_port", actual_port)
                 self.get_logger().info(f"Rosbridge WebSocket server started on port {actual_port}")
                 connected = True
-            except OSError as e:
+            except OSError as e:  # noqa: PERF203
                 self.get_logger().warn(
                     "Unable to start server: {} Retrying in {}s.".format(e, retry_startup_delay)
                 )
