@@ -458,7 +458,7 @@ class Rosapi(Node):
                     default = loads(request.default_value)
                 except ValueError:
                     self.get_logger().error(
-                        "Failed to parse default value: {}".format(request.default_value)
+                        f"Failed to parse default value: {request.default_value}"
                     )
 
             response.value = dumps(default)
@@ -506,7 +506,7 @@ class Rosapi(Node):
 
     def _print_malformed_param_name_warning(self, param_name):
         self.get_logger().warn(
-            "Malformed parameter name: {}; expecting <node_name>:<param_name>".format(param_name)
+            f"Malformed parameter name: {param_name}; expecting <node_name>:<param_name>"
         )
 
     def get_ros_version(self, _request, response):
