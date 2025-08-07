@@ -13,8 +13,8 @@ sys.path.append(str(Path(__file__).parent))  # enable importing from common.py i
 
 from typing import TYPE_CHECKING
 
-import common  # noqa: E402
-from common import expect_messages, websocket_test  # noqa: E402
+import common
+from common import expect_messages, websocket_test
 
 if TYPE_CHECKING:
     from rclpy.node import Node

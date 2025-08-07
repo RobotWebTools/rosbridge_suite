@@ -87,7 +87,7 @@ class TestMessageHandlers(unittest.TestCase):
         time.sleep(0.1)
 
         try:
-            self.assertEqual(["hello"] + list(range(990, 1000)), received["msgs"])
+            self.assertEqual(["hello", *list(range(990, 1000))], received["msgs"])
         finally:
             handler.finish()
 
@@ -119,8 +119,8 @@ class TestMessageHandlers(unittest.TestCase):
         time.sleep(queue_length + 3)
 
         try:
-            self.assertEqual([msgs[0]] + list(msgs[-queue_length:]), received["msgs"])
-        except:  # noqa: E722  # Will finish and raise
+            self.assertEqual([msgs[0], *list(msgs[-queue_length:])], received["msgs"])
+        except:  # Will finish and raise
             handler.finish()
             raise
 
@@ -258,7 +258,7 @@ class TestMessageHandlers(unittest.TestCase):
             for x in range(10):
                 self.assertEqual(x, received["msg"])
                 time.sleep(throttle_rate_sec)
-        except:  # noqa: E722  # Will finish and raise
+        except:  # Will finish and raise
             handler.finish()
             raise
 

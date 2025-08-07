@@ -214,15 +214,15 @@ class Subscription:
 
 
 class Subscribe(Capability):
-    subscribe_msg_fields = [
+    subscribe_msg_fields = (
         (True, "topic", str),
         (False, "type", str),
         (False, "throttle_rate", int),
         (False, "fragment_size", int),
         (False, "queue_length", int),
         (False, "compression", str),
-    ]
-    unsubscribe_msg_fields = [(True, "topic", str)]
+    )
+    unsubscribe_msg_fields = (True, "topic", str)
 
     topics_glob = None
 

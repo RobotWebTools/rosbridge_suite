@@ -68,7 +68,7 @@ select = [
     # "PL", # pylint
     "UP", # pyupgrade
     "FURB", # refurb
-    # "RUF", # ruff
+    "RUF", # ruff
     # "TRY", # tryceratops
 ]
 ignore = [

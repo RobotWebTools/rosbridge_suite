@@ -68,7 +68,7 @@ class TestSubscribe(unittest.TestCase):
             self.assertEqual(subscription.fragment_size, min_frag_size)
             self.assertEqual(subscription.compression, "none")
 
-            list(subscription.clients.values())[0]["compression"] = "png"
+            next(iter(subscription.clients.values()))["compression"] = "png"
 
             subscription.update_params()
 

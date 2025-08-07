@@ -49,7 +49,7 @@ from rosbridge_library.protocol import Protocol
 class RosbridgeProtocol(Protocol):
     """Adds the handlers for the rosbridge opcodes."""
 
-    rosbridge_capabilities = [
+    rosbridge_capabilities = (
         Advertise,
         Publish,
         Subscribe,
@@ -63,7 +63,7 @@ class RosbridgeProtocol(Protocol):
         ActionResult,
         SendActionGoal,
         UnadvertiseAction,
-    ]
+    )
 
     print("registered capabilities (classes):")
     for cap in rosbridge_capabilities:

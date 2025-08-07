@@ -1,4 +1,5 @@
 import unittest
+from typing import ClassVar
 
 import rosapi.objectutils as objectutils
 
@@ -19,7 +20,7 @@ class TestUtils(unittest.TestCase):
     def _mock_get_message_instance(self, type_name):
         class MockInstance:
             __slots__ = ["_" + type_name]
-            _fields_and_field_types = {type_name: type_name}
+            _fields_and_field_types: ClassVar = {type_name: type_name}
 
         return MockInstance()
 
@@ -44,7 +45,7 @@ class TestUtils(unittest.TestCase):
         # create a fake msg with one real field ('data') and one internal slot
         class MockMsg:
             __slots__ = ["_check_fields", "_important_data"]
-            _fields_and_field_types = {"important_data": "int32"}
+            _fields_and_field_types: ClassVar = {"important_data": "int32"}
 
             def __init__(self):
                 self._important_data = 123

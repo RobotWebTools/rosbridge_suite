@@ -59,7 +59,7 @@ class InvalidModuleException(Exception):
     def __init__(self, modname: str, subname: str, original_exception: Exception) -> None:
         Exception.__init__(
             self,
-            f"Unable to import {modname}.{subname} from package {modname}. Caused by: {str(original_exception)}",
+            f"Unable to import {modname}.{subname} from package {modname}. Caused by: {original_exception!s}",
         )
 
 
@@ -69,7 +69,7 @@ class InvalidClassException(Exception):
     ) -> None:
         Exception.__init__(
             self,
-            f"Unable to import {subname} class {classname} from package {modname}. Caused by {str(original_exception)}",
+            f"Unable to import {subname} class {classname} from package {modname}. Caused by {original_exception!s}",
         )
 
 

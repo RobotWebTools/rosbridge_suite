@@ -409,7 +409,7 @@ def _to_object_inst(msg, rostype, roottype, clock, inst, stack):
     inst_fields = inst.get_fields_and_field_types()
     for field_name in msg:
         # Add this field to the field stack
-        field_stack = stack + [field_name]
+        field_stack = [*stack, field_name]
 
         # Raise an exception if the msg contains a bad field
         if field_name not in inst_fields:

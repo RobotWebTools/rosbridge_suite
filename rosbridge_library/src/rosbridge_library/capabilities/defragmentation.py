@@ -28,7 +28,7 @@ class ReceivedFragments:
     #     }
     # },
     # ...
-    lists: dict[str, dict] = {}
+    lists: dict[str, dict]
 
     def __init__(self):
         """Create singleton instance."""

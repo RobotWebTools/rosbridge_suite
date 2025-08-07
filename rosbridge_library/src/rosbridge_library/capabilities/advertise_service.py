@@ -87,7 +87,7 @@ class AdvertisedServiceHandler:
 class AdvertiseService(Capability):
     services_glob = None
 
-    advertise_service_msg_fields = [(True, "service", str), (True, "type", str)]
+    advertise_service_msg_fields = ((True, "service", str), (True, "type", str))
 
     def __init__(self, protocol):
         # Call superclass constructor

@@ -172,7 +172,7 @@ def get_typedef_full_text(ty):
     try:
         return stringify_field_types(ty)
     except Exception as e:
-        return f"# failed to get full definition text for {ty}: {str(e)}"
+        return f"# failed to get full definition text for {ty}: {e!s}"
 
 
 def _get_typedef(instance):

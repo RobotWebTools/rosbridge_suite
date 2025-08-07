@@ -116,18 +116,17 @@ class TestActions(unittest.TestCase):
             cls = ros_loader.get_action_class("rosbridge_test_msgs/" + action_type)
             for args in [[], {}, None]:
                 # Should throw no exceptions
-                actions.args_to_action_goal_instance("", cls.Goal(), args)
+                actions.args_to_action_goal_instance(cls.Goal(), args)
 
         # Test actions with data message
         for action_type in ["TestGoalOnly", "TestGoalAndResult", "TestGoalFeedbackAndResult"]:
             cls = ros_loader.get_action_class("rosbridge_test_msgs/" + action_type)
             for args in [[3], {"data": 3}]:
                 # Should throw no exceptions
-                actions.args_to_action_goal_instance("", cls.Goal(), args)
+                actions.args_to_action_goal_instance(cls.Goal(), args)
             self.assertRaises(
                 FieldTypeMismatchException,
                 actions.args_to_action_goal_instance,
-                "",
                 cls.Goal(),
                 ["hello"],
             )
@@ -139,7 +138,7 @@ class TestActions(unittest.TestCase):
             {"int_value": 3, "float_value": 3.5, "string": "hello", "bool_value": False},
         ]:
             # Should throw no exceptions
-            actions.args_to_action_goal_instance("", cls.Goal(), args)
+            actions.args_to_action_goal_instance(cls.Goal(), args)
 
     def test_send_action_goal(self):
         """Test a simple action call."""

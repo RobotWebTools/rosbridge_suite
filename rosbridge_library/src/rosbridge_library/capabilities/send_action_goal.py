@@ -44,20 +44,22 @@ from rosbridge_library.protocol import Protocol
 
 
 class SendActionGoal(Capability):
-    send_action_goal_msg_fields = [
+    send_action_goal_msg_fields = (
         (True, "action", str),
         (True, "action_type", str),
         (False, "fragment_size", (int, type(None))),
         (False, "compression", str),
-    ]
-    cancel_action_goal_msg_fields = [(True, "action", str)]
+    )
+    cancel_action_goal_msg_fields = ((True, "action", str),)
 
     actions_glob = None
-    client_handler_list: dict[str, ActionClientHandler] = {}
+    client_handler_list: dict[str, ActionClientHandler]
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
+
+        self.client_handler_list = {}
 
         # Register the operations that this capability provides
         send_action_goals_in_new_thread = (

@@ -81,9 +81,9 @@ class Protocol:
     # !! this might be related to (or even be avoided by using) throttle_rate !!
     delay_between_messages = 0
     # global list of non-ros advertised services
-    external_service_list: dict[str, Any] = {}
+    external_service_list: dict[str, Any]
     # global list of non-ros advertised actions
-    external_action_list: dict[str, Any] = {}
+    external_action_list: dict[str, Any]
     # Use only BSON for the whole communication if the server has been started with bson_only_mode:=True
     bson_only_mode = False
 
@@ -101,6 +101,8 @@ class Protocol:
         self.capabilities = []
         self.operations = {}
         self.node_handle = node_handle
+        self.external_service_list = {}
+        self.external_action_list = {}
 
         if self.parameters:
             self.fragment_size = self.parameters["max_message_size"]
@@ -213,7 +215,7 @@ class Protocol:
         try:
             self.operations[op](msg)
         except Exception as exc:
-            self.log("error", f"{op}: {str(exc)}", mid)
+            self.log("error", f"{op}: {exc!s}", mid)
 
         # if anything left in buffer .. re-call self.incoming
         # TODO: check what happens if we have "garbage" on tcp-stack --> infinite loop might be triggered! .. might get out of it when next valid JSON arrives since only data after last 'valid' closing bracket is kept

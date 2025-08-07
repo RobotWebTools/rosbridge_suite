@@ -198,7 +198,7 @@ class AdvertisedActionHandler:
 class AdvertiseAction(Capability):
     actions_glob = None
 
-    advertise_action_msg_fields = [(True, "action", str), (True, "type", str)]
+    advertise_action_msg_fields = ((True, "action", str), (True, "type", str))
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
