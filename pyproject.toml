@@ -67,7 +67,7 @@ select = [
     "PGH", # pygrep-hooks
     # "PL", # pylint
     "UP", # pyupgrade
-    # "FURB", # refurb
+    "FURB", # refurb
     # "RUF", # ruff
     # "TRY", # tryceratops
 ]

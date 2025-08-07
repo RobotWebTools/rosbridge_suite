@@ -210,7 +210,7 @@ def _handle_array_information(instance):
     fieldarraylen = []
     examples = []
     for slot in instance.__slots__:
-        key = slot[1:] if slot.startswith("_") else slot
+        key = slot.removeprefix("_")
         if key not in instance._fields_and_field_types:
             continue
 
