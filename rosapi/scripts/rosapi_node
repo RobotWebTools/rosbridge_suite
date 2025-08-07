@@ -190,7 +190,7 @@ class Rosapi(Node):
     def get_globs(self):
         return glob_helper.get_globs(self)
 
-    def get_topics(self, request, response):
+    def get_topics(self, _request, response):
         """
         Return a list of all the topics being published.
 
@@ -199,7 +199,7 @@ class Rosapi(Node):
         response.topics, response.types = proxy.get_topics_and_types(self.globs.topics)
         return response
 
-    def get_interfaces(self, request, response):
+    def get_interfaces(self, _request, response):
         """
         Return a list of all the interfaces in the system.
 
@@ -217,7 +217,7 @@ class Rosapi(Node):
         response.topics = proxy.get_topics_for_type(request.type, self.globs.topics)
         return response
 
-    def get_topics_and_raw_types(self, request, response):
+    def get_topics_and_raw_types(self, _request, response):
         """
         Return a list of all the topics being published, and their raw types.
 
@@ -231,7 +231,7 @@ class Rosapi(Node):
         ]
         return response
 
-    def get_services(self, request, response):
+    def get_services(self, _request, response):
         """
         Return a list of all the services being advertised.
 
@@ -249,7 +249,7 @@ class Rosapi(Node):
         response.services = proxy.get_services_for_type(request.type, self.globs.services)
         return response
 
-    def get_nodes(self, request, response):
+    def get_nodes(self, _request, response):
         """
         Return a list of all the nodes that are registered.
 
@@ -271,7 +271,7 @@ class Rosapi(Node):
         ) = proxy.get_node_info(request.node)
         return response
 
-    def get_action_servers(self, request, response):
+    def get_action_servers(self, _request, response):
         """
         Return a list of action servers based on actions standard topics.
 
@@ -493,11 +493,11 @@ class Rosapi(Node):
 
         return response
 
-    async def get_param_names(self, request, response):
+    async def get_param_names(self, _request, response):
         response.names = await params.get_param_names(self.globs.params)
         return response
 
-    def get_time(self, request, response):
+    def get_time(self, _request, response):
         response.time = Clock(clock_type=ClockType.ROS_TIME).now().to_msg()
         return response
 
@@ -509,7 +509,7 @@ class Rosapi(Node):
             "Malformed parameter name: {}; expecting <node_name>:<param_name>".format(param_name)
         )
 
-    def get_ros_version(self, request, response):
+    def get_ros_version(self, _request, response):
         response.version = 2
         response.distro = str(os.environ["ROS_DISTRO"])
         return response

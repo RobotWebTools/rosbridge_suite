@@ -111,7 +111,7 @@ class ActionClientHandler(Thread):
             self.error(e)
 
 
-def args_to_action_goal_instance(action: str, inst: Any, args: list | dict | None) -> Any:
+def args_to_action_goal_instance(inst: Any, args: list | dict | None) -> Any:
     """
     Populate an action goal instance with the provided args.
 
@@ -166,7 +166,7 @@ class SendGoal:
         inst = get_action_goal_instance(action_type)
 
         # Populate the instance with the provided args
-        args_to_action_goal_instance(action_name, inst, args)
+        args_to_action_goal_instance(inst, args)
 
         self.result = None
         client: ActionClient = ActionClient(node_handle, action_class, action_name)

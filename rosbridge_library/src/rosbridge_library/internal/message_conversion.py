@@ -270,7 +270,7 @@ def _from_list_inst(inst, rostype):
     return [_from_inst(x, rostype) for x in inst]
 
 
-def _from_object_inst(inst, rostype):
+def _from_object_inst(inst, _rostype):
     # Create an empty dict then populate with values from the inst
     msg = {}
     # Equivalent for zip(inst.__slots__, inst._slot_types) in ROS1:

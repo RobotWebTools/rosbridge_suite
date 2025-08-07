@@ -106,7 +106,7 @@ class ServiceCaller(Thread):
             self.error(e)
 
 
-def args_to_service_request_instance(service: str, inst: Any, args: list | dict | None) -> Any:
+def args_to_service_request_instance(inst: Any, args: list | dict | None) -> Any:
     """
     Populate a service request instance with the provided args.
 
@@ -149,7 +149,7 @@ def call_service(
     inst = get_service_request_instance(service_type)
 
     # Populate the instance with the provided args
-    args_to_service_request_instance(service, inst, args)
+    args_to_service_request_instance(inst, args)
 
     client: Client = node_handle.create_client(
         service_class, service, callback_group=ReentrantCallbackGroup()

@@ -38,7 +38,7 @@ class TestMultiSubscriber(unittest.TestCase):
         msg_type = "std_msgs/String"
 
         self.assertFalse(is_topic_subscribed(self.node, topic))
-        MultiSubscriber(topic, self.client_id, lambda *args: None, self.node, msg_type=msg_type)
+        MultiSubscriber(topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type)
         self.assertTrue(is_topic_subscribed(self.node, topic))
 
     def test_unregister_multisubscriber(self):
@@ -48,7 +48,7 @@ class TestMultiSubscriber(unittest.TestCase):
 
         self.assertFalse(is_topic_subscribed(self.node, topic))
         multi = MultiSubscriber(
-            topic, self.client_id, lambda *args: None, self.node, msg_type=msg_type
+            topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type
         )
         self.assertTrue(is_topic_subscribed(self.node, topic))
         multi.unregister()
@@ -71,7 +71,9 @@ class TestMultiSubscriber(unittest.TestCase):
             "sensor_msgs/PointCloud2",
         ]
 
-        s = MultiSubscriber(topic, self.client_id, lambda *args: None, self.node, msg_type=msg_type)
+        s = MultiSubscriber(
+            topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type
+        )
         s.verify_type(msg_type)
         for othertype in othertypes:
             self.assertRaises(TypeConflictException, s.verify_type, othertype)
@@ -82,7 +84,7 @@ class TestMultiSubscriber(unittest.TestCase):
 
         self.assertFalse(is_topic_subscribed(self.node, topic))
         multi = MultiSubscriber(
-            topic, self.client_id, lambda *args: None, self.node, msg_type=msg_type
+            topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type
         )
         self.assertTrue(is_topic_subscribed(self.node, topic))
         self.assertEqual(len(multi.new_subscriptions), 0)
@@ -160,7 +162,7 @@ class TestMultiSubscriber(unittest.TestCase):
         pub = self.node.create_publisher(String, topic, publisher_qos)
         received = {"count": 0}
 
-        def cb(msg):
+        def cb(_msg):
             received["count"] = received["count"] + 1
 
         multi = MultiSubscriber(topic, self.client_id, cb, self.node, msg_type=msg_type)

@@ -43,7 +43,7 @@ async def futures_wait_for(node: Node, futures: list[Future], timeout_sec: float
 
     timer = node.create_timer(timeout_sec, timeout_callback)
 
-    def future_done_callback(arg):
+    def future_done_callback(_arg):
         if all(future.done() for future in futures):
             first_done_future.set_result(None)
 

@@ -29,7 +29,7 @@ class AdvertisedServiceHandler:
         self.id_counter += 1
         return next_id_value
 
-    async def handle_request(self, req, res):
+    async def handle_request(self, req, _res):
         # generate a unique ID
         request_id = f"service_request:{self.service_name}:{self.next_id()}"
 

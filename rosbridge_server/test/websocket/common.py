@@ -80,7 +80,7 @@ except ImportError:
         Re-export this from a test file and use add_launch_test() to run the test.
         """
         return LaunchDescription(
-            [_generate_node(), launch.actions.OpaqueFunction(function=lambda context: ready_fn())]
+            [_generate_node(), launch.actions.OpaqueFunction(function=lambda _context: ready_fn())]
         )
 
 

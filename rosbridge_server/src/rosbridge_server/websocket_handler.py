@@ -202,7 +202,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             _log_exception()
 
     @log_exceptions
-    def check_origin(self, origin):
+    def check_origin(self, _origin):
         return True
 
     @log_exceptions

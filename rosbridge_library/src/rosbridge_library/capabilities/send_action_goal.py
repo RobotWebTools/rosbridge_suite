@@ -152,7 +152,7 @@ class SendActionGoal(Capability):
                 client_handler.send_goal_helper.cancel_goal()
 
     def _success(
-        self, cid: str, action: str, fragment_size: int, compression: bool, message: dict
+        self, cid: str, action: str, _fragment_size: int, _compression: bool, message: dict
     ) -> None:
         outgoing_message = {
             "op": "action_result",

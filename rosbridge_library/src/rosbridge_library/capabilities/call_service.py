@@ -127,7 +127,7 @@ class CallService(Capability):
             self.protocol.node_handle,
         ).run()
 
-    def _success(self, cid, service, fragment_size, compression, message):
+    def _success(self, cid, service, _fragment_size, _compression, message):
         outgoing_message = {
             "op": "service_response",
             "service": service,

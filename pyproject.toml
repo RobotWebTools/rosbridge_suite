@@ -49,7 +49,7 @@ select = [
     "TID", # flake8-tidy-imports
     # "TD", # flake8-todos
     "TC", # flake8-type-checking
-    # "ARG", # flake8-unused-arguments
+    "ARG", # flake8-unused-arguments
     # "PTH", # flake8-use-pathlib
 
     "FLY", # flynt

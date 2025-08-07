@@ -285,7 +285,7 @@ class Protocol:
         for capability in self.capabilities:
             capability.finish()
 
-    def serialize(self, msg, cid=None):
+    def serialize(self, msg, _cid=None):
         """
         Turn a dictionary of values into the appropriate wire-level representation.
 
@@ -306,7 +306,7 @@ class Protocol:
             self.log("error", f"Unable to serialize message '{msg}': {e}")
             return None
 
-    def deserialize(self, msg, cid=None):
+    def deserialize(self, msg, _cid=None):
         """
         Turn the wire-level representation into a dictionary of values.
 

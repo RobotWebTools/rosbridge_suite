@@ -19,13 +19,13 @@ from rosbridge_library.protocol import Protocol
 
 
 class TestCallService(unittest.TestCase):
-    def trigger_cb(self, request, response):
+    def trigger_cb(self, _request, response):
         """Handle request for a test service with no arguments."""
         response.success = True
         response.message = "called trigger service successfully"
         return response
 
-    def trigger_long_cb(self, request, response):
+    def trigger_long_cb(self, _request, response):
         """Handle request for a long running test service with no arguments."""
         time.sleep(0.5)
         response.success = True
@@ -105,7 +105,7 @@ class TestCallService(unittest.TestCase):
 
         received = {"msg": None, "arrived": False}
 
-        def cb(msg, cid=None, compression="none"):
+        def cb(msg, _cid=None, _compression="none"):
             print(msg)
             received["msg"] = msg
             received["arrived"] = True
@@ -137,7 +137,7 @@ class TestCallService(unittest.TestCase):
 
         received = {"msg": None, "arrived": False}
 
-        def cb(msg, cid=None, compression="none"):
+        def cb(msg, _cid=None, _compression="none"):
             received["msg"] = msg
             received["arrived"] = True
 
@@ -168,7 +168,7 @@ class TestCallService(unittest.TestCase):
 
         received = {"msg": None, "arrived": False}
 
-        def cb(msg, cid=None, compression="none"):
+        def cb(msg, _cid=None, _compression="none"):
             print(msg)
             received["msg"] = msg
             received["arrived"] = True
@@ -192,7 +192,7 @@ class TestCallService(unittest.TestCase):
 
         received = {"msg": None, "arrived": False}
 
-        def cb(msg, cid=None, compression="none"):
+        def cb(msg, _cid=None, _compression="none"):
             print("Received message")
             received["msg"] = msg
             received["arrived"] = True
