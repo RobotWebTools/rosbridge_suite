@@ -7,14 +7,18 @@ import unittest
 from action_msgs.msg import GoalStatus
 from example_interfaces.action import Fibonacci
 from rclpy.action import ActionClient
-from rclpy.node import Node
-from rclpy.task import Future
 from twisted.python import log
 
 sys.path.append(os.path.dirname(__file__))  # enable importing from common.py in this directory
 
+from typing import TYPE_CHECKING
+
 import common  # noqa: E402
 from common import expect_messages, websocket_test  # noqa: E402
+
+if TYPE_CHECKING:
+    from rclpy.node import Node
+    from rclpy.task import Future
 
 log.startLogging(sys.stderr)
 

@@ -35,7 +35,6 @@ from threading import Event, Thread
 from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from rclpy.callback_groups import ReentrantCallbackGroup
-from rclpy.node import Node
 
 from rosbridge_library.internal.message_conversion import (
     extract_values,
@@ -48,6 +47,7 @@ from rosbridge_library.internal.ros_loader import (
 
 if TYPE_CHECKING:
     from rclpy.client import Client
+    from rclpy.node import Node
 
 
 class InvalidServiceException(Exception):

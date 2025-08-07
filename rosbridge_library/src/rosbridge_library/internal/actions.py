@@ -33,12 +33,10 @@ from __future__ import annotations
 
 import time
 from threading import Thread
-from typing import Any, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from rclpy.action import ActionClient
 from rclpy.expand_topic_name import expand_topic_name
-from rclpy.node import Node
-from rclpy.task import Future
 
 from rosbridge_library.internal.message_conversion import (
     extract_values,
@@ -48,6 +46,10 @@ from rosbridge_library.internal.ros_loader import (
     get_action_class,
     get_action_goal_instance,
 )
+
+if TYPE_CHECKING:
+    from rclpy.node import Node
+    from rclpy.task import Future
 
 
 class InvalidActionException(Exception):
