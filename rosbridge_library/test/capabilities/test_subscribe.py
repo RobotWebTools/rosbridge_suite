@@ -117,7 +117,7 @@ class TestSubscribe(unittest.TestCase):
 
         received = {"msg": None}
 
-        def send(outgoing, _cid=None, _compression="none"):
+        def send(outgoing, cid=None, compression="none"):  # noqa: ARG001
             received["msg"] = outgoing
 
         proto.send = send
