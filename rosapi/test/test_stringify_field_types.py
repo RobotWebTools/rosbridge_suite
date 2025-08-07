@@ -6,7 +6,7 @@ from rosbridge_library.internal.ros_loader import InvalidModuleException
 
 
 class TestObjectUtils(unittest.TestCase):
-    def test_stringify_field_types(self):
+    def test_stringify_field_types(self) -> None:
         self.maxDiff = None
 
         self.assertRegex(
