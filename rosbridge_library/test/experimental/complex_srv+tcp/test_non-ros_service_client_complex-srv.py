@@ -28,7 +28,8 @@ def request_service():
     service_request_object = {
         "op": "call_service",  # op-code for rosbridge
         "service": "/" + service_name,  # select service
-        "fragment_size": receiving_fragment_size,  # optional: tells rosbridge to send fragments if message size is bigger than requested
+        # optional: tells rosbridge to send fragments if message size is bigger than requested
+        "fragment_size": receiving_fragment_size,
         "message_intervall": receive_message_intervall,
         "args": {
             "pose": {
@@ -36,7 +37,8 @@ def request_service():
                 "orientation": {"y": 0.0, "x": 0.0, "z": 0.0, "w": 0.0},
             }
         },
-        # "count" : request_byte_count           # count is the parameter for send_bytes as defined in srv-file (always put into args field!)
+        # count is the parameter for send_bytes as defined in srv-file (always put into args field!)
+        # "count" : request_byte_count
     }
     service_request = json.dumps(service_request_object)
     print("sending JSON-message to rosbridge:", service_request)

@@ -16,7 +16,8 @@ max_msg_length = 20000  # bytes
 rosbridge_ip = "localhost"  # hostname or ip
 rosbridge_port = 9090  # port as integer
 
-service_type = "rosbridge_test_msgs/SendBytes"  # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+# make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+service_type = "rosbridge_test_msgs/SendBytes"
 service_name = "send_bytes"  # service name
 
 send_fragment_size = 1000
@@ -59,7 +60,9 @@ def calculate_service_response(request):
         "op": "service_response",
         "id": request_object["id"],
         "service": service_name,
-        "values": service_response_data,  # put service response in "data"-field of response object (in this case it's twice "data", because response value is also named data (in srv-file)
+        # put service response in "data"-field of response object
+        # (in this case it's twice "data", because response value is also named data, in srv-file)
+        "values": service_response_data,
     }
     return json.dumps(response_object)
 

@@ -184,12 +184,16 @@ class Protocol:
             if "receiver" in msg:
                 self.log(
                     "error",
-                    f"Received a rosbridge v1.0 message.  Please refer to rosbridge.org for the correct format of rosbridge v2.0 messages.  Original message was: {message_string}",
+                    "Received a rosbridge v1.0 message. "
+                    "Please refer to rosbridge.org for the correct format of rosbridge v2.0 messages. "
+                    f"Original message was: {message_string}",
                 )
             else:
                 self.log(
                     "error",
-                    f"Received a message without an op.  All messages require 'op' field with value one of: {list(self.operations.keys())}.  Original message was: {message_string}",
+                    "Received a message without an op. "
+                    f"All messages require 'op' field with value one of: {list(self.operations.keys())}. "
+                    "Original message was: {message_string}",
                     mid,
                 )
             return

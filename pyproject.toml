@@ -95,4 +95,4 @@ ignore = [
 
 mccabe.max-complexity = 36
 
-pycodestyle.max-line-length = 217
+pycodestyle.max-line-length = 120

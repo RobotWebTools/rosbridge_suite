@@ -16,11 +16,13 @@ max_msg_length = 20000  # bytes
 rosbridge_ip = "localhost"  # hostname or ip
 rosbridge_port = 9090  # port as integer
 
-service_type = "rosbridge_test_msgs/TestNestedService"  # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+# make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+service_type = "rosbridge_test_msgs/TestNestedService"
 service_name = "nested_srv"  # service name
 
 send_fragment_size = 1000
-# delay between sends to rosbridge is not needed anymore, if using my version of protocol (uses buffer to collect data from stream)
+# delay between sends to rosbridge is not needed anymore, if using my version of protocol
+# (uses buffer to collect data from stream)
 send_fragment_delay = 0.000  # 1
 receive_fragment_size = 10
 receive_message_intervall = 0.0
@@ -57,7 +59,9 @@ def calculate_service_response(request):
     response_object = {
         "op": "service_response",
         "id": request_object["id"],
-        "data": service_response_data,  # put service response in "data"-field of response object (in this case it's twice "data", because response value is also named data (in srv-file)
+        # put service response in "data"-field of response object
+        # (in this case it's twice "data", because response value is also named data, in srv-file)
+        "data": service_response_data,
     }
     return json.dumps(response_object)
 
