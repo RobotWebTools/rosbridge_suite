@@ -70,15 +70,20 @@ class Defragment(Capability, threading.Thread):
 
     # defragment() does:
     #   1) take any incoming message with op-code "fragment"
-    #   2) check all existing fragment lists for time out                       # could be done by a thread but should be okay this way:
-    #   2.a) remove timed out lists (only if new fragment is not for this list) #   - checking whenever a new fragment is received should suffice
-    #   3) create a new fragment list for new message ids                       #     to have control over growth of fragment lists
+    #   2) check all existing fragment lists for time out
+    #       (could be done by a thread but should be okay this way)
+    #   2.a) remove timed out lists (only if new fragment is not for this list)
+    #       (checking whenever a new fragment is received should suffice)
+    #   3) create a new fragment list for new message ids
+    #       (to have control over growth of fragment lists)
     #   3.a) check message fields
     #   3.b) append the new fragment to 'the' list
     #   3.c) add time stamp (last_fragment_appended) to 'this' list
     #   4) check if the list of current fragment (message id) is complete
     #   4.a) reconstruct the original message by concatenating the fragments
-    #   4.b) pass the reconstructed message string to protocol.incoming()       # protocol.incoming is checking message fields by itself, so no need to do this before passing the reconstructed message to protocol
+    #   4.b) pass the reconstructed message string to protocol.incoming()
+    #       (protocol.incoming is checking message fields by itself, so no need to do this before
+    #       passing the reconstructed message to protocol)
     #   4.c) remove the fragment list to free up memory
     def defragment(self, message):
         now = time.monotonic()

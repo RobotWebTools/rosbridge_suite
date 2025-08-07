@@ -129,29 +129,31 @@ class Protocol:
             msg = self.deserialize(self.buffer)
             self.buffer = ""
 
-        # if loading whole object fails try to load part of it (from first opening bracket "{" to next closing bracket "}"
+        # if loading the whole object fails, try to load a part of it
+        # (from first opening bracket "{" to next closing bracket "}")
         # .. this causes Exceptions on "inner" closing brackets --> so I suppressed logging of deserialization errors
         except Exception:
             if self.bson_only_mode:
-                # Since BSON should be used in conjunction with a network handler
-                # that receives exactly one full BSON message.
-                # This will then be passed to self.deserialize and shouldn't cause any
-                # exceptions because of fragmented messages (broken or invalid messages might still be sent tough)
+                # Since BSON should be used in conjunction with a network handler that receives exactly one full BSON
+                # message. This will then be passed to self.deserialize and shouldn't cause any exceptions because of
+                # fragmented messages (broken or invalid messages might still be sent tough)
                 self.log("error", "Exception in deserialization of BSON")
 
             else:
                 # TODO: handling of partial/multiple/broken json data in incoming buffer
-                # this way is problematic when json contains nested json-objects ( e.g. { ... { "config": [0,1,2,3] } ...  } )
-                # .. if outer json is not fully received, stepping through opening brackets will find { "config" : ... } as a valid json object
-                # .. and pass this "inner" object to rosbridge and throw away the leading part of the "outer" object..
-                # solution for now:
-                # .. check for "op"-field. i can still imagine cases where a nested message ( e.g. complete service_response fits into the data field of a fragment..)
-                # .. would cause trouble, but if a response fits as a whole into a fragment, simply do not pack it into a fragment.
+                # This way is problematic when json contains nested json-objects
+                # ( e.g. { ... { "config": [0,1,2,3] } ...  } )
+                # If outer json is not fully received, stepping through opening brackets will find { "config" : ... }
+                # as a valid json object and pass this "inner" object to rosbridge and throw away the leading part of
+                # the "outer" object. Solution for now: check for "op"-field. I can still imagine cases where a nested
+                # message (e.g. complete service_response fits into the data field of a fragment..) would cause trouble,
+                # but if a response fits as a whole into a fragment, simply do not pack it into a fragment.
                 #
                 # --> from that follows current limitation:
                 #     fragment data must NOT (!) contain a complete json-object that has an "op-field"
                 #
-                # an alternative solution would be to only check from first opening bracket and have a time out on data in input buffer.. (to handle broken data)
+                # An alternative solution would be to only check from first opening bracket and have a time out on data
+                # in input buffer (to handle broken data)
                 opening_brackets = [i for i, letter in enumerate(self.buffer) if letter == "{"]
                 closing_brackets = [i for i, letter in enumerate(self.buffer) if letter == "}"]
 
@@ -168,7 +170,8 @@ class Protocol:
                             # debug json-decode errors with this line
                             # print e
                             pass
-                    # if load was successful --> break outer loop, too.. -> no need to check if json begins at a "later" opening bracket..
+                    # if load was successful break outer loop, too.
+                    # No need to check if json begins at a "later" opening bracket.
                     if msg is not None:
                         break
 
@@ -205,8 +208,8 @@ class Protocol:
                 mid,
             )
             return
-        # this way a client can change/overwrite it's active values anytime by just including parameter field in any message sent to rosbridge
-        #  maybe need to be improved to bind parameter values to specific operation..
+        # This way, a client can change/overwrite its active values anytime by just including parameter field in any
+        # message sent to rosbridge. Maybe need to be improved to bind parameter values to specific operation.
         if "fragment_size" in msg:
             self.fragment_size = msg["fragment_size"]
             # print "fragment size set to:", self.fragment_size
@@ -221,8 +224,9 @@ class Protocol:
         except Exception as exc:
             self.log("error", f"{op}: {exc!s}", mid)
 
-        # if anything left in buffer .. re-call self.incoming
-        # TODO: check what happens if we have "garbage" on tcp-stack --> infinite loop might be triggered! .. might get out of it when next valid JSON arrives since only data after last 'valid' closing bracket is kept
+        # if anything left in buffer, re-call self.incoming
+        # TODO: check what happens if we have "garbage" on tcp-stack. Infinite loop might be triggered! Might get out of
+        # it when next valid JSON arrives since only data after last 'valid' closing bracket is kept.
         if len(self.buffer) > 0 and self.old_buffer != self.buffer:
             # try to avoid infinite loop..
             self.old_buffer = self.buffer
@@ -263,7 +267,8 @@ class Protocol:
                 mid = message.get("id", None)
 
                 # TODO: think about splitting into fragments that have specified size including header-fields!
-                # --> estimate header size --> split content into fragments that have the requested overall size, rather than requested content size
+                # --> estimate header size --> split content into fragments that have the requested overall size,
+                # rather than requested content size
                 fragment_list = Fragmentation(self).fragment(message, self.fragment_size, mid)
 
             # fragment list not empty -> send fragments
@@ -273,8 +278,10 @@ class Protocol:
                         self.outgoing(bson.BSON.encode(fragment), compression)
                     else:
                         self.outgoing(json.dumps(fragment), compression)
-                    # okay to use delay here (sender's send()-function) because rosbridge is sending next request only to service provider when last one had finished)
-                    #  --> if this was not the case this delay needed to be implemented in service-provider's (meaning message receiver's) send_message()-function in rosbridge_tcp.py)
+                    # okay to use delay here (sender's send()-function) because rosbridge is sending next request only
+                    # to service provider when last one had finished. If this was not the case, this delay would need to
+                    # be implemented in service-provider's (meaning message receiver's) send_message()-function in
+                    # rosbridge_tcp.py)
                     time.sleep(self.delay_between_messages)
             # else send message as it is
             else:
@@ -328,12 +335,15 @@ class Protocol:
                 return bson_message.decode()
             return json.loads(msg)
         except Exception:
-            # if we did try to deserialize whole buffer .. first try to let self.incoming check for multiple/partial json-decodes before logging error
-            # .. this means, if buffer is not == msg --> we tried to decode part of buffer
+            # if we did try to deserialize the whole buffer, first try to let self.incoming check for multiple/partial
+            # json-decodes before logging error. This means, if buffer is not == msg --> we tried to decode part of
+            # the buffer.
 
-            # TODO: implement a way to have a final Exception when nothing works out to decode (multiple/broken/partial JSON..)
+            # TODO: implement a way to have a final Exception when nothing works out to decode
+            # (multiple/broken/partial JSON..)
 
-            # suppressed logging of exception on json-decode to keep rosbridge-logs "clean", otherwise console logs would get spammed for every failed json-decode try
+            # suppressed logging of exception on json-decode to keep rosbridge-logs "clean",
+            # otherwise console logs would get spammed for every failed json-decode try
             #            if msg != self.buffer:
             #                error_msg = "Unable to deserialize message from client: %s"  % msg
             #                error_msg += "\nException was: " +str(e)

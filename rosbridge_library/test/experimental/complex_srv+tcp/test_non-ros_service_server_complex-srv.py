@@ -37,14 +37,14 @@ receive_message_intervall = 0.0
 
 def calculate_service_response(request):
     request_object = json.loads(request)  # parse string for service request
-    # args = request_object["args"]  # get parameter field (args)                   # unused variable
-    #    count = int(args["count"] )                                                # get parameter(s) as described in corresponding ROS srv-file
+    # args = request_object["args"]  # get parameter field (args)
+    # count = int(args["count"])  # get parameter(s) as described in corresponding ROS srv-file
     #
-    #    message = ""                                                               # calculate service response
-    #    for i in range(0,count):
-    #        message += str(chr(randint(32,126)))
-    #        if i% 100000 == 0:
-    #            print count - i, "bytes left to generate"
+    # message = ""  # calculate service response
+    # for i in range(0,count):
+    #     message += str(chr(randint(32,126)))
+    #     if i% 100000 == 0:
+    #         print count - i, "bytes left to generate"
 
     message = {"data": {"data": 42.0}}
 
