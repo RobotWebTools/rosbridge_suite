@@ -31,7 +31,7 @@ class TestMultiPublisher(unittest.TestCase):
         rclpy.shutdown()
 
     def test_register_multipublisher(self):
-        """Register a publisher on a clean topic with a good msg type"""
+        """Register a publisher on a clean topic with a good msg type."""
         topic = "/test_register_multipublisher"
         msg_type = "std_msgs/String"
 
@@ -40,7 +40,7 @@ class TestMultiPublisher(unittest.TestCase):
         self.assertTrue(is_topic_published(self.node, topic))
 
     def test_unregister_multipublisher(self):
-        """Register and unregister a publisher on a clean topic with a good msg type"""
+        """Register and unregister a publisher on a clean topic with a good msg type."""
         topic = "/test_unregister_multipublisher"
         msg_type = "std_msgs/String"
 
@@ -106,7 +106,7 @@ class TestMultiPublisher(unittest.TestCase):
             self.assertRaises(TypeConflictException, p.verify_type, othertype)
 
     def test_publish(self):
-        """Make sure that publishing works"""
+        """Make sure that publishing works."""
         topic = "/test_publish"
         msg_type = "std_msgs/String"
         msg = {"data": "why hello there"}
@@ -130,7 +130,7 @@ class TestMultiPublisher(unittest.TestCase):
         self.assertEqual(received["msg"].data, msg["data"])
 
     def test_publish_twice(self):
-        """Make sure that publishing works"""
+        """Make sure that publishing works."""
         topic = "/test_publish_twice"
         msg_type = "std_msgs/String"
         msg = {"data": "why hello there"}
@@ -173,7 +173,7 @@ class TestMultiPublisher(unittest.TestCase):
         self.assertEqual(received["msg"].data, msg["data"])
 
     def test_bad_publish(self):
-        """Make sure that bad publishing fails"""
+        """Make sure that bad publishing fails."""
         topic = "/test_publish"
         msg_type = "std_msgs/String"
         msg = {"data": 3}

@@ -37,8 +37,12 @@ class TestSubscribe(unittest.TestCase):
         pass
 
     def test_update_params(self):
-        """Adds a bunch of random clients to the subscription and sees whether
-        the correct parameters are chosen as the min"""
+        """
+        Test the update_params method of the Subscription class.
+
+        Adds a bunch of random clients to the subscription and sees whether
+        the correct parameters are chosen as the min.
+        """
         client_id = "client_test_update_params"
         topic = "/test_update_params"
         msg_type = "std_msgs/String"

@@ -66,20 +66,18 @@ class ActionClientHandler(Thread):
     ) -> None:
         """
         Create a client handler for the specified action.
+
         Use start() to start in a separate thread or run() to run in this thread.
 
-        Keyword arguments:
-        action           -- the name of the action to execute.
-        action_type      -- the type of the action to execute.
-        args             -- arguments to pass to the action. Can be an
-        ordered list, or a dict of name-value pairs. Anything else will be
-        treated as though no arguments were provided (which is still valid for
-        some kinds of actions)
-        success_callback -- a callback to call with the JSON result of the
-        service call
-        error_callback   -- a callback to call if an error occurs.  The
-        callback will be passed the exception that caused the failure
-        node_handle      -- a ROS 2 node handle to call services.
+        :param action: The name of the action to execute.
+        :param action_type: The type of the action to execute.
+        :param args: Arguments to pass to the action. Can be an ordered list, or a dict of
+            name-value pairs. Anything else will be treated as though no arguments were provided
+            (which is still valid for some kinds of actions)
+        :param success_callback: A callback to call with the JSON result of the service call
+        :param error_callback: A callback to call if an error occurs. The callback will be passed
+            the exception that caused the failure
+        :param node_handle: A ROS 2 node handle to call services
         """
         Thread.__init__(self)
         self.daemon = True
@@ -111,12 +109,12 @@ class ActionClientHandler(Thread):
 
 
 def args_to_action_goal_instance(action: str, inst: Any, args: Union[list, dict]) -> Any:
-    """ "
-    Populate an action goal instance with the provided args
-
-    args can be a dictionary of values, or a list, or None
+    """
+    Populate an action goal instance with the provided args.
 
     Propagates any exceptions that may be raised.
+
+    :param args: Can be a dictionary of values, or a list, or None
     """
     msg = {}
     if isinstance(args, list):

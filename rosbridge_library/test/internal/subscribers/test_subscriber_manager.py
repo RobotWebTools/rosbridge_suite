@@ -33,7 +33,7 @@ class TestSubscriberManager(unittest.TestCase):
         rclpy.shutdown()
 
     def test_subscribe(self):
-        """Register a publisher on a clean topic with a good msg type"""
+        """Register a publisher on a clean topic with a good msg type."""
         topic = "/test_subscribe"
         msg_type = "std_msgs/String"
         client = "client_test_subscribe"

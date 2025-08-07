@@ -77,28 +77,46 @@ class InvalidClassException(Exception):
 
 
 def get_message_class(typestring: str) -> Any:
-    """Loads the message type specified.
+    """
+    Load the message type specified.
 
-    Returns the loaded class, or throws exceptions on failure"""
+    Throws exceptions on failure.
+
+    :return: The loaded class
+    """
     return _get_interface_class(typestring, "msg", _loaded_msgs, _msgs_lock)
 
 
 def get_service_class(typestring: str) -> Any:
-    """Loads the service type specified.
+    """
+    Load the service type specified.
 
-    Returns the loaded class, or None on failure"""
+    Throws exceptions on failure.
+
+    :return: The loaded class
+    """
     return _get_interface_class(typestring, "srv", _loaded_srvs, _srvs_lock)
 
 
 def get_action_class(typestring: str) -> Any:
-    """Loads the action type specified.
-    Returns the loaded class, or throws exceptions on failure"""
+    """
+    Load the action type specified.
+
+    Throws exceptions on failure.
+
+    :return: the loaded class
+    """
     return _get_interface_class(typestring, "action", _loaded_actions, _actions_lock)
 
 
 def get_message_instance(typestring: str) -> Any:
-    """If not loaded, loads the specified type.
-    Then returns an instance of it, or None."""
+    """
+    If not loaded, load the specified type and return an instance of it.
+
+    Throws exceptions on failure.
+
+    :return: The instance of the message class.
+    """
     cls = get_message_class(typestring)
     return cls()
 
@@ -132,7 +150,7 @@ def _get_interface_class(
     typestring: str, intf_type: str, loaded_intfs: Dict[str, Any], intf_lock: Lock
 ) -> Any:
     """
-    If not loaded, loads the specified ROS interface class then returns an instance of it.
+    If not loaded, load the specified ROS interface class then return an instance of it.
 
     Throws various exceptions if loading the interface class fails.
     """
@@ -153,14 +171,13 @@ def _get_interface_class(
 
 
 def _get_class(typestring: str, subname: str, cache: Dict[str, Any], lock: Lock) -> Any:
-    """If not loaded, loads the specified class then returns an instance
-    of it.
+    """
+    If not loaded, load the specified class then returns an instance of it.
 
     Loaded classes are cached in the provided cache dict
 
     Throws various exceptions if loading the msg class fails.
     """
-
     # First, see if we have this type string cached
     cls = _get_from_cache(cache, lock, typestring)
     if cls is not None:
@@ -185,15 +202,15 @@ def _get_class(typestring: str, subname: str, cache: Dict[str, Any], lock: Lock)
     return cls
 
 
-def _load_class(modname: str, subname: str, classname: str) -> None:
-    """Loads the manifest and imports the module that contains the specified
-    type.
+def _load_class(modname: str, subname: str, classname: str) -> Any:
+    """
+    Load the manifest and import the module that contains the specified type.
 
-    Logic is similar to that of roslib.message.get_message_class, but we want
-    more expressive exceptions.
+    :raises InvalidModuleException: if the module cannot be imported
+    :raises InvalidClassException: if the class cannot be found in the module
 
-    Returns the loaded module, or None on failure"""
-
+    :return: the loaded module
+    """
     # This assumes the module is already in the path.
     try:
         pypkg = importlib.import_module(f"{modname}.{subname}")
@@ -207,10 +224,11 @@ def _load_class(modname: str, subname: str, classname: str) -> None:
 
 
 def _splittype(typestring: str) -> Tuple[str, str]:
-    """Split the string the / delimiter and strip out empty strings
+    """
+    Split the string using the / delimiter and strip out empty strings.
 
-    Performs similar logic to roslib.names.package_resource_name but is a bit
-    more forgiving about excess slashes
+    :raises InvalidTypeStringException: if the typestring is not valid
+    :return: A tuple of (modname, classname)
     """
     splits = [x for x in typestring.split("/") if x]
     if len(splits) == 3:
@@ -227,8 +245,11 @@ def _add_to_cache(cache: Dict[str, Any], lock: Lock, key: str, value: any) -> No
 
 
 def _get_from_cache(cache: Dict[str, Any], lock: Lock, key: str) -> Any:
-    """Returns the value for the specified key from the cache.
-    Locks the lock before doing anything. Returns None if key not in cache"""
+    """
+    Return the value for the specified key from the cache.
+
+    Locks the lock before doing anything. Returns None if key not in cache.
+    """
     lock.acquire()
     ret = None
     if key in cache:

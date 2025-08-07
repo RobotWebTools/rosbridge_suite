@@ -69,8 +69,15 @@ _parameter_type_mapping = [
 
 def init(parent_node_name, timeout_sec=DEFAULT_PARAM_TIMEOUT_SEC):
     """
-    Initializes params module with a rclpy.node.Node for further use.
+    Initialize params module with a rclpy.node.Node for further use.
+
     This function has to be called before any other for the module to work.
+
+    :param node: The rclpy node to use for service calls.
+    :type node: Node
+    :param timeout_sec: The timeout in seconds for service calls.
+    :type timeout_sec: float | int, optional
+    :raises ValueError: If the timeout is not a positive number.
     """
     global _node, _parent_node_name, _timeout_sec
     # TODO(@jubeira): remove this node; use rosapi node with MultiThreadedExecutor or
@@ -90,8 +97,7 @@ def init(parent_node_name, timeout_sec=DEFAULT_PARAM_TIMEOUT_SEC):
 
 
 def set_param(node_name, name, value, params_glob):
-    """Sets a parameter in a given node"""
-
+    """Set a parameter in a given node."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to set the parameter.
@@ -114,6 +120,8 @@ def set_param(node_name, name, value, params_glob):
 
 def _set_param(node_name, name, value, parameter_type=None):
     """
+    Set a parameter in a given node.
+
     Internal helper function for set_param.
     Attempts to set the given parameter in the target node with the desired value,
     deducing the parameter type if it's not specified.
@@ -137,8 +145,7 @@ def _set_param(node_name, name, value, parameter_type=None):
 
 
 def get_param(node_name, name, default, params_glob):
-    """Gets a parameter from a given node"""
-
+    """Get a parameter from a given node."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to get the parameter.
@@ -172,8 +179,7 @@ def get_param(node_name, name, default, params_glob):
 
 
 def has_param(node_name, name, params_glob):
-    """Checks whether a given node has a parameter or not"""
-
+    """Check whether a given node has a parameter or not."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to set the parameter.
@@ -191,8 +197,7 @@ def has_param(node_name, name, params_glob):
 
 
 def delete_param(node_name, name, params_glob):
-    """Deletes a parameter in a given node"""
-
+    """Delete a parameter in a given node."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to delete the parameter.
@@ -216,7 +221,7 @@ def get_param_names(params_glob):
 
 
 def get_node_param_names(node_name, params_glob):
-    """Gets list of parameter names for a given node"""
+    """Get list of parameter names for a given node."""
     node_name = get_absolute_node_name(node_name)
 
     with param_server_lock:
