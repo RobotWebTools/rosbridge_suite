@@ -304,7 +304,7 @@ class Subscribe(Capability):
 
         self.protocol.log("info", f"Unsubscribed from {topic}")
 
-    def publish(self, topic, message, _fragment_size=None, compression="none"):
+    def publish(self, topic, message, fragment_size=None, compression="none"):  # noqa: ARG002
         """
         Publish a message to the client.
 

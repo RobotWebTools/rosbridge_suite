@@ -73,7 +73,7 @@ class ClientManager:
             self._clients[client_id] = client
             self.__publish()
 
-    def remove_client(self, client_id, _ip_address):
+    def remove_client(self, client_id, ip_address):  # noqa: ARG002
         with self._lock:
             self._clients.pop(client_id, None)
             self.__publish()

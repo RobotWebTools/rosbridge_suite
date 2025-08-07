@@ -105,7 +105,7 @@ class TestCallService(unittest.TestCase):
 
         received = {"msg": None, "arrived": False}
 
-        def cb(msg, _cid=None, _compression="none"):
+        def cb(msg, cid=None, compression="none"):  # noqa: ARG001
             print(msg)
             received["msg"] = msg
             received["arrived"] = True
@@ -137,7 +137,7 @@ class TestCallService(unittest.TestCase):
 
         received = {"msg": None, "arrived": False}
 
-        def cb(msg, _cid=None, _compression="none"):
+        def cb(msg, cid=None, compression="none"):  # noqa: ARG001
             received["msg"] = msg
             received["arrived"] = True
 
@@ -168,7 +168,7 @@ class TestCallService(unittest.TestCase):
 
         received = {"msg": None, "arrived": False}
 
-        def cb(msg, _cid=None, _compression="none"):
+        def cb(msg, cid=None, compression="none"):  # noqa: ARG001
             print(msg)
             received["msg"] = msg
             received["arrived"] = True
@@ -192,7 +192,7 @@ class TestCallService(unittest.TestCase):
 
         received = {"msg": None, "arrived": False}
 
-        def cb(msg, _cid=None, _compression="none"):
+        def cb(msg, cid=None, compression="none"):  # noqa: ARG001
             print("Received message")
             received["msg"] = msg
             received["arrived"] = True
