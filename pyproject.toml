@@ -33,7 +33,7 @@ select = [
     "INT", # flake8-gettext
     "ISC", # flake8-implicit-str-concat
     "ICN", # flake8-import-conventions
-     # "LOG", # flake8-logging
+    "LOG", # flake8-logging
      # "G", # flake8-logging-format
     # "INP", # flake8-no-pep420
     "PIE", # flake8-pie
