@@ -33,6 +33,7 @@
 import array
 import math
 import re
+import sys
 from base64 import standard_b64decode, standard_b64encode
 
 import numpy as np
@@ -119,11 +120,11 @@ def configure(node_handle=None):
     if binary_encoder is None:
         if binary_encoder_type == "bson" or bson_only_mode:
             binary_encoder = bson.Binary
-        elif binary_encoder_type == "default" or binary_encoder_type == "b64":
+        elif binary_encoder_type in {"default", "b64"}:
             binary_encoder = standard_b64encode
         else:
             print(f"Unknown encoder type '{binary_encoder_type}'")
-            exit(0)
+            sys.exit(0)
 
 
 def get_encoder():

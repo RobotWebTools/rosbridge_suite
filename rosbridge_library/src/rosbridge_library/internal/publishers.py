@@ -134,7 +134,6 @@ class MultiPublisher:
         """
         if ros_loader.get_message_class(msg_type) is not self.msg_class:
             raise TypeConflictException(self.topic, msg_class_type_repr(self.msg_class), msg_type)
-        return
 
     def publish(self, msg):
         """

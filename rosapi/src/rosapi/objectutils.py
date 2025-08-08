@@ -240,15 +240,14 @@ def _handle_type_and_array_len(instance, name):
         # Extract the inner type and continue processing
         field_type = matches[0]
         arraylen = 0
-    else:
-        if field_type[-1:] == "]":
-            if field_type[-2:-1] == "[":
-                arraylen = 0
-                field_type = field_type[:-2]
-            else:
-                split = field_type.find("[")
-                arraylen = int(field_type[split + 1 : -1])
-                field_type = field_type[:split]
+    elif field_type[-1:] == "]":
+        if field_type[-2:-1] == "[":
+            arraylen = 0
+            field_type = field_type[:-2]
+        else:
+            split = field_type.find("[")
+            arraylen = int(field_type[split + 1 : -1])
+            field_type = field_type[:split]
 
     return field_type, arraylen
 
@@ -297,7 +296,7 @@ def _build_typedef_dictionary(
 
 def _get_special_typedef(type_name):
     example = None
-    if type_name == "time" or type_name == "duration":
+    if type_name in {"time", "duration"}:
         example = {
             "type": type,
             "fieldnames": ["secs", "nsecs"],

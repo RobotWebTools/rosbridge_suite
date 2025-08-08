@@ -95,12 +95,16 @@ class Capability:
                 msg = f"Expected a {fieldname} field but none was found."
                 raise MissingArgumentException(msg)
             if fieldname in msg:
-                if not isinstance(fieldtypes, tuple):
-                    fieldtypes = (fieldtypes,)
+                current_fieldtypes = fieldtypes
+                if not isinstance(current_fieldtypes, tuple):
+                    current_fieldtypes = (current_fieldtypes,)
                 valid = False
-                for typ in fieldtypes:
+                for typ in current_fieldtypes:
                     if isinstance(msg[fieldname], typ):
                         valid = True
                 if not valid:
-                    msg = f"Expected field {fieldname} to be one of {fieldtypes}. Invalid value: {msg[fieldname]}"
+                    msg = (
+                        f"Expected field {fieldname} to be one of {current_fieldtypes}. "
+                        f"Invalid value: {msg[fieldname]}"
+                    )
                     raise InvalidArgumentException(msg)

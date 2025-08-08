@@ -1,7 +1,7 @@
 import unittest
 from typing import Any, ClassVar
 
-import rosapi.objectutils as objectutils
+from rosapi import objectutils
 
 # Globally defined ros_loader, used inside the setUp and teardown functions
 ros_loader = None

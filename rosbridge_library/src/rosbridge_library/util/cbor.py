@@ -228,6 +228,9 @@ class Tag:
             return False
         return (self.tag == other.tag) and (self.value == other.value)
 
+    def __hash__(self):
+        return hash((self.tag, self.value))
+
 
 def loads(data):
     """Parse CBOR bytes and return Python objects."""

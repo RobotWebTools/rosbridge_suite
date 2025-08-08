@@ -50,7 +50,6 @@ class ReceivedFragments:
 class Defragment(Capability, threading.Thread):
     fragment_timeout = 600
     opcode = "fragment"
-    global received_fragments
 
     protocol = None
 

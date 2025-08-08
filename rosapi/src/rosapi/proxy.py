@@ -202,7 +202,7 @@ def filter_action_servers(topics):
     for topic in sorted(topics):
         split = topic.split("/")
         if len(split) >= 4:
-            topic = split.pop()
+            topic_name = split.pop()
             action_prefix = split.pop()
             if action_prefix != "_action":
                 continue
@@ -211,8 +211,8 @@ def filter_action_servers(topics):
             if possible_action_server != namespace:
                 possible_action_server = namespace
                 possibility = [0, 0]
-            if possible_action_server == namespace and topic in action_topics:
-                possibility[action_topics.index(topic)] = 1
+            if possible_action_server == namespace and topic_name in action_topics:
+                possibility[action_topics.index(topic_name)] = 1
             if all(p == 1 for p in possibility):
                 action_servers.append(possible_action_server)
                 possibility = [0, 0]

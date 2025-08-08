@@ -91,13 +91,14 @@ try:
                 )  # split buffer into fragments and re-fill curly brackets
                 result = []
                 for fragment_str in result_string:
-                    if fragment_str[0] != "{":
-                        fragment_str = "{" + fragment_str
-                    if fragment_str[len(fragment_str) - 1] != "}":
-                        fragment_str = fragment_str + "}"
+                    frag = fragment_str
+                    if frag[0] != "{":
+                        frag = "{" + frag
+                    if frag[len(frag) - 1] != "}":
+                        frag = frag + "}"
                     try:
                         result.append(
-                            json.loads(fragment_str)
+                            json.loads(frag)
                         )  # try to parse json from string, and append if successful
                     except Exception:
                         # print(e)

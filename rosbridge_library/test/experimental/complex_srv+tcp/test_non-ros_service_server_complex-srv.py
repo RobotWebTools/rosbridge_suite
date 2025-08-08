@@ -131,12 +131,13 @@ def wait_for_service_request():  # receive data from rosbridge
                     "}{"
                 )  # split buffer into fragments and re-fill with curly brackets
                 result = []
-                for fragment in result_string:
-                    if fragment[0] != "{":
-                        fragment = "{" + fragment
-                    if fragment[len(fragment) - 1] != "}":
-                        fragment = fragment + "}"
-                    result.append(json.loads(fragment))
+                for fragment_str in result_string:
+                    frag = fragment_str
+                    if frag[0] != "{":
+                        frag = "{" + frag
+                    if frag[len(frag) - 1] != "}":
+                        frag = frag + "}"
+                    result.append(json.loads(frag))
 
                 try:  # try to defragment when received all fragments
                     fragment_count = len(result)
