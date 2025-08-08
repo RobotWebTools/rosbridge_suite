@@ -39,7 +39,6 @@ import time
 import rclpy
 from rcl_interfaces.msg import ParameterDescriptor
 from rclpy.node import Node
-from rclpy.parameter import Parameter
 from rclpy.utilities import remove_ros_args
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop, PeriodicCallback
@@ -96,13 +95,8 @@ def parse_args() -> argparse.Namespace:
     """Parse command line arguments and return them as a Namespace."""
     args = remove_ros_args(sys.argv)[1:]
     parser = argparse.ArgumentParser(description="ROS 2 Rosbridge WebSocket Server")
-    for name, type_, default_value, description in SERVER_PARAMETERS + PROTOCOL_PARAMETERS:
-        parser.add_argument(
-            f"--{name}",
-            type=type_,
-            default=default_value,
-            help=description,
-        )
+    for name, type_, _, description in SERVER_PARAMETERS + PROTOCOL_PARAMETERS:
+        parser.add_argument(f"--{name}", type=type_, help=description)
     return parser.parse_args(args)
 
 
@@ -138,20 +132,18 @@ class RosbridgeWebsocketNode(Node):
         self._start_server()
 
     def _handle_parameters(self):
+        # Parse command line arguments
+        args = parse_args()
+
         # Declare ROS parameters
         for name, _, default_value, description in SERVER_PARAMETERS + PROTOCOL_PARAMETERS:
-            self.declare_parameter(
-                name, default_value, ParameterDescriptor(description=description, read_only=True)
-            )
-
-        # Handle command line arguments
-        args = parse_args()
-        for name, _, _, _ in SERVER_PARAMETERS + PROTOCOL_PARAMETERS:
-            if hasattr(args, name):
+            value = default_value
+            if hasattr(args, name) and getattr(args, name) is not None:
                 # Override the parameter with the command line argument
-                # This allows command line arguments to take precedence over declared parameters
-                param = Parameter(name, value=getattr(args, name))
-                self.set_parameters([param])
+                value = getattr(args, name)
+            self.declare_parameter(
+                name, value, ParameterDescriptor(description=description, read_only=True)
+            )
 
         # Protocol parameters
         self.protocol_parameters = {}
