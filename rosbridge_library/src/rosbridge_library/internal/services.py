@@ -170,7 +170,8 @@ def call_service(
     if not event.wait(timeout=(server_response_timeout if server_response_timeout > 0 else None)):
         future.cancel()
         node_handle.destroy_client(client)
-        raise Exception("Timeout exceeded while waiting for service response")
+        msg = "Timeout exceeded while waiting for service response"
+        raise Exception(msg)
 
     node_handle.destroy_client(client)
 

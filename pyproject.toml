@@ -26,7 +26,7 @@ select = [
     "DTZ", # flake8-datetimez
     "T10", # flake8-debugger
     # "DJ", # flake8-django
-    # "EM", # flake8-errmsg
+    "EM", # flake8-errmsg
     "EXE", # flake8-executable
     # "FIX", # flake8-fixme
     "FA", # flake8-future-annotations

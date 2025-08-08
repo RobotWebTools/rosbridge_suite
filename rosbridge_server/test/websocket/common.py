@@ -90,7 +90,8 @@ async def get_server_port(node: Node) -> int:
     client: Client = node.create_client(GetParameters, "/rosbridge_websocket/get_parameters")
     try:
         if not client.wait_for_service(5):
-            raise RuntimeError("GetParameters service not available")
+            msg = "GetParameters service not available"
+            raise RuntimeError(msg)
         port_param = await client.call_async(GetParameters.Request(names=["actual_port"]))
         assert port_param is not None
         return port_param.values[0].integer_value
@@ -194,8 +195,7 @@ def expect_messages(count: int, description: str, logger):
             logger.info(f"Received all messages on {description}")
             future.set_result(results)
         elif len(results) > count:
-            raise AssertionError(
-                f"Received {len(results)} messages on {description} but expected {count}"
-            )
+            msg = f"Received {len(results)} messages on {description} but expected {count}"
+            raise AssertionError(msg)
 
     return future, handler

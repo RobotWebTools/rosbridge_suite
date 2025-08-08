@@ -89,7 +89,8 @@ def init(node: Node, timeout_sec: float | int = DEFAULT_PARAM_TIMEOUT_SEC):
     _node = node
 
     if not isinstance(timeout_sec, (int, float)) or timeout_sec <= 0:
-        raise ValueError("Parameter timeout must be a positive number")
+        msg = "Parameter timeout must be a positive number"
+        raise ValueError(msg)
     _timeout_sec = timeout_sec
 
 
@@ -106,10 +107,11 @@ async def set_param(node_name: str, name: str, value: str, params_glob: list[str
         d = loads(value)
         value = d if isinstance(d, str) else value
     except ValueError as exc:
-        raise Exception(
+        msg = (
             "Due to the type flexibility of the ROS parameter server, "
             "the value argument to set_param must be a JSON-formatted string."
-        ) from exc
+        )
+        raise Exception(msg) from exc
 
     node_name = get_absolute_node_name(node_name)
     await _set_param(node_name, name, value)
@@ -143,7 +145,8 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
 
     if not client.service_is_ready():
         _node.destroy_client(client)
-        raise Exception(f"Service {client.srv_name} is not available")
+        msg = f"Service {client.srv_name} is not available"
+        raise Exception(msg)
 
     request = SetParameters.Request()
     request.parameters = [parameter]
@@ -156,7 +159,8 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
 
     if not future.done():
         future.cancel()
-        raise Exception("Timeout occurred")
+        msg = "Timeout occurred"
+        raise Exception(msg)
 
     result = future.result()
 
@@ -170,7 +174,8 @@ async def get_param(node_name: str, name: str, params_glob: str) -> str:
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to get the parameter.
-        raise Exception(f"Parameter {name} does not match any of the glob strings")
+        msg = f"Parameter {name} does not match any of the glob strings"
+        raise Exception(msg)
     # If the glob list is empty (i.e. false) or the parameter matches
     # one of the glob strings, continue to get the parameter.
 
@@ -200,7 +205,8 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
 
     if not client.service_is_ready():
         _node.destroy_client(client)
-        raise Exception(f"Service {client.srv_name} is not available")
+        msg = f"Service {client.srv_name} is not available"
+        raise Exception(msg)
 
     request = GetParameters.Request()
     request.names = [name]
@@ -213,13 +219,15 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
 
     if not future.done():
         future.cancel()
-        raise Exception("Timeout occurred")
+        msg = "Timeout occurred"
+        raise Exception(msg)
 
     result = future.result()
 
     assert result is not None
     if len(result.values) == 0:
-        raise Exception(f"Parameter {name} not found")
+        msg = f"Parameter {name} not found"
+        raise Exception(msg)
 
     return result.values[0]
 

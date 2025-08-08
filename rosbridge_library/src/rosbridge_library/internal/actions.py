@@ -145,7 +145,8 @@ class SendGoal:
         self.goal_handle = future.result()
         assert self.goal_handle is not None
         if not self.goal_handle.accepted:
-            raise Exception("Action goal was rejected")
+            msg = "Action goal was rejected"
+            raise Exception(msg)
         result_future = self.goal_handle.get_result_async()
         result_future.add_done_callback(self.get_result_cb)
 

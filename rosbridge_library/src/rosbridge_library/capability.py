@@ -92,7 +92,8 @@ class Capability:
         """
         for mandatory, fieldname, fieldtypes in types_info:
             if mandatory and fieldname not in msg:
-                raise MissingArgumentException(f"Expected a {fieldname} field but none was found.")
+                msg = f"Expected a {fieldname} field but none was found."
+                raise MissingArgumentException(msg)
             if fieldname in msg:
                 if not isinstance(fieldtypes, tuple):
                     fieldtypes = (fieldtypes,)
@@ -101,6 +102,5 @@ class Capability:
                     if isinstance(msg[fieldname], typ):
                         valid = True
                 if not valid:
-                    raise InvalidArgumentException(
-                        f"Expected field {fieldname} to be one of {fieldtypes}. Invalid value: {msg[fieldname]}"
-                    )
+                    msg = f"Expected field {fieldname} to be one of {fieldtypes}. Invalid value: {msg[fieldname]}"
+                    raise InvalidArgumentException(msg)

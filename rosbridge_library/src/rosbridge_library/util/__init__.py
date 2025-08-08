@@ -12,8 +12,9 @@ import bson
 try:
     _ = bson.BSON
 except AttributeError as exc:
-    raise Exception(
+    msg = (
         "BSON installation does not support all necessary features. "
         "Please use the MongoDB BSON implementation. "
         "See: https://github.com/RobotWebTools/rosbridge_suite/issues/198"
-    ) from exc
+    )
+    raise Exception(msg) from exc

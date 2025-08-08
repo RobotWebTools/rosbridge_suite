@@ -120,7 +120,8 @@ def _encode_type_num(cbor_type, val):
     ):
         return struct.pack("!BQ", cbor_type | CBOR_UINT64_FOLLOWS, val)
     if cbor_type != CBOR_NEGINT:
-        raise Exception(f"value too big for CBOR unsigned number: {val!r}")
+        msg = f"value too big for CBOR unsigned number: {val!r}"
+        raise Exception(msg)
     outb = _dumps_bignum_to_bytearray(val)
     return _CBOR_TAG_NEGBIGNUM_BYTES + _encode_type_num(CBOR_BYTES, len(outb)) + outb
 
@@ -196,7 +197,8 @@ def dumps(ob, sort_keys=False):
         return dumps_int(ob)
     if isinstance(ob, Tag):
         return dumps_tag(ob, sort_keys=sort_keys)
-    raise Exception("don't know how to cbor serialize object of type %s", type(ob))
+    msg = "don't know how to cbor serialize object of type %s"
+    raise Exception(msg, type(ob))
 
 
 # same basic signature as json.dump, but with no options (yet)
@@ -230,7 +232,8 @@ class Tag:
 def loads(data):
     """Parse CBOR bytes and return Python objects."""
     if data is None:
-        raise ValueError("got None for buffer to decode in loads")
+        msg = "got None for buffer to decode in loads"
+        raise ValueError(msg)
     fp = BytesIO(data)
     return _loads(fp)[0]
 
@@ -327,7 +330,8 @@ def _loads_map(fp, _limit, _depth, _returntags, aux, bytes_read):
 def _loads(fp, limit=None, depth=0, returntags=False):
     """Return (object, bytes read)."""
     if depth > _MAX_DEPTH:
-        raise Exception("hit CBOR loads recursion depth limit")
+        msg = "hit CBOR loads recursion depth limit"
+        raise Exception(msg)
 
     tb = _read_byte(fp)
 
@@ -402,7 +406,8 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
             return (None, bytes_read)
         if tb == CBOR_UNDEFINED:
             return (None, bytes_read)
-        raise ValueError(f"unknown cbor tag 7 byte: {tb:02x}")
+        msg = f"unknown cbor tag 7 byte: {tb:02x}"
+        raise ValueError(msg)
     return None
 
 
