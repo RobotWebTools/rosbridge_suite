@@ -34,7 +34,7 @@ select = [
     "ISC",    # flake8-implicit-str-concat
     "ICN",    # flake8-import-conventions
     "LOG",    # flake8-logging
-     # "G",   # flake8-logging-format
+    "G",      # flake8-logging-format
     # "INP",  # flake8-no-pep420, false positives with launch tests
     "PIE",    # flake8-pie
     # "T20",  # flake8-print, We allow some print statements

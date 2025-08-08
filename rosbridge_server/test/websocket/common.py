@@ -189,10 +189,10 @@ def expect_messages(count: int, description: str, logger):
     results = []
 
     def handler(msg):
-        logger.info(f"Received message on {description}: {msg}")
+        logger.info(f"Received message on {description}: {msg}")  # noqa: G004
         results.append(msg)
         if len(results) == count:
-            logger.info(f"Received all messages on {description}")
+            logger.info(f"Received all messages on {description}")  # noqa: G004
             future.set_result(results)
         elif len(results) > count:
             msg = f"Received {len(results)} messages on {description} but expected {count}"

@@ -95,7 +95,7 @@ def get_typedef(type_name):
         instance = ros_loader.get_message_instance(type_name)
         return _get_typedef(instance)
     except (ros_loader.InvalidModuleException, ros_loader.InvalidClassException) as e:
-        logger.error(f"An error occurred trying to get the type definition for {type_name}: {e}")
+        logger.error("An error occurred trying to get the type definition for %s: %s", type_name, e)
         return None
 
 
