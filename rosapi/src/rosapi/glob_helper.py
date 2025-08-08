@@ -1,9 +1,13 @@
 import fnmatch
-from collections import namedtuple
+from typing import NamedTuple
 
 from rcl_interfaces.msg import ParameterType
 
-Globs = namedtuple("Globs", ["topics", "services", "params"])
+
+class Globs(NamedTuple):
+    topics: list
+    services: list
+    params: list
 
 
 def get_globs(node):

@@ -73,7 +73,7 @@ _parameter_type_mapping = [
 ]
 
 
-def init(node: Node, timeout_sec: float | int = DEFAULT_PARAM_TIMEOUT_SEC):
+def init(node: Node, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC):
     """
     Initialize params module with a rclpy.node.Node for further use.
 
