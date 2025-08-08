@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import fnmatch
 
 from rosbridge_library.capability import Capability
@@ -6,11 +8,14 @@ from rosbridge_library.capability import Capability
 class UnadvertiseService(Capability):
     # unadvertise_service_msg_fields = [(True, "service", (str, unicode))]
 
-    services_glob = None
+    services_glob: list[str] | None = None
 
     def __init__(self, protocol):
         # Call superclass constructor
         Capability.__init__(self, protocol)
+
+        if protocol.parameters and "services_glob" in protocol.parameters:
+            self.services_glob = protocol.parameters["services_glob"]
 
         # Register the operations that this capability provides
         protocol.register_operation("unadvertise_service", self.unadvertise_service)
@@ -19,13 +24,13 @@ class UnadvertiseService(Capability):
         # parse the message
         service_name = message["service"]
 
-        if UnadvertiseService.services_glob is not None and UnadvertiseService.services_glob:
+        if self.services_glob:
             self.protocol.log(
                 "debug",
                 "Service security glob enabled, checking service: " + service_name,
             )
             match = False
-            for glob in UnadvertiseService.services_glob:
+            for glob in self.services_glob:
                 if fnmatch.fnmatch(service_name, glob):
                     self.protocol.log(
                         "debug",

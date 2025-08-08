@@ -56,7 +56,7 @@ class SendActionGoal(Capability):
     )
     cancel_action_goal_msg_fields = ((True, "action", str),)
 
-    actions_glob = None
+    actions_glob: list[str] | None = None
     client_handler_list: dict[str, ActionClientHandler]
 
     def __init__(self, protocol: Protocol) -> None:
@@ -64,6 +64,9 @@ class SendActionGoal(Capability):
         Capability.__init__(self, protocol)
 
         self.client_handler_list = {}
+
+        if protocol.parameters and "actions_glob" in protocol.parameters:
+            self.actions_glob = protocol.parameters["actions_glob"]
 
         # Register the operations that this capability provides
         send_action_goals_in_new_thread = (
@@ -103,10 +106,10 @@ class SendActionGoal(Capability):
         compression = message.get("compression", "none")
         args = message.get("args", [])
 
-        if SendActionGoal.actions_glob is not None and SendActionGoal.actions_glob:
+        if self.actions_glob:
             self.protocol.log("debug", f"Action security glob enabled, checking action: {action}")
             match = False
-            for glob in SendActionGoal.actions_glob:
+            for glob in self.actions_glob:
                 if fnmatch.fnmatch(action, glob):
                     self.protocol.log(
                         "debug",

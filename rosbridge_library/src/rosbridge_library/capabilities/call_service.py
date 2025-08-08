@@ -29,6 +29,7 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import annotations
 
 import fnmatch
 from functools import partial
@@ -45,25 +46,27 @@ class CallService(Capability):
         (False, "compression", str),
     )
 
-    services_glob = None
+    # parameters
+    services_glob: list[str] | None = None
+    default_timeout: float = 5.0
+    call_services_in_new_thread: bool = True
 
     def __init__(self, protocol):
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
-        self.default_timeout = (
-            protocol.node_handle.get_parameter("default_call_service_timeout")
-            .get_parameter_value()
-            .double_value
-        )
+        if self.protocol.parameters:
+            if "services_glob" in self.protocol.parameters:
+                self.services_glob = self.protocol.parameters["services_glob"]
+            if "default_call_service_timeout" in self.protocol.parameters:
+                self.default_timeout = self.protocol.parameters["default_call_service_timeout"]
+            if "call_services_in_new_thread" in self.protocol.parameters:
+                self.call_services_in_new_thread = self.protocol.parameters[
+                    "call_services_in_new_thread"
+                ]
 
         # Register the operations that this capability provides
-        call_services_in_new_thread = (
-            protocol.node_handle.get_parameter("call_services_in_new_thread")
-            .get_parameter_value()
-            .bool_value
-        )
-        if call_services_in_new_thread:
+        if self.call_services_in_new_thread:
             # Calls the service in a separate thread so multiple services can be processed simultaneously.
             protocol.node_handle.get_logger().info("Calling services in new thread")
             protocol.register_operation(
@@ -88,12 +91,12 @@ class CallService(Capability):
         args = message.get("args", [])
         timeout = message.get("timeout", self.default_timeout)
 
-        if CallService.services_glob is not None and CallService.services_glob:
+        if self.services_glob:
             self.protocol.log(
                 "debug", "Service security glob enabled, checking service: " + service
             )
             match = False
-            for glob in CallService.services_glob:
+            for glob in self.services_glob:
                 if fnmatch.fnmatch(service, glob):
                     self.protocol.log(
                         "debug",

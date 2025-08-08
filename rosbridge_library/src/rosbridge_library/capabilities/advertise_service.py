@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import fnmatch
 
 import rclpy
@@ -85,13 +87,16 @@ class AdvertisedServiceHandler:
 
 
 class AdvertiseService(Capability):
-    services_glob = None
-
     advertise_service_msg_fields = ((True, "service", str), (True, "type", str))
+
+    services_glob: list[str] | None = None
 
     def __init__(self, protocol):
         # Call superclass constructor
         Capability.__init__(self, protocol)
+
+        if protocol.parameters and "services_glob" in protocol.parameters:
+            self.services_glob = protocol.parameters["services_glob"]
 
         # Register the operations that this capability provides
         protocol.register_operation("advertise_service", self.advertise_service)
@@ -103,13 +108,13 @@ class AdvertiseService(Capability):
         # parse the incoming message
         service_name = message["service"]
 
-        if AdvertiseService.services_glob is not None and AdvertiseService.services_glob:
+        if self.services_glob:
             self.protocol.log(
                 "debug",
                 "Service security glob enabled, checking service: " + service_name,
             )
             match = False
-            for glob in AdvertiseService.services_glob:
+            for glob in self.services_glob:
                 if fnmatch.fnmatch(service_name, glob):
                     self.protocol.log(
                         "debug",

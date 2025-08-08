@@ -29,6 +29,7 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import annotations
 
 import fnmatch
 from functools import partial
@@ -224,11 +225,14 @@ class Subscribe(Capability):
     )
     unsubscribe_msg_fields = (True, "topic", str)
 
-    topics_glob = None
+    topics_glob: list[str] | None = None
 
     def __init__(self, protocol):
         # Call superclass constructor
         Capability.__init__(self, protocol)
+
+        if protocol.parameters and "topics_glob" in protocol.parameters:
+            self.topics_glob = protocol.parameters["topics_glob"]
 
         # Register the operations that this capability provides
         protocol.register_operation("subscribe", self.subscribe)
@@ -246,10 +250,10 @@ class Subscribe(Capability):
         # Make the subscription
         topic = msg["topic"]
 
-        if Subscribe.topics_glob is not None and Subscribe.topics_glob:
+        if self.topics_glob is not None and self.topics_glob:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in Subscribe.topics_glob:
+            for glob in self.topics_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",

@@ -29,19 +29,26 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import annotations
 
 import fnmatch
+from typing import TYPE_CHECKING
 
 from rosbridge_library.capability import Capability
-from rosbridge_library.protocol import Protocol
+
+if TYPE_CHECKING:
+    from rosbridge_library.protocol import Protocol
 
 
 class UnadvertiseAction(Capability):
-    actions_glob = None
+    actions_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
+
+        if protocol.parameters and "actions_glob" in protocol.parameters:
+            self.actions_glob = protocol.parameters["actions_glob"]
 
         # Register the operations that this capability provides
         protocol.register_operation("unadvertise_action", self.unadvertise_action)
@@ -50,13 +57,13 @@ class UnadvertiseAction(Capability):
         # parse the message
         action_name = message["action"]
 
-        if UnadvertiseAction.actions_glob is not None and UnadvertiseAction.actions_glob:
+        if self.actions_glob:
             self.protocol.log(
                 "debug",
                 f"Action security glob enabled, checking action: {action_name}",
             )
             match = False
-            for glob in UnadvertiseAction.actions_glob:
+            for glob in self.actions_glob:
                 if fnmatch.fnmatch(action_name, glob):
                     self.protocol.log(
                         "debug",

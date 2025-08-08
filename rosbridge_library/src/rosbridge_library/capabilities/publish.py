@@ -30,6 +30,7 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import annotations
 
 import fnmatch
 
@@ -40,7 +41,7 @@ from rosbridge_library.internal.publishers import manager
 class Publish(Capability):
     publish_msg_fields = ((True, "topic", str),)
 
-    topics_glob = None
+    topics_glob: list[str] | None = None
 
     def __init__(self, protocol):
         # Call superclass constructor
@@ -52,8 +53,11 @@ class Publish(Capability):
         # Save the topics that are published on for the purposes of unregistering
         self._published = {}
 
-        if protocol.parameters and "unregister_timeout" in protocol.parameters:
-            manager.unregister_timeout = protocol.parameters.get("unregister_timeout")
+        if protocol.parameters:
+            if "unregister_timeout" in protocol.parameters:
+                manager.unregister_timeout = protocol.parameters["unregister_timeout"]
+            if "topics_glob" in protocol.parameters:
+                self.topics_glob = protocol.parameters["topics_glob"]
 
     def publish(self, message):
         # Do basic type checking
@@ -62,10 +66,10 @@ class Publish(Capability):
         latch = message.get("latch", False)
         queue_size = message.get("queue_size", 100)
 
-        if Publish.topics_glob is not None and Publish.topics_glob:
+        if self.topics_glob:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in Publish.topics_glob:
+            for glob in self.topics_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",
