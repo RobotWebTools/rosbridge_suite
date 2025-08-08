@@ -9,7 +9,7 @@ line-length = 100
 select = [
     # "AIR",  # Airflow, We don't use this framework
     # "ERA",  # Eradicate, We allow commented-out code
-    # "FAST", # FastAPI, We don't use this framework 
+    # "FAST", # FastAPI, We don't use this framework
 
     # flake8 extensions
     "YTT",    # flake8-2020
@@ -65,7 +65,7 @@ select = [
     "D",      # pydocstyle
     "F",      # pyflakes
     "PGH",    # pygrep-hooks
-    "PL",     # pylint 
+    "PL",     # pylint
     "UP",     # pyupgrade
     "FURB",   # refurb
     "RUF",    # ruff
