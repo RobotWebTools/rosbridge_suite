@@ -150,7 +150,7 @@ class TestSubscriberManager(unittest.TestCase):
             depth=10,
             durability=DurabilityPolicy.TRANSIENT_LOCAL,
         )
-        self.node.create_subscription(String, topic, lambda *args: None, subscriber_qos)
+        self.node.create_subscription(String, topic, lambda *_args: None, subscriber_qos)
 
         self.assertTrue(is_topic_subscribed(self.node, topic))
         self.assertFalse(topic in manager._subscribers)

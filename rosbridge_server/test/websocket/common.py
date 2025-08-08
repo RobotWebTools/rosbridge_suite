@@ -1,6 +1,7 @@
 import functools
 import json
-from typing import TYPE_CHECKING, Any, Awaitable, Callable
+from collections.abc import Awaitable
+from typing import TYPE_CHECKING, Any, Callable
 
 import launch
 import launch_ros
@@ -80,7 +81,7 @@ except ImportError:
         Re-export this from a test file and use add_launch_test() to run the test.
         """
         return LaunchDescription(
-            [_generate_node(), launch.actions.OpaqueFunction(function=lambda context: ready_fn())]
+            [_generate_node(), launch.actions.OpaqueFunction(function=lambda _context: ready_fn())]
         )
 
 
@@ -89,7 +90,8 @@ async def get_server_port(node: Node) -> int:
     client: Client = node.create_client(GetParameters, "/rosbridge_websocket/get_parameters")
     try:
         if not client.wait_for_service(5):
-            raise RuntimeError("GetParameters service not available")
+            msg = "GetParameters service not available"
+            raise RuntimeError(msg)
         port_param = await client.call_async(GetParameters.Request(names=["actual_port"]))
         assert port_param is not None
         return port_param.values[0].integer_value
@@ -187,14 +189,13 @@ def expect_messages(count: int, description: str, logger):
     results = []
 
     def handler(msg):
-        logger.info(f"Received message on {description}: {msg}")
+        logger.info(f"Received message on {description}: {msg}")  # noqa: G004
         results.append(msg)
         if len(results) == count:
-            logger.info(f"Received all messages on {description}")
+            logger.info(f"Received all messages on {description}")  # noqa: G004
             future.set_result(results)
         elif len(results) > count:
-            raise AssertionError(
-                f"Received {len(results)} messages on {description} but expected {count}"
-            )
+            msg = f"Received {len(results)} messages on {description} but expected {count}"
+            raise AssertionError(msg)
 
     return future, handler

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2012, Willow Garage, Inc.
@@ -33,7 +32,7 @@
 
 import importlib
 from threading import Lock
-from typing import Any, Dict, Tuple
+from typing import Any
 
 """ ros_loader contains methods for dynamically loading ROS message classes at
 runtime.  It's achieved by using roslib to load the manifest files for the
@@ -60,8 +59,7 @@ class InvalidModuleException(Exception):
     def __init__(self, modname: str, subname: str, original_exception: Exception) -> None:
         Exception.__init__(
             self,
-            "Unable to import %s.%s from package %s. Caused by: %s"
-            % (modname, subname, modname, str(original_exception)),
+            f"Unable to import {modname}.{subname} from package {modname}. Caused by: {original_exception!s}",
         )
 
 
@@ -71,8 +69,7 @@ class InvalidClassException(Exception):
     ) -> None:
         Exception.__init__(
             self,
-            "Unable to import %s class %s from package %s. Caused by %s"
-            % (subname, classname, modname, str(original_exception)),
+            f"Unable to import {subname} class {classname} from package {modname}. Caused by {original_exception!s}",
         )
 
 
@@ -147,7 +144,7 @@ def get_action_result_instance(typestring: str) -> Any:
 
 
 def _get_interface_class(
-    typestring: str, intf_type: str, loaded_intfs: Dict[str, Any], intf_lock: Lock
+    typestring: str, intf_type: str, loaded_intfs: dict[str, Any], intf_lock: Lock
 ) -> Any:
     """
     If not loaded, load the specified ROS interface class then return an instance of it.
@@ -170,7 +167,7 @@ def _get_interface_class(
         return _get_class(typestring, intf_type, loaded_intfs, intf_lock)
 
 
-def _get_class(typestring: str, subname: str, cache: Dict[str, Any], lock: Lock) -> Any:
+def _get_class(typestring: str, subname: str, cache: dict[str, Any], lock: Lock) -> Any:
     """
     If not loaded, load the specified class then returns an instance of it.
 
@@ -215,15 +212,15 @@ def _load_class(modname: str, subname: str, classname: str) -> Any:
     try:
         pypkg = importlib.import_module(f"{modname}.{subname}")
     except Exception as exc:
-        raise InvalidModuleException(modname, subname, exc)
+        raise InvalidModuleException(modname, subname, exc) from exc
 
     try:
         return getattr(pypkg, classname)
     except Exception as exc:
-        raise InvalidClassException(modname, subname, classname, exc)
+        raise InvalidClassException(modname, subname, classname, exc) from exc
 
 
-def _splittype(typestring: str) -> Tuple[str, str]:
+def _splittype(typestring: str) -> tuple[str, str]:
     """
     Split the string using the / delimiter and strip out empty strings.
 
@@ -238,13 +235,13 @@ def _splittype(typestring: str) -> Tuple[str, str]:
     raise InvalidTypeStringException(typestring)
 
 
-def _add_to_cache(cache: Dict[str, Any], lock: Lock, key: str, value: Any) -> None:
+def _add_to_cache(cache: dict[str, Any], lock: Lock, key: str, value: Any) -> None:
     lock.acquire()
     cache[key] = value
     lock.release()
 
 
-def _get_from_cache(cache: Dict[str, Any], lock: Lock, key: str) -> Any:
+def _get_from_cache(cache: dict[str, Any], lock: Lock, key: str) -> Any:
     """
     Return the value for the specified key from the cache.
 

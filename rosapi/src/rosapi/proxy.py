@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2012, Willow Garage, Inc.
@@ -142,8 +141,7 @@ def get_publications_and_types(glob, getter_function, **include_hidden_publicati
 def get_nodes(include_hidden=False):
     """Return a list of all the nodes registered in the ROS system."""
     node_names = get_node_names(node=_node, include_hidden_nodes=include_hidden)
-    full_names = [node_name.full_name for node_name in node_names]
-    return full_names
+    return [node_name.full_name for node_name in node_names]
 
 
 def get_node_info(node_name, include_hidden=False):
@@ -155,6 +153,7 @@ def get_node_info(node_name, include_hidden=False):
         services = get_node_services(node_name)
 
         return subscribers, publishers, services
+    return None
 
 
 def get_node_publications(node_name):
@@ -203,7 +202,7 @@ def filter_action_servers(topics):
     for topic in sorted(topics):
         split = topic.split("/")
         if len(split) >= 4:
-            topic = split.pop()
+            topic_name = split.pop()
             action_prefix = split.pop()
             if action_prefix != "_action":
                 continue
@@ -212,8 +211,8 @@ def filter_action_servers(topics):
             if possible_action_server != namespace:
                 possible_action_server = namespace
                 possibility = [0, 0]
-            if possible_action_server == namespace and topic in action_topics:
-                possibility[action_topics.index(topic)] = 1
+            if possible_action_server == namespace and topic_name in action_topics:
+                possibility[action_topics.index(topic_name)] = 1
             if all(p == 1 for p in possibility):
                 action_servers.append(possible_action_server)
                 possibility = [0, 0]
@@ -257,8 +256,7 @@ def get_channel_info(channel, channels_glob, getter_function, include_hidden=Fal
             if channel in channel_info:
                 channel_info_list.append(node)
         return channel_info_list
-    else:
-        return []
+    return []
 
 
 def get_publishers(topic, topics_glob, include_hidden=False):
@@ -292,8 +290,7 @@ def get_service_node(queried_type, services_glob, include_hidden=False):
     )
     if node_name:
         return node_name[0]
-    else:
-        return ""
+    return ""
 
 
 def get_action_type(action_name, include_hidden=False):

@@ -29,12 +29,12 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import annotations
 
 from threading import Event, Thread
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable
 
 from rclpy.callback_groups import ReentrantCallbackGroup
-from rclpy.node import Node
 
 from rosbridge_library.internal.message_conversion import (
     extract_values,
@@ -47,6 +47,7 @@ from rosbridge_library.internal.ros_loader import (
 
 if TYPE_CHECKING:
     from rclpy.client import Client
+    from rclpy.node import Node
 
 
 class InvalidServiceException(Exception):
@@ -105,7 +106,7 @@ class ServiceCaller(Thread):
             self.error(e)
 
 
-def args_to_service_request_instance(service: str, inst: Any, args: list | dict | None) -> Any:
+def args_to_service_request_instance(inst: Any, args: list | dict | None) -> Any:
     """
     Populate a service request instance with the provided args.
 
@@ -126,7 +127,7 @@ def args_to_service_request_instance(service: str, inst: Any, args: list | dict 
 def call_service(
     node_handle: Node,
     service: str,
-    args: Optional[dict] = None,
+    args: dict | None = None,
     server_ready_timeout: float = 1.0,
     server_response_timeout: float = 5.0,
 ) -> dict:
@@ -148,7 +149,7 @@ def call_service(
     inst = get_service_request_instance(service_type)
 
     # Populate the instance with the provided args
-    args_to_service_request_instance(service, inst, args)
+    args_to_service_request_instance(inst, args)
 
     client: Client = node_handle.create_client(
         service_class, service, callback_group=ReentrantCallbackGroup()
@@ -169,7 +170,8 @@ def call_service(
     if not event.wait(timeout=(server_response_timeout if server_response_timeout > 0 else None)):
         future.cancel()
         node_handle.destroy_client(client)
-        raise Exception("Timeout exceeded while waiting for service response")
+        msg = "Timeout exceeded while waiting for service response"
+        raise Exception(msg)
 
     node_handle.destroy_client(client)
 

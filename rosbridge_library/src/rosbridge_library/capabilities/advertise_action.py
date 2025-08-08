@@ -70,9 +70,9 @@ class AdvertisedActionHandler:
         )
 
     def next_id(self) -> int:
-        id = self.id_counter
+        next_id_value = self.id_counter
         self.id_counter += 1
-        return id
+        return next_id_value
 
     async def execute_callback(self, goal: Any) -> Any:
         """
@@ -198,7 +198,7 @@ class AdvertisedActionHandler:
 class AdvertiseAction(Capability):
     actions_glob = None
 
-    advertise_action_msg_fields = [(True, "action", str), (True, "type", str)]
+    advertise_action_msg_fields = ((True, "action", str), (True, "type", str))
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
@@ -241,7 +241,7 @@ class AdvertiseAction(Capability):
             )
 
         # check for an existing entry
-        if action_name in self.protocol.external_action_list.keys():
+        if action_name in self.protocol.external_action_list:
             self.protocol.log("warn", f"Duplicate action advertised. Overwriting {action_name}.")
             self.protocol.external_action_list[action_name].graceful_shutdown()
             del self.protocol.external_action_list[action_name]

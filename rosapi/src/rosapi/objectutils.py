@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2012, Willow Garage, Inc.
@@ -38,6 +37,8 @@ import re
 from rosapi.stringify_field_types import stringify_field_types
 from rosbridge_library.internal import ros_loader
 
+logger = logging.getLogger(__name__)
+
 # Keep track of atomic types and special types
 atomics = [
     "bool",
@@ -61,7 +62,7 @@ atomics = [
 specials = ["time", "duration"]
 
 
-def get_typedef(type):
+def get_typedef(type_name):
     """
     Get the typedef for a message type.
 
@@ -77,25 +78,24 @@ def get_typedef(type):
     get_typedef will return a typedef dict for the specified message type.
     """
     # Check if the type string indicates a sequence (array) type
-    if matches := re.findall("sequence<([^<]+)>", type):
+    if matches := re.findall("sequence<([^<]+)>", type_name):
         # Extract the inner type and continue processing
-        type = matches[0]
+        type_name = matches[0]
 
-    if type in atomics:
+    if type_name in atomics:
         # Atomics don't get a typedef
         return None
 
-    if type in specials:
+    if type_name in specials:
         # Specials get their type def mocked up
-        return _get_special_typedef(type)
+        return _get_special_typedef(type_name)
 
     # Fetch an instance and return its typedef
     try:
-        instance = ros_loader.get_message_instance(type)
-        type_def = _get_typedef(instance)
-        return type_def
+        instance = ros_loader.get_message_instance(type_name)
+        return _get_typedef(instance)
     except (ros_loader.InvalidModuleException, ros_loader.InvalidClassException) as e:
-        logging.error(f"An error occurred trying to get the type definition for {type}: {e}")
+        logger.error("An error occurred trying to get the type definition for %s: %s", type_name, e)
         return None
 
 
@@ -113,10 +113,10 @@ def get_service_response_typedef(servicetype):
     return _get_typedef(instance)
 
 
-def get_typedef_recursive(type):
+def get_typedef_recursive(type_name):
     """Return a list of typedef dicts for this type and all contained type fields."""
     # Just go straight into the recursive method
-    return _get_typedefs_recursive(type, [])
+    return _get_typedefs_recursive(type_name, [])
 
 
 def get_service_request_typedef_recursive(servicetype):
@@ -174,7 +174,7 @@ def get_typedef_full_text(ty):
     try:
         return stringify_field_types(ty)
     except Exception as e:
-        return f"# failed to get full definition text for {ty}: {str(e)}"
+        return f"# failed to get full definition text for {ty}: {e!s}"
 
 
 def _get_typedef(instance):
@@ -182,10 +182,10 @@ def _get_typedef(instance):
     if _valid_instance(instance):
         fieldnames, fieldtypes, fieldarraylen, examples = _handle_array_information(instance)
         constnames, constvalues = _handle_constant_information(instance)
-        typedef = _build_typedef_dictionary(
+        return _build_typedef_dictionary(
             instance, fieldnames, fieldtypes, fieldarraylen, examples, constnames, constvalues
         )
-        return typedef
+    return None
 
 
 def _valid_instance(instance):
@@ -212,7 +212,7 @@ def _handle_array_information(instance):
     fieldarraylen = []
     examples = []
     for slot in instance.__slots__:
-        key = slot[1:] if slot.startswith("_") else slot
+        key = slot.removeprefix("_")
         if key not in instance._fields_and_field_types:
             continue
 
@@ -240,15 +240,14 @@ def _handle_type_and_array_len(instance, name):
         # Extract the inner type and continue processing
         field_type = matches[0]
         arraylen = 0
-    else:
-        if field_type[-1:] == "]":
-            if field_type[-2:-1] == "[":
-                arraylen = 0
-                field_type = field_type[:-2]
-            else:
-                split = field_type.find("[")
-                arraylen = int(field_type[split + 1 : -1])
-                field_type = field_type[:split]
+    elif field_type[-1:] == "]":
+        if field_type[-2:-1] == "[":
+            arraylen = 0
+            field_type = field_type[:-2]
+        else:
+            split = field_type.find("[")
+            arraylen = int(field_type[split + 1 : -1])
+            field_type = field_type[:split]
 
     return field_type, arraylen
 
@@ -284,7 +283,7 @@ def _build_typedef_dictionary(
     instance, fieldnames, fieldtypes, fieldarraylen, examples, constnames, constvalues
 ):
     """Build the typedef dictionary from multiple inputs collected from instance."""
-    typedef = {
+    return {
         "type": _type_name_from_instance(instance),
         "fieldnames": fieldnames,
         "fieldtypes": fieldtypes,
@@ -293,12 +292,11 @@ def _build_typedef_dictionary(
         "constnames": constnames,
         "constvalues": constvalues,
     }
-    return typedef
 
 
-def _get_special_typedef(type):
+def _get_special_typedef(type_name):
     example = None
-    if type == "time" or type == "duration":
+    if type_name in {"time", "duration"}:
         example = {
             "type": type,
             "fieldnames": ["secs", "nsecs"],
@@ -311,17 +309,17 @@ def _get_special_typedef(type):
     return example
 
 
-def _get_typedefs_recursive(type, typesseen):
+def _get_typedefs_recursive(type_name, typesseen):
     """Return the type def for this type as well as the type defs for any fields within the type."""
-    if type in typesseen:
+    if type_name in typesseen:
         # Don't put a type if it's already been seen
         return []
 
     # Note that we have now seen this type
-    typesseen.append(type)
+    typesseen.append(type_name)
 
     # Get the typedef for this type and make sure it's not None
-    typedef = get_typedef(type)
+    typedef = get_typedef(type_name)
 
     return _get_subtypedefs_recursive(typedef, typesseen)
 
@@ -338,16 +336,16 @@ def _get_subtypedefs_recursive(typedef, typesseen):
     return typedefs
 
 
-def _type_name(type, instance):
+def _type_name(type_name, instance):
     """Get the fully qualified type name for a given type and instance."""
     # The fully qualified type of atomic and special types is just their original name
-    if type in atomics or type in specials:
-        return type
+    if type_name in atomics or type_name in specials:
+        return type_name
 
     # If the instance is a list, then we can get no more information from the instance.
     # However, luckily, the 'type' field for list types is usually already inflated to the full type.
     if isinstance(instance, list):
-        return type
+        return type_name
 
     # Otherwise, the type will come from the module and class name of the instance
     return _type_name_from_instance(instance)
@@ -355,5 +353,4 @@ def _type_name(type, instance):
 
 def _type_name_from_instance(instance):
     mod = instance.__module__
-    type = mod[0 : mod.find(".")] + "/" + instance.__class__.__name__
-    return type
+    return mod[0 : mod.find(".")] + "/" + instance.__class__.__name__

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2012, Willow Garage, Inc.
@@ -34,6 +33,7 @@
 import array
 import math
 import re
+import sys
 from base64 import standard_b64decode, standard_b64encode
 
 import numpy as np
@@ -120,11 +120,11 @@ def configure(node_handle=None):
     if binary_encoder is None:
         if binary_encoder_type == "bson" or bson_only_mode:
             binary_encoder = bson.Binary
-        elif binary_encoder_type == "default" or binary_encoder_type == "b64":
+        elif binary_encoder_type in {"default", "b64"}:
             binary_encoder = standard_b64encode
         else:
-            print("Unknown encoder type '%s'" % binary_encoder_type)
-            exit(0)
+            print(f"Unknown encoder type '{binary_encoder_type}'")
+            sys.exit(0)
 
 
 def get_encoder():
@@ -136,7 +136,7 @@ class InvalidMessageException(Exception):
     def __init__(self, inst):
         Exception.__init__(
             self,
-            "Unable to extract message values from %s instance" % type(inst).__name__,
+            f"Unable to extract message values from {type(inst).__name__} instance",
         )
 
 
@@ -171,13 +171,16 @@ def extract_values(inst):
     return _from_inst(inst, rostype)
 
 
-def populate_instance(msg, inst, clock=ROSClock()):
+def populate_instance(msg, inst, clock=None):
     """
     Populate a ROS message instance with the provided values.
 
     Return an instance of the provided class, with its fields populated
     according to the values in msg.
     """
+    if clock is None:
+        clock = ROSClock()
+
     inst_type = msg_instance_type_repr(inst)
 
     return _to_inst(msg, inst_type, inst_type, clock, inst)
@@ -221,9 +224,12 @@ def _from_inst(inst, rostype):
     # Check for primitive types
     if rostype in ros_primitive_types:
         # JSON does not support Inf and NaN. They are mapped to None and encoded as null
-        if (not bson_only_mode) and (rostype in type_map.get("float")):
-            if math.isnan(inst) or math.isinf(inst):
-                return None
+        if (
+            not bson_only_mode
+            and rostype in type_map.get("float")
+            and (math.isnan(inst) or math.isinf(inst))
+        ):
+            return None
 
         # JSON does not support byte array. They are converted to int
         if (not bson_only_mode) and (rostype == "octet"):
@@ -265,7 +271,7 @@ def _from_list_inst(inst, rostype):
     return [_from_inst(x, rostype) for x in inst]
 
 
-def _from_object_inst(inst, rostype):
+def _from_object_inst(inst, _rostype):
     # Create an empty dict then populate with values from the inst
     msg = {}
     # Equivalent for zip(inst.__slots__, inst._slot_types) in ROS1:
@@ -275,7 +281,12 @@ def _from_object_inst(inst, rostype):
     return msg
 
 
-def _to_inst(msg, rostype, roottype, clock=ROSClock(), inst=None, stack=[]):
+def _to_inst(msg, rostype, roottype, clock=None, inst=None, stack=None):
+    if clock is None:
+        clock = ROSClock()
+    if stack is None:
+        stack = []
+
     # Check if it's uint8[], and if it's a string, try to b64decode
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
@@ -306,7 +317,8 @@ def _to_binary_inst(msg):
     if isinstance(msg, list):
         return msg
     if isinstance(msg, bytes):
-        # Using the frombytes() method with a memoryview of the data allows for zero copying of data thanks to Python's buffer protocol (HUGE time-saver for large arrays)
+        # Using the frombytes() method with a memoryview of the data allows for zero copying of
+        # data thanks to Python's buffer protocol (HUGE time-saver for large arrays)
         data = array.array("B")
         data.frombytes(memoryview(msg))
         return data
@@ -330,11 +342,11 @@ def _to_time_inst(msg, rostype, clock, inst=None):
     # Copy across the fields, try ROS1 and ROS2 fieldnames
     for field in ["sec", "secs"]:
         if field in msg:
-            setattr(inst, "sec", msg[field])
+            inst.sec = msg[field]
             break
     for field in ["nanosec", "nsecs"]:
         if field in msg:
-            setattr(inst, "nanosec", msg[field])
+            inst.nanosec = msg[field]
             break
 
     return inst
@@ -354,7 +366,7 @@ def _to_primitive_inst(msg, rostype, roottype, stack):
     msgtype = type(msg)
     if msgtype in primitive_types and rostype in type_map[msgtype.__name__]:
         return msg
-    elif isinstance(msg, str) and rostype in type_map[msgtype.__name__]:
+    if isinstance(msg, str) and rostype in type_map[msgtype.__name__]:
         return msg
     raise FieldTypeMismatchException(roottype, stack, rostype, msgtype)
 
@@ -399,7 +411,7 @@ def _to_object_inst(msg, rostype, roottype, clock, inst, stack):
     inst_fields = inst.get_fields_and_field_types()
     for field_name in msg:
         # Add this field to the field stack
-        field_stack = stack + [field_name]
+        field_stack = [*stack, field_name]
 
         # Raise an exception if the msg contains a bad field
         if field_name not in inst_fields:

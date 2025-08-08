@@ -10,10 +10,11 @@ except ImportError:
 import bson
 
 try:
-    bson.BSON
-except AttributeError:
-    raise Exception(
+    _ = bson.BSON
+except AttributeError as exc:
+    msg = (
         "BSON installation does not support all necessary features. "
         "Please use the MongoDB BSON implementation. "
         "See: https://github.com/RobotWebTools/rosbridge_suite/issues/198"
     )
+    raise Exception(msg) from exc

@@ -1,6 +1,6 @@
-import os
 import sys
 import unittest
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rclpy.node import Node
@@ -10,10 +10,10 @@ from twisted.python import log
 if TYPE_CHECKING:
     from rclpy.client import Client
 
-sys.path.append(os.path.dirname(__file__))  # enable importing from common.py in this directory
+sys.path.append(str(Path(__file__).parent))  # enable importing from common.py in this directory
 
-import common  # noqa: E402
-from common import expect_messages, sleep, websocket_test  # noqa: E402
+import common
+from common import expect_messages, sleep, websocket_test
 
 log.startLogging(sys.stderr)
 

@@ -15,7 +15,8 @@ rosbridge_ip = "localhost"  # hostname or ip
 rosbridge_port = 9090  # port as integer
 
 service_name = "send_bytes"  # service name
-request_byte_count = 500000  # NOTE: receiving more than ~100.000 bytes without setting a fragment_size was not possible during testing.
+# NOTE: receiving more than ~100.000 bytes without setting a fragment_size was not possible during testing.
+request_byte_count = 500000
 receiving_fragment_size = 1000
 receive_message_intervall = 0.0
 
@@ -29,10 +30,12 @@ def request_service():
     service_request_object = {
         "op": "call_service",  # op-code for rosbridge
         "service": "/" + service_name,  # select service
-        "fragment_size": receiving_fragment_size,  # optional: tells rosbridge to send fragments if message size is bigger than requested
+        # optional: tells rosbridge to send fragments if message size is bigger than requested
+        "fragment_size": receiving_fragment_size,
         "message_intervall": receive_message_intervall,
         "args": {
-            "count": request_byte_count  # count is the parameter for send_bytes as defined in srv-file (always put into args field!)
+            # count is the parameter for send_bytes as defined in srv-file (always put into args field!)
+            "count": request_byte_count
         },
     }
     service_request = json.dumps(service_request_object)
@@ -88,13 +91,14 @@ try:
                 )  # split buffer into fragments and re-fill curly brackets
                 result = []
                 for fragment_str in result_string:
-                    if fragment_str[0] != "{":
-                        fragment_str = "{" + fragment_str
-                    if fragment_str[len(fragment_str) - 1] != "}":
-                        fragment_str = fragment_str + "}"
+                    frag = fragment_str
+                    if frag[0] != "{":
+                        frag = "{" + frag
+                    if frag[len(frag) - 1] != "}":
+                        frag = frag + "}"
                     try:
                         result.append(
-                            json.loads(fragment_str)
+                            json.loads(frag)
                         )  # try to parse json from string, and append if successful
                     except Exception:
                         # print(e)

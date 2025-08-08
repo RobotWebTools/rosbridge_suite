@@ -3,12 +3,12 @@ from rosbridge_library.internal import message_conversion, ros_loader
 
 
 class ServiceResponse(Capability):
-    service_response_msg_fields = [
+    service_response_msg_fields = (
         (True, "service", str),
         (False, "id", str),
         (False, "values", dict),
         (True, "result", bool),
-    ]
+    )
 
     def __init__(self, protocol):
         # Call superclass constructor
@@ -36,5 +36,5 @@ class ServiceResponse(Capability):
         else:
             self.protocol.log(
                 "error",
-                "Service %s has not been advertised via rosbridge." % service_name,
+                f"Service {service_name} has not been advertised via rosbridge.",
             )

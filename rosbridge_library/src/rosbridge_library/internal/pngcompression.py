@@ -62,5 +62,4 @@ def decode(string):
     buff = BytesIO(decoded)
     i = Image.open(buff, formats=("png",)).convert("RGB")
     dec_str = i.tobytes().decode("utf-8")
-    dec_str = dec_str.replace("\n", "")  # Remove padding from encoding
-    return dec_str
+    return dec_str.replace("\n", "")  # Remove padding from encoding

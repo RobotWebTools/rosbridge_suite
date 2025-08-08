@@ -36,13 +36,13 @@ from rosbridge_library.protocol import Protocol
 
 
 class ActionResult(Capability):
-    action_result_msg_fields = [
+    action_result_msg_fields = (
         (True, "action", str),
         (False, "id", str),
         (False, "values", dict),
         (True, "status", int),
         (True, "result", bool),
-    ]
+    )
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
