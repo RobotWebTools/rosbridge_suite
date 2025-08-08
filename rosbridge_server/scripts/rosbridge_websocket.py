@@ -141,7 +141,7 @@ class RosbridgeWebsocketNode(Node):
         # Declare ROS parameters
         for name, _, default_value, description in SERVER_PARAMETERS + PROTOCOL_PARAMETERS:
             self.declare_parameter(
-                name, default_value, ParameterDescriptor(description=description)
+                name, default_value, ParameterDescriptor(description=description, read_only=True)
             )
 
         # Handle command line arguments
