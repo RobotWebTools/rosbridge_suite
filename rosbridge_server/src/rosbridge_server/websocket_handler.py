@@ -30,12 +30,15 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import sys
 import threading
 import traceback
 import uuid
 from collections import deque
 from functools import partial, wraps
+from typing import TYPE_CHECKING, ClassVar
 
 from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
@@ -43,6 +46,11 @@ from tornado.websocket import WebSocketClosedError, WebSocketHandler
 
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
+
+if TYPE_CHECKING:
+    from rclpy.node import Node
+
+    from .client_manager import ClientManager
 
 _io_loop = IOLoop.instance()
 
@@ -114,33 +122,29 @@ class IncomingQueue(threading.Thread):
 
 
 class RosbridgeWebSocket(WebSocketHandler):
-    clients_connected = 0
-    use_compression = False
+    # Class variable to track the number of connected client
+    clients_connected: ClassVar[int] = 0
 
-    # The following are passed on to RosbridgeProtocol
-    # defragmentation.py:
-    fragment_timeout = 600  # seconds
-    # protocol.py:
-    delay_between_messages = 0  # seconds
-    max_message_size = 10000000  # bytes
-    unregister_timeout = 10.0  # seconds
-    bson_only_mode = False
-    node_handle = None
+    # Class variable to manage connected clients
+    client_manager: ClassVar[ClientManager | None] = None
+
+    # Node handle to pass to RosbridgeProtocol when opening a connection
+    node_handle: ClassVar[Node | None] = None
+
+    # Parameters to pass to RosbridgeProtocol when opening a connection
+    protocol_parameters: ClassVar = {}
+
+    # Parameters for the WebSocket handler
+    use_compression: ClassVar[bool] = False
 
     @log_exceptions
     def open(self):
         cls = self.__class__
-        parameters = {
-            "fragment_timeout": cls.fragment_timeout,
-            "delay_between_messages": cls.delay_between_messages,
-            "max_message_size": cls.max_message_size,
-            "unregister_timeout": cls.unregister_timeout,
-            "bson_only_mode": cls.bson_only_mode,
-        }
+        assert cls.node_handle is not None, "Node handle must be set before opening a WebSocket"
         try:
             self.client_id = uuid.uuid4()
             self.protocol = RosbridgeProtocol(
-                self.client_id, cls.node_handle, parameters=parameters
+                self.client_id, cls.node_handle, parameters=cls.protocol_parameters
             )
             self.incoming_queue = IncomingQueue(self.protocol)
             self.incoming_queue.start()
