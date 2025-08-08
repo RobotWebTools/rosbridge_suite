@@ -73,11 +73,11 @@ class MessageHandler:
         self.publish(msg)
 
     def transition(self):
-        if self.throttle_rate == 0 and self.queue_length == 0:
-            return self
-        if self.queue_length == 0:
+        if self.queue_length > 0:
+            return QueueMessageHandler(self)
+        if self.throttle_rate > 0:
             return ThrottleMessageHandler(self)
-        return QueueMessageHandler(self)
+        return self
 
     def finish(self, block=True):
         pass
@@ -89,11 +89,11 @@ class ThrottleMessageHandler(MessageHandler):
             MessageHandler.handle_message(self, msg)
 
     def transition(self):
-        if self.throttle_rate == 0 and self.queue_length == 0:
-            return MessageHandler(self)
-        if self.queue_length == 0:
+        if self.queue_length > 0:
+            return QueueMessageHandler(self)
+        if self.throttle_rate > 0:
             return self
-        return QueueMessageHandler(self)
+        return MessageHandler(self)
 
     def finish(self, block=True):
         pass
@@ -119,19 +119,18 @@ class QueueMessageHandler(MessageHandler, Thread):
                 self.c.notify()
 
     def transition(self):
-        if self.throttle_rate == 0 and self.queue_length == 0:
-            self.finish()
-            return MessageHandler(self)
-        if self.queue_length == 0:
-            self.finish()
+        if self.queue_length > 0:
+            with self.c:
+                old_queue = self.queue
+                self.queue = deque(maxlen=self.queue_length)
+                while len(old_queue) > 0:
+                    self.queue.append(old_queue.popleft())
+                self.c.notify()
+                return self
+        self.finish()
+        if self.throttle_rate > 0:
             return ThrottleMessageHandler(self)
-        with self.c:
-            old_queue = self.queue
-            self.queue = deque(maxlen=self.queue_length)
-            while len(old_queue) > 0:
-                self.queue.append(old_queue.popleft())
-            self.c.notify()
-        return self
+        return MessageHandler(self)
 
     def finish(self, block=True):
         """
