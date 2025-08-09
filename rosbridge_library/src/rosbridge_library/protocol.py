@@ -29,6 +29,7 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import annotations
 
 import time
 from typing import Any
@@ -76,16 +77,18 @@ class Protocol:
     buffer = ""
     old_buffer = ""
     busy = False
-    # if this is too low, ("simple")clients network stacks will get flooded (when sending fragments of a huge message..)
-    # .. depends on message_size/bandwidth/performance/client_limits/...
-    # !! this might be related to (or even be avoided by using) throttle_rate !!
-    delay_between_messages = 0
     # global list of non-ros advertised services
     external_service_list: dict[str, Any]
     # global list of non-ros advertised actions
     external_action_list: dict[str, Any]
+
+    max_message_size: int = 1000000
+    # if this is too low, ("simple")clients network stacks will get flooded (when sending fragments of a huge message..)
+    # .. depends on message_size/bandwidth/performance/client_limits/...
+    # !! this might be related to (or even be avoided by using) throttle_rate !!
+    delay_between_messages: float = 0.0
     # Use only BSON for the whole communication if the server has been started with bson_only_mode:=True
-    bson_only_mode = False
+    bson_only_mode: bool = False
 
     parameters: dict[str, Any] | None = None
 
@@ -107,9 +110,14 @@ class Protocol:
         self.external_action_list = {}
 
         if self.parameters:
-            self.fragment_size = self.parameters["max_message_size"]
-            self.delay_between_messages = self.parameters["delay_between_messages"]
-            self.bson_only_mode = self.parameters.get("bson_only_mode", False)
+            if "max_message_size" in self.parameters:
+                self.max_message_size = self.parameters["max_message_size"]
+            if "delay_between_messages" in self.parameters:
+                self.delay_between_messages = self.parameters["delay_between_messages"]
+            if "bson_only_mode" in self.parameters:
+                self.bson_only_mode = self.parameters["bson_only_mode"]
+
+        self.fragment_size = self.max_message_size
 
     # added default message_string="" to allow recalling incoming until buffer is empty without giving a parameter
     # --> allows to get rid of (..or minimize) delay between client-side sends
@@ -213,8 +221,7 @@ class Protocol:
         # This way, a client can change/overwrite its active values anytime by just including parameter field in any
         # message sent to rosbridge. Maybe need to be improved to bind parameter values to specific operation.
         if "fragment_size" in msg:
-            self.fragment_size = msg["fragment_size"]
-            # print "fragment size set to:", self.fragment_size
+            self.fragment_size = min(msg["fragment_size"], self.max_message_size)
         if "message_intervall" in msg and is_number(msg["message_intervall"]):
             self.delay_between_messages = msg["message_intervall"]
         if "png" in msg:
