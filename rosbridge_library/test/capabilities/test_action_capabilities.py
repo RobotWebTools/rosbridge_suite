@@ -30,10 +30,12 @@ class TestActionCapabilities(unittest.TestCase):
         self.node = Node("test_action_capabilities")
         self.executor.add_node(self.node)
 
-        self.node.declare_parameter("call_services_in_new_thread", False)
-        self.node.declare_parameter("send_action_goals_in_new_thread", False)
+        protocol_parameters = {
+            "call_services_in_new_thread": False,
+            "send_action_goals_in_new_thread": False,
+        }
 
-        self.proto = Protocol(self._testMethodName, self.node)
+        self.proto = Protocol(self._testMethodName, self.node, protocol_parameters)
         # change the log function so we can verify errors are logged
         self.proto.log = self.mock_log
         # change the send callback so we can access the rosbridge messages

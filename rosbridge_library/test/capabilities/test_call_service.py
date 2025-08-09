@@ -47,9 +47,11 @@ class TestCallService(unittest.TestCase):
         self.node = Node("test_call_service")
         self.executor.add_node(self.node)
 
-        self.node.declare_parameter("call_services_in_new_thread", False)
-        self.node.declare_parameter("default_call_service_timeout", 5.0)
-        self.node.declare_parameter("send_action_goals_in_new_thread", False)
+        self.protocol_parameters = {
+            "call_services_in_new_thread": False,
+            "default_call_service_timeout": 5.0,
+            "send_action_goals_in_new_thread": False,
+        }
 
         # Create service servers with a separate callback group
         self.cb_group = ReentrantCallbackGroup()
@@ -83,13 +85,13 @@ class TestCallService(unittest.TestCase):
         rclpy.shutdown()
 
     def test_missing_arguments(self):
-        proto = Protocol("test_missing_arguments", self.node)
+        proto = Protocol("test_missing_arguments", self.node, self.protocol_parameters)
         s = CallService(proto)
         msg = loads(dumps({"op": "call_service"}))
         self.assertRaises(MissingArgumentException, s.call_service, msg)
 
     def test_invalid_arguments(self):
-        proto = Protocol("test_invalid_arguments", self.node)
+        proto = Protocol("test_invalid_arguments", self.node, self.protocol_parameters)
         s = CallService(proto)
 
         msg = loads(dumps({"op": "call_service", "service": 3}))
@@ -99,7 +101,7 @@ class TestCallService(unittest.TestCase):
         client = self.node.create_client(Trigger, self.trigger_srv.srv_name)
         assert client.wait_for_service(1.0)
 
-        proto = Protocol("test_call_service_works", self.node)
+        proto = Protocol("test_call_service_works", self.node, self.protocol_parameters)
         s = CallService(proto)
         send_msg = loads(dumps({"op": "call_service", "service": self.trigger_srv.srv_name}))
 
@@ -123,7 +125,7 @@ class TestCallService(unittest.TestCase):
         client = self.node.create_client(SetBool, self.set_bool_srv.srv_name)
         assert client.wait_for_service(1.0)
 
-        proto = Protocol("test_call_service_args", self.node)
+        proto = Protocol("test_call_service_args", self.node, self.protocol_parameters)
         s = CallService(proto)
         send_msg = loads(
             dumps(
@@ -154,7 +156,7 @@ class TestCallService(unittest.TestCase):
         client = self.node.create_client(Trigger, self.trigger_srv.srv_name)
         assert client.wait_for_service(1.0)
 
-        proto = Protocol("test_call_service_works", self.node)
+        proto = Protocol("test_call_service_works", self.node, self.protocol_parameters)
         s = CallService(proto)
         send_msg = loads(
             dumps(
@@ -184,7 +186,7 @@ class TestCallService(unittest.TestCase):
         client = self.node.create_client(Trigger, self.trigger_long_srv.srv_name)
         assert client.wait_for_service(1.0)
 
-        proto = Protocol("test_call_service_timeout", self.node)
+        proto = Protocol("test_call_service_timeout", self.node, self.protocol_parameters)
         s = CallService(proto)
         send_msg = loads(
             dumps({"op": "call_service", "service": self.trigger_long_srv.srv_name, "timeout": 2.0})
