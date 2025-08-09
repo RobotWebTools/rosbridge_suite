@@ -87,9 +87,9 @@ class Protocol:
     # Use only BSON for the whole communication if the server has been started with bson_only_mode:=True
     bson_only_mode = False
 
-    parameters = None
+    parameters: dict[str, Any] | None = None
 
-    def __init__(self, client_id, node_handle):
+    def __init__(self, client_id, node_handle, parameters=None):
         """
         Initialize the protocol with a client ID and a ROS2 node handle.
 
@@ -98,9 +98,11 @@ class Protocol:
         :param node_handle: A ROS2 node handle
         """
         self.client_id = client_id
+        self.node_handle = node_handle
+        self.parameters = parameters
+
         self.capabilities = []
         self.operations = {}
-        self.node_handle = node_handle
         self.external_service_list = {}
         self.external_action_list = {}
 
