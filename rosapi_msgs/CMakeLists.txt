@@ -23,6 +23,9 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/ServiceProviders.srv
   srv/ServiceRequestDetails.srv
   srv/ServiceResponseDetails.srv
+  srv/ActionGoalDetails.srv
+  srv/ActionResultDetails.srv
+  srv/ActionFeedbackDetails.srv
   srv/Services.srv
   srv/ServicesForType.srv
   srv/ServiceType.srv
