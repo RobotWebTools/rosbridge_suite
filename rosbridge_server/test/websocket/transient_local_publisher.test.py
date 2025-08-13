@@ -46,6 +46,7 @@ class TestTransientLocalPublisher(unittest.TestCase):
             ws_completed_future, ws_client.message_handler = expect_messages(
                 1, "WebSocket " + str(num), node.get_logger()
             )
+            assert node.executor is not None
             ws_completed_future.add_done_callback(lambda _: node.executor.wake())
 
             self.assertEqual(

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import socket
+from typing import Any
 
 from rosbridge_library.util import json
 
@@ -66,13 +67,13 @@ try:
         try:
             incoming = sock.recv(max_msg_length)  # receive service_response from rosbridge
             if buffer == "":
-                buffer = incoming
+                buffer = incoming.decode("utf-8")
                 if incoming == "":
                     print("closing socket")
                     sock.close()
                     break
             else:
-                buffer = buffer + incoming
+                buffer = buffer + incoming.decode("utf-8")
             # print "buffer-length:", len(buffer)
             try:  # try to access service_request directly (not fragmented)
                 data_object = json.loads(buffer)
@@ -109,7 +110,7 @@ try:
                 announced = int(result[0]["total"])
                 if fragment_count == announced:  # if all fragments received --> sort and defragment
                     # sort fragments
-                    sorted_result = [None] * fragment_count
+                    sorted_result: list[Any] = [None] * fragment_count
                     unsorted_result = []
                     for fragment in result:
                         unsorted_result.append(fragment)

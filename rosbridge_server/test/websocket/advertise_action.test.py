@@ -18,6 +18,7 @@ from common import expect_messages, websocket_test
 
 if TYPE_CHECKING:
     from rclpy.node import Node
+    from rclpy.task import Future
 
 log.startLogging(sys.stderr)
 
@@ -25,6 +26,9 @@ generate_test_description = common.generate_test_description
 
 
 class TestAdvertiseAction(unittest.TestCase):
+    goal1_result_future: Future | None
+    goal2_result_future: Future | None
+
     def goal1_response_callback(self, future):
         goal_handle = future.result()
         if not goal_handle.accepted:
@@ -47,12 +51,13 @@ class TestAdvertiseAction(unittest.TestCase):
                 "type": "example_interfaces/Fibonacci",
             }
         )
-        client = ActionClient(node, Fibonacci, "/test_fibonacci_action")
+        client: ActionClient = ActionClient(node, Fibonacci, "/test_fibonacci_action")
         client.wait_for_server()
 
         requests_future, ws_client.message_handler = expect_messages(
             2, "WebSocket", node.get_logger()
         )
+        assert node.executor is not None
         requests_future.add_done_callback(lambda _: node.executor.wake())
 
         self.goal1_result_future = None
@@ -95,8 +100,10 @@ class TestAdvertiseAction(unittest.TestCase):
             }
         )
 
+        assert self.goal1_result_future is not None
         result1 = await self.goal1_result_future
         self.assertEqual(result1.result, Fibonacci.Result(sequence=[0, 1, 1, 2]))
+        assert self.goal2_result_future is not None
         result2 = await self.goal2_result_future
         self.assertEqual(result2.result, Fibonacci.Result(sequence=[0, 1, 1, 2, 3, 5]))
 

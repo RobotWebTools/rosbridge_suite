@@ -25,6 +25,7 @@
   <exec_depend>std_msgs</exec_depend>
 
   <test_depend>action_msgs</test_depend>
+  <test_depend>ament_cmake_mypy</test_depend>
   <test_depend>example_interfaces</test_depend>
   <test_depend>launch</test_depend>
   <test_depend>launch_ros</test_depend>

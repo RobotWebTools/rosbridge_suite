@@ -49,6 +49,7 @@ if TYPE_CHECKING:
     from rclpy.client import Client
     from rclpy.node import Node
 
+
 class InvalidServiceException(Exception):
     def __init__(self, service_name) -> None:
         Exception.__init__(self, f"Service {service_name} does not exist")

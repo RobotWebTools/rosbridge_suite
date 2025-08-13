@@ -40,6 +40,7 @@ class TestMultipleSubscribers(unittest.TestCase):
         ws1_completed_future, ws_client1.message_handler = expect_messages(
             1, "WebSocket 1", node.get_logger()
         )
+        assert node.executor is not None
         ws1_completed_future.add_done_callback(lambda _: node.executor.wake())
         ws2_completed_future, ws_client2.message_handler = expect_messages(
             1, "WebSocket 2", node.get_logger()

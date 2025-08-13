@@ -12,4 +12,7 @@ ament_package()
 if (BUILD_TESTING)
   ament_add_ros_isolated_pytest_test(test_capabilities "test/capabilities/")
   ament_add_ros_isolated_pytest_test(test_internal "test/internal/")
+
+  find_package(ament_cmake_mypy REQUIRED)
+  ament_mypy()
 endif()
