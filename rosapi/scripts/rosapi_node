@@ -403,8 +403,13 @@ class Rosapi(Node):
         return response
 
     def get_action_type(self, request, response):
-        """Called by the rosapi/ActionType service. Given the name of an action, returns its type.
-        If the action does not exist, an empty string is returned."""
+        """
+        Given the name of an action, return its type.
+
+        If the action does not exist, an empty string is returned.
+
+        Called by the rosapi/ActionType service.
+        """
         response.type = proxy.get_action_type(request.action)
         return response
 
