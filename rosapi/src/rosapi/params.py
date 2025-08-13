@@ -31,6 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 from __future__ import annotations
 
+import contextlib
 import fnmatch
 import threading
 from json import dumps, loads
@@ -142,11 +143,9 @@ def _set_param(node_name, name, value, parameter_type=None):
         if parameter_type != ParameterType.PARAMETER_NOT_SET:
             setattr(parameter.value, _parameter_type_mapping[parameter_type])
 
-    try:
+    with contextlib.suppress(Exception):
         # call_get_parameters will fail if node does not exist.
         call_set_parameters(node=_node, node_name=node_name, parameters=[parameter])
-    except Exception:
-        pass
 
 
 def get_param(node_name, name, default, params_glob):
@@ -158,10 +157,9 @@ def get_param(node_name, name, default, params_glob):
     # If the glob list is empty (i.e. false) or the parameter matches
     # one of the glob strings, continue to get the parameter.
     if default != "":
-        try:
+        # Keep default without modifications in case of failure.
+        with contextlib.suppress(ValueError):
             default = loads(default)
-        except ValueError:
-            pass  # Keep default without modifications.
 
     node_name = get_absolute_node_name(node_name)
     with param_server_lock:
@@ -245,7 +243,6 @@ def get_node_param_names(node_name, params_glob):
 def _get_param_names(node_name):
     # This method is called in a service callback; calling a service of the same node
     # will cause a deadlock.
-    global _parent_node_name
     if node_name == _parent_node_name or node_name == _node.get_fully_qualified_name():
         return []
 
