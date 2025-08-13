@@ -4,7 +4,6 @@ from rosbridge_library.capability import Capability
 
 
 class UnadvertiseService(Capability):
-
     # unadvertise_service_msg_fields = [(True, "service", (str, unicode))]
 
     services_glob = None

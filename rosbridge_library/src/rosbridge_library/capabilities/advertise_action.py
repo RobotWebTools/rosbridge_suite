@@ -45,7 +45,6 @@ from rosbridge_library.protocol import Protocol
 
 
 class AdvertisedActionHandler:
-
     id_counter = 1
 
     def __init__(

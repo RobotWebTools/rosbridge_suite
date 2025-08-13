@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import unittest
 
-from rosbridge_library.internal.outgoing_message import OutgoingMessage
 from std_msgs.msg import String
+
+from rosbridge_library.internal.outgoing_message import OutgoingMessage
 
 
 class TestOutgoingMessage(unittest.TestCase):

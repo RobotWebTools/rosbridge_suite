@@ -35,6 +35,7 @@ from functools import partial
 from threading import Thread
 
 from action_msgs.msg import GoalStatus
+
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.actions import ActionClientHandler
 from rosbridge_library.internal.message_conversion import extract_values
@@ -42,7 +43,6 @@ from rosbridge_library.protocol import Protocol
 
 
 class SendActionGoal(Capability):
-
     send_action_goal_msg_fields = [
         (True, "action", str),
         (True, "action_type", str),
