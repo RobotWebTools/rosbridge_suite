@@ -37,11 +37,12 @@ import uuid
 from collections import deque
 from functools import partial, wraps
 
-from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-from rosbridge_library.util import bson
 from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
+
+from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
+from rosbridge_library.util import bson
 
 _io_loop = IOLoop.instance()
 

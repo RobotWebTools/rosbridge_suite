@@ -38,7 +38,6 @@ from rosbridge_library.internal.publishers import manager
 
 
 class Publish(Capability):
-
     publish_msg_fields = [(True, "topic", str)]
 
     topics_glob = None

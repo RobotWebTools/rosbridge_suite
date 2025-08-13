@@ -70,7 +70,6 @@ from rosapi_msgs.srv import (
 
 
 class Rosapi(Node):
-
     NAME = "rosapi"
 
     def __init__(self):
