@@ -41,6 +41,10 @@ from rclpy.node import Node
 from rosapi import glob_helper, objectutils, params, proxy
 from rosapi_msgs.msg import TypeDef
 from rosapi_msgs.srv import (
+    ActionFeedbackDetails,
+    ActionGoalDetails,
+    ActionResultDetails,
+    ActionType,
     DeleteParam,
     GetActionServers,
     GetParam,
@@ -127,6 +131,7 @@ class Rosapi(Node):
         self.create_service(
             GetActionServers, service_prefix + "action_servers", self.get_action_servers
         )
+        self.create_service(ActionType, service_prefix + "action_type", self.get_action_type)
         self.create_service(TopicType, service_prefix + "topic_type", self.get_topic_type)
         self.create_service(ServiceType, service_prefix + "service_type", self.get_service_type)
         self.create_service(Publishers, service_prefix + "publishers", self.get_publishers)
@@ -147,6 +152,21 @@ class Rosapi(Node):
             ServiceResponseDetails,
             service_prefix + "service_response_details",
             self.get_service_response_details,
+        )
+        self.create_service(
+            ActionGoalDetails,
+            service_prefix + "action_goal_details",
+            self.get_action_goal_details,
+        )
+        self.create_service(
+            ActionResultDetails,
+            service_prefix + "action_result_details",
+            self.get_action_result_details,
+        )
+        self.create_service(
+            ActionFeedbackDetails,
+            service_prefix + "action_feedback_details",
+            self.get_action_feedback_details,
         )
         self.create_service(SetParam, service_prefix + "set_param", self.set_param)
         self.create_service(GetParam, service_prefix + "get_param", self.get_param)
@@ -347,7 +367,53 @@ class Rosapi(Node):
         ]
         return response
 
-    def set_param(self, request, response):
+    def get_action_goal_details(self, request, response):
+        """
+        Given the name of an action type, return the TypeDef for the goal message of that action type.
+
+        Called by the rosapi/ActionGoalDetails service.
+        """
+        response.typedefs = [
+            dict_to_typedef(d) for d in objectutils.get_action_goal_typedef_recursive(request.type)
+        ]
+        return response
+
+    def get_action_result_details(self, request, response):
+        """
+        Given the name of an action type, return the TypeDef for the result message of that action type.
+
+        Called by the rosapi/ActionResultDetails service.
+        """
+        response.typedefs = [
+            dict_to_typedef(d)
+            for d in objectutils.get_action_result_typedef_recursive(request.type)
+        ]
+        return response
+
+    def get_action_feedback_details(self, request, response):
+        """
+        Given the name of an action type, return the TypeDef for the feedback message of that action type.
+
+        Called by the rosapi/ActionFeedbackDetails service.
+        """
+        response.typedefs = [
+            dict_to_typedef(d)
+            for d in objectutils.get_action_feedback_typedef_recursive(request.type)
+        ]
+        return response
+
+    def get_action_type(self, request, response):
+        """
+        Given the name of an action, return its type.
+
+        If the action does not exist, an empty string is returned.
+
+        Called by the rosapi/ActionType service.
+        """
+        response.type = proxy.get_action_type(request.action)
+        return response
+
+    async def set_param(self, request, response):
         try:
             node_name, param_name = self._get_node_and_param_name(request.name)
             params.set_param(node_name, param_name, request.value, self.globs.params)

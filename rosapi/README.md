@@ -45,6 +45,10 @@ action servers and managing ROS parameters.
 
     Return a list of action servers based on actions standard topics.
 
+  * `~/action_type` (type: `rosapi_msgs/srv/ActionType`)
+
+    Given the name of an action, return its type.
+
   * `~/topic_type` (type: `rosapi_msgs/srv/TopicType`)
 
     Given the name of a topic, return the name of the type of that topic.
@@ -80,6 +84,18 @@ action servers and managing ROS parameters.
   * `~/service_response_details` (type: `rosapi_msgs/srv/ServiceResponseDetails`)
 
     Given the name of a service type, return the TypeDef for the response message of that service type.
+
+  * `~/action_goal_details` (type: `rosapi_msgs/srv/ActionGoalDetails`)
+
+    Given the name of an action type, return the TypeDef for the goal message of that action type.
+
+  * `~/action_result_details` (type: `rosapi_msgs/srv/ActionResultDetails`)
+
+    Given the name of an action type, return the TypeDef for the result message of that action type.
+
+  * `~/action_feedback_details` (type: `rosapi_msgs/srv/ActionFeedbackDetails`)
+
+    Given the name of an action type, return the TypeDef for the feedback message of that action type.
 
   * `~/set_param` (type: `rosapi_msgs/srv/SetParam`)
 
