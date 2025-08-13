@@ -23,6 +23,7 @@ action servers and managing ROS parameters.
   <exec_depend>builtin_interfaces</exec_depend>
   <exec_depend>rcl_interfaces</exec_depend>
   <exec_depend>rclpy</exec_depend>
+  <exec_depend>ros2action</exec_depend>
   <exec_depend>ros2interface</exec_depend>
   <exec_depend>ros2node</exec_depend>
   <exec_depend>ros2param</exec_depend>
