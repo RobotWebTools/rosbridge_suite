@@ -377,7 +377,7 @@ class Rosapi(Node):
         params.delete_param(request.node_name, request.name, self.globs.params)
         return response
 
-    def get_param_names(self, request, response):
+    def get_param_names(self, _request, response):
         response.names = params.get_param_names(self.globs.params)
         return response
 
