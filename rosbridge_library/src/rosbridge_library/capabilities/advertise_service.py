@@ -25,11 +25,11 @@ class AdvertisedServiceHandler:
         )
 
     def next_id(self):
-        id = self.id_counter
+        next_id_value = self.id_counter
         self.id_counter += 1
-        return id
+        return next_id_value
 
-    async def handle_request(self, req, res):
+    async def handle_request(self, req, _res):
         # generate a unique ID
         request_id = f"service_request:{self.service_name}:{self.next_id()}"
 
@@ -87,7 +87,7 @@ class AdvertisedServiceHandler:
 class AdvertiseService(Capability):
     services_glob = None
 
-    advertise_service_msg_fields = [(True, "service", str), (True, "type", str)]
+    advertise_service_msg_fields = ((True, "service", str), (True, "type", str))
 
     def __init__(self, protocol):
         # Call superclass constructor
@@ -130,10 +130,8 @@ class AdvertiseService(Capability):
             )
 
         # check for an existing entry
-        if service_name in self.protocol.external_service_list.keys():
-            self.protocol.log(
-                "warn", "Duplicate service advertised. Overwriting %s." % service_name
-            )
+        if service_name in self.protocol.external_service_list:
+            self.protocol.log("warn", f"Duplicate service advertised. Overwriting {service_name}.")
             self.protocol.external_service_list[service_name].graceful_shutdown()
             del self.protocol.external_service_list[service_name]
 

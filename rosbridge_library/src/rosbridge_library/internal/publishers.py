@@ -134,7 +134,6 @@ class MultiPublisher:
         """
         if ros_loader.get_message_class(msg_type) is not self.msg_class:
             raise TypeConflictException(self.topic, msg_class_type_repr(self.msg_class), msg_type)
-        return
 
     def publish(self, msg):
         """
@@ -278,7 +277,7 @@ class PublisherManager:
 
         :param client_id: The ID of the client making this request
         """
-        for topic in self._publishers.keys():
+        for topic in self._publishers:
             self.unregister(client_id, topic)
 
     def publish(self, client_id, topic, msg, node_handle, latch=False, queue_size=100):

@@ -33,11 +33,11 @@
 import fnmatch
 from typing import Any
 
-import rclpy
 from action_msgs.msg import GoalStatus
 from rclpy.action import ActionServer
 from rclpy.action.server import CancelResponse, ServerGoalHandle
 from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.task import Future
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
@@ -51,9 +51,9 @@ class AdvertisedActionHandler:
     def __init__(
         self, action_name: str, action_type: str, protocol: Protocol, sleep_time: float = 0.001
     ) -> None:
-        self.goal_futures = {}
-        self.goal_handles = {}
-        self.goal_statuses = {}
+        self.goal_futures: dict[str, Future] = {}
+        self.goal_handles: dict[str, Any] = {}
+        self.goal_statuses: dict[str, GoalStatus] = {}
 
         self.action_name = action_name
         self.action_type = action_type
@@ -70,9 +70,9 @@ class AdvertisedActionHandler:
         )
 
     def next_id(self) -> int:
-        id = self.id_counter
+        next_id_value = self.id_counter
         self.id_counter += 1
-        return id
+        return next_id_value
 
     async def execute_callback(self, goal: Any) -> Any:
         """
@@ -83,7 +83,7 @@ class AdvertisedActionHandler:
         # generate a unique ID
         goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
-        def done_callback(fut: rclpy.task.Future) -> None:
+        def done_callback(fut: Future) -> None:
             if fut.cancelled():
                 goal.abort()
                 self.protocol.log("info", f"Aborted goal {goal_id}")
@@ -102,7 +102,7 @@ class AdvertisedActionHandler:
                 else:
                     goal.abort()
 
-        future = rclpy.task.Future()
+        future: Future = Future()
         future.add_done_callback(done_callback)
         self.goal_handles[goal_id] = goal
         self.goal_futures[goal_id] = future
@@ -198,7 +198,7 @@ class AdvertisedActionHandler:
 class AdvertiseAction(Capability):
     actions_glob = None
 
-    advertise_action_msg_fields = [(True, "action", str), (True, "type", str)]
+    advertise_action_msg_fields = ((True, "action", str), (True, "type", str))
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
@@ -241,7 +241,7 @@ class AdvertiseAction(Capability):
             )
 
         # check for an existing entry
-        if action_name in self.protocol.external_action_list.keys():
+        if action_name in self.protocol.external_action_list:
             self.protocol.log("warn", f"Duplicate action advertised. Overwriting {action_name}.")
             self.protocol.external_action_list[action_name].graceful_shutdown()
             del self.protocol.external_action_list[action_name]

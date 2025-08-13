@@ -176,9 +176,7 @@ class RosbridgeWebSocket(WebSocketHandler):
         self.incoming_queue.finish()
 
     def send_message(self, message, compression="none"):
-        if isinstance(message, bson.BSON):
-            binary = True
-        elif compression in ["cbor", "cbor-raw"]:
+        if isinstance(message, bson.BSON) or compression in ["cbor", "cbor-raw"]:
             binary = True
         else:
             binary = False
@@ -204,7 +202,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             _log_exception()
 
     @log_exceptions
-    def check_origin(self, origin):
+    def check_origin(self, origin):  # noqa: ARG002
         return True
 
     @log_exceptions

@@ -21,16 +21,15 @@ def populate_random_args(d):
         for x in d:
             d[x] = populate_random_args(d[x])
         return d
-    elif isinstance(d, str):
+    if isinstance(d, str):
         return str(random.random())
-    elif isinstance(d, bool):
+    if isinstance(d, bool):
         return True
-    elif isinstance(d, int):
+    if isinstance(d, int):
         return random.randint(100, 200)
-    elif isinstance(d, float):
+    if isinstance(d, float):
         return 3.5
-    else:
-        return d
+    return d
 
 
 class ServiceTester:
@@ -68,7 +67,7 @@ class ServiceTester:
         gen = populate_random_args(gen)
         try:
             res = c.populate_instance(gen, res)
-        except:  # noqa: E722  # Will print() and raise
+        except:  # Will print() and raise
             print("populating instance")
             print(res)
             print("populating with")
@@ -114,9 +113,11 @@ class TestServices(unittest.TestCase):
         if type(msg1) in c.list_types:
             for x, y in zip(msg1, msg2):
                 self.msgs_equal(x, y)
-        elif type(msg1) in c.primitive_types or type(msg1) is str:
-            self.assertEqual(msg1, msg2)
-        elif np.issubdtype(type(msg1), np.number):
+        elif (
+            type(msg1) in c.primitive_types
+            or type(msg1) is str
+            or np.issubdtype(type(msg1), np.number)
+        ):
             self.assertEqual(msg1, msg2)
         else:
             for x in msg1:
@@ -132,18 +133,17 @@ class TestServices(unittest.TestCase):
             cls = ros_loader.get_service_class("rosbridge_test_msgs/" + srv_type)
             for args in [[], {}, None]:
                 # Should throw no exceptions
-                services.args_to_service_request_instance("", cls.Request(), args)
+                services.args_to_service_request_instance(cls.Request(), args)
 
         # Test msgs with data message
         for srv_type in ["TestRequestOnly", "TestRequestAndResponse"]:
             cls = ros_loader.get_service_class("rosbridge_test_msgs/" + srv_type)
             for args in [[3], {"data": 3}]:
                 # Should throw no exceptions
-                services.args_to_service_request_instance("", cls.Request(), args)
+                services.args_to_service_request_instance(cls.Request(), args)
             self.assertRaises(
                 FieldTypeMismatchException,
                 services.args_to_service_request_instance,
-                "",
                 cls.Request(),
                 ["hello"],
             )
@@ -155,7 +155,7 @@ class TestServices(unittest.TestCase):
             {"int_value": 3, "float_value": 3.5, "string": "hello", "bool_value": False},
         ]:
             # Should throw no exceptions
-            services.args_to_service_request_instance("", cls.Request(), args)
+            services.args_to_service_request_instance(cls.Request(), args)
 
     def test_service_call(self):
         """Test a simple list_parameters service call."""
@@ -197,7 +197,7 @@ class TestServices(unittest.TestCase):
             rcvd["json"] = json
 
         def error():
-            raise Exception()
+            raise Exception
 
         # Now, call using the services
         services.ServiceCaller(

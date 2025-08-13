@@ -36,11 +36,11 @@ from rosbridge_library.protocol import Protocol
 
 
 class ActionFeedback(Capability):
-    action_feedback_msg_fields = [
+    action_feedback_msg_fields = (
         (True, "action", str),
         (False, "id", str),
         (False, "values", dict),
-    ]
+    )
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor

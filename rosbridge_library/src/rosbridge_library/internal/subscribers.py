@@ -231,7 +231,7 @@ class MultiSubscriber:
             for callback in callbacks:
                 try:
                     callback(outgoing)
-                except Exception as exc:
+                except Exception as exc:  # noqa: PERF203
                     # Do nothing if one particular callback fails except log it
                     self.node_handle.get_logger().error(
                         f"Exception calling subscribe callback: {exc}"

@@ -214,15 +214,15 @@ class Subscription:
 
 
 class Subscribe(Capability):
-    subscribe_msg_fields = [
+    subscribe_msg_fields = (
         (True, "topic", str),
         (False, "type", str),
         (False, "throttle_rate", int),
         (False, "fragment_size", int),
         (False, "queue_length", int),
         (False, "compression", str),
-    ]
-    unsubscribe_msg_fields = [(True, "topic", str)]
+    )
+    unsubscribe_msg_fields = (True, "topic", str)
 
     topics_glob = None
 
@@ -284,7 +284,7 @@ class Subscribe(Capability):
         }
         self._subscriptions[topic].subscribe(**subscribe_args)
 
-        self.protocol.log("info", "Subscribed to %s" % topic)
+        self.protocol.log("info", f"Subscribed to {topic}")
 
     def unsubscribe(self, msg):
         # Pull out the ID
@@ -302,9 +302,9 @@ class Subscribe(Capability):
             self._subscriptions[topic].unregister()
             del self._subscriptions[topic]
 
-        self.protocol.log("info", "Unsubscribed from %s" % topic)
+        self.protocol.log("info", f"Unsubscribed from {topic}")
 
-    def publish(self, topic, message, fragment_size=None, compression="none"):
+    def publish(self, topic, message, fragment_size=None, compression="none"):  # noqa: ARG002
         """
         Publish a message to the client.
 

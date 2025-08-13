@@ -16,7 +16,8 @@ max_msg_length = 20000  # bytes
 rosbridge_ip = "localhost"  # hostname or ip
 rosbridge_port = 9090  # port as integer
 
-service_type = "rosbridge_test_msgs/SendBytes"  # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+# make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+service_type = "rosbridge_test_msgs/SendBytes"
 service_name = "send_bytes"  # service name
 
 send_fragment_size = 1000
@@ -41,7 +42,7 @@ def calculate_service_response(request):
 
     message = ""
     # calculate service response
-    for i in range(0, count):
+    for i in range(count):
         # message += str(chr(randint(32,126)))
         message += str(chr(randint(32, 126)))
         if i % 100000 == 0:
@@ -59,10 +60,11 @@ def calculate_service_response(request):
         "op": "service_response",
         "id": request_object["id"],
         "service": service_name,
-        "values": service_response_data,  # put service response in "data"-field of response object (in this case it's twice "data", because response value is also named data (in srv-file)
+        # put service response in "data"-field of response object
+        # (in this case it's twice "data", because response value is also named data, in srv-file)
+        "values": service_response_data,
     }
-    response_message = json.dumps(response_object)
-    return response_message
+    return json.dumps(response_object)
 
 
 # ##################### service_calculation end ################################
@@ -130,12 +132,13 @@ def wait_for_service_request():  # receive data from rosbridge
                     "}{"
                 )  # split buffer into fragments and re-fill with curly brackets
                 result = []
-                for fragment in result_string:
-                    if fragment[0] != "{":
-                        fragment = "{" + fragment
-                    if fragment[len(fragment) - 1] != "}":
-                        fragment = fragment + "}"
-                    result.append(json.loads(fragment))
+                for fragment_str in result_string:
+                    frag = fragment_str
+                    if frag[0] != "{":
+                        frag = "{" + frag
+                    if frag[len(frag) - 1] != "}":
+                        frag = frag + "}"
+                    result.append(json.loads(frag))
 
                 try:  # try to defragment when received all fragments
                     fragment_count = len(result)
@@ -164,7 +167,6 @@ def wait_for_service_request():  # receive data from rosbridge
             except Exception as e:
                 print("defrag_error:", buffer)
                 print(e)
-                pass
     except Exception:
         # print "network-error(?):", e
         pass
@@ -248,7 +250,6 @@ try:  # allows to catch KeyboardInterrupt
                     )  # (not needed if using patched rosbridge protocol.py)
         except Exception as e:
             print(e)
-            pass
 except KeyboardInterrupt:
     try:
         unadvertise_service()  # unadvertise service

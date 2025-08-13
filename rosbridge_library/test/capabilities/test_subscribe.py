@@ -68,7 +68,7 @@ class TestSubscribe(unittest.TestCase):
             self.assertEqual(subscription.fragment_size, min_frag_size)
             self.assertEqual(subscription.compression, "none")
 
-            list(subscription.clients.values())[0]["compression"] = "png"
+            next(iter(subscription.clients.values()))["compression"] = "png"
 
             subscription.update_params()
 
@@ -117,7 +117,7 @@ class TestSubscribe(unittest.TestCase):
 
         received = {"msg": None}
 
-        def send(outgoing, **kwargs):
+        def send(outgoing, cid=None, compression="none"):  # noqa: ARG001
             received["msg"] = outgoing
 
         proto.send = send

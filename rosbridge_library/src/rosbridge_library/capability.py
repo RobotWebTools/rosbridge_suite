@@ -67,7 +67,6 @@ class Capability:
 
         :param message: The incoming message, deserialized into a dictionary
         """
-        pass
 
     def finish(self):
         """
@@ -75,7 +74,6 @@ class Capability:
 
         Tells the capability that it's time to free up resources.
         """
-        pass
 
     def basic_type_check(self, msg, types_info):
         """
@@ -94,15 +92,19 @@ class Capability:
         """
         for mandatory, fieldname, fieldtypes in types_info:
             if mandatory and fieldname not in msg:
-                raise MissingArgumentException(f"Expected a {fieldname} field but none was found.")
-            elif fieldname in msg:
-                if not isinstance(fieldtypes, tuple):
-                    fieldtypes = (fieldtypes,)
+                msg = f"Expected a {fieldname} field but none was found."
+                raise MissingArgumentException(msg)
+            if fieldname in msg:
+                current_fieldtypes = fieldtypes
+                if not isinstance(current_fieldtypes, tuple):
+                    current_fieldtypes = (current_fieldtypes,)
                 valid = False
-                for typ in fieldtypes:
+                for typ in current_fieldtypes:
                     if isinstance(msg[fieldname], typ):
                         valid = True
                 if not valid:
-                    raise InvalidArgumentException(
-                        f"Expected field {fieldname} to be one of {fieldtypes}. Invalid value: {msg[fieldname]}"
+                    msg = (
+                        f"Expected field {fieldname} to be one of {current_fieldtypes}. "
+                        f"Invalid value: {msg[fieldname]}"
                     )
+                    raise InvalidArgumentException(msg)

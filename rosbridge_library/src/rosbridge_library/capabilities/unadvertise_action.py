@@ -77,7 +77,7 @@ class UnadvertiseAction(Capability):
             )
 
         # unregister action in ROS
-        if action_name in self.protocol.external_action_list.keys():
+        if action_name in self.protocol.external_action_list:
             self.protocol.external_action_list[action_name].graceful_shutdown()
             del self.protocol.external_action_list[action_name]
             self.protocol.log("info", f"Unadvertised action {action_name}")
