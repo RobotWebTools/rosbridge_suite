@@ -29,15 +29,14 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import annotations
 
 import time
 from threading import Thread
-from typing import Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable
 
 from rclpy.action import ActionClient
 from rclpy.expand_topic_name import expand_topic_name
-from rclpy.node import Node
-from rclpy.task import Future
 
 from rosbridge_library.internal.message_conversion import (
     extract_values,
@@ -47,6 +46,10 @@ from rosbridge_library.internal.ros_loader import (
     get_action_class,
     get_action_goal_instance,
 )
+
+if TYPE_CHECKING:
+    from rclpy.node import Node
+    from rclpy.task import Future
 
 
 class InvalidActionException(Exception):
@@ -60,9 +63,9 @@ class ActionClientHandler(Thread):
         action: str,
         action_type: str,
         args: dict,
-        success_callback: Callable[[str, str, int, bool, dict], None],
-        error_callback: Callable[[str, str, Exception], None],
-        feedback_callback: Callable[[str, str, dict], None],
+        success_callback: Callable[[dict], None],
+        error_callback: Callable[[Exception], None],
+        feedback_callback: Callable[[dict], None] | None,
         node_handle: Node,
     ) -> None:
         """
@@ -89,12 +92,11 @@ class ActionClientHandler(Thread):
         self.error = error_callback
         self.feedback = feedback_callback
         self.node_handle = node_handle
-        self.send_goal_helper = None
+        self.send_goal_helper = SendGoal()
 
     def run(self) -> None:
         try:
             # Call the service and pass the result to the success handler
-            self.send_goal_helper = SendGoal()
             self.success(
                 self.send_goal_helper.send_goal(
                     self.node_handle,
@@ -109,7 +111,7 @@ class ActionClientHandler(Thread):
             self.error(e)
 
 
-def args_to_action_goal_instance(action: str, inst: Any, args: Union[list, dict]) -> Any:
+def args_to_action_goal_instance(inst: Any, args: list | dict | None) -> Any:
     """
     Populate an action goal instance with the provided args.
 
@@ -141,8 +143,10 @@ class SendGoal:
 
     def goal_response_cb(self, future: Future) -> None:
         self.goal_handle = future.result()
+        assert self.goal_handle is not None
         if not self.goal_handle.accepted:
-            raise Exception("Action goal was rejected")
+            msg = "Action goal was rejected"
+            raise Exception(msg)
         result_future = self.goal_handle.get_result_async()
         result_future.add_done_callback(self.get_result_cb)
 
@@ -154,8 +158,8 @@ class SendGoal:
         node_handle: Node,
         action: str,
         action_type: str,
-        args: Optional[dict] = None,
-        feedback_cb: Optional[Callable[[str, str, dict], None]] = None,
+        args: dict | None = None,
+        feedback_cb: Callable[[dict], None] | None = None,
     ) -> dict:
         # Given the action name and type, fetch a request instance
         action_name = expand_topic_name(action, node_handle.get_name(), node_handle.get_namespace())
@@ -163,10 +167,10 @@ class SendGoal:
         inst = get_action_goal_instance(action_type)
 
         # Populate the instance with the provided args
-        args_to_action_goal_instance(action_name, inst, args)
+        args_to_action_goal_instance(inst, args)
 
         self.result = None
-        client = ActionClient(node_handle, action_class, action_name)
+        client: ActionClient = ActionClient(node_handle, action_class, action_name)
         client.wait_for_server(timeout_sec=self.server_timeout_time)
         send_goal_future = client.send_goal_async(inst, feedback_callback=feedback_cb)
         send_goal_future.add_done_callback(self.goal_response_cb)

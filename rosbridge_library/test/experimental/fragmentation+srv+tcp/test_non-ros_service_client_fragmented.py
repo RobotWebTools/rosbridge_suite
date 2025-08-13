@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import socket
+from typing import Any
 
 from rosbridge_library.util import json
 
@@ -14,7 +15,8 @@ rosbridge_ip = "localhost"  # hostname or ip
 rosbridge_port = 9090  # port as integer
 
 service_name = "send_bytes"  # service name
-request_byte_count = 500000  # NOTE: receiving more than ~100.000 bytes without setting a fragment_size was not possible during testing.
+# NOTE: receiving more than ~100.000 bytes without setting a fragment_size was not possible during testing.
+request_byte_count = 500000
 receiving_fragment_size = 1000
 receive_message_intervall = 0.0
 
@@ -28,10 +30,12 @@ def request_service():
     service_request_object = {
         "op": "call_service",  # op-code for rosbridge
         "service": "/" + service_name,  # select service
-        "fragment_size": receiving_fragment_size,  # optional: tells rosbridge to send fragments if message size is bigger than requested
+        # optional: tells rosbridge to send fragments if message size is bigger than requested
+        "fragment_size": receiving_fragment_size,
         "message_intervall": receive_message_intervall,
         "args": {
-            "count": request_byte_count  # count is the parameter for send_bytes as defined in srv-file (always put into args field!)
+            # count is the parameter for send_bytes as defined in srv-file (always put into args field!)
+            "count": request_byte_count
         },
     }
     service_request = json.dumps(service_request_object)
@@ -63,13 +67,13 @@ try:
         try:
             incoming = sock.recv(max_msg_length)  # receive service_response from rosbridge
             if buffer == "":
-                buffer = incoming
+                buffer = incoming.decode("utf-8")
                 if incoming == "":
                     print("closing socket")
                     sock.close()
                     break
             else:
-                buffer = buffer + incoming
+                buffer = buffer + incoming.decode("utf-8")
             # print "buffer-length:", len(buffer)
             try:  # try to access service_request directly (not fragmented)
                 data_object = json.loads(buffer)
@@ -86,14 +90,15 @@ try:
                     "}{"
                 )  # split buffer into fragments and re-fill curly brackets
                 result = []
-                for fragment in result_string:
-                    if fragment[0] != "{":
-                        fragment = "{" + fragment
-                    if fragment[len(fragment) - 1] != "}":
-                        fragment = fragment + "}"
+                for fragment_str in result_string:
+                    frag = fragment_str
+                    if frag[0] != "{":
+                        frag = "{" + frag
+                    if frag[len(frag) - 1] != "}":
+                        frag = frag + "}"
                     try:
                         result.append(
-                            json.loads(fragment)
+                            json.loads(frag)
                         )  # try to parse json from string, and append if successful
                     except Exception:
                         # print(e)
@@ -105,7 +110,7 @@ try:
                 announced = int(result[0]["total"])
                 if fragment_count == announced:  # if all fragments received --> sort and defragment
                     # sort fragments
-                    sorted_result = [None] * fragment_count
+                    sorted_result: list[Any] = [None] * fragment_count
                     unsorted_result = []
                     for fragment in result:
                         unsorted_result.append(fragment)

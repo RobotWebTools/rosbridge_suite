@@ -39,11 +39,11 @@ from rosbridge_library.internal.services import ServiceCaller
 
 
 class CallService(Capability):
-    call_service_msg_fields = [
+    call_service_msg_fields = (
         (True, "service", str),
         (False, "fragment_size", (int, type(None))),
         (False, "compression", str),
-    ]
+    )
 
     services_glob = None
 
@@ -127,7 +127,7 @@ class CallService(Capability):
             self.protocol.node_handle,
         ).run()
 
-    def _success(self, cid, service, fragment_size, compression, message):
+    def _success(self, cid, service, _fragment_size, _compression, message):
         outgoing_message = {
             "op": "service_response",
             "service": service,
@@ -140,7 +140,7 @@ class CallService(Capability):
         self.protocol.send(outgoing_message)
 
     def _failure(self, cid, service, exc):
-        self.protocol.log("error", "call_service %s: %s" % (type(exc).__name__, str(exc)), cid)
+        self.protocol.log("error", f"call_service {type(exc).__name__}: {exc!s}", cid)
         # send response with result: false
         outgoing_message = {
             "op": "service_response",
@@ -162,5 +162,6 @@ def trim_servicename(service):
 def extract_id(service, cid):
     if cid is not None:
         return cid
-    elif "#" in service:
+    if "#" in service:
         return service[service.find("#") + 1 :]
+    return None

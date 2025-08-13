@@ -1,4 +1,3 @@
-#!python
 # -*- Python -*-
 # Copyright 2014-2015 Brian Olson
 #
@@ -121,7 +120,8 @@ def _encode_type_num(cbor_type, val):
     ):
         return struct.pack("!BQ", cbor_type | CBOR_UINT64_FOLLOWS, val)
     if cbor_type != CBOR_NEGINT:
-        raise Exception(f"value too big for CBOR unsigned number: {val!r}")
+        msg = f"value too big for CBOR unsigned number: {val!r}"
+        raise Exception(msg)
     outb = _dumps_bignum_to_bytearray(val)
     return _CBOR_TAG_NEGBIGNUM_BYTES + _encode_type_num(CBOR_BYTES, len(outb)) + outb
 
@@ -197,7 +197,8 @@ def dumps(ob, sort_keys=False):
         return dumps_int(ob)
     if isinstance(ob, Tag):
         return dumps_tag(ob, sort_keys=sort_keys)
-    raise Exception("don't know how to cbor serialize object of type %s", type(ob))
+    msg = "don't know how to cbor serialize object of type %s"
+    raise Exception(msg, type(ob))
 
 
 # same basic signature as json.dump, but with no options (yet)
@@ -227,11 +228,15 @@ class Tag:
             return False
         return (self.tag == other.tag) and (self.value == other.value)
 
+    def __hash__(self):
+        return hash((self.tag, self.value))
+
 
 def loads(data):
     """Parse CBOR bytes and return Python objects."""
     if data is None:
-        raise ValueError("got None for buffer to decode in loads")
+        msg = "got None for buffer to decode in loads"
+        raise ValueError(msg)
     fp = BytesIO(data)
     return _loads(fp)[0]
 
@@ -277,7 +282,7 @@ def _read_byte(fp):
     tb = fp.read(1)
     if len(tb) == 0:
         # I guess not all file-like objects do this
-        raise EOFError()
+        raise EOFError
     return ord(tb)
 
 
@@ -305,18 +310,18 @@ def _loads_var_map(fp, limit, depth, returntags, bytes_read):
     return (ob, bytes_read + 1)
 
 
-def _loads_array(fp, limit, depth, returntags, aux, bytes_read):
+def _loads_array(fp, _limit, _depth, _returntags, aux, bytes_read):
     ob = []
-    for i in range(aux):
+    for _ in range(aux):
         subob, subpos = _loads(fp)
         bytes_read += subpos
         ob.append(subob)
     return ob, bytes_read
 
 
-def _loads_map(fp, limit, depth, returntags, aux, bytes_read):
+def _loads_map(fp, _limit, _depth, _returntags, aux, bytes_read):
     ob = {}
-    for i in range(aux):
+    for _ in range(aux):
         subk, subpos = _loads(fp)
         bytes_read += subpos
         subv, subpos = _loads(fp)
@@ -328,7 +333,8 @@ def _loads_map(fp, limit, depth, returntags, aux, bytes_read):
 def _loads(fp, limit=None, depth=0, returntags=False):
     """Return (object, bytes read)."""
     if depth > _MAX_DEPTH:
-        raise Exception("hit CBOR loads recursion depth limit")
+        msg = "hit CBOR loads recursion depth limit"
+        raise Exception(msg)
 
     tb = _read_byte(fp)
 
@@ -354,11 +360,11 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
         if hibyte & 0x80:
             val = -1.0 * val
         return (val, 3)
-    elif tb == CBOR_FLOAT32:
+    if tb == CBOR_FLOAT32:
         data = fp.read(4)
         pf = struct.unpack_from("!f", data, 0)
         return (pf[0], 5)
-    elif tb == CBOR_FLOAT64:
+    if tb == CBOR_FLOAT64:
         data = fp.read(8)
         pf = struct.unpack_from("!d", data, 0)
         return (pf[0], 9)
@@ -367,24 +373,24 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
 
     if tag == CBOR_UINT:
         return (aux, bytes_read)
-    elif tag == CBOR_NEGINT:
+    if tag == CBOR_NEGINT:
         return (-1 - aux, bytes_read)
-    elif tag == CBOR_BYTES:
+    if tag == CBOR_BYTES:
         ob, subpos = loads_bytes(fp, aux)
         return (ob, bytes_read + subpos)
-    elif tag == CBOR_TEXT:
+    if tag == CBOR_TEXT:
         raw, subpos = loads_bytes(fp, aux, btag=CBOR_TEXT)
         ob = raw.decode("utf8")
         return (ob, bytes_read + subpos)
-    elif tag == CBOR_ARRAY:
+    if tag == CBOR_ARRAY:
         if aux is None:
             return _loads_var_array(fp, limit, depth, returntags, bytes_read)
         return _loads_array(fp, limit, depth, returntags, aux, bytes_read)
-    elif tag == CBOR_MAP:
+    if tag == CBOR_MAP:
         if aux is None:
             return _loads_var_map(fp, limit, depth, returntags, bytes_read)
         return _loads_map(fp, limit, depth, returntags, aux, bytes_read)
-    elif tag == CBOR_TAG:
+    if tag == CBOR_TAG:
         ob, subpos = _loads(fp)
         bytes_read += subpos
         if returntags:
@@ -394,7 +400,7 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
             # attempt to interpret the tag and the value into a Python object.
             ob = tagify(ob, aux)
         return ob, bytes_read
-    elif tag == CBOR_7:
+    if tag == CBOR_7:
         if tb == CBOR_TRUE:
             return (True, bytes_read)
         if tb == CBOR_FALSE:
@@ -403,7 +409,9 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
             return (None, bytes_read)
         if tb == CBOR_UNDEFINED:
             return (None, bytes_read)
-        raise ValueError(f"unknown cbor tag 7 byte: {tb:02x}")
+        msg = f"unknown cbor tag 7 byte: {tb:02x}"
+        raise ValueError(msg)
+    return None
 
 
 def loads_bytes(fp, aux, btag=CBOR_BYTES):
@@ -444,7 +452,7 @@ def tagify(ob, aux):
         # TODO: parse RFC3339 date string
         pass
     if aux == CBOR_TAG_DATE_ARRAY:
-        return datetime.datetime.utcfromtimestamp(ob)
+        return datetime.datetime.fromtimestamp(ob, tz=datetime.timezone.utc)
     if aux == CBOR_TAG_BIGNUM:
         return _bytes_to_biguint(ob)
     if aux == CBOR_TAG_NEGBIGNUM:

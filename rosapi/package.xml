@@ -33,6 +33,7 @@ action servers and managing ROS parameters.
   <exec_depend>rosidl_adapter</exec_depend>
   <exec_depend>rosidl_runtime_py</exec_depend>
 
+  <test_depend>ament_cmake_mypy</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>geometry_msgs</test_depend>
   <test_depend>rmw_dds_common</test_depend>

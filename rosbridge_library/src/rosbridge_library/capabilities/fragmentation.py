@@ -90,7 +90,7 @@ class Fragmentation(Capability):
 
         log_msg = (
             "sending "
-            + str(int(math.ceil(message_length / float(fragment_size))))
+            + str(math.ceil(message_length / float(fragment_size)))
             + " parts [fragment size: "
             + str(fragment_size)
             + "; expected duration: ~"

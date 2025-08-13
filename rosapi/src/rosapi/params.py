@@ -29,7 +29,9 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import annotations
 
+import contextlib
 import fnmatch
 import threading
 from json import dumps, loads
@@ -93,7 +95,8 @@ def init(parent_node_name, timeout_sec=DEFAULT_PARAM_TIMEOUT_SEC):
     _parent_node_name = get_absolute_node_name(parent_node_name)
 
     if not isinstance(timeout_sec, (int, float)) or timeout_sec <= 0:
-        raise ValueError("Parameter timeout must be a positive number")
+        msg = "Parameter timeout must be a positive number"
+        raise ValueError(msg)
     _timeout_sec = timeout_sec
 
 
@@ -109,10 +112,12 @@ def set_param(node_name, name, value, params_glob):
     try:
         d = loads(value)
         value = d if isinstance(d, str) else value
-    except ValueError:
-        raise Exception(
-            "Due to the type flexibility of the ROS parameter server, the value argument to set_param must be a JSON-formatted string."
+    except ValueError as exc:
+        msg = (
+            "Due to the type flexibility of the ROS parameter server, "
+            "the value argument to set_param must be a JSON-formatted string."
         )
+        raise Exception(msg) from exc
 
     node_name = get_absolute_node_name(node_name)
     with param_server_lock:
@@ -138,11 +143,9 @@ def _set_param(node_name, name, value, parameter_type=None):
         if parameter_type != ParameterType.PARAMETER_NOT_SET:
             setattr(parameter.value, _parameter_type_mapping[parameter_type])
 
-    try:
+    with contextlib.suppress(Exception):
         # call_get_parameters will fail if node does not exist.
         call_set_parameters(node=_node, node_name=node_name, parameters=[parameter])
-    except Exception:
-        pass
 
 
 def get_param(node_name, name, default, params_glob):
@@ -150,14 +153,13 @@ def get_param(node_name, name, default, params_glob):
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to get the parameter.
-        return
+        return None
     # If the glob list is empty (i.e. false) or the parameter matches
     # one of the glob strings, continue to get the parameter.
     if default != "":
-        try:
+        # Keep default without modifications in case of failure.
+        with contextlib.suppress(ValueError):
             default = loads(default)
-        except ValueError:
-            pass  # Keep default without modifications.
 
     node_name = get_absolute_node_name(node_name)
     with param_server_lock:
@@ -234,15 +236,13 @@ def get_node_param_names(node_name, params_glob):
                     _get_param_names(node_name),
                 )
             )
-        else:
-            # If there is no parameter glob, don't filter.
-            return _get_param_names(node_name)
+        # If there is no parameter glob, don't filter.
+        return _get_param_names(node_name)
 
 
 def _get_param_names(node_name):
     # This method is called in a service callback; calling a service of the same node
     # will cause a deadlock.
-    global _parent_node_name
     if node_name == _parent_node_name or node_name == _node.get_fully_qualified_name():
         return []
 
@@ -261,5 +261,4 @@ def _get_param_names(node_name):
 
     if response is not None:
         return [f"{node_name}:{param_name}" for param_name in response.result.names]
-    else:
-        return []
+    return []

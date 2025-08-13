@@ -29,12 +29,12 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import annotations
 
 from threading import Event, Thread
-from typing import Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable
 
 from rclpy.callback_groups import ReentrantCallbackGroup
-from rclpy.node import Node
 
 from rosbridge_library.internal.message_conversion import (
     extract_values,
@@ -44,6 +44,10 @@ from rosbridge_library.internal.ros_loader import (
     get_service_class,
     get_service_request_instance,
 )
+
+if TYPE_CHECKING:
+    from rclpy.client import Client
+    from rclpy.node import Node
 
 
 class InvalidServiceException(Exception):
@@ -57,8 +61,8 @@ class ServiceCaller(Thread):
         service: str,
         args: dict,
         timeout: float,
-        success_callback: Callable[[str, str, int, bool, Any], None],
-        error_callback: Callable[[str, str, Exception], None],
+        success_callback: Callable[[dict], None],
+        error_callback: Callable[[Exception], None],
         node_handle: Node,
     ) -> None:
         """
@@ -102,7 +106,7 @@ class ServiceCaller(Thread):
             self.error(e)
 
 
-def args_to_service_request_instance(service: str, inst: Any, args: Union[list, dict]) -> Any:
+def args_to_service_request_instance(inst: Any, args: list | dict | None) -> Any:
     """
     Populate a service request instance with the provided args.
 
@@ -123,7 +127,7 @@ def args_to_service_request_instance(service: str, inst: Any, args: Union[list, 
 def call_service(
     node_handle: Node,
     service: str,
-    args: Optional[dict] = None,
+    args: dict | None = None,
     server_ready_timeout: float = 1.0,
     server_response_timeout: float = 5.0,
 ) -> dict:
@@ -132,22 +136,22 @@ def call_service(
 
     # Given the service name, fetch the type and class of the service, and a request instance
     service_names_and_types = dict(node_handle.get_service_names_and_types())
-    service_type = service_names_and_types.get(service)
-    if service_type is None:
+    service_types = service_names_and_types.get(service)
+    if service_types is None:
         raise InvalidServiceException(service)
 
     # service_type is a tuple of types at this point; only one type is supported.
-    if len(service_type) > 1:
-        node_handle.get_logger().warning(f"More than one service type detected: {service_type}")
-    service_type = service_type[0]
+    if len(service_types) > 1:
+        node_handle.get_logger().warning(f"More than one service type detected: {service_types}")
+    service_type = service_types[0]
 
     service_class = get_service_class(service_type)
     inst = get_service_request_instance(service_type)
 
     # Populate the instance with the provided args
-    args_to_service_request_instance(service, inst, args)
+    args_to_service_request_instance(inst, args)
 
-    client = node_handle.create_client(
+    client: Client = node_handle.create_client(
         service_class, service, callback_group=ReentrantCallbackGroup()
     )
 
@@ -166,7 +170,8 @@ def call_service(
     if not event.wait(timeout=(server_response_timeout if server_response_timeout > 0 else None)):
         future.cancel()
         node_handle.destroy_client(client)
-        raise Exception("Timeout exceeded while waiting for service response")
+        msg = "Timeout exceeded while waiting for service response"
+        raise Exception(msg)
 
     node_handle.destroy_client(client)
 

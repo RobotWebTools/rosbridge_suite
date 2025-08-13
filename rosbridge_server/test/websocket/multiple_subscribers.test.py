@@ -1,15 +1,15 @@
-import os
 import sys
 import unittest
+from pathlib import Path
 
 from rclpy.node import Node
 from std_msgs.msg import String
 from twisted.python import log
 
-sys.path.append(os.path.dirname(__file__))  # enable importing from common.py in this directory
+sys.path.append(str(Path(__file__).parent))  # enable importing from common.py in this directory
 
-import common  # noqa: E402
-from common import expect_messages, sleep, websocket_test  # noqa: E402
+import common
+from common import expect_messages, sleep, websocket_test
 
 log.startLogging(sys.stderr)
 
@@ -40,6 +40,7 @@ class TestMultipleSubscribers(unittest.TestCase):
         ws1_completed_future, ws_client1.message_handler = expect_messages(
             1, "WebSocket 1", node.get_logger()
         )
+        assert node.executor is not None
         ws1_completed_future.add_done_callback(lambda _: node.executor.wake())
         ws2_completed_future, ws_client2.message_handler = expect_messages(
             1, "WebSocket 2", node.get_logger()

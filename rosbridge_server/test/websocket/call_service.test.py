@@ -1,18 +1,17 @@
-#!/usr/bin/env python
-import os
 import sys
 import time
 import unittest
+from pathlib import Path
 
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
 from std_srvs.srv import SetBool
 from twisted.python import log
 
-sys.path.append(os.path.dirname(__file__))  # enable importing from common.py in this directory
+sys.path.append(str(Path(__file__).parent))  # enable importing from common.py in this directory
 
-import common  # noqa: E402
-from common import expect_messages, websocket_test  # noqa: E402
+import common
+from common import expect_messages, websocket_test
 
 log.startLogging(sys.stderr)
 
@@ -36,6 +35,7 @@ class TestCallService(unittest.TestCase):
         responses_future, ws_client.message_handler = expect_messages(
             1, "WebSocket", node.get_logger()
         )
+        assert node.executor is not None
         responses_future.add_done_callback(lambda _: node.executor.wake())
 
         ws_client.sendJson(

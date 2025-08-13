@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-
 import fnmatch
-from collections import namedtuple
+from typing import NamedTuple
 
 from rcl_interfaces.msg import ParameterType
 
-Globs = namedtuple("Globs", ["topics", "services", "params"])
+
+class Globs(NamedTuple):
+    topics: list
+    services: list
+    params: list
 
 
 def get_globs(node):
@@ -32,8 +34,7 @@ def filter_globs(globs, full_list):
     # If the globs are empty (weren't defined in the params), return the full list
     if globs is not None and len(globs) > 0:
         return list(filter(lambda x: any_match(x, globs), full_list))
-    else:
-        return full_list
+    return full_list
 
 
 def any_match(query, globs):
