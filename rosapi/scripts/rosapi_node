@@ -131,7 +131,7 @@ class Rosapi(Node):
         self.create_service(
             GetActionServers, service_prefix + "action_servers", self.get_action_servers
         )
-        self.create_service(ActionType, service_prefix + "/action_type", self.get_action_type)
+        self.create_service(ActionType, service_prefix + "action_type", self.get_action_type)
         self.create_service(TopicType, service_prefix + "topic_type", self.get_topic_type)
         self.create_service(ServiceType, service_prefix + "service_type", self.get_service_type)
         self.create_service(Publishers, service_prefix + "publishers", self.get_publishers)
