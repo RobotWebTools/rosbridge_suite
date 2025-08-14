@@ -4,7 +4,7 @@ from rosidl_adapter.parser import parse_message_string
 from rosidl_runtime_py import get_interface_path
 
 
-def stringify_field_types(root_type):
+def stringify_field_types(root_type: str) -> str:
     definition = ""
     seen_types = set()
     deps = [root_type]
