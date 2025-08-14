@@ -34,16 +34,16 @@ from rclpy.node import Node
 from rclpy.task import Future
 
 
-async def futures_wait_for(node: Node, futures: list[Future], timeout_sec: float):
+async def futures_wait_for(node: Node, futures: list[Future], timeout_sec: float) -> None:
     """Await a list of futures with a timeout."""
     first_done_future: Future = Future()
 
-    def timeout_callback():
+    def timeout_callback() -> None:
         first_done_future.set_result(None)
 
     timer = node.create_timer(timeout_sec, timeout_callback)
 
-    def future_done_callback(_arg):
+    def future_done_callback(_arg: Future) -> None:
         if all(future.done() for future in futures):
             first_done_future.set_result(None)
 
@@ -56,11 +56,11 @@ async def futures_wait_for(node: Node, futures: list[Future], timeout_sec: float
     timer.destroy()
 
 
-async def async_sleep(node: Node, delay_sec: float):
+async def async_sleep(node: Node, delay_sec: float) -> None:
     """Block the coroutine for a given time."""
     sleep_future: Future = Future()
 
-    def timeout_callback():
+    def timeout_callback() -> None:
         sleep_future.set_result(None)
 
     timer = node.create_timer(delay_sec, timeout_callback)

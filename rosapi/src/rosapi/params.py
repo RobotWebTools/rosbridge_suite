@@ -73,7 +73,7 @@ _parameter_type_mapping = [
 ]
 
 
-def init(node: Node, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC):
+def init(node: Node, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC) -> None:
     """
     Initialize params module with a rclpy.node.Node for further use.
 
@@ -94,7 +94,7 @@ def init(node: Node, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC):
     _timeout_sec = timeout_sec
 
 
-async def set_param(node_name: str, name: str, value: str, params_glob: list[str]):
+async def set_param(node_name: str, name: str, value: str, params_glob: list[str]) -> None:
     """Set a parameter in a given node."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
@@ -117,7 +117,9 @@ async def set_param(node_name: str, name: str, value: str, params_glob: list[str
     await _set_param(node_name, name, value)
 
 
-async def _set_param(node_name: str, name: str, value: str, parameter_type=None):
+async def _set_param(
+    node_name: str, name: str, value: str | None, parameter_type: int | None = None
+) -> None:
     """
     Set a parameter in a given node.
 
@@ -129,11 +131,13 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
     parameter = Parameter()
     parameter.name = name
     if parameter_type is None:
+        assert value is not None
         parameter.value = get_parameter_value(string_value=value)
     else:
         parameter.value = ParameterValue()
         parameter.value.type = parameter_type
         if parameter_type != ParameterType.PARAMETER_NOT_SET:
+            assert value is not None
             setattr(parameter.value, _parameter_type_mapping[parameter_type], loads(value))
 
     assert _node is not None
@@ -232,7 +236,7 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     return result.values[0]
 
 
-async def has_param(node_name: str, name: str, params_glob: str) -> bool:
+async def has_param(node_name: str, name: str, params_glob: list[str]) -> bool:
     """Check whether a given node has a parameter or not."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
@@ -249,7 +253,7 @@ async def has_param(node_name: str, name: str, params_glob: str) -> bool:
     return 0 < pvalue.type < len(_parameter_type_mapping)
 
 
-async def delete_param(node_name, name, params_glob):
+async def delete_param(node_name: str, name: str, params_glob: list[str]) -> None:
     """Delete a parameter in a given node."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
