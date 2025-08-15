@@ -1,5 +1,5 @@
 import time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.protocol import Protocol
@@ -8,18 +8,8 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class ReceivedFragments:
-    """Singleton class to hold lists of received fragments in one 'global' object."""
-
-    class __impl:
-        """Implementation of the singleton interface."""
-
-        def spam(self) -> int:
-            """Test method, return singleton id."""
-            return id(self)
-
-    __instance = None
-    # List of defragmentation instances
+class Defragment(Capability):
+    # Dictionary of defragmentation instances
     # Format:
     # {
     #   <<message1_ID>> : {
@@ -30,20 +20,9 @@ class ReceivedFragments:
     #       <<fragment2ID>>: <<fragment2_data>>,
     #       ...
     #     }
-    # },
-    # ...
-    lists: dict[str, dict]
+    # }
+    lists: ClassVar[dict[str, dict]] = {}
 
-    def __init__(self) -> None:
-        """Create singleton instance."""
-        if ReceivedFragments.__instance is None:
-            ReceivedFragments.__instance = ReceivedFragments.__impl()
-            self.lists: dict[str, Any] = {}
-
-        self.__dict__["_ReceivedFragments__instance"] = ReceivedFragments.__instance
-
-
-class Defragment(Capability):
     fragment_timeout = 600
     opcode = "fragment"
 
@@ -56,7 +35,7 @@ class Defragment(Capability):
 
         protocol.register_operation(self.opcode, self.defragment)
 
-        self.received_fragments = ReceivedFragments().lists
+        self.received_fragments = Defragment.lists
 
     # defragment() does:
     #   1) take any incoming message with op-code "fragment"
