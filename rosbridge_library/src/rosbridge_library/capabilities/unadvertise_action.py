@@ -49,7 +49,7 @@ class UnadvertiseAction(Capability):
 
     def unadvertise_action(self, message: dict[str, Any]) -> None:
         # parse the message
-        action_name = message["action"]
+        action_name: str = message["action"]
 
         if UnadvertiseAction.actions_glob is not None and UnadvertiseAction.actions_glob:
             self.protocol.log(

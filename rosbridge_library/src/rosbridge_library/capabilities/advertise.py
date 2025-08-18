@@ -119,10 +119,10 @@ class Advertise(Capability):
         aid = message.get("id")
 
         self.basic_type_check(message, self.advertise_msg_fields)
-        topic = message["topic"]
-        msg_type = message["type"]
-        latch = message.get("latch", False)
-        queue_size = message.get("queue_size", 100)
+        topic: str = message["topic"]
+        msg_type: str = message["type"]
+        latch: bool = message.get("latch", False)
+        queue_size: int = message.get("queue_size", 100)
 
         if Advertise.topics_glob is not None and Advertise.topics_glob:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
@@ -154,10 +154,10 @@ class Advertise(Capability):
 
     def unadvertise(self, message: dict[str, Any]) -> None:
         # Pull out the ID
-        aid = message.get("id")
+        aid: str | None = message.get("id")
 
         self.basic_type_check(message, self.unadvertise_msg_fields)
-        topic = message["topic"]
+        topic: str = message["topic"]
 
         if Advertise.topics_glob is not None and Advertise.topics_glob:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)

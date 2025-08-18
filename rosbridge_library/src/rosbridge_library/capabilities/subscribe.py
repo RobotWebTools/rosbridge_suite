@@ -259,13 +259,13 @@ class Subscribe(Capability):
 
     def subscribe(self, msg: dict[str, Any]) -> None:
         # Pull out the ID
-        sid = msg.get("id")
+        sid: str | None = msg.get("id")
 
         # Check the args
         self.basic_type_check(msg, self.subscribe_msg_fields)
 
         # Make the subscription
-        topic = msg["topic"]
+        topic: str = msg["topic"]
 
         if Subscribe.topics_glob is not None and Subscribe.topics_glob:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
@@ -309,11 +309,11 @@ class Subscribe(Capability):
 
     def unsubscribe(self, msg: dict[str, Any]) -> None:
         # Pull out the ID
-        sid = msg.get("id")
+        sid: str | None = msg.get("id")
 
         self.basic_type_check(msg, self.unsubscribe_msg_fields)
 
-        topic = msg["topic"]
+        topic: str = msg["topic"]
 
         if topic not in self._subscriptions:
             return
