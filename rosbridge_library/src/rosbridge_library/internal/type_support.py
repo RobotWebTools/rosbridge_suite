@@ -30,7 +30,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from typing import Protocol, runtime_checkable
+from typing import Protocol, TypeVar, runtime_checkable
 
 
 @runtime_checkable
@@ -60,3 +60,14 @@ class ROSAction(Protocol):
     Goal: type[ROSMessage]
     Result: type[ROSMessage]
     Feedback: type[ROSMessage]
+
+
+# Type variables for ROS types
+ROSMessageT = TypeVar("ROSMessageT", bound=ROSMessage)
+ROSServiceT = TypeVar("ROSServiceT", bound=ROSService)
+ROSServiceRequestT = TypeVar("ROSServiceRequestT", bound=ROSMessage)
+ROSServiceResponseT = TypeVar("ROSServiceResponseT", bound=ROSMessage)
+ROSActionT = TypeVar("ROSActionT", bound=ROSAction)
+ROSActionGoalT = TypeVar("ROSActionGoalT", bound=ROSMessage)
+ROSActionResultT = TypeVar("ROSActionResultT", bound=ROSMessage)
+ROSActionFeedbackT = TypeVar("ROSActionFeedbackT", bound=ROSMessage)
