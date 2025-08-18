@@ -32,7 +32,7 @@
 from __future__ import annotations
 
 from threading import Event, Thread
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
 from rclpy.callback_groups import ReentrantCallbackGroup
 
@@ -61,7 +61,7 @@ class ServiceCaller(Thread):
     def __init__(
         self,
         service: str,
-        args: dict,
+        args: list | dict[str, Any] | None,
         timeout: float,
         success_callback: Callable[[dict], None],
         error_callback: Callable[[Exception], None],
@@ -108,7 +108,7 @@ class ServiceCaller(Thread):
             self.error(e)
 
 
-def args_to_service_request_instance(inst: ROSMessage, args: list | dict | None) -> None:
+def args_to_service_request_instance(inst: ROSMessage, args: list | dict[str, Any] | None) -> None:
     """
     Populate a service request instance with the provided args.
 
@@ -129,7 +129,7 @@ def args_to_service_request_instance(inst: ROSMessage, args: list | dict | None)
 def call_service(
     node_handle: Node,
     service: str,
-    args: dict | None = None,
+    args: list | dict[str, Any] | None = None,
     server_ready_timeout: float = 1.0,
     server_response_timeout: float = 5.0,
 ) -> dict:
