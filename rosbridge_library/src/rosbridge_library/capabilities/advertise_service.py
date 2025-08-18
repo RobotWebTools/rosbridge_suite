@@ -117,7 +117,7 @@ class AdvertiseService(Capability):
         self.basic_type_check(message, self.advertise_service_msg_fields)
 
         # parse the incoming message
-        service_name = message["service"]
+        service_name: str = message["service"]
 
         if AdvertiseService.services_glob is not None and AdvertiseService.services_glob:
             self.protocol.log(
@@ -152,7 +152,7 @@ class AdvertiseService(Capability):
             del self.protocol.external_service_list[service_name]
 
         # setup and store the service information
-        service_type = message["type"]
+        service_type: str = message["type"]
         service_handler: AdvertisedServiceHandler[ROSMessage, ROSMessage] = (
             AdvertisedServiceHandler(service_name, service_type, self.protocol)
         )

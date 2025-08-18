@@ -25,12 +25,12 @@ class ServiceResponse(Capability):
         self.basic_type_check(message, self.service_response_msg_fields)
 
         # check for the service
-        service_name = message["service"]
+        service_name: str = message["service"]
         if service_name in self.protocol.external_service_list:
             service_handler = self.protocol.external_service_list[service_name]
             # parse the message
-            request_id = message["id"]
-            values = message["values"]
+            request_id: str = message["id"]
+            values: dict[str, Any] = message["values"]
             # create a message instance
             resp = ros_loader.get_service_response_instance(service_handler.service_type)
             message_conversion.populate_instance(values, resp)

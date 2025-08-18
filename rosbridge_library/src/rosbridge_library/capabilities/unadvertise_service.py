@@ -19,7 +19,7 @@ class UnadvertiseService(Capability):
 
     def unadvertise_service(self, message: dict[str, Any]) -> None:
         # parse the message
-        service_name = message["service"]
+        service_name: str = message["service"]
 
         if UnadvertiseService.services_glob is not None and UnadvertiseService.services_glob:
             self.protocol.log(

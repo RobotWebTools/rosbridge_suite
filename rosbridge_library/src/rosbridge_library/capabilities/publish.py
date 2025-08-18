@@ -60,9 +60,9 @@ class Publish(Capability):
     def publish(self, message: dict[str, Any]) -> None:
         # Do basic type checking
         self.basic_type_check(message, self.publish_msg_fields)
-        topic = message["topic"]
-        latch = message.get("latch", False)
-        queue_size = message.get("queue_size", 100)
+        topic: str = message["topic"]
+        latch: bool = message.get("latch", False)
+        queue_size: int = message.get("queue_size", 100)
 
         if Publish.topics_glob is not None and Publish.topics_glob:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
@@ -95,7 +95,7 @@ class Publish(Capability):
         self._published[topic] = True
 
         # Get the message if one was provided
-        msg = message.get("msg", {})
+        msg: dict[str, Any] = message.get("msg", {})
 
         # Publish the message
         manager.publish(
