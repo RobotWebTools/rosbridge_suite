@@ -141,8 +141,8 @@ async def _set_param(
             setattr(parameter.value, _parameter_type_mapping[parameter_type], loads(value))
 
     assert _node is not None
-    client: Client = _node.create_client(
-        SetParameters,
+    client: Client[SetParameters.Request, SetParameters.Response] = _node.create_client(
+        SetParameters,  # type: ignore[arg-type]
         f"{node_name}/set_parameters",
         callback_group=MutuallyExclusiveCallbackGroup(),
     )
@@ -169,8 +169,9 @@ async def _set_param(
     result = future.result()
 
     assert result is not None
-    if not result.results[0].successful:
-        raise Exception(result.results[0].reason)
+    param_results = next(iter(result.results))
+    if param_results.successful:
+        raise Exception(param_results.reason)
 
 
 async def get_param(node_name: str, name: str, params_glob: str) -> str:
@@ -201,8 +202,8 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     Internal helper function for get_param.
     """
     assert _node is not None
-    client: Client = _node.create_client(
-        GetParameters,
+    client: Client[GetParameters.Request, GetParameters.Response] = _node.create_client(
+        GetParameters,  # type: ignore[arg-type]
         f"{node_name}/get_parameters",
         callback_group=MutuallyExclusiveCallbackGroup(),
     )
@@ -233,7 +234,7 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
         msg = f"Parameter {name} not found"
         raise Exception(msg)
 
-    return result.values[0]
+    return next(iter(result.values))
 
 
 async def has_param(node_name: str, name: str, params_glob: list[str]) -> bool:
@@ -277,8 +278,8 @@ async def get_param_names(params_glob: str | None) -> list[str]:
         if node_name == _node.get_fully_qualified_name():
             continue
 
-        client: Client = _node.create_client(
-            ListParameters,
+        client: Client[ListParameters.Request, ListParameters.Response] = _node.create_client(
+            ListParameters,  # type: ignore[arg-type]
             f"{node_name}/list_parameters",
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
