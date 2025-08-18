@@ -72,8 +72,8 @@ class ActionClientHandler(Thread, Generic[ROSActionGoalT, ROSActionResultT, ROSA
         self,
         action: str,
         action_type: str,
-        args: dict,
-        success_callback: Callable[[dict], None],
+        args: list | dict[str, Any] | None,
+        success_callback: Callable[[dict[str, Any]], None],
         error_callback: Callable[[Exception], None],
         feedback_callback: Callable[[FeedbackMessage[ROSActionFeedbackT]], None] | None,
         node_handle: Node,
@@ -123,7 +123,7 @@ class ActionClientHandler(Thread, Generic[ROSActionGoalT, ROSActionResultT, ROSA
             self.error(e)
 
 
-def args_to_action_goal_instance(inst: ROSMessage, args: list | dict | None) -> None:
+def args_to_action_goal_instance(inst: ROSMessage, args: list | dict[str, Any] | None) -> None:
     """
     Populate an action goal instance with the provided args.
 
@@ -178,7 +178,7 @@ class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
         node_handle: Node,
         action: str,
         action_type: str,
-        args: dict | None = None,
+        args: list | dict[str, Any] | None = None,
         feedback_cb: Callable[[FeedbackMessage[ROSActionFeedbackT]], None] | None = None,
     ) -> dict[str, Any]:
         # Given the action name and type, fetch a request instance
