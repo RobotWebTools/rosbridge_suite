@@ -30,12 +30,18 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import fnmatch
 from functools import partial
 from threading import Thread
+from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.services import ServiceCaller
+
+if TYPE_CHECKING:
+    from rosbridge_library.protocol import Protocol
 
 
 class CallService(Capability):
@@ -47,7 +53,7 @@ class CallService(Capability):
 
     services_glob = None
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
@@ -74,16 +80,16 @@ class CallService(Capability):
             protocol.node_handle.get_logger().info("Calling services in existing thread")
             protocol.register_operation("call_service", self.call_service)
 
-    def call_service(self, message):
+    def call_service(self, message: dict[str, Any]) -> None:
         # Pull out the ID
-        cid = message.get("id", None)
+        cid = message.get("id")
 
         # Typecheck the args
         self.basic_type_check(message, self.call_service_msg_fields)
 
         # Extract the args
         service = message["service"]
-        fragment_size = message.get("fragment_size", None)
+        fragment_size = message.get("fragment_size")
         compression = message.get("compression", "none")
         args = message.get("args", [])
         timeout = message.get("timeout", self.default_timeout)
@@ -127,7 +133,14 @@ class CallService(Capability):
             self.protocol.node_handle,
         ).run()
 
-    def _success(self, cid, service, _fragment_size, _compression, message):
+    def _success(
+        self,
+        cid: str | None,
+        service: str,
+        _fragment_size: int,
+        _compression: str,
+        message: dict[str, Any],
+    ) -> None:
         outgoing_message = {
             "op": "service_response",
             "service": service,
@@ -139,7 +152,7 @@ class CallService(Capability):
         # TODO: fragmentation, compression
         self.protocol.send(outgoing_message)
 
-    def _failure(self, cid, service, exc):
+    def _failure(self, cid: str | None, service: str, exc: Exception) -> None:
         self.protocol.log("error", f"call_service {type(exc).__name__}: {exc!s}", cid)
         # send response with result: false
         outgoing_message = {
@@ -153,13 +166,13 @@ class CallService(Capability):
         self.protocol.send(outgoing_message)
 
 
-def trim_servicename(service):
+def trim_servicename(service: str) -> str:
     if "#" in service:
         return service[: service.find("#")]
     return service
 
 
-def extract_id(service, cid):
+def extract_id(service: str, cid: str | None) -> str | None:
     if cid is not None:
         return cid
     if "#" in service:
