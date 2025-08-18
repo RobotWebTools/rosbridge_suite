@@ -271,7 +271,7 @@ async def get_param_names(params_glob: str | None) -> list[str]:
 
     nodes = [get_absolute_node_name(node) for node in get_nodes()]
 
-    futures: list[tuple[str, Future]] = []
+    futures: list[tuple[str, Future[ListParameters.Response]]] = []
     clients = []
     for node_name in nodes:
         if node_name == _node.get_fully_qualified_name():
