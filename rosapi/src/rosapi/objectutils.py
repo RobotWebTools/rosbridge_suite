@@ -35,13 +35,11 @@ from __future__ import annotations
 import inspect
 import logging
 import re
-from typing import TYPE_CHECKING, Any, TypeVar
-
-if TYPE_CHECKING:
-    from rosbridge_library.internal.type_support import ROSMessage
+from typing import Any, TypeVar
 
 from rosapi.stringify_field_types import stringify_field_types
 from rosbridge_library.internal import ros_loader
+from rosbridge_library.internal.type_support import ROSMessage
 
 logger = logging.getLogger(__name__)
 
@@ -354,7 +352,7 @@ def _get_subtypedefs_recursive(
     return typedefs
 
 
-def _type_name(type_name: str, instance: Any) -> str:  # noqa: ANN401
+def _type_name(type_name: str, instance: object) -> str:
     """Get the fully qualified type name for a given type and instance."""
     # The fully qualified type of atomic and special types is just their original name
     if type_name in atomics or type_name in specials:
@@ -366,6 +364,7 @@ def _type_name(type_name: str, instance: Any) -> str:  # noqa: ANN401
         return type_name
 
     # Otherwise, the type will come from the module and class name of the instance
+    assert isinstance(instance, ROSMessage)
     return _type_name_from_instance(instance)
 
 
