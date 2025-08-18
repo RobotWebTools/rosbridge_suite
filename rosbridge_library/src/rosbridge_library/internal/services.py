@@ -32,7 +32,7 @@
 from __future__ import annotations
 
 from threading import Event, Thread
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Callable
 
 from rclpy.callback_groups import ReentrantCallbackGroup
 
@@ -49,9 +49,11 @@ if TYPE_CHECKING:
     from rclpy.client import Client
     from rclpy.node import Node
 
+    from rosbridge_library.internal.type_support import ROSMessage
+
 
 class InvalidServiceException(Exception):
-    def __init__(self, service_name) -> None:
+    def __init__(self, service_name: str) -> None:
         Exception.__init__(self, f"Service {service_name} does not exist")
 
 
@@ -106,7 +108,7 @@ class ServiceCaller(Thread):
             self.error(e)
 
 
-def args_to_service_request_instance(inst: Any, args: list | dict | None) -> Any:
+def args_to_service_request_instance(inst: ROSMessage, args: list | dict | None) -> None:
     """
     Populate a service request instance with the provided args.
 
@@ -162,7 +164,7 @@ def call_service(
     future = client.call_async(inst)
     event = Event()
 
-    def future_done_callback():
+    def future_done_callback() -> None:
         event.set()
 
     future.add_done_callback(lambda _: future_done_callback())
