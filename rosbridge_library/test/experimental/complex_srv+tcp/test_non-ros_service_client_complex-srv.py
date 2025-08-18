@@ -3,6 +3,8 @@ import socket
 
 from rosbridge_library.util import json
 
+# ruff: noqa: ANN201
+
 # ##################### variables begin ########################################
 # these parameters should be changed to match the actual environment           #
 # ##############################################################################
