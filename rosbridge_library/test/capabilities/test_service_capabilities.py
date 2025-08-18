@@ -1,8 +1,11 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 import time
 import unittest
 from json import dumps, loads
 from threading import Thread
+from typing import Any
 
 import rclpy
 from rclpy.node import Node
@@ -19,7 +22,7 @@ from rosbridge_library.protocol import Protocol
 
 
 class TestServiceCapabilities(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         rclpy.init()
         self.node = Node("test_service_capabilities")
 
@@ -37,28 +40,28 @@ class TestServiceCapabilities(unittest.TestCase):
         self.unadvertise = UnadvertiseService(self.proto)
         self.response = ServiceResponse(self.proto)
         self.call_service = CallService(self.proto)
-        self.received_message = None
-        self.log_entries = []
+        self.received_message: dict[str, Any] | bytes | None = None
+        self.log_entries: list[tuple[str, str]] = []
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.node.destroy_node()
         rclpy.shutdown()
 
-    def local_send_cb(self, msg):
+    def local_send_cb(self, msg: dict[str, Any] | bytes) -> None:
         self.received_message = msg
 
-    def mock_log(self, loglevel, message, _=None):
+    def mock_log(self, loglevel: str, message: str, _lid: str | None = None) -> None:
         self.log_entries.append((loglevel, message))
 
-    def test_advertise_missing_arguments(self):
+    def test_advertise_missing_arguments(self) -> None:
         advertise_msg = loads(dumps({"op": "advertise_service"}))
         self.assertRaises(MissingArgumentException, self.advertise.advertise_service, advertise_msg)
 
-    def test_advertise_invalid_arguments(self):
+    def test_advertise_invalid_arguments(self) -> None:
         advertise_msg = loads(dumps({"op": "advertise_service", "type": 42, "service": None}))
         self.assertRaises(InvalidArgumentException, self.advertise.advertise_service, advertise_msg)
 
-    def test_response_missing_arguments(self):
+    def test_response_missing_arguments(self) -> None:
         response_msg = loads(dumps({"op": "service_response"}))
         self.assertRaises(MissingArgumentException, self.response.service_response, response_msg)
 
@@ -69,11 +72,11 @@ class TestServiceCapabilities(unittest.TestCase):
         )
         self.assertRaises(MissingArgumentException, self.response.service_response, response_msg)
 
-    def test_response_invalid_arguments(self):
+    def test_response_invalid_arguments(self) -> None:
         response_msg = loads(dumps({"op": "service_response", "service": 5, "result": "error"}))
         self.assertRaises(InvalidArgumentException, self.response.service_response, response_msg)
 
-    def test_advertise_service(self):
+    def test_advertise_service(self) -> None:
         service_path = "/set_bool_1"
         advertise_msg = loads(
             dumps(
@@ -86,7 +89,7 @@ class TestServiceCapabilities(unittest.TestCase):
         )
         self.advertise.advertise_service(advertise_msg)
 
-    def test_call_advertised_service(self):
+    def test_call_advertised_service(self) -> None:
         # Advertise the service
         service_path = "/set_bool_2"
         advertise_msg = loads(
@@ -151,7 +154,7 @@ class TestServiceCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["op"], "service_response")
         self.assertTrue(self.received_message["result"])
 
-    def test_call_advertised_service_with_timeout(self):
+    def test_call_advertised_service_with_timeout(self) -> None:
         # Advertise the service
         service_path = "/set_bool_3"
         advertise_msg = loads(
@@ -207,7 +210,7 @@ class TestServiceCapabilities(unittest.TestCase):
             self.received_message["values"], "Timeout exceeded while waiting for service response"
         )
 
-    def test_unadvertise_with_live_request(self):
+    def test_unadvertise_with_live_request(self) -> None:
         # Advertise the service
         service_path = "/set_bool_3"
         advertise_msg = loads(

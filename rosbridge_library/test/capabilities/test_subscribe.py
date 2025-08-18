@@ -1,8 +1,11 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 import time
 import unittest
 from json import dumps, loads
 from threading import Thread
+from typing import Any
 
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
@@ -19,7 +22,7 @@ from rosbridge_library.protocol import Protocol
 
 
 class TestSubscribe(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         rclpy.init()
         self.executor = SingleThreadedExecutor()
         self.node = Node("test_subscribe")
@@ -28,16 +31,13 @@ class TestSubscribe(unittest.TestCase):
         self.exec_thread = Thread(target=self.executor.spin)
         self.exec_thread.start()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.executor.remove_node(self.node)
         self.node.destroy_node()
         self.executor.shutdown()
         rclpy.shutdown()
 
-    def dummy_cb(self, msg):
-        pass
-
-    def test_update_params(self):
+    def test_update_params(self) -> None:
         """
         Test the update_params method of the Subscription class.
 
@@ -79,13 +79,13 @@ class TestSubscribe(unittest.TestCase):
         finally:
             subscription.unregister()
 
-    def test_missing_arguments(self):
+    def test_missing_arguments(self) -> None:
         proto = Protocol("test_missing_arguments", self.node)
         sub = subscribe.Subscribe(proto)
         msg = {"op": "subscribe"}
         self.assertRaises(MissingArgumentException, sub.subscribe, msg)
 
-    def test_invalid_arguments(self):
+    def test_invalid_arguments(self) -> None:
         proto = Protocol("test_invalid_arguments", self.node)
         sub = subscribe.Subscribe(proto)
 
@@ -107,7 +107,7 @@ class TestSubscribe(unittest.TestCase):
         msg = {"op": "subscribe", "topic": "/jon", "compression": 9000}
         self.assertRaises(InvalidArgumentException, sub.subscribe, msg)
 
-    def test_subscribe_works(self):
+    def test_subscribe_works(self) -> None:
         proto = Protocol("test_subscribe_works", self.node)
         sub = subscribe.Subscribe(proto)
         topic = "/test_subscribe_works"
@@ -115,9 +115,13 @@ class TestSubscribe(unittest.TestCase):
         msg.data = "test test_subscribe_works works"
         msg_type = "std_msgs/String"
 
-        received = {"msg": None}
+        received: dict[str, Any] = {"msg": None}
 
-        def send(outgoing, cid=None, compression="none"):  # noqa: ARG001
+        def send(
+            outgoing: dict[str, Any] | bytes,
+            cid: str | None = None,  # noqa: ARG001
+            compression: str = "none",  # noqa: ARG001
+        ) -> None:
             received["msg"] = outgoing
 
         proto.send = send
