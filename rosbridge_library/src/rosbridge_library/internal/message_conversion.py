@@ -43,7 +43,7 @@ from typing import TYPE_CHECKING, Any, Callable
 import numpy as np
 from builtin_interfaces.msg import Duration as DurationMsg
 from builtin_interfaces.msg import Time as TimeMsg
-from rclpy.clock import ROSClock
+from rclpy.clock import Clock
 from rclpy.parameter import Parameter
 from std_msgs.msg import Header as HeaderMsg
 
@@ -189,7 +189,7 @@ def extract_values(inst: ROSMessage) -> dict[str, Any]:
 
 
 def populate_instance(
-    msg: dict[str, Any], inst: ROSMessage, clock: ROSClock | None = None
+    msg: dict[str, Any], inst: ROSMessage, clock: Clock | None = None
 ) -> ROSMessage:
     """
     Populate a ROS message instance with the provided values.
@@ -198,7 +198,7 @@ def populate_instance(
     according to the values in msg.
     """
     if clock is None:
-        clock = ROSClock()
+        clock = Clock()
 
     inst_type = msg_instance_type_repr(inst)
 
@@ -311,12 +311,12 @@ def _to_inst(
     msg: dict[str, Any] | Sequence | str | float | bool,
     rostype: str,
     roottype: str,
-    clock: ROSClock | None = None,
+    clock: Clock | None = None,
     inst: object | None = None,
     stack: list[str] | None = None,
 ) -> object:
     if clock is None:
-        clock = ROSClock()
+        clock = Clock()
     if stack is None:
         stack = []
 
@@ -370,7 +370,7 @@ def _to_binary_inst(msg: Sequence) -> list | bytes | array.array:
 def _to_time_inst(
     msg: dict[str, Any] | str,
     rostype: str,
-    clock: ROSClock,
+    clock: Clock,
     inst: TimeMsg | DurationMsg | None = None,
 ) -> TimeMsg | DurationMsg:
     # A special case for the string "now"
@@ -429,7 +429,7 @@ def _to_list_inst(
     msg: ListType,
     rostype: str,
     roottype: str,
-    clock: ROSClock,
+    clock: Clock,
     inst: ListType,
     stack: list[str],
 ) -> ListType:
@@ -461,7 +461,7 @@ def _to_object_inst(
     msg: dict[str, Any],
     rostype: str,
     roottype: str,
-    clock: ROSClock,
+    clock: Clock,
     inst: ROSMessage,
     stack: list[str],
 ) -> ROSMessage:
