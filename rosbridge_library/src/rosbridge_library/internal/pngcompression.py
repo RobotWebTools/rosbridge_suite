@@ -37,7 +37,7 @@ from math import ceil, floor, sqrt
 from PIL import Image
 
 
-def encode(string):
+def encode(string: str) -> str:
     r"""
     PNG-compress the string in a square RGB image padded with '\n'.
 
@@ -56,7 +56,7 @@ def encode(string):
     return encoded.decode()
 
 
-def decode(string):
+def decode(string: str) -> str:
     r"""b64 decode the string, then PNG-decompress and remove the '\n' padding."""
     decoded = standard_b64decode(string)
     buff = BytesIO(decoded)
