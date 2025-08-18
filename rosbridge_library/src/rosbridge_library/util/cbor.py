@@ -69,6 +69,9 @@ CBOR_TAG_CBOR_FILEHEADER = 55799  # can open a file with 0xd9d9f7
 _CBOR_TAG_BIGNUM_BYTES = struct.pack("B", CBOR_TAG | CBOR_TAG_BIGNUM)
 
 
+# ruff: noqa: ANN001, ANN201, ANN202, ANN204
+
+
 def dumps_int(val):
     """Return bytes representing int val in CBOR."""
     if val >= 0:

@@ -6,6 +6,8 @@ from random import randint
 
 from rosbridge_library.util import json
 
+# ruff: noqa: ANN001, ANN201
+
 # ##################### variables begin ########################################
 # these parameters should be changed to match the actual environment           #
 # ##############################################################################
@@ -83,7 +85,7 @@ def connect_tcp_socket():
     return tcp_sock
 
 
-def advertise_service():  # advertise service
+def advertise_service() -> None:  # advertise service
     advertise_message_object = {
         "op": "advertise_service",
         "type": service_type,
@@ -95,7 +97,7 @@ def advertise_service():  # advertise service
     tcp_socket.send(str(advertise_message))
 
 
-def unadvertise_service():  # unadvertise service
+def unadvertise_service() -> None:  # unadvertise service
     unadvertise_message_object = {"op": "unadvertise_service", "service": service_name}
     unadvertise_message = json.dumps(unadvertise_message_object)
     tcp_socket.send(str(unadvertise_message))
@@ -172,7 +174,7 @@ def wait_for_service_request():  # receive data from rosbridge
     return data
 
 
-def send_service_response(response):  # send response to rosbridge
+def send_service_response(response) -> None:  # send response to rosbridge
     tcp_socket.send(response)
 
 
