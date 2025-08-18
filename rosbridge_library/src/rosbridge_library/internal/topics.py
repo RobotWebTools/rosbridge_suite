@@ -34,7 +34,7 @@
 
 
 class TopicNotEstablishedException(Exception):
-    def __init__(self, topic):
+    def __init__(self, topic: str) -> None:
         Exception.__init__(
             self,
             f"Cannot infer topic type for topic {topic} as it is not yet advertised",
@@ -42,7 +42,7 @@ class TopicNotEstablishedException(Exception):
 
 
 class TypeConflictException(Exception):
-    def __init__(self, topic, orig_type, new_type):
+    def __init__(self, topic: str, orig_type: str, new_type: str) -> None:
         Exception.__init__(
             self,
             f"Tried to register topic {topic} with type {new_type} but it is already established with type {orig_type}",
