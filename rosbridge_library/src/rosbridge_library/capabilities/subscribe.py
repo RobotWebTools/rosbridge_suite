@@ -72,7 +72,7 @@ class Subscription(Generic[ROSMessageT]):
         self,
         client_id: str,
         topic: str,
-        publish: Callable[[OutgoingMessage[ROSMessageT], int | None, str], None],
+        publish: Callable[[OutgoingMessage[ROSMessageT], int | None, str], None] | None,
         node_handle: Node,
     ) -> None:
         """
@@ -181,7 +181,8 @@ class Subscription(Generic[ROSMessageT]):
         Internal method to propagate published messages to the registered
         publish callback.
         """
-        self.publish(message, self.fragment_size, self.compression)
+        if self.publish is not None:
+            self.publish(message, self.fragment_size, self.compression)
 
     def on_msg(self, msg: OutgoingMessage[ROSMessageT]) -> None:
         """
