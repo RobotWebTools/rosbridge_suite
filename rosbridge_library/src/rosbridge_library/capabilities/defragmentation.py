@@ -155,7 +155,7 @@ class Defragment(Capability):
 
             self.protocol.log(
                 "info",
-                f"reconstructed messsage (ID: {msg_id}) from {msg_total} fragments. [duration: {duration} s]",
+                f"reconstructed message (ID: {msg_id}) from {msg_total} fragments. [duration: {duration} s]",
             )
 
             # Remove fragmentation container
