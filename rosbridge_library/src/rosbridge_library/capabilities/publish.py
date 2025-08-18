@@ -32,9 +32,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import fnmatch
+from typing import Any
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
+from rosbridge_library.protocol import Protocol
 
 
 class Publish(Capability):
@@ -42,7 +44,7 @@ class Publish(Capability):
 
     topics_glob = None
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
@@ -50,12 +52,12 @@ class Publish(Capability):
         protocol.register_operation("publish", self.publish)
 
         # Save the topics that are published on for the purposes of unregistering
-        self._published = {}
+        self._published: dict[str, bool] = {}
 
         if protocol.parameters and "unregister_timeout" in protocol.parameters:
             manager.unregister_timeout = protocol.parameters.get("unregister_timeout")
 
-    def publish(self, message):
+    def publish(self, message: dict[str, Any]) -> None:
         # Do basic type checking
         self.basic_type_check(message, self.publish_msg_fields)
         topic = message["topic"]
@@ -105,7 +107,7 @@ class Publish(Capability):
             queue_size=queue_size,
         )
 
-    def finish(self):
+    def finish(self) -> None:
         client_id = self.protocol.client_id
         for topic in self._published:
             manager.unregister(client_id, topic)

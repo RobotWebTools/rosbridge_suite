@@ -1,5 +1,8 @@
+from typing import Any
+
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion, ros_loader
+from rosbridge_library.protocol import Protocol
 
 
 class ServiceResponse(Capability):
@@ -10,14 +13,14 @@ class ServiceResponse(Capability):
         (True, "result", bool),
     )
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
         # Register the operations that this capability provides
         protocol.register_operation("service_response", self.service_response)
 
-    def service_response(self, message):
+    def service_response(self, message: dict[str, Any]) -> None:
         # Typecheck the args
         self.basic_type_check(message, self.service_response_msg_fields)
 

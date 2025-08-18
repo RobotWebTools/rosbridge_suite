@@ -30,10 +30,19 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
     MissingArgumentException,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from rosbridge_library.protocol import Protocol
 
 
 class Capability:
@@ -49,7 +58,7 @@ class Capability:
     Protocol.send() is available to send messages back to the client.
     """
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         """
         Abstract class constructor.
 
@@ -59,7 +68,7 @@ class Capability:
         """
         self.protocol = protocol
 
-    def handle_message(self, message):
+    def handle_message(self, message: dict[str, Any]) -> None:
         """
         Handle an incoming message.
 
@@ -68,23 +77,25 @@ class Capability:
         :param message: The incoming message, deserialized into a dictionary
         """
 
-    def finish(self):
+    def finish(self) -> None:
         """
         Notify this capability that the client is finished.
 
         Tells the capability that it's time to free up resources.
         """
 
-    def basic_type_check(self, msg, types_info):
+    def basic_type_check(
+        self, msg: dict[str, Any], types_info: Sequence[tuple[bool, str, type | tuple[type, ...]]]
+    ) -> None:
         """
         Perform basic typechecking on fields in msg.
 
         :param msg: A message, deserialized into a dictionary
-        :param types_info: A list of tuples (mandatory, fieldname, fieldtype) where
+        :param types_info: A sequence of tuples (mandatory, fieldname, fieldtype) where
 
             - mandatory - boolean, is the field mandatory
             - fieldname - the name of the field in the message
-            - fieldtypes - the expected python type of the field or list of types
+            - fieldtypes - the expected python type of the field or tuple of types
 
         :raises MissingArgumentException: If a field is mandatory but not present in the message
         :raises InvalidArgumentException: If a field is present but not of the type specified by
@@ -92,8 +103,8 @@ class Capability:
         """
         for mandatory, fieldname, fieldtypes in types_info:
             if mandatory and fieldname not in msg:
-                msg = f"Expected a {fieldname} field but none was found."
-                raise MissingArgumentException(msg)
+                err_msg = f"Expected a {fieldname} field but none was found."
+                raise MissingArgumentException(err_msg)
             if fieldname in msg:
                 current_fieldtypes = fieldtypes
                 if not isinstance(current_fieldtypes, tuple):
@@ -103,8 +114,8 @@ class Capability:
                     if isinstance(msg[fieldname], typ):
                         valid = True
                 if not valid:
-                    msg = (
+                    err_msg = (
                         f"Expected field {fieldname} to be one of {current_fieldtypes}. "
                         f"Invalid value: {msg[fieldname]}"
                     )
-                    raise InvalidArgumentException(msg)
+                    raise InvalidArgumentException(err_msg)

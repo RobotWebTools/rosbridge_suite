@@ -31,6 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import fnmatch
+from typing import Any
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.protocol import Protocol
@@ -46,7 +47,7 @@ class UnadvertiseAction(Capability):
         # Register the operations that this capability provides
         protocol.register_operation("unadvertise_action", self.unadvertise_action)
 
-    def unadvertise_action(self, message: dict) -> None:
+    def unadvertise_action(self, message: dict[str, Any]) -> None:
         # parse the message
         action_name = message["action"]
 

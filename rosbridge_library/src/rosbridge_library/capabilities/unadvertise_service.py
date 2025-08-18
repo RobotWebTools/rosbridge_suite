@@ -1,6 +1,8 @@
 import fnmatch
+from typing import Any
 
 from rosbridge_library.capability import Capability
+from rosbridge_library.protocol import Protocol
 
 
 class UnadvertiseService(Capability):
@@ -8,14 +10,14 @@ class UnadvertiseService(Capability):
 
     services_glob = None
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
         # Register the operations that this capability provides
         protocol.register_operation("unadvertise_service", self.unadvertise_service)
 
-    def unadvertise_service(self, message):
+    def unadvertise_service(self, message: dict[str, Any]) -> None:
         # parse the message
         service_name = message["service"]
 

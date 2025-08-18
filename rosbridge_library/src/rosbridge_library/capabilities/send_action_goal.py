@@ -35,7 +35,7 @@ from __future__ import annotations
 import fnmatch
 from functools import partial
 from threading import Thread
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from action_msgs.msg import GoalStatus
 
@@ -44,6 +44,9 @@ from rosbridge_library.internal.actions import ActionClientHandler
 from rosbridge_library.internal.message_conversion import extract_values
 
 if TYPE_CHECKING:
+    from rclpy.type_support import FeedbackMessage
+
+    from rosbridge_library.internal.type_support import ROSMessage
     from rosbridge_library.protocol import Protocol
 
 
@@ -132,8 +135,16 @@ class SendActionGoal(Capability):
         f_cb = partial(self._feedback, cid, action) if message.get("feedback", False) else None
 
         # Run action client handler in the same thread.
-        client_handler = ActionClientHandler(
-            trim_action_name(action), action_type, args, s_cb, e_cb, f_cb, self.protocol.node_handle
+        client_handler: ActionClientHandler[ROSMessage, ROSMessage, ROSMessage] = (
+            ActionClientHandler(
+                trim_action_name(action),
+                action_type,
+                args,
+                s_cb,
+                e_cb,
+                f_cb,
+                self.protocol.node_handle,
+            )
         )
 
         if cid is not None:
@@ -191,7 +202,7 @@ class SendActionGoal(Capability):
             outgoing_message["id"] = cid
         self.protocol.send(outgoing_message)
 
-    def _feedback(self, cid: str | None, action: str, message: Any) -> None:
+    def _feedback(self, cid: str | None, action: str, message: FeedbackMessage[ROSMessage]) -> None:
         outgoing_message = {
             "op": "action_feedback",
             "action": action,
