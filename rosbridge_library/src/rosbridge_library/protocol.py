@@ -251,7 +251,7 @@ class Protocol:
         """
 
     def send(
-        self, message: dict[str, Any], cid: str | None = None, compression: str = "none"
+        self, message: dict[str, Any] | bytes, cid: str | None = None, compression: str = "none"
     ) -> None:
         """
         Prepare a message for sending to the client.
@@ -275,7 +275,9 @@ class Protocol:
 
             fragment_list = None
             if self.fragment_size is not None and len(serialized) > self.fragment_size:
-                mid = message.get("id")
+                mid = None
+                if isinstance(message, dict) and "id" in message:
+                    mid = message["id"]
 
                 # TODO: think about splitting into fragments that have specified size including header-fields!
                 # --> estimate header size --> split content into fragments that have the requested overall size,
