@@ -58,8 +58,8 @@ class Fragmentation(Capability):
         Capability.__init__(self, protocol)
 
     def fragment(
-        self, message: dict[str, Any], fragment_size: int, mid: str | None = None
-    ) -> Iterable[dict[str, Any]]:
+        self, message: dict[str, Any] | bytes, fragment_size: int, mid: str | None = None
+    ) -> Iterable[dict[str, Any] | bytes]:
         """
         Fragment a message into smaller parts.
 
