@@ -35,7 +35,7 @@ from __future__ import annotations
 import fnmatch
 from functools import partial
 from threading import Thread
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from action_msgs.msg import GoalStatus
 
@@ -94,17 +94,17 @@ class SendActionGoal(Capability):
 
     def send_action_goal(self, message: dict) -> None:
         # Pull out the ID
-        cid = message.get("id")
+        cid: str | None = message.get("id")
 
         # Typecheck the args
         self.basic_type_check(message, self.send_action_goal_msg_fields)
 
         # Extract the args
-        action = message["action"]
-        action_type = message["action_type"]
-        fragment_size = message.get("fragment_size")
-        compression = message.get("compression", "none")
-        args = message.get("args", [])
+        action: str = message["action"]
+        action_type: str = message["action_type"]
+        fragment_size: int | None = message.get("fragment_size")
+        compression: str = message.get("compression", "none")
+        args: list | dict[str, Any] = message.get("args", [])
 
         if SendActionGoal.actions_glob is not None and SendActionGoal.actions_glob:
             self.protocol.log("debug", f"Action security glob enabled, checking action: {action}")
@@ -174,7 +174,7 @@ class SendActionGoal(Capability):
                 client_handler.send_goal_helper.cancel_goal()
 
     def _success(
-        self, cid: str | None, action: str, _fragment_size: int, _compression: bool, message: dict
+        self, cid: str | None, action: str, _fragment_size: int | None, _compression: str, message: dict
     ) -> None:
         outgoing_message = {
             "op": "action_result",

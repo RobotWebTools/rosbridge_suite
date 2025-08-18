@@ -82,17 +82,17 @@ class CallService(Capability):
 
     def call_service(self, message: dict[str, Any]) -> None:
         # Pull out the ID
-        cid = message.get("id")
+        cid: str | None = message.get("id")
 
         # Typecheck the args
         self.basic_type_check(message, self.call_service_msg_fields)
 
         # Extract the args
-        service = message["service"]
-        fragment_size = message.get("fragment_size")
-        compression = message.get("compression", "none")
-        args = message.get("args", [])
-        timeout = message.get("timeout", self.default_timeout)
+        service: str = message["service"]
+        fragment_size: int | None = message.get("fragment_size")
+        compression: str = message.get("compression", "none")
+        args: list | dict[str, Any] = message.get("args", [])
+        timeout: float = message.get("timeout", self.default_timeout)
 
         if CallService.services_glob is not None and CallService.services_glob:
             self.protocol.log(
@@ -137,7 +137,7 @@ class CallService(Capability):
         self,
         cid: str | None,
         service: str,
-        _fragment_size: int,
+        _fragment_size: int | None,
         _compression: str,
         message: dict[str, Any],
     ) -> None:

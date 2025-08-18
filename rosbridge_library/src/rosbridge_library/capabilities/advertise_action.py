@@ -230,7 +230,7 @@ class AdvertiseAction(Capability):
         self.basic_type_check(message, self.advertise_action_msg_fields)
 
         # parse the incoming message
-        action_name = message["action"]
+        action_name: str = message["action"]
 
         if AdvertiseAction.actions_glob is not None and AdvertiseAction.actions_glob:
             self.protocol.log(
@@ -265,7 +265,7 @@ class AdvertiseAction(Capability):
             del self.protocol.external_action_list[action_name]
 
         # setup and store the action information
-        action_type = message["type"]
+        action_type: str = message["type"]
         action_handler: AdvertisedActionHandler[ROSMessage, ROSMessage, ROSMessage] = (
             AdvertisedActionHandler(action_name, action_type, self.protocol)
         )
