@@ -31,7 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import fnmatch
-from typing import Generic
+from typing import Generic, cast
 
 from action_msgs.msg import GoalStatus
 from rclpy.action import ActionServer
@@ -57,7 +57,7 @@ class AdvertisedActionHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActio
     def __init__(
         self, action_name: str, action_type: str, protocol: Protocol, sleep_time: float = 0.001
     ) -> None:
-        self.goal_futures: dict[str, Future] = {}
+        self.goal_futures: dict[str, Future[ROSActionResultT]] = {}
         self.goal_handles: dict[
             str, ServerGoalHandle[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]
         ] = {}
@@ -95,12 +95,14 @@ class AdvertisedActionHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActio
         # generate a unique ID
         goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
-        def done_callback(fut: Future) -> None:
+        def done_callback(fut: Future[ROSActionResultT]) -> None:
             if fut.cancelled():
                 goal.abort()
                 self.protocol.log("info", f"Aborted goal {goal_id}")
                 # Send an empty result to avoid stack traces
-                fut.set_result(get_action_class(self.action_type).Result())
+                fut.set_result(
+                    cast("ROSActionResultT", get_action_class(self.action_type).Result())
+                )
             else:
                 if goal_id not in self.goal_statuses:
                     goal.abort()
