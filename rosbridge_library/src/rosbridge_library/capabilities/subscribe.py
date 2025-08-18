@@ -56,7 +56,7 @@ except ImportError:
     try:
         from simplejson import dumps as encode_json  # type: ignore[import]
     except ImportError:
-        from json import dumps as encode_json
+        from json import dumps as encode_json  # type: ignore[assignment]
 
 
 class Subscription(Generic[ROSMessageT]):
