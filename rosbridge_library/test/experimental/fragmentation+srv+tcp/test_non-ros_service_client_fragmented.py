@@ -26,7 +26,7 @@ receive_message_intervall = 0.0
 # ##############################################################################
 
 
-def request_service():
+def request_service() -> None:
     service_request_object = {
         "op": "call_service",  # op-code for rosbridge
         "service": "/" + service_name,  # select service
