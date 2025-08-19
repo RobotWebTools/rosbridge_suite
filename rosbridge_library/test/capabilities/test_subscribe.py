@@ -48,7 +48,9 @@ class TestSubscribe(unittest.TestCase):
         topic = "/test_update_params"
         msg_type = "std_msgs/String"
 
-        subscription = subscribe.Subscription(client_id, topic, None, self.node)
+        subscription: subscribe.Subscription[String] = subscribe.Subscription(
+            client_id, topic, None, self.node
+        )
 
         min_throttle_rate = 5
         min_queue_length = 2
@@ -58,7 +60,9 @@ class TestSubscribe(unittest.TestCase):
             for queue_length in range(min_queue_length, min_queue_length + 10):
                 for frag_size in range(min_frag_size, min_frag_size + 10):
                     sid = throttle_rate * 100 + queue_length * 10 + frag_size
-                    subscription.subscribe(sid, msg_type, throttle_rate, queue_length, frag_size)
+                    subscription.subscribe(
+                        str(sid), msg_type, throttle_rate, queue_length, frag_size
+                    )
 
         subscription.update_params()
 
@@ -118,13 +122,13 @@ class TestSubscribe(unittest.TestCase):
         received: dict[str, Any] = {"msg": None}
 
         def send(
-            outgoing: dict[str, Any] | bytes,
+            message: dict[str, Any] | bytes,
             cid: str | None = None,  # noqa: ARG001
             compression: str = "none",  # noqa: ARG001
         ) -> None:
-            received["msg"] = outgoing
+            received["msg"] = message
 
-        proto.send = send
+        proto.send = send  # type: ignore[method-assign]
 
         sub.subscribe(loads(dumps({"op": "subscribe", "topic": topic, "type": msg_type})))
 

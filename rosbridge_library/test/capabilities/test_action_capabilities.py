@@ -38,10 +38,10 @@ class TestActionCapabilities(unittest.TestCase):
 
         self.proto = Protocol(self._testMethodName, self.node)
         # change the log function so we can verify errors are logged
-        self.proto.log = self.mock_log
+        self.proto.log = self.mock_log  # type: ignore[method-assign]
         # change the send callback so we can access the rosbridge messages
         # being sent
-        self.proto.send = self.local_send_cb
+        self.proto.send = self.local_send_cb  # type: ignore[method-assign]
         self.advertise = AdvertiseAction(self.proto)
         self.unadvertise = UnadvertiseAction(self.proto)
         self.result = ActionResult(self.proto)
@@ -58,14 +58,19 @@ class TestActionCapabilities(unittest.TestCase):
         self.executor.shutdown()
         rclpy.shutdown()
 
-    def local_send_cb(self, msg: dict[str, Any] | bytes) -> None:
-        self.received_message = msg
+    def local_send_cb(
+        self,
+        message: dict[str, Any] | bytes,
+        cid: str | None = None,  # noqa: ARG002
+        compression: str = "none",  # noqa: ARG002
+    ) -> None:
+        self.received_message = message
 
     def feedback_subscriber_cb(self, msg: Fibonacci_FeedbackMessage) -> None:
         self.latest_feedback = msg
 
-    def mock_log(self, loglevel: str, message: str, _lid: str | None = None) -> None:
-        self.log_entries.append((loglevel, message))
+    def mock_log(self, level: str, message: str, lid: str | None = None) -> None:  # noqa: ARG002
+        self.log_entries.append((level, message))
 
     def test_advertise_missing_arguments(self) -> None:
         advertise_msg = loads(dumps({"op": "advertise_action"}))
