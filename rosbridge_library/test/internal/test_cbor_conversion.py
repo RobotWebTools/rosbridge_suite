@@ -43,14 +43,14 @@ from std_msgs.msg import (
 
 
 class TestCBORConversion(unittest.TestCase):
-    def test_string(self):
+    def test_string(self) -> None:
         msg = String(data="foo")
         extracted = extract_cbor_values(msg)
 
         self.assertEqual(extracted["data"], msg.data)
         self.assertEqual(type(extracted["data"]), str)
 
-    def test_bool(self):
+    def test_bool(self) -> None:
         for val in [True, False]:
             msg = Bool(data=val)
             extracted = extract_cbor_values(msg)
@@ -58,9 +58,12 @@ class TestCBORConversion(unittest.TestCase):
             self.assertEqual(extracted["data"], msg.data, f"val={val}")
             self.assertEqual(type(extracted["data"]), bool, f"val={val}")
 
-    def test_numbers(self):
+    def test_numbers(self) -> None:
+        # msg: ROSMessage
+        # msg_type: type[ROSMessage]
         for msg_type in [Int8, Int16, Int32, Int64]:
             msg = msg_type(data=-5)
+            assert isinstance(msg, (Int8, Int16, Int32, Int64))
             extracted = extract_cbor_values(msg)
 
             self.assertEqual(extracted["data"], msg.data, f"type={msg_type}")
@@ -68,6 +71,7 @@ class TestCBORConversion(unittest.TestCase):
 
         for msg_type in [UInt8, UInt16, UInt32, UInt64]:
             msg = msg_type(data=5)
+            assert isinstance(msg, (UInt8, UInt16, UInt32, UInt64))
             extracted = extract_cbor_values(msg)
 
             self.assertEqual(extracted["data"], msg.data, f"type={msg_type}")
@@ -75,14 +79,16 @@ class TestCBORConversion(unittest.TestCase):
 
         for msg_type in [Float32, Float64]:
             msg = msg_type(data=2.3)
+            assert isinstance(msg, (Float32, Float64))
             extracted = extract_cbor_values(msg)
 
             self.assertEqual(extracted["data"], msg.data, f"type={msg_type}")
             self.assertEqual(type(extracted["data"]), float, f"type={msg_type}")
 
-    def test_time(self):
+    def test_time(self) -> None:
         for msg_type in [Time, Duration]:
             msg = msg_type()
+            assert isinstance(msg, (Time, Duration))
             extracted = extract_cbor_values(msg)
 
             self.assertEqual(extracted["sec"], msg.sec, f"type={msg_type}")
@@ -90,7 +96,7 @@ class TestCBORConversion(unittest.TestCase):
             self.assertEqual(type(extracted["sec"]), int, f"type={msg_type}")
             self.assertEqual(type(extracted["nanosec"]), int, f"type={msg_type}")
 
-    def test_byte_array(self):
+    def test_byte_array(self) -> None:
         msg = UInt8MultiArray(data=[0, 1, 2])
         extracted = extract_cbor_values(msg)
 
@@ -99,7 +105,7 @@ class TestCBORConversion(unittest.TestCase):
         for i, val in enumerate(msg.data):
             self.assertEqual(data[i], val)
 
-    def test_integer_array(self):
+    def test_integer_array(self) -> None:
         for msg_type in [
             Int8MultiArray,
             Int16MultiArray,
@@ -110,6 +116,18 @@ class TestCBORConversion(unittest.TestCase):
             UInt64MultiArray,
         ]:
             msg = msg_type(data=[0, 1, 2])
+            assert isinstance(
+                msg,
+                (
+                    Int8MultiArray,
+                    Int16MultiArray,
+                    Int32MultiArray,
+                    Int64MultiArray,
+                    UInt16MultiArray,
+                    UInt32MultiArray,
+                    UInt64MultiArray,
+                ),
+            )
             extracted = extract_cbor_values(msg)
 
             tag = extracted["data"]
@@ -128,12 +146,13 @@ class TestCBORConversion(unittest.TestCase):
 
             self.assertEqual(array("b", unpacked), msg.data, f"type={msg_type}")
 
-    def test_float_array(self):
+    def test_float_array(self) -> None:
         for msg_type in [
             Float32MultiArray,
             Float64MultiArray,
         ]:
             msg = msg_type(data=[0, 1, 2])
+            assert isinstance(msg, (Float32MultiArray, Float64MultiArray))
             extracted = extract_cbor_values(msg)
 
             tag = extracted["data"]
@@ -152,7 +171,7 @@ class TestCBORConversion(unittest.TestCase):
 
             self.assertEqual(array("f", unpacked), msg.data, f"type={msg_type}")
 
-    def test_nested_messages(self):
+    def test_nested_messages(self) -> None:
         msg = UInt8MultiArray(
             layout=MultiArrayLayout(
                 data_offset=5,
@@ -181,7 +200,7 @@ class TestCBORConversion(unittest.TestCase):
             self.assertEqual(ex_layout["dim"][i]["size"], val.size)
             self.assertEqual(ex_layout["dim"][i]["stride"], val.stride)
 
-    def test_unicode_keys(self):
+    def test_unicode_keys(self) -> None:
         msg = String(data="foo")
         extracted = extract_cbor_values(msg)
 
