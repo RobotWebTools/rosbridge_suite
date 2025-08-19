@@ -120,15 +120,15 @@ class TestCallService(unittest.TestCase):
         received: dict[str, Any] = {"msg": None, "arrived": False}
 
         def cb(
-            msg: dict[str, Any] | bytes,
+            message: dict[str, Any] | bytes,
             cid: str | None = None,  # noqa: ARG001
             compression: str = "none",  # noqa: ARG001
         ) -> None:
-            print(msg)
-            received["msg"] = msg
+            print(message)
+            received["msg"] = message
             received["arrived"] = True
 
-        proto.send = cb
+        proto.send = cb  # type: ignore[method-assign]
 
         s.call_service(send_msg)
 
@@ -159,14 +159,14 @@ class TestCallService(unittest.TestCase):
         received: dict[str, Any] = {"msg": None, "arrived": False}
 
         def cb(
-            msg: dict[str, Any] | bytes,
+            message: dict[str, Any] | bytes,
             cid: str | None = None,  # noqa: ARG001
             compression: str = "none",  # noqa: ARG001
         ) -> None:
-            received["msg"] = msg
+            received["msg"] = message
             received["arrived"] = True
 
-        proto.send = cb
+        proto.send = cb  # type: ignore[method-assign]
 
         s.call_service(send_msg)
 
@@ -197,15 +197,15 @@ class TestCallService(unittest.TestCase):
         received: dict[str, Any] = {"msg": None, "arrived": False}
 
         def cb(
-            msg: dict[str, Any] | bytes,
+            message: dict[str, Any] | bytes,
             cid: str | None = None,  # noqa: ARG001
             compression: str = "none",  # noqa: ARG001
         ) -> None:
-            print(msg)
-            received["msg"] = msg
+            print(message)
+            received["msg"] = message
             received["arrived"] = True
 
-        proto.send = cb
+        proto.send = cb  # type: ignore[method-assign]
 
         s.call_service(send_msg)
 
@@ -228,15 +228,15 @@ class TestCallService(unittest.TestCase):
         received: dict[str, Any] = {"msg": None, "arrived": False}
 
         def cb(
-            msg: dict[str, Any] | bytes,
+            message: dict[str, Any] | bytes,
             cid: str | None = None,  # noqa: ARG001
             compression: str = "none",  # noqa: ARG001
         ) -> None:
             print("Received message")
-            received["msg"] = msg
+            received["msg"] = message
             received["arrived"] = True
 
-        proto.send = cb
+        proto.send = cb  # type: ignore[method-assign]
 
         s.call_service(send_msg)
 

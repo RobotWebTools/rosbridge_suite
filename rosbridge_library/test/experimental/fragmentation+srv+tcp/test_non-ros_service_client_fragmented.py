@@ -40,7 +40,7 @@ def request_service() -> None:
     }
     service_request = json.dumps(service_request_object)
     print("sending JSON-message to rosbridge:", service_request)
-    sock.send(service_request)
+    sock.send(service_request.encode("utf-8"))
 
 
 # ##############################################################################
@@ -126,9 +126,9 @@ try:
             #            print(e)
             pass
 
-    returned_data = json.loads(
-        reconstructed
-    )  # when service response is received --> access it (as defined in srv-file)
+    # when service response is received --> access it (as defined in srv-file)
+    assert reconstructed is not None
+    returned_data = json.loads(reconstructed)
     if returned_data["values"] is None:
         print("response was None -> service was not available")
     else:
