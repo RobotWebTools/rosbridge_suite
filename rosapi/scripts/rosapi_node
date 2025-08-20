@@ -505,7 +505,7 @@ class Rosapi(Node):
         return tuple(param.split(":"))
 
     def _print_malformed_param_name_warning(self, param_name):
-        self.get_logger().warn(
+        self.get_logger().warning(
             f"Malformed parameter name: {param_name}; expecting <node_name>:<param_name>"
         )
 
