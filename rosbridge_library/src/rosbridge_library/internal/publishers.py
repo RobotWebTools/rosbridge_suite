@@ -220,19 +220,19 @@ class PublisherManager:
                 queue_size=queue_size,
             )
         elif latch and self._publishers[topic].latched_client_id != client_id:
-            node_handle.get_logger().warn(
+            node_handle.get_logger().warning(
                 f"Client ID {client_id} attempted to register topic [{topic}] as "
                 "latched but this topic was previously registered."
             )
-            node_handle.get_logger().warn(
+            node_handle.get_logger().warning(
                 "Only a single registered latched publisher is supported at the time"
             )
         elif not latch and self._publishers[topic].latched_client_id:
-            node_handle.get_logger().warn(
+            node_handle.get_logger().warning(
                 f"New non-latched publisher registration for topic [{topic}] which is "
                 "already registered as latched. but this topic was previously registered."
             )
-            node_handle.get_logger().warn(
+            node_handle.get_logger().warning(
                 "Only a single registered latched publisher is supported at the time"
             )
 
