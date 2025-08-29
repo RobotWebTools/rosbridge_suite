@@ -188,13 +188,13 @@ class RosbridgeWebSocket(WebSocketHandler):
         try:
             await self.write_message(message, binary)
         except WebSocketClosedError:
-            cls.node_handle.get_logger().warn(
+            cls.node_handle.get_logger().warning(
                 "WebSocketClosedError: Tried to write to a closed websocket",
                 throttle_duration_sec=1.0,
             )
             # If we end up here, a client has disconnected before its message callback(s) could be removed.
         except StreamClosedError:
-            cls.node_handle.get_logger().warn(
+            cls.node_handle.get_logger().warning(
                 "StreamClosedError: Tried to write to a closed stream",
                 throttle_duration_sec=1.0,
             )
