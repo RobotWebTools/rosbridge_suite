@@ -34,6 +34,7 @@
 
 import sys
 import time
+from typing import TYPE_CHECKING, cast
 
 import rclpy
 from rclpy.node import Node
@@ -52,17 +53,20 @@ from rosbridge_library.capabilities.subscribe import Subscribe
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from rosbridge_server import ClientManager, RosbridgeWebSocket
 
+if TYPE_CHECKING:
+    from tornado.routing import _RuleList
 
-def start_hook():
+
+def start_hook() -> None:
     IOLoop.instance().start()
 
 
-def shutdown_hook():
+def shutdown_hook() -> None:
     IOLoop.instance().stop()
 
 
 class RosbridgeWebsocketNode(Node):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("rosbridge_websocket")
 
         RosbridgeWebSocket.node_handle = self
@@ -100,8 +104,8 @@ class RosbridgeWebsocketNode(Node):
 
         # Server and SSL options
         # SSL options, cannot set default to None - rclpy throws warning
-        certfile = self.declare_parameter("certfile", "").value
-        keyfile = self.declare_parameter("keyfile", "").value
+        certfile: str | None = self.declare_parameter("certfile", "").value
+        keyfile: str | None = self.declare_parameter("keyfile", "").value
         # if not set, set to None
         if certfile == "":
             certfile = None
@@ -151,7 +155,12 @@ class RosbridgeWebsocketNode(Node):
         if url_path != "/":
             handlers = [(rf"{url_path}", RosbridgeWebSocket)]
 
-        application = Application(handlers, **tornado_settings)
+        application = Application(
+            handlers=cast("_RuleList", handlers),
+            default_host=None,
+            transforms=None,
+            **tornado_settings,
+        )
 
         connected = False
         while not connected and self.context.ok():
@@ -172,7 +181,7 @@ class RosbridgeWebsocketNode(Node):
                 )
                 time.sleep(retry_startup_delay)
 
-    def protocol_parameter_handling(self):
+    def protocol_parameter_handling(self) -> None:
         RosbridgeWebSocket.use_compression = self.declare_parameter("use_compression", False).value
 
         RosbridgeWebSocket.call_services_in_new_thread = self.declare_parameter(
@@ -196,7 +205,7 @@ class RosbridgeWebsocketNode(Node):
             "delay_between_messages", RosbridgeWebSocket.delay_between_messages
         ).value
 
-        RosbridgeWebSocket.max_message_size = self.declare_parameter(
+        RosbridgeWebSocket.max_message_size = self.declare_parameter(  # type: ignore[method-assign,call-overload]
             "max_message_size", RosbridgeWebSocket.max_message_size
         ).value
 
@@ -263,7 +272,7 @@ class RosbridgeWebsocketNode(Node):
             idx = sys.argv.index("--max_message_size") + 1
             if idx < len(sys.argv):
                 value = sys.argv[idx]
-                RosbridgeWebSocket.max_message_size = int(value)
+                RosbridgeWebSocket.max_message_size = int(value)  # type: ignore[method-assign,assignment]
             else:
                 print("--max_message_size argument provided without a value. (can be <Integer>)")
                 sys.exit(-1)
@@ -358,17 +367,14 @@ class RosbridgeWebsocketNode(Node):
             )
 
 
-def main(args=None):
-    if args is None:
-        args = sys.argv
-
-    rclpy.init(args=args)
+def main() -> None:
+    rclpy.init()
     node = RosbridgeWebsocketNode()
 
     executor = rclpy.executors.SingleThreadedExecutor()
     executor.add_node(node)
 
-    def spin_ros():
+    def spin_ros() -> None:
         if not rclpy.ok():
             shutdown_hook()
             return
