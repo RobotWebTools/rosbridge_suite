@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import fnmatch
 from typing import TYPE_CHECKING, Any, Generic
 
@@ -12,10 +14,11 @@ from rosbridge_library.internal.type_support import (
     ROSServiceRequestT,
     ROSServiceResponseT,
 )
-from rosbridge_library.protocol import Protocol
 
 if TYPE_CHECKING:
     from rclpy.service import Service
+
+    from rosbridge_library.protocol import Protocol
 
 
 class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT]):
@@ -101,7 +104,7 @@ class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT])
 
 
 class AdvertiseService(Capability):
-    services_glob = None
+    services_glob: list[str] | None = None
 
     advertise_service_msg_fields = ((True, "service", str), (True, "type", str))
 

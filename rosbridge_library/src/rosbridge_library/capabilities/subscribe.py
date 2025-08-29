@@ -246,7 +246,7 @@ class Subscribe(Capability):
     )
     unsubscribe_msg_fields = ((True, "topic", str),)
 
-    topics_glob = None
+    topics_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor

@@ -31,18 +31,22 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import fnmatch
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
-from rosbridge_library.protocol import Protocol
+
+if TYPE_CHECKING:
+    from rosbridge_library.protocol import Protocol
 
 
 class Publish(Capability):
     publish_msg_fields = ((True, "topic", str),)
 
-    topics_glob = None
+    topics_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor

@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 import fnmatch
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capability import Capability
-from rosbridge_library.protocol import Protocol
+
+if TYPE_CHECKING:
+    from rosbridge_library.protocol import Protocol
 
 
 class UnadvertiseService(Capability):
     # unadvertise_service_msg_fields = [(True, "service", (str, unicode))]
 
-    services_glob = None
+    services_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
