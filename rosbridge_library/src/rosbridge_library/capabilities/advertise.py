@@ -99,7 +99,7 @@ class Advertise(Capability):
     advertise_msg_fields = ((True, "topic", str), (True, "type", str))
     unadvertise_msg_fields = ((True, "topic", str),)
 
-    topics_glob = None
+    topics_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor

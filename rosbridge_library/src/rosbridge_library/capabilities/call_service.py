@@ -51,7 +51,7 @@ class CallService(Capability):
         (False, "compression", str),
     )
 
-    services_glob = None
+    services_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
