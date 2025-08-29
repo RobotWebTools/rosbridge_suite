@@ -32,6 +32,7 @@
 import threading
 
 from rclpy.clock import ROSClock
+from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from std_msgs.msg import Int32
 
@@ -39,7 +40,7 @@ from rosbridge_msgs.msg import ConnectedClient, ConnectedClients
 
 
 class ClientManager:
-    def __init__(self, node_handle):
+    def __init__(self, node_handle: Node) -> None:
         qos = QoSProfile(
             depth=1,
             durability=DurabilityPolicy.TRANSIENT_LOCAL,
@@ -56,16 +57,16 @@ class ClientManager:
 
         self._lock = threading.Lock()
         self._client_count = 0
-        self._clients = {}
+        self._clients: dict[str, ConnectedClient] = {}
         self.__publish()
 
-    def __publish(self):
+    def __publish(self) -> None:
         msg = ConnectedClients()
         msg.clients = list(self._clients.values())
         self._conn_clients_pub.publish(msg)
         self._client_count_pub.publish(Int32(data=len(msg.clients)))
 
-    def add_client(self, client_id, ip_address):
+    def add_client(self, client_id: str, ip_address: str) -> None:
         with self._lock:
             client = ConnectedClient()
             client.ip_address = ip_address
@@ -73,7 +74,7 @@ class ClientManager:
             self._clients[client_id] = client
             self.__publish()
 
-    def remove_client(self, client_id, ip_address):  # noqa: ARG002
+    def remove_client(self, client_id: str, ip_address: str) -> None:  # noqa: ARG002
         with self._lock:
             self._clients.pop(client_id, None)
             self.__publish()
