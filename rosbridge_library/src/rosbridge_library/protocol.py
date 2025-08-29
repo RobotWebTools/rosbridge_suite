@@ -402,7 +402,7 @@ class Protocol:
         if level in {"error", "err"}:
             self.node_handle.get_logger().error(stdout_formatted_msg)
         elif level in {"warning", "warn"}:
-            self.node_handle.get_logger().warn(stdout_formatted_msg)
+            self.node_handle.get_logger().warning(stdout_formatted_msg)
         elif level in {"info", "information"}:
             self.node_handle.get_logger().info(stdout_formatted_msg)
         else:
