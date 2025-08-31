@@ -13,7 +13,7 @@ select = [
 
     # flake8 extensions
     "YTT",    # flake8-2020
-    # "ANN",  # flake8-annotations, There are too many missing annotations right now (TODO)
+    "ANN",    # flake8-annotations,
     "ASYNC",  # flake8-async
     "S",      # flake8-bandit
     # "BLE",  # flake8-blind-except, Too much hassle to fix (TODO)
