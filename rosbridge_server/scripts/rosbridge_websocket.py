@@ -112,7 +112,7 @@ class RosbridgeWebsocketNode(Node):
         if keyfile == "":
             keyfile = None
 
-        port = self.declare_parameter("port", 9090).value
+        port: int = self.declare_parameter("port", 9090).value
         if "--port" in sys.argv:
             idx = sys.argv.index("--port") + 1
             if idx < len(sys.argv):
@@ -120,7 +120,7 @@ class RosbridgeWebsocketNode(Node):
             else:
                 print("--port argument provided without a value.")
                 sys.exit(-1)
-        address = self.declare_parameter("address", "").value
+        address: str = self.declare_parameter("address", "").value
         if "--address" in sys.argv:
             idx = sys.argv.index("--address") + 1
             if idx < len(sys.argv):
@@ -129,7 +129,7 @@ class RosbridgeWebsocketNode(Node):
                 print("--address argument provided without a value.")
                 sys.exit(-1)
 
-        url_path = self.declare_parameter("url_path", "/").value
+        url_path: str = self.declare_parameter("url_path", "/").value
         if "--url_path" in sys.argv:
             idx = sys.argv.index("--url_path") + 1
             if idx < len(sys.argv):
@@ -138,7 +138,9 @@ class RosbridgeWebsocketNode(Node):
                 print("--url_path argument provided without a value.")
                 sys.exit(-1)
 
-        retry_startup_delay = self.declare_parameter("retry_startup_delay", 2.0).value  # seconds.
+        retry_startup_delay: float = self.declare_parameter(
+            "retry_startup_delay", 2.0
+        ).value  # seconds.
         if "--retry_startup_delay" in sys.argv:
             idx = sys.argv.index("--retry_startup_delay") + 1
             if idx < len(sys.argv):
@@ -213,7 +215,7 @@ class RosbridgeWebsocketNode(Node):
             "unregister_timeout", RosbridgeWebSocket.unregister_timeout
         ).value
 
-        bson_only_mode = self.declare_parameter("bson_only_mode", False).value
+        bson_only_mode: bool = self.declare_parameter("bson_only_mode", False).value
 
         RosbridgeWebSocket.client_manager = ClientManager(self)
 
@@ -230,11 +232,11 @@ class RosbridgeWebsocketNode(Node):
         RosbridgeWebSocket.client_count_pub.publish(Int32(data=0))
 
         # Get the glob strings and parse them as arrays.
-        topics_glob = self.declare_parameter("topics_glob", "").value
+        topics_glob: str = self.declare_parameter("topics_glob", "").value
 
-        services_glob = self.declare_parameter("services_glob", "").value
+        services_glob: str = self.declare_parameter("services_glob", "").value
 
-        params_glob = self.declare_parameter("params_glob", "").value
+        params_glob: str = self.declare_parameter("params_glob", "").value
 
         RosbridgeWebSocket.topics_glob = [
             element.strip().strip("'")
