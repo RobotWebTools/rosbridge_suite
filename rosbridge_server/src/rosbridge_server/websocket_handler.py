@@ -38,7 +38,7 @@ import traceback
 import uuid
 from collections import deque
 from functools import partial, wraps
-from typing import Callable, Generic, ParamSpec, TypeVar
+from typing import Callable, ParamSpec, TypeVar
 
 from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
