@@ -234,18 +234,18 @@ def _from_inst(
     # Special case for uint8[], we encode the string
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
-            assert isinstance(inst, list_types), "Expected a list type instance"
+            assert isinstance(inst, list_types)
             encoded = get_encoder()(inst)
             return encoded.decode("ascii")
 
     # Check for time or duration
     if rostype in ros_time_types:
-        assert isinstance(inst, TimeMsg | DurationMsg), "Expected Time or Duration instance"
+        assert isinstance(inst, TimeMsg | DurationMsg)
         return {"sec": inst.sec, "nanosec": inst.nanosec}
 
     # Check for primitive types
     if rostype in ros_primitive_types:
-        assert isinstance(inst, (*primitive_types, bytes)), "Expected primitive type instance"
+        assert isinstance(inst, (*primitive_types, bytes))
         return _from_primitive_inst(inst, rostype)
 
     # Check if it's a list or tuple
@@ -253,7 +253,7 @@ def _from_inst(
         return _from_list_inst(inst, rostype)
 
     # Assume it's otherwise a full ros msg object
-    assert isinstance(inst, ROSMessage), "Expected ROSMessage instance"
+    assert isinstance(inst, ROSMessage)
     return _from_object_inst(inst, rostype)
 
 
@@ -263,14 +263,14 @@ def _from_primitive_inst(inst: PrimitiveType | bytes, rostype: str) -> Primitive
 
     # JSON does not support Inf and NaN. They are mapped to None and encoded as null
     if rostype in type_map["float"]:
-        assert isinstance(inst, float), "Expected float"
+        assert isinstance(inst, float)
         if math.isnan(inst) or math.isinf(inst):
             return None
 
     # octet is translated to byte array with length 1
     # JSON does not support byte array. They are converted to int
     if rostype == "octet":
-        assert isinstance(inst, bytes), "Expected bytes for octet"
+        assert isinstance(inst, bytes)
         return int.from_bytes(inst, "little")
 
     return inst
@@ -330,7 +330,7 @@ def _to_inst(
 
     # Check the type for time or rostime
     if rostype in ros_time_types:
-        assert isinstance(msg, dict | str), "Expected dict or str for time or duration msg"
+        assert isinstance(msg, dict | str)
         assert inst is None or isinstance(inst, TimeMsg | DurationMsg), (
             "Expected Time or Duration instance"
         )
@@ -338,20 +338,20 @@ def _to_inst(
 
     # Check to see whether this is a primitive type
     if rostype in ros_primitive_types:
-        assert isinstance(msg, primitive_types), "Expected primitive type msg"
+        assert isinstance(msg, primitive_types)
         return _to_primitive_inst(msg, rostype, roottype, stack)
 
     # Check whether we're dealing with a list type
     if inst is not None and isinstance(inst, list | np.ndarray | array.array):
-        assert isinstance(msg, list_types), "Expected a list msg"
+        assert isinstance(msg, list_types)
         return _to_list_inst(msg, rostype, roottype, clock, inst, stack)
 
     # Otherwise, the type has to be a full ros msg type, so msg must be a dict
     if inst is None:
         inst = ros_loader.get_message_instance(rostype)
 
-    assert isinstance(msg, dict), "Expected a dict msg"
-    assert isinstance(inst, ROSMessage), "Expected ROSMessage instance"
+    assert isinstance(msg, dict)
+    assert isinstance(inst, ROSMessage)
     return _to_object_inst(msg, rostype, roottype, clock, inst, stack)
 
 
@@ -473,7 +473,7 @@ def _to_object_inst(
 
     # Substitute the correct time if we're an std_msgs/Header
     if rostype in ros_header_types:
-        assert isinstance(inst, HeaderMsg), "Expected std_msgs/msg/Header instance"
+        assert isinstance(inst, HeaderMsg)
         inst.stamp = clock.now().to_msg()
 
     inst_fields: dict[str, str] = inst.get_fields_and_field_types()
