@@ -88,7 +88,7 @@ def init(node: Node, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC) -> None:
     global _node, _timeout_sec
     _node = node
 
-    if not isinstance(timeout_sec, (int, float)) or timeout_sec <= 0:
+    if not isinstance(timeout_sec, int | float) or timeout_sec <= 0:
         msg = "Parameter timeout must be a positive number"
         raise ValueError(msg)
     _timeout_sec = timeout_sec

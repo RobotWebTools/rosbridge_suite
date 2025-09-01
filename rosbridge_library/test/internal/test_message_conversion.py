@@ -37,7 +37,7 @@ class TestMessageConversion(unittest.TestCase):
             self.assertEqual(type(msg1), type(msg2))
         if type(msg1) in c.list_types:
             assert isinstance(msg1, c.list_types) and isinstance(msg2, c.list_types)
-            for x, y in zip(msg1, msg2):
+            for x, y in zip(msg1, msg2, strict=False):
                 self.msgs_equal(x, y)
         elif type(msg1) in c.primitive_types or type(msg1) is str:
             self.assertEqual(msg1, msg2)

@@ -2,8 +2,9 @@
 import random
 import time
 import unittest
+from collections.abc import Callable
 from threading import Thread
-from typing import TYPE_CHECKING, Any, Callable, NoReturn
+from typing import TYPE_CHECKING, Any, NoReturn
 
 import numpy as np
 import rclpy
@@ -118,7 +119,7 @@ class TestServices(unittest.TestCase):
             self.assertEqual(type(msg1), type(msg2))
         if type(msg1) in c.list_types:
             assert isinstance(msg1, c.list_types) and isinstance(msg2, c.list_types)
-            for x, y in zip(msg1, msg2):
+            for x, y in zip(msg1, msg2, strict=False):
                 self.msgs_equal(x, y)
         elif (
             type(msg1) in c.primitive_types
@@ -193,7 +194,7 @@ class TestServices(unittest.TestCase):
 
         result = res.result
 
-        for x, y in zip(result.names, json_ret["result"]["names"]):
+        for x, y in zip(result.names, json_ret["result"]["names"], strict=False):
             self.assertEqual(x, y)
 
     def test_service_caller(self) -> None:
@@ -237,7 +238,7 @@ class TestServices(unittest.TestCase):
 
         result = res.result
 
-        for x, y in zip(result.names, rcvd["json"]["result"]["names"]):
+        for x, y in zip(result.names, rcvd["json"]["result"]["names"], strict=False):
             self.assertEqual(x, y)
 
     def test_service_tester(self) -> None:

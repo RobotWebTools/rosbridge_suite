@@ -38,7 +38,7 @@ import re
 import sys
 from base64 import standard_b64decode, standard_b64encode
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from builtin_interfaces.msg import Duration as DurationMsg
@@ -52,6 +52,8 @@ from rosbridge_library.internal.type_support import ROSMessage
 from rosbridge_library.util import bson
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from rclpy.node import Node
 
 
@@ -238,12 +240,12 @@ def _from_inst(
 
     # Check for time or duration
     if rostype in ros_time_types:
-        assert isinstance(inst, (TimeMsg, DurationMsg)), "Expected Time or Duration instance"
+        assert isinstance(inst, TimeMsg | DurationMsg), "Expected Time or Duration instance"
         return {"sec": inst.sec, "nanosec": inst.nanosec}
 
     # Check for primitive types
     if rostype in ros_primitive_types:
-        assert isinstance(inst, (primitive_types, bytes)), "Expected primitive type instance"
+        assert isinstance(inst, primitive_types | bytes), "Expected primitive type instance"
         return _from_primitive_inst(inst, rostype)
 
     # Check if it's a list or tuple
@@ -328,8 +330,8 @@ def _to_inst(
 
     # Check the type for time or rostime
     if rostype in ros_time_types:
-        assert isinstance(msg, (dict, str)), "Expected dict or str for time or duration msg"
-        assert inst is None or isinstance(inst, (TimeMsg, DurationMsg)), (
+        assert isinstance(msg, dict | str), "Expected dict or str for time or duration msg"
+        assert inst is None or isinstance(inst, TimeMsg | DurationMsg), (
             "Expected Time or Duration instance"
         )
         return _to_time_inst(msg, rostype, clock, inst)
@@ -340,7 +342,7 @@ def _to_inst(
         return _to_primitive_inst(msg, rostype, roottype, stack)
 
     # Check whether we're dealing with a list type
-    if inst is not None and isinstance(inst, (list, np.ndarray, array.array)):
+    if inst is not None and isinstance(inst, list | np.ndarray | array.array):
         assert isinstance(msg, list_types), "Expected a list msg"
         return _to_list_inst(msg, rostype, roottype, clock, inst, stack)
 

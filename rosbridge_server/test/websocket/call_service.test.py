@@ -4,7 +4,7 @@ import sys
 import time
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from rclpy.callback_groups import ReentrantCallbackGroup
 from std_srvs.srv import SetBool
@@ -16,7 +16,7 @@ import common
 from common import expect_messages, websocket_test
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable
+    from collections.abc import Awaitable, Callable
 
     from common import TestClientProtocol
     from rclpy.node import Node
