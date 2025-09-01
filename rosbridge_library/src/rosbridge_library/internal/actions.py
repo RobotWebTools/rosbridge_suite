@@ -33,7 +33,7 @@ from __future__ import annotations
 
 import time
 from threading import Thread
-from typing import TYPE_CHECKING, Any, Callable, Generic, cast
+from typing import TYPE_CHECKING, Any, Generic, cast
 
 from rclpy.action import ActionClient
 from rclpy.expand_topic_name import expand_topic_name
@@ -53,6 +53,8 @@ from rosbridge_library.internal.type_support import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from action_msgs.srv import CancelGoal
     from rclpy.action.client import ClientGoalHandle
     from rclpy.node import Node
@@ -133,7 +135,7 @@ def args_to_action_goal_instance(inst: ROSMessage, args: list | dict[str, Any] |
     """
     msg = {}
     if isinstance(args, list):
-        msg = dict(zip(inst.get_fields_and_field_types().keys(), args))
+        msg = dict(zip(inst.get_fields_and_field_types().keys(), args, strict=False))
     elif isinstance(args, dict):
         msg = args
 

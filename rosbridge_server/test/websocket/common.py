@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 import json
-from typing import TYPE_CHECKING, Any, Callable, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 import launch_ros
 import rclpy
@@ -17,7 +17,7 @@ from twisted.internet import reactor
 from twisted.internet.endpoints import TCP4ClientEndpoint
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable
+    from collections.abc import Awaitable, Callable
 
     from rclpy.client import Client
     from rclpy.logging import RcutilsLogger

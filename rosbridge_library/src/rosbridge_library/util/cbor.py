@@ -177,7 +177,7 @@ def dumps_tag(t, sort_keys=False):
 
 
 def _is_stringish(x):
-    return isinstance(x, (str, bytes))
+    return isinstance(x, str | bytes)
 
 
 def _is_intish(x):
@@ -191,7 +191,7 @@ def dumps(ob, sort_keys=False):
         return dumps_bool(ob)
     if _is_stringish(ob):
         return dumps_string(ob)
-    if isinstance(ob, (list, tuple)):
+    if isinstance(ob, list | tuple):
         return dumps_array(ob, sort_keys=sort_keys)
     # TODO: accept other enumerables and emit a variable length array
     if isinstance(ob, dict):

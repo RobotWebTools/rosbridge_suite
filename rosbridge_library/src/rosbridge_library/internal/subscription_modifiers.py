@@ -37,7 +37,10 @@ import time
 import traceback
 from collections import deque
 from threading import Condition, Thread
-from typing import Callable, Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 """ Sits between incoming messages from a subscription, and the outgoing
 publish method.  Provides throttling / buffering capabilities.
