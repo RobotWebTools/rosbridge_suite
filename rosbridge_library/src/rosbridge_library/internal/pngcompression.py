@@ -30,6 +30,8 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 from base64 import standard_b64decode, standard_b64encode
 from io import BytesIO
 from math import ceil, floor, sqrt

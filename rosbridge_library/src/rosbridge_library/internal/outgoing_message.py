@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, Generic
 
 from rosbridge_library.internal.cbor_conversion import extract_cbor_values
