@@ -245,7 +245,7 @@ def _from_inst(
 
     # Check for primitive types
     if rostype in ros_primitive_types:
-        assert isinstance(inst, primitive_types | bytes), "Expected primitive type instance"
+        assert isinstance(inst, (*primitive_types, bytes)), "Expected primitive type instance"
         return _from_primitive_inst(inst, rostype)
 
     # Check if it's a list or tuple
@@ -310,7 +310,7 @@ def _from_object_inst(inst: ROSMessage, _rostype: str) -> dict:
 
 
 def _to_inst(
-    msg: dict[str, Any] | Sequence | str | float | bool,
+    msg: dict[str, Any] | Sequence | PrimitiveType,
     rostype: str,
     roottype: str,
     clock: Clock | None = None,
