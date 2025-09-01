@@ -94,7 +94,7 @@ def init(parent_node_name: str, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC):
     )
     _parent_node_name = get_absolute_node_name(parent_node_name)
 
-    if not isinstance(timeout_sec, (int, float)) or timeout_sec <= 0:
+    if not isinstance(timeout_sec, int | float) or timeout_sec <= 0:
         msg = "Parameter timeout must be a positive number"
         raise ValueError(msg)
     _timeout_sec = timeout_sec

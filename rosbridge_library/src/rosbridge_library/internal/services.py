@@ -32,7 +32,7 @@
 from __future__ import annotations
 
 from threading import Event, Thread
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from rclpy.callback_groups import ReentrantCallbackGroup
 
@@ -46,6 +46,8 @@ from rosbridge_library.internal.ros_loader import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from rclpy.client import Client
     from rclpy.node import Node
 
@@ -118,7 +120,7 @@ def args_to_service_request_instance(inst: ROSMessage, args: list | dict[str, An
     """
     msg = {}
     if isinstance(args, list):
-        msg = dict(zip(inst.get_fields_and_field_types().keys(), args))
+        msg = dict(zip(inst.get_fields_and_field_types().keys(), args, strict=False))
     elif isinstance(args, dict):
         msg = args
 

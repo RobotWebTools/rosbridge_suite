@@ -35,7 +35,7 @@ from __future__ import annotations
 import fnmatch
 from functools import partial
 from threading import Lock
-from typing import TYPE_CHECKING, Any, Callable, Generic
+from typing import TYPE_CHECKING, Any, Generic
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.pngcompression import encode as encode_png
@@ -44,6 +44,8 @@ from rosbridge_library.internal.subscription_modifiers import MessageHandler
 from rosbridge_library.internal.type_support import ROSMessageT
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from rclpy.node import Node
 
     from rosbridge_library.internal.outgoing_message import OutgoingMessage

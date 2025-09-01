@@ -38,7 +38,7 @@ import traceback
 import uuid
 from collections import deque
 from functools import partial, wraps
-from typing import Callable, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, ParamSpec, TypeVar
 
 from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
@@ -46,6 +46,9 @@ from tornado.websocket import WebSocketClosedError, WebSocketHandler
 
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 _io_loop = IOLoop.instance()
 

@@ -3,13 +3,13 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from std_srvs.srv import SetBool
 from twisted.python import log
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable
+    from collections.abc import Awaitable, Callable
 
     from common import TestClientProtocol
     from rclpy.client import Client

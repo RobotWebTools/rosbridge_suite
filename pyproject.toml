@@ -1,3 +1,7 @@
+[project]
+name = "rosbridge_suite"
+requires-python = ">=3.10"
+
 [tool.black]
 # We use ruff for formatting, but black formatter should be compatible with ruff.
 line-length = 100

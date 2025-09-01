@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from action_msgs.msg import GoalStatus
 from example_interfaces.action import Fibonacci
@@ -16,7 +16,7 @@ import common
 from common import expect_messages, websocket_test
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable
+    from collections.abc import Awaitable, Callable
 
     from common import TestClientProtocol
     from rclpy.action.client import ClientGoalHandle

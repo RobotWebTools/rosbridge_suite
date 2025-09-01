@@ -63,7 +63,7 @@ class TestCBORConversion(unittest.TestCase):
         # msg_type: type[ROSMessage]
         for msg_type in [Int8, Int16, Int32, Int64]:
             msg = msg_type(data=-5)
-            assert isinstance(msg, (Int8, Int16, Int32, Int64))
+            assert isinstance(msg, Int8 | Int16 | Int32 | Int64)
             extracted = extract_cbor_values(msg)
 
             self.assertEqual(extracted["data"], msg.data, f"type={msg_type}")
@@ -71,7 +71,7 @@ class TestCBORConversion(unittest.TestCase):
 
         for msg_type in [UInt8, UInt16, UInt32, UInt64]:
             msg = msg_type(data=5)
-            assert isinstance(msg, (UInt8, UInt16, UInt32, UInt64))
+            assert isinstance(msg, UInt8 | UInt16 | UInt32 | UInt64)
             extracted = extract_cbor_values(msg)
 
             self.assertEqual(extracted["data"], msg.data, f"type={msg_type}")
@@ -79,7 +79,7 @@ class TestCBORConversion(unittest.TestCase):
 
         for msg_type in [Float32, Float64]:
             msg = msg_type(data=2.3)
-            assert isinstance(msg, (Float32, Float64))
+            assert isinstance(msg, Float32 | Float64)
             extracted = extract_cbor_values(msg)
 
             self.assertEqual(extracted["data"], msg.data, f"type={msg_type}")
@@ -88,7 +88,7 @@ class TestCBORConversion(unittest.TestCase):
     def test_time(self) -> None:
         for msg_type in [Time, Duration]:
             msg = msg_type()
-            assert isinstance(msg, (Time, Duration))
+            assert isinstance(msg, Time | Duration)
             extracted = extract_cbor_values(msg)
 
             self.assertEqual(extracted["sec"], msg.sec, f"type={msg_type}")
@@ -118,15 +118,13 @@ class TestCBORConversion(unittest.TestCase):
             msg = msg_type(data=[0, 1, 2])
             assert isinstance(
                 msg,
-                (
-                    Int8MultiArray,
-                    Int16MultiArray,
-                    Int32MultiArray,
-                    Int64MultiArray,
-                    UInt16MultiArray,
-                    UInt32MultiArray,
-                    UInt64MultiArray,
-                ),
+                Int8MultiArray
+                | Int16MultiArray
+                | Int32MultiArray
+                | Int64MultiArray
+                | UInt16MultiArray
+                | UInt32MultiArray
+                | UInt64MultiArray,
             )
             extracted = extract_cbor_values(msg)
 
@@ -152,7 +150,7 @@ class TestCBORConversion(unittest.TestCase):
             Float64MultiArray,
         ]:
             msg = msg_type(data=[0, 1, 2])
-            assert isinstance(msg, (Float32MultiArray, Float64MultiArray))
+            assert isinstance(msg, Float32MultiArray | Float64MultiArray)
             extracted = extract_cbor_values(msg)
 
             tag = extracted["data"]

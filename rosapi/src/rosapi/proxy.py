@@ -32,7 +32,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from ros2action.api import get_action_names_and_types
 from ros2interface.api import type_completer
@@ -48,6 +48,8 @@ from ros2topic.api import get_topic_names, get_topic_names_and_types
 from .glob_helper import any_match, filter_globs
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from rclpy.node import Node
 
 _node: Node | None = None

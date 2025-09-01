@@ -35,7 +35,7 @@ from __future__ import annotations
 
 from functools import partial
 from threading import Lock, RLock
-from typing import TYPE_CHECKING, Callable, Generic, cast
+from typing import TYPE_CHECKING, Generic, cast
 
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
@@ -50,7 +50,7 @@ from rosbridge_library.internal.topics import (
 from rosbridge_library.internal.type_support import ROSMessageT
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Callable, Iterable
 
     from rclpy.node import Node
     from rclpy.subscription import Subscription
