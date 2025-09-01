@@ -30,8 +30,10 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import fnmatch
-from typing import Generic, cast
+from typing import TYPE_CHECKING, Generic, cast
 
 from action_msgs.msg import GoalStatus
 from rclpy.action import ActionServer
@@ -48,7 +50,9 @@ from rosbridge_library.internal.type_support import (
     ROSActionResultT,
     ROSMessage,
 )
-from rosbridge_library.protocol import Protocol
+
+if TYPE_CHECKING:
+    from rosbridge_library.protocol import Protocol
 
 
 class AdvertisedActionHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):

@@ -1,12 +1,15 @@
+from __future__ import annotations
+
 import struct
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 try:
     from cbor import Tag
 except ImportError:
     from rosbridge_library.util.cbor import Tag
 
-from rosbridge_library.internal.type_support import ROSMessage
+if TYPE_CHECKING:
+    from rosbridge_library.internal.type_support import ROSMessage
 
 LIST_TYPES = [list, tuple]
 INT_TYPES = [

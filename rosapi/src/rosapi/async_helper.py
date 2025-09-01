@@ -30,8 +30,14 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from rclpy.node import Node
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from rclpy.task import Future
+
+if TYPE_CHECKING:
+    from rclpy.node import Node
 
 
 async def futures_wait_for(node: Node, futures: list[Future], timeout_sec: float) -> None:
