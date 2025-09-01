@@ -32,6 +32,8 @@
 
 """Exceptions and code common to both publishers and subscribers."""
 
+from __future__ import annotations
+
 
 class TopicNotEstablishedException(Exception):
     def __init__(self, topic: str) -> None:
