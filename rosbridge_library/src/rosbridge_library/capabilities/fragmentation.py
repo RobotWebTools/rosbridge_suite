@@ -77,7 +77,7 @@ class Fragmentation(Capability):
         :param mid: (optional) if provided, the fragment messages will be given this id.
             Otherwise an id will be auto-generated.
 
-        :return: Am iterable of ROSBridge messages, either a single message or multiple fragments.
+        :return: An iterable of ROSBridge messages, either a single message or multiple fragments.
         """
         # All fragmented messages need an ID so they can be reconstructed
         if mid is None:
