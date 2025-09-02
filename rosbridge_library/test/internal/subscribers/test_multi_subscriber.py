@@ -39,6 +39,7 @@ class TestMultiSubscriber(unittest.TestCase):
 
         self.assertFalse(is_topic_subscribed(self.node, topic))
         MultiSubscriber(topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type)
+        time.sleep(0.05)
         self.assertTrue(is_topic_subscribed(self.node, topic))
 
     def test_unregister_multisubscriber(self):
@@ -50,8 +51,10 @@ class TestMultiSubscriber(unittest.TestCase):
         multi = MultiSubscriber(
             topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type
         )
+        time.sleep(0.05)
         self.assertTrue(is_topic_subscribed(self.node, topic))
         multi.unregister()
+        time.sleep(0.05)
         self.assertFalse(is_topic_subscribed(self.node, topic))
 
     def test_verify_type(self):
@@ -86,6 +89,7 @@ class TestMultiSubscriber(unittest.TestCase):
         multi = MultiSubscriber(
             topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type
         )
+        time.sleep(0.05)
         self.assertTrue(is_topic_subscribed(self.node, topic))
         self.assertEqual(len(multi.new_subscriptions), 0)
 
