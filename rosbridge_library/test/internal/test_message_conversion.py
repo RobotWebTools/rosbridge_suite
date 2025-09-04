@@ -357,5 +357,6 @@ class TestMessageConversion(unittest.TestCase):
 
             self.assertEqual(c._from_inst(ret, rostype), {"data": floats})
 
+
 if __name__ == "__main__":
     unittest.main()
