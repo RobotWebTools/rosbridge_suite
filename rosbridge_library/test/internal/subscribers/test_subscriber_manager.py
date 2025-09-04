@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import time
 import unittest
 from threading import Thread
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
@@ -10,13 +12,15 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from std_msgs.msg import String
 
-from rosbridge_library.internal.outgoing_message import OutgoingMessage
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.topics import (
     TopicNotEstablishedException,
     TypeConflictException,
 )
 from rosbridge_library.util.ros import is_topic_subscribed
+
+if TYPE_CHECKING:
+    from rosbridge_library.internal.outgoing_message import OutgoingMessage
 
 
 class TestSubscriberManager(unittest.TestCase):
