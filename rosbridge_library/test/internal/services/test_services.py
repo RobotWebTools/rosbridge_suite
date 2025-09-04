@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import random
 import time
 import unittest
-from collections.abc import Callable
 from threading import Thread
 from typing import TYPE_CHECKING, Any, NoReturn
 
@@ -15,11 +16,14 @@ from rclpy.node import Node
 from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal import ros_loader, services
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
-from rosbridge_library.internal.type_support import ROSMessage
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from rclpy.client import Client
     from rclpy.service import Service
+
+    from rosbridge_library.internal.type_support import ROSMessage
 
 
 def populate_random_args(d: object) -> object:
