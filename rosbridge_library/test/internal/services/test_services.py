@@ -292,3 +292,7 @@ class TestServices(unittest.TestCase):
 
         for t in ts:
             t.validate(self.msgs_equal)
+
+
+if __name__ == "__main__":
+    unittest.main()

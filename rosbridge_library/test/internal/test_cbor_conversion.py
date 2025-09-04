@@ -205,3 +205,7 @@ class TestCBORConversion(unittest.TestCase):
         keys = extracted.keys()
         for key in keys:
             self.assertEqual(type(key), str)
+
+
+if __name__ == "__main__":
+    unittest.main()

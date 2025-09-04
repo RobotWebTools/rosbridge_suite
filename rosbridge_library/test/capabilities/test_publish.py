@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import time
@@ -74,3 +74,7 @@ class TestAdvertise(unittest.TestCase):
         pub.publish(pub_msg)
         time.sleep(0.5)
         self.assertEqual(received["msg"].data, msg["data"])
+
+
+if __name__ == "__main__":
+    unittest.main()

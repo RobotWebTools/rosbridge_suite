@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import time
 import unittest
 from json import dumps, loads
@@ -172,3 +172,7 @@ class TestAdvertise(unittest.TestCase):
         self.assertTrue(is_topic_published(self.node, topic))
         time.sleep(manager.unregister_timeout + 1.0)
         self.assertFalse(is_topic_published(self.node, topic))
+
+
+if __name__ == "__main__":
+    unittest.main()

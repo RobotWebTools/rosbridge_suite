@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 
 from std_msgs.msg import String
@@ -26,3 +26,7 @@ class TestOutgoingMessage(unittest.TestCase):
 
         again = outgoing.get_cbor_values()
         self.assertTrue(result is again)
+
+
+if __name__ == "__main__":
+    unittest.main()
