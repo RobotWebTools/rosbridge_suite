@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import time
 import unittest
 from threading import Thread
@@ -256,3 +256,6 @@ class TestPublisherManager(unittest.TestCase):
         self.assertRaises(
             FieldTypeMismatchException, manager.publish, client, topic, msg, self.node
         )
+
+if __name__ == "__main__":
+    unittest.main()

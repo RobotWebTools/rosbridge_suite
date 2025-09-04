@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import time
 import unittest
 from threading import Thread
@@ -234,3 +234,7 @@ class TestSubscriberManager(unittest.TestCase):
         pub.publish(msg)
         time.sleep(0.1)
         self.assertEqual(msg.data, received["msg"]["data"])
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import time
 import unittest
 from typing import Any
@@ -377,3 +377,7 @@ class TestMessageHandlers(unittest.TestCase):
         handler = self.help_test_default(handler)
         handler = self.help_test_default(handler)
         handler.finish()
+
+
+if __name__ == "__main__":
+    unittest.main()

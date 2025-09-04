@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import time
@@ -257,3 +257,7 @@ class TestCallService(unittest.TestCase):
         self.assertFalse(received["msg"]["result"])
         values = received["msg"]["values"]
         self.assertEqual(values, "Timeout exceeded while waiting for service response")
+
+
+if __name__ == "__main__":
+    unittest.main()
