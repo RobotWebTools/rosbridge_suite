@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import time
 import unittest
 from threading import Thread
@@ -186,3 +186,7 @@ class TestMultiPublisher(unittest.TestCase):
 
         p: MultiPublisher[String] = MultiPublisher(topic, self.node, msg_type)
         self.assertRaises(FieldTypeMismatchException, p.publish, msg)
+
+
+if __name__ == "__main__":
+    unittest.main()

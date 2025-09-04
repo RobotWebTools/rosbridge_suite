@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import time
 import unittest
 from threading import Thread
@@ -212,3 +212,7 @@ class TestMultiSubscriber(unittest.TestCase):
         time.sleep(0.1)
         self.assertEqual(msg.data, received["msg1"]["data"])
         self.assertEqual(msg.data, received["msg2"]["data"])
+
+
+if __name__ == "__main__":
+    unittest.main()

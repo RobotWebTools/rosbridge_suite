@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 
 from rosidl_runtime_py.utilities import get_message

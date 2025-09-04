@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 
 from rosbridge_library.internal import pngcompression
@@ -19,3 +19,7 @@ class TestCompression(unittest.TestCase):
         self.assertNotEqual(string, encoded)
         decoded = pngcompression.decode(encoded)
         self.assertEqual(string, decoded)
+
+
+if __name__ == "__main__":
+    unittest.main()

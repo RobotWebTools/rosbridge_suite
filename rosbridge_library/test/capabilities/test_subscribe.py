@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import time
@@ -140,3 +140,7 @@ class TestSubscribe(unittest.TestCase):
         pub.publish(msg)
         time.sleep(0.1)
         self.assertEqual(received["msg"]["msg"]["data"], msg.data)
+
+
+if __name__ == "__main__":
+    unittest.main()
