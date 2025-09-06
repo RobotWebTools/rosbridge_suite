@@ -21,9 +21,6 @@ jobs:
         include:
           # Test supported ROS 2 distributions
           # https://docs.ros.org/en/rolling/Releases.html
-          # NOTE: Humble does not work on the `ros2` branch, so it is tested in its own branch.
-          - ros: jazzy
-            os: ubuntu-24.04
           - ros: kilted
             os: ubuntu-24.04
           - ros: rolling
