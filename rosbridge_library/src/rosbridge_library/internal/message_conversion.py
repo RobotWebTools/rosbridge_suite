@@ -342,7 +342,7 @@ def _to_inst(
         return _to_primitive_inst(msg, rostype, roottype, stack)
 
     # Check whether we're dealing with a list type
-    if inst is not None and isinstance(inst, list | np.ndarray | array.array):
+    if inst is not None and isinstance(inst, list_types):
         assert isinstance(msg, list_types)
         return _to_list_inst(msg, rostype, roottype, clock, inst, stack)
 
