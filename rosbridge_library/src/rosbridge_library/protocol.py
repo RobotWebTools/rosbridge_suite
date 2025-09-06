@@ -243,7 +243,7 @@ class Protocol:
             self.old_buffer = self.buffer
             self.incoming()
 
-    def outgoing(self, message: bson.Binary | bytearray | str, compression: str = "none") -> None:
+    def outgoing(self, message: bson.BSON | bytearray | str, compression: str = "none") -> None:
         """
         Pass an outgoing message to the client.
 
@@ -314,9 +314,9 @@ class Protocol:
 
     def serialize(
         self,
-        msg: bytearray | bson.Binary | dict[str, Any],
+        msg: bytearray | bson.BSON | dict[str, Any],
         cid: str | None = None,  # noqa: ARG002
-    ) -> bson.Binary | bytearray | str | None:
+    ) -> bson.BSON | bytearray | str | None:
         """
         Turn a dictionary of values into the appropriate wire-level representation.
 
