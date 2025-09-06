@@ -191,17 +191,15 @@ class RosbridgeWebSocket(WebSocketHandler):
         )
         self.incoming_queue.finish()
 
-    def send_message(
-        self, message: bson.Binary | bytearray | str, compression: str = "none"
-    ) -> None:
-        if isinstance(message, bson.Binary) or compression in ["cbor", "cbor-raw"]:
+    def send_message(self, message: bson.BSON | bytearray | str, compression: str = "none") -> None:
+        if isinstance(message, bson.BSON) or compression in ["cbor", "cbor-raw"]:
             binary = True
         else:
             binary = False
 
         _io_loop.add_callback(partial(self.prewrite_message, message, binary))
 
-    async def prewrite_message(self, message: bson.Binary | bytearray | str, binary: bool) -> None:
+    async def prewrite_message(self, message: bson.BSON | bytearray | str, binary: bool) -> None:
         assert self.node_handle is not None
         cls = self.__class__
         try:
