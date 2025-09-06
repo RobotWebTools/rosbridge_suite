@@ -43,7 +43,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 from builtin_interfaces.msg import Duration as DurationMsg
 from builtin_interfaces.msg import Time as TimeMsg
-from rclpy.clock import Clock
+from rclpy.clock import ROSClock
 from rclpy.parameter import Parameter
 from std_msgs.msg import Header as HeaderMsg
 
@@ -54,6 +54,7 @@ from rosbridge_library.util import bson
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from rclpy.clock import Clock
     from rclpy.node import Node
 
 
@@ -200,7 +201,7 @@ def populate_instance(
     according to the values in msg.
     """
     if clock is None:
-        clock = Clock()
+        clock = ROSClock()
 
     inst_type = msg_instance_type_repr(inst)
 
@@ -318,7 +319,7 @@ def _to_inst(
     stack: list[str] | None = None,
 ) -> object:
     if clock is None:
-        clock = Clock()
+        clock = ROSClock()
     if stack is None:
         stack = []
 
