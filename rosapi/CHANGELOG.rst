@@ -2,6 +2,9 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.11.17 (2023-09-27)
 --------------------
 * fix: topic list crashes if no topics are available (`#869 <https://github.com/RobotWebTools/rosbridge_suite/issues/869>`_)
