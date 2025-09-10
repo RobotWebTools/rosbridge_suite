@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.11.18 (2025-09-10)
+--------------------
 * Fix IP binding of rosbridge_server (`#1047 <https://github.com/RobotWebTools/rosbridge_suite/issues/1047>`_)
 * Catch race condition if websocket is closed while messages are in queue (`#1004 <https://github.com/RobotWebTools/rosbridge_suite/issues/1004>`_)
 * Contributors: Johnson Lee, jobafr
