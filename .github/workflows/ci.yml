@@ -11,11 +11,11 @@ jobs:
           - 3.8
 
     name: Lint (python-${{ matrix.python_version }})
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
       - run: pip install flake8
@@ -29,13 +29,14 @@ jobs:
           # Test supported ROS 1 distributions
           # http://wiki.ros.org/Distributions
           - ros_distribution: noetic
-            os: ubuntu-20.04
+            os_container: ubuntu:20.04
 
-    name: ROS 1 ${{ matrix.ros_distribution }} (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    name: ROS 1 ${{ matrix.ros_distribution }} (${{ matrix.os_container }})
+    runs-on: ubuntu-latest
+    container: ${{ matrix.os_container }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
         with:
           path: ros_ws/src
 
@@ -43,7 +44,7 @@ jobs:
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
 
-      - uses: ros-tooling/action-ros-ci@v0.3
+      - uses: ros-tooling/action-ros-ci@v0.4
         env:
           SETUPTOOLS_USE_DISTUTILS: stdlib
         with:
