@@ -18,11 +18,9 @@ from rosbridge_library.internal import message_conversion as c
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 
 if TYPE_CHECKING:
-    from rclpy.action.client import ClientGoalHandle
     from rclpy.action.server import ServerGoalHandle
     from rclpy.executors import Executor
     from rclpy.task import Future
-    from rclpy.type_support import GetResultServiceResponse
 
 
 class ActionTester:
@@ -30,21 +28,17 @@ class ActionTester:
         self.executor = executor
         self.node = Node("action_tester")
         self.executor.add_node(self.node)
-        self.action_server: ActionServer[Fibonacci.Goal, Fibonacci.Result, Fibonacci.Feedback] = (
-            ActionServer(
-                self.node,
-                Fibonacci,  # type: ignore[arg-type]
-                "get_fibonacci_sequence",
-                self.execute_callback,
-            )
+        self.action_server = ActionServer(
+            self.node,
+            Fibonacci,  # type: ignore[arg-type]
+            "get_fibonacci_sequence",
+            self.execute_callback,
         )
 
     def __del__(self) -> None:
         self.executor.remove_node(self.node)
 
-    def execute_callback(
-        self, goal: ServerGoalHandle[Fibonacci.Goal, Fibonacci.Result, Fibonacci.Feedback]
-    ) -> Fibonacci.Result:
+    def execute_callback(self, goal: ServerGoalHandle) -> Fibonacci.Result:
         self.goal = goal
         feedback_msg = Fibonacci.Feedback()
         feedback_msg.sequence = [0, 1]
@@ -141,7 +135,7 @@ class TestActions(unittest.TestCase):
         ActionTester(self.executor)
         received: dict[str, Any] = {"msg": None}
 
-        def get_response_callback(future: Future[ClientGoalHandle]) -> None:
+        def get_response_callback(future: Future) -> None:
             goal_handle = future.result()
             assert goal_handle is not None
             if not goal_handle.accepted:
@@ -149,13 +143,13 @@ class TestActions(unittest.TestCase):
             result_future = goal_handle.get_result_async()
             result_future.add_done_callback(get_result_callback)
 
-        def get_result_callback(future: Future[GetResultServiceResponse[Fibonacci.Result]]) -> None:
+        def get_result_callback(future: Future) -> None:
             response = future.result()
             assert response is not None
             received["msg"] = response.result
 
         # First, call the action the 'proper' way
-        client: ActionClient[Fibonacci.Goal, Fibonacci.Result, Fibonacci.Feedback] = ActionClient(
+        client = ActionClient(
             self.node,
             Fibonacci,  # type: ignore[arg-type]
             "get_fibonacci_sequence",

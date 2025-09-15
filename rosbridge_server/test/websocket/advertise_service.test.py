@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from std_srvs.srv import SetBool
 from twisted.python import log
@@ -14,7 +14,6 @@ if TYPE_CHECKING:
     from common import TestClientProtocol
     from rclpy.client import Client
     from rclpy.node import Node
-    from rclpy.task import Future
 
 
 sys.path.append(str(Path(__file__).parent))  # enable importing from common.py in this directory
@@ -46,7 +45,6 @@ class TestAdvertiseService(unittest.TestCase):
         )
         client.wait_for_service()
 
-        requests_future: Future[list[dict[str, Any]]]
         requests_future, ws_client.message_handler = expect_messages(
             2, "WebSocket", node.get_logger()
         )
