@@ -151,7 +151,7 @@ def get_encoder() -> Callable[[ListType], bytes]:
 
 
 class InvalidMessageException(Exception):
-    def __init__(self, inst: object) -> None:
+    def __init__(self, inst: Any) -> None:  # noqa: ANN401
         Exception.__init__(
             self,
             f"Unable to extract message values from {type(inst).__name__} instance",
