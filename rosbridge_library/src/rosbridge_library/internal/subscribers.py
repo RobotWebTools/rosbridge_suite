@@ -169,7 +169,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
             raw=raw,
             callback_group=self.callback_group,
         )
-        self.new_subscriber: Subscription[ROSMessageT] | None = None
+        self.new_subscriber: Subscription | None = None
         self.new_subscriptions: dict[str, Callable[[OutgoingMessage[ROSMessageT]], None]] = {}
 
     def unregister(self) -> None:

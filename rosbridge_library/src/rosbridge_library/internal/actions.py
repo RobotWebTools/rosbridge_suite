@@ -55,7 +55,6 @@ from rosbridge_library.internal.type_support import (
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from action_msgs.srv import CancelGoal
     from rclpy.action.client import ClientGoalHandle
     from rclpy.node import Node
     from rclpy.task import Future
@@ -151,28 +150,22 @@ class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
     def __init__(self, server_timeout_time: float = 1.0, sleep_time: float = 0.001) -> None:
         self.server_timeout_time = server_timeout_time
         self.sleep_time = sleep_time
-        self.goal_handle: (
-            ClientGoalHandle[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT] | None
-        ) = None
+        self.goal_handle: ClientGoalHandle | None = None
         self.goal_canceled = False
 
-    def get_result_cb(self, future: Future[GetResultServiceResponse[ROSActionResultT]]) -> None:
+    def get_result_cb(self, future: Future) -> None:
         self.result = future.result()
 
-    def goal_response_cb(
-        self, future: Future[ClientGoalHandle[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]]
-    ) -> None:
+    def goal_response_cb(self, future: Future) -> None:
         self.goal_handle = future.result()
         assert self.goal_handle is not None
         if not self.goal_handle.accepted:
             msg = "Action goal was rejected"
             raise Exception(msg)
-        result_future: Future[GetResultServiceResponse[ROSActionResultT]] = (
-            self.goal_handle.get_result_async()
-        )
+        result_future: Future = self.goal_handle.get_result_async()
         result_future.add_done_callback(self.get_result_cb)
 
-    def goal_cancel_cb(self, _: Future[CancelGoal.Response]) -> None:
+    def goal_cancel_cb(self, _: Future) -> None:
         self.goal_canceled = True
 
     def send_goal(
@@ -192,9 +185,7 @@ class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
         args_to_action_goal_instance(inst, args)
 
         self.result = None
-        client: ActionClient[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT] = ActionClient(
-            node_handle, action_class, action_name
-        )
+        client = ActionClient(node_handle, action_class, action_name)
         client.wait_for_server(timeout_sec=self.server_timeout_time)
         send_goal_future = client.send_goal_async(inst, feedback_callback=feedback_cb)  # type: ignore[arg-type]
         send_goal_future.add_done_callback(self.goal_response_cb)
