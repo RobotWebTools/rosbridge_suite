@@ -235,18 +235,24 @@ def _from_inst(
     # Special case for uint8[], we encode the string
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
-            assert isinstance(inst, list_types)
+            if not isinstance(inst, list_types):
+                err_msg = f"inst is not a list type, but a {type(inst)}"
+                raise TypeError(err_msg)
             encoded = get_encoder()(inst)
             return encoded.decode("ascii")
 
     # Check for time or duration
     if rostype in ros_time_types:
-        assert isinstance(inst, TimeMsg | DurationMsg)
+        if not isinstance(inst, TimeMsg | DurationMsg):
+            err_msg = f"inst is not TimeMsg or DurationMsg, but a {type(inst)}"
+            raise TypeError(err_msg)
         return {"sec": inst.sec, "nanosec": inst.nanosec}
 
     # Check for primitive types
     if rostype in ros_primitive_types:
-        assert isinstance(inst, (*primitive_types, bytes))
+        if not isinstance(inst, (*primitive_types, bytes)):
+            err_msg = f"inst is not a primitive type or bytes, but a {type(inst)}"
+            raise TypeError(err_msg)
         return _from_primitive_inst(inst, rostype)
 
     # Check if it's a list or tuple
@@ -254,7 +260,9 @@ def _from_inst(
         return _from_list_inst(inst, rostype)
 
     # Assume it's otherwise a full ros msg object
-    assert isinstance(inst, ROSMessage)
+    if not isinstance(inst, ROSMessage):
+        err_msg = f"inst is not a ROS Message, but a {type(inst)}"
+        raise TypeError(err_msg)
     return _from_object_inst(inst, rostype)
 
 
@@ -264,14 +272,18 @@ def _from_primitive_inst(inst: PrimitiveType | bytes, rostype: str) -> Primitive
 
     # JSON does not support Inf and NaN. They are mapped to None and encoded as null
     if rostype in type_map["float"]:
-        assert isinstance(inst, float)
+        if not isinstance(inst, float):
+            err_msg = f"inst is not a float, but a {type(inst)}"
+            raise TypeError(err_msg)
         if math.isnan(inst) or math.isinf(inst):
             return None
 
     # octet is translated to byte array with length 1
     # JSON does not support byte array. They are converted to int
     if rostype == "octet":
-        assert isinstance(inst, bytes)
+        if not isinstance(inst, bytes):
+            err_msg = f"inst is not bytes, but a {type(inst)}"
+            raise TypeError(err_msg)
         return int.from_bytes(inst, "little")
 
     return inst
@@ -326,33 +338,45 @@ def _to_inst(
     # Check if it's uint8[], and if it's a string, try to b64decode
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
-            assert isinstance(msg, Sequence)
+            if not isinstance(msg, Sequence):
+                err_msg = f"msg is not a Sequence, but a {type(msg)}"
+                raise TypeError(err_msg)
             return _to_binary_inst(msg)
 
     # Check the type for time or rostime
     if rostype in ros_time_types:
-        assert isinstance(msg, dict | str)
-        assert inst is None or isinstance(inst, TimeMsg | DurationMsg), (
-            "Expected Time or Duration instance"
-        )
+        if not isinstance(msg, dict | str):
+            err_msg = f"msg is not dict or str, but a {type(msg)}"
+            raise TypeError(err_msg)
+        if inst is not None and not isinstance(inst, TimeMsg | DurationMsg):
+            err_msg = f"inst is not Time or Duration message, but a {type(inst)}"
+            raise TypeError(err_msg)
         return _to_time_inst(msg, rostype, clock, inst)
 
     # Check to see whether this is a primitive type
     if rostype in ros_primitive_types:
-        assert isinstance(msg, primitive_types)
+        if not isinstance(msg, primitive_types):
+            err_msg = f"msg is not a primitive type, but a {type(msg)}"
+            raise TypeError(err_msg)
         return _to_primitive_inst(msg, rostype, roottype, stack)
 
     # Check whether we're dealing with a list type
     if inst is not None and isinstance(inst, list_types):
-        assert isinstance(msg, list_types)
+        if not isinstance(msg, list_types):
+            err_msg = f"msg is not a list type, but a {type(msg)}"
+            raise TypeError(err_msg)
         return _to_list_inst(msg, rostype, roottype, clock, inst, stack)
 
     # Otherwise, the type has to be a full ros msg type, so msg must be a dict
     if inst is None:
         inst = ros_loader.get_message_instance(rostype)
 
-    assert isinstance(msg, dict)
-    assert isinstance(inst, ROSMessage)
+    if not isinstance(msg, dict):
+        err_msg = f"msg is not a dict, but a {type(msg)}"
+        raise TypeError(err_msg)
+    if not isinstance(inst, ROSMessage):
+        err_msg = f"inst is not a ROS Message, but a {type(inst)}"
+        raise TypeError(err_msg)
     return _to_object_inst(msg, rostype, roottype, clock, inst, stack)
 
 
@@ -474,7 +498,9 @@ def _to_object_inst(
 
     # Substitute the correct time if we're an std_msgs/Header
     if rostype in ros_header_types:
-        assert isinstance(inst, HeaderMsg)
+        if not isinstance(inst, HeaderMsg):
+            err_msg = f"inst is not a HeaderMsg, but a {type(inst)}"
+            raise TypeError(err_msg)
         inst.stamp = clock.now().to_msg()
 
     inst_fields: dict[str, str] = inst.get_fields_and_field_types()
