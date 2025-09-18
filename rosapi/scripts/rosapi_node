@@ -466,7 +466,9 @@ class Rosapi(Node):
             self._print_malformed_param_name_warning(request.name)
         return response
 
-    def get_param(self, request: GetParam.Request, response: GetParam.Response):
+    def get_param(
+        self, request: GetParam.Request, response: GetParam.Response
+    ) -> GetParam.Response:
         try:
             node_name, param_name = self._get_node_and_param_name(request.name)
             response.value = params.get_param(
@@ -476,7 +478,9 @@ class Rosapi(Node):
             self._print_malformed_param_name_warning(request.name)
         return response
 
-    def has_param(self, request: HasParam.Request, response: HasParam.Response):
+    def has_param(
+        self, request: HasParam.Request, response: HasParam.Response
+    ) -> HasParam.Response:
         try:
             node_name, param_name = self._get_node_and_param_name(request.name)
             response.exists = params.has_param(node_name, param_name, self.globs.params)
@@ -484,11 +488,15 @@ class Rosapi(Node):
             self._print_malformed_param_name_warning(request.name)
         return response
 
-    def delete_param(self, request: DeleteParam.Request, response: DeleteParam.Response):
+    def delete_param(
+        self, request: DeleteParam.Request, response: DeleteParam.Response
+    ) -> DeleteParam.Response:
         params.delete_param(request.node_name, request.name, self.globs.params)
         return response
 
-    def get_param_names(self, _request: GetParamNames.Request, response: GetParamNames.Response):
+    def get_param_names(
+        self, _request: GetParamNames.Request, response: GetParamNames.Response
+    ) -> GetParamNames.Response:
         response.names = params.get_param_names(self.globs.params)
         return response
 

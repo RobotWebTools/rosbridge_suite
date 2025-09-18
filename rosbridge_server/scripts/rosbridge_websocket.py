@@ -344,7 +344,7 @@ class RosbridgeWebsocketNode(Node):
         UnadvertiseService.services_glob = RosbridgeWebSocket.services_glob
         CallService.services_glob = RosbridgeWebSocket.services_glob
 
-    def check_deprecated_parameters(self):
+    def check_deprecated_parameters(self) -> None:
         if RosbridgeWebSocket.default_call_service_timeout == 0.0:
             self.get_logger().warn(
                 "The 'default_call_service_timeout' parameter is currently set to 0.0, "
