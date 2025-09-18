@@ -53,6 +53,7 @@ class TestSubscriberManager(unittest.TestCase):
         self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.unsubscribe(client, topic)
+        time.sleep(0.05)
         self.assertFalse(topic in manager._subscribers)
         self.assertFalse(is_topic_subscribed(self.node, topic))
 
@@ -75,10 +76,12 @@ class TestSubscriberManager(unittest.TestCase):
         self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.unsubscribe(client1, topic)
+        time.sleep(0.05)
         self.assertTrue(topic in manager._subscribers)
         self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.unsubscribe(client2, topic)
+        time.sleep(0.05)
         self.assertFalse(topic in manager._subscribers)
         self.assertFalse(is_topic_subscribed(self.node, topic))
 
@@ -132,12 +135,14 @@ class TestSubscriberManager(unittest.TestCase):
         self.assertTrue(is_topic_subscribed(self.node, topic2))
 
         manager.unsubscribe(client, topic1)
+        time.sleep(0.05)
         self.assertFalse(topic1 in manager._subscribers)
         self.assertFalse(is_topic_subscribed(self.node, topic1))
         self.assertTrue(topic2 in manager._subscribers)
         self.assertTrue(is_topic_subscribed(self.node, topic2))
 
         manager.unsubscribe(client, topic2)
+        time.sleep(0.05)
         self.assertFalse(topic1 in manager._subscribers)
         self.assertFalse(is_topic_subscribed(self.node, topic1))
         self.assertFalse(topic2 in manager._subscribers)
@@ -174,6 +179,7 @@ class TestSubscriberManager(unittest.TestCase):
         self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.unsubscribe(client, topic)
+        time.sleep(0.05)
         self.assertFalse(topic in manager._subscribers)
         self.assertTrue(is_topic_subscribed(self.node, topic))
 
@@ -198,10 +204,12 @@ class TestSubscriberManager(unittest.TestCase):
         self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.unsubscribe(client1, topic)
+        time.sleep(0.05)
         self.assertTrue(topic in manager._subscribers)
         self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.unsubscribe(client2, topic)
+        time.sleep(0.05)
         self.assertFalse(topic in manager._subscribers)
         self.assertFalse(is_topic_subscribed(self.node, topic))
 
