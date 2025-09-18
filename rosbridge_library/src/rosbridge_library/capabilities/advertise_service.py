@@ -16,7 +16,6 @@ from rosbridge_library.internal.type_support import (
 )
 
 if TYPE_CHECKING:
-
     from rosbridge_library.protocol import Protocol
 
 
@@ -30,7 +29,7 @@ class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT])
         self.protocol = protocol
         # setup the service
         self.service_handle = protocol.node_handle.create_service(
-            get_service_class(service_type),
+            get_service_class(service_type),  # type: ignore[misc]  # Silence type checker about not being able to infer type
             service_name,
             self.handle_request,  # type: ignore[arg-type]  # rclpy type hint does not support coroutines
             callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
