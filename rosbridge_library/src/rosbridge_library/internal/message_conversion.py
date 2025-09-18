@@ -30,28 +30,37 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import array
 import math
 import re
 import sys
 from base64 import standard_b64decode, standard_b64encode
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
-from rcl_interfaces.msg import Parameter
+from builtin_interfaces.msg import Duration as DurationMsg
+from builtin_interfaces.msg import Time as TimeMsg
 from rclpy.clock import ROSClock
-from rclpy.time import Duration, Time
+from rclpy.parameter import Parameter
+from std_msgs.msg import Header as HeaderMsg
 
 from rosbridge_library.internal import ros_loader
+from rosbridge_library.internal.type_support import ROSMessage
 from rosbridge_library.util import bson
 
-try:
-    import rospy
-except ImportError:
-    rospy = None
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from rclpy.clock import Clock
+    from rclpy.node import Node
+
 
 type_map = {
-    "bool": ["bool", "boolean"],
-    "int": [
+    "bool": ("bool", "boolean"),
+    "int": (
         "int8",
         "octet",
         "uint8",
@@ -62,15 +71,19 @@ type_map = {
         "uint32",
         "int64",
         "uint64",
-    ],
-    "float": ["float32", "float64", "double", "float"],
-    "str": ["string"],
+    ),
+    "float": ("float32", "float64", "double", "float"),
+    "str": ("string"),
 }
-primitive_types = [bool, int, float]
+primitive_types = (bool, int, float, str)
+list_types = (list, tuple, np.ndarray, array.array)
 
-list_types = [list, tuple, np.ndarray, array.array]
-ros_time_types = ["builtin_interfaces/Time", "builtin_interfaces/Duration"]
-ros_primitive_types = [
+# Type aliases for static type checking
+PrimitiveType = bool | int | float | str
+ListType = list | tuple | np.ndarray | array.array
+
+ros_time_types = ("builtin_interfaces/Time", "builtin_interfaces/Duration")
+ros_primitive_types = (
     "bool",
     "boolean",
     "octet",
@@ -88,16 +101,16 @@ ros_primitive_types = [
     "float",
     "double",
     "string",
-]
-ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
-ros_binary_types = ["uint8[]", "char[]", "sequence<uint8>", "sequence<char>"]
+)
+ros_header_types = ("Header", "std_msgs/Header", "roslib/Header")
+ros_binary_types = ("uint8[]", "char[]", "sequence<uint8>", "sequence<char>")
 # Remove the list type wrapper, and length specifier, from rostypes i.e. sequence<double, 3>
 list_tokens = re.compile(r"<(.+?)(, \d+)?>")
 bounded_array_tokens = re.compile(r"(.+)\[.*\]")
-ros_binary_types_list_braces = [
+ros_binary_types_list_braces = (
     ("uint8[]", re.compile(r"uint8\[[^\]]*\]")),
     ("char[]", re.compile(r"char\[[^\]]*\]")),
-]
+)
 
 binary_encoder = None
 binary_encoder_type = "default"
@@ -106,16 +119,20 @@ bson_only_mode = False
 
 # TODO(@jubeira): configure module with a node handle.
 # The original code doesn't seem to actually use these parameters.
-def configure(node_handle=None):
+def configure(node_handle: Node | None = None) -> None:
     global binary_encoder, binary_encoder_type, bson_only_mode
 
     if node_handle is not None:
-        binary_encoder_type = node_handle.get_parameter_or(
-            "binary_encoder", Parameter("", value="default")
-        ).value
-        bson_only_mode = node_handle.get_parameter_or(
-            "bson_only_mode", Parameter("", value=False)
-        ).value
+        binary_encoder_type = (
+            node_handle.get_parameter_or("binary_encoder", Parameter("", value="default"))
+            .get_parameter_value()
+            .string_value
+        )
+        bson_only_mode = (
+            node_handle.get_parameter_or("bson_only_mode", Parameter("", value=False))
+            .get_parameter_value()
+            .bool_value
+        )
 
     if binary_encoder is None:
         if binary_encoder_type == "bson" or bson_only_mode:
@@ -127,13 +144,14 @@ def configure(node_handle=None):
             sys.exit(0)
 
 
-def get_encoder():
+def get_encoder() -> Callable[[ListType], bytes]:
     configure()
+    assert binary_encoder is not None, "Binary encoder is not configured"
     return binary_encoder
 
 
 class InvalidMessageException(Exception):
-    def __init__(self, inst):
+    def __init__(self, inst: Any) -> None:  # noqa: ANN401
         Exception.__init__(
             self,
             f"Unable to extract message values from {type(inst).__name__} instance",
@@ -141,7 +159,7 @@ class InvalidMessageException(Exception):
 
 
 class NonexistentFieldException(Exception):
-    def __init__(self, basetype, fields):
+    def __init__(self, basetype: str, fields: list[str]) -> None:
         Exception.__init__(
             self,
             "Message type {} does not have a field {}".format(basetype, ".".join(fields)),
@@ -149,7 +167,9 @@ class NonexistentFieldException(Exception):
 
 
 class FieldTypeMismatchException(Exception):
-    def __init__(self, roottype, fields, expected_type, found_type):
+    def __init__(
+        self, roottype: str, fields: list[str], expected_type: str, found_type: type
+    ) -> None:
         if roottype == expected_type:
             Exception.__init__(
                 self,
@@ -164,14 +184,16 @@ class FieldTypeMismatchException(Exception):
             )
 
 
-def extract_values(inst):
+def extract_values(inst: ROSMessage) -> dict[str, Any]:
     rostype = msg_instance_type_repr(inst)
     if rostype is None:
         raise InvalidMessageException(inst=inst)
-    return _from_inst(inst, rostype)
+    return _from_object_inst(inst, rostype)
 
 
-def populate_instance(msg, inst, clock=None):
+def populate_instance(
+    msg: dict[str, Any], inst: ROSMessage, clock: Clock | None = None
+) -> ROSMessage:
     """
     Populate a ROS message instance with the provided values.
 
@@ -183,10 +205,10 @@ def populate_instance(msg, inst, clock=None):
 
     inst_type = msg_instance_type_repr(inst)
 
-    return _to_inst(msg, inst_type, inst_type, clock, inst)
+    return _to_object_inst(msg, inst_type, inst_type, clock, inst, [])
 
 
-def msg_instance_type_repr(msg_inst):
+def msg_instance_type_repr(msg_inst: ROSMessage) -> str:
     """Return a string representation of a ROS2 message type from a message instance."""
     # Message representation: '{package}.msg.{message_name}({fields})'.
     # A representation like '_type' member in ROS1 messages is needed: '{package}/{message_name}'.
@@ -198,7 +220,7 @@ def msg_instance_type_repr(msg_inst):
     return "{}/{}".format(inst_repr[0], inst_repr[2].split("(")[0])
 
 
-def msg_class_type_repr(msg_class):
+def msg_class_type_repr(msg_class: type[ROSMessage]) -> str:
     """Return a string representation of a ROS2 message type from a class representation."""
     # The string representation of the class is <class '{package}.msg._{message}.{Message}'>
     # (e.g. <class 'std_msgs.msg._string.String'>).
@@ -207,71 +229,90 @@ def msg_class_type_repr(msg_class):
     return f"{class_repr[0]}/{class_repr[1]}/{class_repr[3]}"
 
 
-def _from_inst(inst, rostype):
-    global bson_only_mode
+def _from_inst(
+    inst: ROSMessage | ListType | PrimitiveType | bytes, rostype: str
+) -> dict | list | PrimitiveType | bytes | None:
     # Special case for uint8[], we encode the string
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
+            if not isinstance(inst, list_types):
+                err_msg = f"inst is not a list type, but a {type(inst)}"
+                raise TypeError(err_msg)
             encoded = get_encoder()(inst)
             return encoded.decode("ascii")
 
     # Check for time or duration
     if rostype in ros_time_types:
+        if not isinstance(inst, TimeMsg | DurationMsg):
+            err_msg = f"inst is not TimeMsg or DurationMsg, but a {type(inst)}"
+            raise TypeError(err_msg)
         return {"sec": inst.sec, "nanosec": inst.nanosec}
 
-    if bson_only_mode is None:
-        bson_only_mode = rospy.get_param("~bson_only_mode", False)
     # Check for primitive types
     if rostype in ros_primitive_types:
-        # JSON does not support Inf and NaN. They are mapped to None and encoded as null
-        if (
-            not bson_only_mode
-            and rostype in type_map.get("float")
-            and (math.isnan(inst) or math.isinf(inst))
-        ):
-            return None
-
-        # JSON does not support byte array. They are converted to int
-        if (not bson_only_mode) and (rostype == "octet"):
-            return int.from_bytes(inst, "little")
-
-        return inst
+        if not isinstance(inst, (*primitive_types, bytes)):
+            err_msg = f"inst is not a primitive type or bytes, but a {type(inst)}"
+            raise TypeError(err_msg)
+        return _from_primitive_inst(inst, rostype)
 
     # Check if it's a list or tuple
-    if type(inst) in list_types:
+    if isinstance(inst, list_types):
         return _from_list_inst(inst, rostype)
 
     # Assume it's otherwise a full ros msg object
+    if not isinstance(inst, ROSMessage):
+        err_msg = f"inst is not a ROS Message, but a {type(inst)}"
+        raise TypeError(err_msg)
     return _from_object_inst(inst, rostype)
 
 
-def _from_list_inst(inst, rostype):
+def _from_primitive_inst(inst: PrimitiveType | bytes, rostype: str) -> PrimitiveType | bytes | None:
+    if bson_only_mode:
+        return inst
+
+    # JSON does not support Inf and NaN. They are mapped to None and encoded as null
+    if rostype in type_map["float"]:
+        if not isinstance(inst, float):
+            err_msg = f"inst is not a float, but a {type(inst)}"
+            raise TypeError(err_msg)
+        if math.isnan(inst) or math.isinf(inst):
+            return None
+
+    # octet is translated to byte array with length 1
+    # JSON does not support byte array. They are converted to int
+    if rostype == "octet":
+        if not isinstance(inst, bytes):
+            err_msg = f"inst is not bytes, but a {type(inst)}"
+            raise TypeError(err_msg)
+        return int.from_bytes(inst, "little")
+
+    return inst
+
+
+def _from_list_inst(inst: ListType, rostype: str) -> list:
     # Can duck out early if the list is empty
     if len(inst) == 0:
         return []
 
     # Remove the list indicators from the rostype
-    try:
-        rostype = re.search(list_tokens, rostype).group(1)
-    except AttributeError:
-        rostype = re.search(bounded_array_tokens, rostype).group(1)
+    base_rostype = _remove_list_indicators(rostype)
 
     # Shortcut for primitives
-    if rostype in ros_primitive_types:
+    if base_rostype in ros_primitive_types:
         # Convert to Built-in integer types to dump as JSON
         if isinstance(inst, np.ndarray) and (
-            rostype in type_map.get("int") or rostype in type_map.get("float")
+            base_rostype in type_map["int"] or base_rostype in type_map["float"]
         ):
             return inst.tolist()
 
-        if rostype not in type_map.get("float"):
+        if base_rostype not in type_map["float"]:
             return list(inst)
 
     # Call to _to_inst for every element of the list
-    return [_from_inst(x, rostype) for x in inst]
+    return [_from_inst(x, base_rostype) for x in inst]
 
 
-def _from_object_inst(inst, _rostype):
+def _from_object_inst(inst: ROSMessage, _rostype: str) -> dict:
     # Create an empty dict then populate with values from the inst
     msg = {}
     # Equivalent for zip(inst.__slots__, inst._slot_types) in ROS1:
@@ -281,7 +322,14 @@ def _from_object_inst(inst, _rostype):
     return msg
 
 
-def _to_inst(msg, rostype, roottype, clock=None, inst=None, stack=None):
+def _to_inst(
+    msg: dict[str, Any] | Sequence | PrimitiveType,
+    rostype: str,
+    roottype: str,
+    clock: Clock | None = None,
+    inst: object | None = None,
+    stack: list[str] | None = None,
+) -> object:
     if clock is None:
         clock = ROSClock()
     if stack is None:
@@ -290,28 +338,49 @@ def _to_inst(msg, rostype, roottype, clock=None, inst=None, stack=None):
     # Check if it's uint8[], and if it's a string, try to b64decode
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
+            if not isinstance(msg, Sequence):
+                err_msg = f"msg is not a Sequence, but a {type(msg)}"
+                raise TypeError(err_msg)
             return _to_binary_inst(msg)
 
     # Check the type for time or rostime
     if rostype in ros_time_types:
+        if not isinstance(msg, dict | str):
+            err_msg = f"msg is not dict or str, but a {type(msg)}"
+            raise TypeError(err_msg)
+        if inst is not None and not isinstance(inst, TimeMsg | DurationMsg):
+            err_msg = f"inst is not Time or Duration message, but a {type(inst)}"
+            raise TypeError(err_msg)
         return _to_time_inst(msg, rostype, clock, inst)
 
     # Check to see whether this is a primitive type
     if rostype in ros_primitive_types:
+        if not isinstance(msg, primitive_types):
+            err_msg = f"msg is not a primitive type, but a {type(msg)}"
+            raise TypeError(err_msg)
         return _to_primitive_inst(msg, rostype, roottype, stack)
 
     # Check whether we're dealing with a list type
-    if inst is not None and type(inst) in list_types:
+    if inst is not None and isinstance(inst, list_types):
+        if not isinstance(msg, list_types):
+            err_msg = f"msg is not a list type, but a {type(msg)}"
+            raise TypeError(err_msg)
         return _to_list_inst(msg, rostype, roottype, clock, inst, stack)
 
     # Otherwise, the type has to be a full ros msg type, so msg must be a dict
     if inst is None:
         inst = ros_loader.get_message_instance(rostype)
 
+    if not isinstance(msg, dict):
+        err_msg = f"msg is not a dict, but a {type(msg)}"
+        raise TypeError(err_msg)
+    if not isinstance(inst, ROSMessage):
+        err_msg = f"inst is not a ROS Message, but a {type(inst)}"
+        raise TypeError(err_msg)
     return _to_object_inst(msg, rostype, roottype, clock, inst, stack)
 
 
-def _to_binary_inst(msg):
+def _to_binary_inst(msg: Sequence) -> list | bytes | array.array:
     if isinstance(msg, str):
         return list(standard_b64decode(msg))
     if isinstance(msg, list):
@@ -325,19 +394,29 @@ def _to_binary_inst(msg):
     return bytes(bytearray(msg))
 
 
-def _to_time_inst(msg, rostype, clock, inst=None):
+def _to_time_inst(
+    msg: dict[str, Any] | str,
+    rostype: str,
+    clock: Clock,
+    inst: TimeMsg | DurationMsg | None = None,
+) -> TimeMsg | DurationMsg:
+    # A special case for the string "now"
+    if isinstance(msg, str):
+        if rostype == "builtin_interfaces/Time" and msg == "now":
+            return clock.now().to_msg()
+
+        err_msg = f"Invalid string for {rostype}: {msg}"
+        raise ValueError(err_msg)
+
     # Create an instance if we haven't been provided with one
-
-    if rostype == "builtin_interfaces/Time" and msg == "now":
-        return clock.now().to_msg()
-
     if inst is None:
         if rostype == "builtin_interfaces/Time":
-            inst = Time().to_msg()
+            inst = TimeMsg()
         elif rostype == "builtin_interfaces/Duration":
-            inst = Duration().to_msg()
-        else:
-            return None
+            inst = DurationMsg()
+        else:  # This should never happen, but just in case
+            msg = f"Unknown rostype for time: {rostype}"
+            raise ValueError(msg)
 
     # Copy across the fields, try ROS1 and ROS2 fieldnames
     for field in ["sec", "secs"]:
@@ -352,7 +431,9 @@ def _to_time_inst(msg, rostype, clock, inst=None):
     return inst
 
 
-def _to_primitive_inst(msg, rostype, roottype, stack):
+def _to_primitive_inst(
+    msg: PrimitiveType, rostype: str, roottype: str, stack: list[str]
+) -> PrimitiveType | bytes:
     # Typecheck the msg
     if isinstance(msg, int) and rostype in type_map["float"]:
         # probably wrong parsing,
@@ -371,9 +452,16 @@ def _to_primitive_inst(msg, rostype, roottype, stack):
     raise FieldTypeMismatchException(roottype, stack, rostype, msgtype)
 
 
-def _to_list_inst(msg, rostype, roottype, clock, inst, stack):
+def _to_list_inst(
+    msg: ListType,
+    rostype: str,
+    roottype: str,
+    clock: Clock,
+    inst: ListType,
+    stack: list[str],
+) -> ListType:
     # Typecheck the msg
-    if type(msg) not in list_types:
+    if not isinstance(msg, list_types):
         raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))
 
     # Can duck out early if the list is empty
@@ -390,26 +478,33 @@ def _to_list_inst(msg, rostype, roottype, clock, inst, stack):
         return inst
 
     # Remove the list indicators from the rostype
-    try:
-        rostype = re.search(list_tokens, rostype).group(1)
-    except AttributeError:
-        rostype = re.search(bounded_array_tokens, rostype).group(1)
+    base_rostype = _remove_list_indicators(rostype)
 
     # Call to _to_inst for every element of the list
-    return [_to_inst(x, rostype, roottype, clock, None, stack) for x in msg]
+    return [_to_inst(x, base_rostype, roottype, clock, None, stack) for x in msg]
 
 
-def _to_object_inst(msg, rostype, roottype, clock, inst, stack):
+def _to_object_inst(
+    msg: dict[str, Any],
+    rostype: str,
+    roottype: str,
+    clock: Clock,
+    inst: ROSMessage,
+    stack: list[str],
+) -> ROSMessage:
     # Typecheck the msg
     if not isinstance(msg, dict):
         raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))
 
     # Substitute the correct time if we're an std_msgs/Header
     if rostype in ros_header_types:
+        if not isinstance(inst, HeaderMsg):
+            err_msg = f"inst is not a HeaderMsg, but a {type(inst)}"
+            raise TypeError(err_msg)
         inst.stamp = clock.now().to_msg()
 
-    inst_fields = inst.get_fields_and_field_types()
-    for field_name in msg:
+    inst_fields: dict[str, str] = inst.get_fields_and_field_types()
+    for field_name, field_value in msg.items():
         # Add this field to the field stack
         field_stack = [*stack, field_name]
 
@@ -420,10 +515,41 @@ def _to_object_inst(msg, rostype, roottype, clock, inst, stack):
         field_rostype = inst_fields[field_name]
         field_inst = getattr(inst, field_name)
 
-        field_value = _to_inst(
-            msg[field_name], field_rostype, roottype, clock, field_inst, field_stack
+        field_inst_value = _to_inst(
+            field_value, field_rostype, roottype, clock, field_inst, field_stack
         )
 
-        setattr(inst, field_name, field_value)
+        setattr(inst, field_name, field_inst_value)
 
     return inst
+
+
+def _remove_list_indicators(rostype: str) -> str:
+    """
+    Remove list indicators from rostype string.
+
+    Handles patterns like:
+    - sequence<double, 3> -> double
+    - sequence<string> -> string
+    - uint8[] -> uint8
+    - char[10] -> char
+
+    :param rostype: The ROS type string that may contain list indicators
+    :type rostype: str
+    :return: The base type without list indicators
+    :rtype: str
+    :raises ValueError: If the rostype doesn't match expected list patterns
+    """
+    # Try sequence pattern first: sequence<type, length> or sequence<type>
+    list_match = re.search(list_tokens, rostype)
+    if list_match:
+        return list_match.group(1)
+
+    # Try bounded array pattern: type[length] or type[]
+    bounded_match = re.search(bounded_array_tokens, rostype)
+    if bounded_match:
+        return bounded_match.group(1)
+
+    # If neither pattern matches, this isn't a valid list type
+    err_msg = f"Invalid rostype for list: {rostype}"
+    raise ValueError(err_msg)

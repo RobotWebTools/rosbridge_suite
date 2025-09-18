@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 import socket
 from typing import Any
 
@@ -26,7 +26,7 @@ receive_message_intervall = 0.0
 # ##############################################################################
 
 
-def request_service():
+def request_service() -> None:
     service_request_object = {
         "op": "call_service",  # op-code for rosbridge
         "service": "/" + service_name,  # select service
@@ -40,7 +40,7 @@ def request_service():
     }
     service_request = json.dumps(service_request_object)
     print("sending JSON-message to rosbridge:", service_request)
-    sock.send(service_request)
+    sock.send(service_request.encode("utf-8"))
 
 
 # ##############################################################################
@@ -126,9 +126,9 @@ try:
             #            print(e)
             pass
 
-    returned_data = json.loads(
-        reconstructed
-    )  # when service response is received --> access it (as defined in srv-file)
+    # when service response is received --> access it (as defined in srv-file)
+    assert reconstructed is not None
+    returned_data = json.loads(reconstructed)
     if returned_data["values"] is None:
         print("response was None -> service was not available")
     else:

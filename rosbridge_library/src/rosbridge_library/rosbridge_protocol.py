@@ -30,6 +30,10 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
 from rosbridge_library.capabilities.action_feedback import ActionFeedback
 from rosbridge_library.capabilities.action_result import ActionResult
 from rosbridge_library.capabilities.advertise import Advertise
@@ -45,11 +49,16 @@ from rosbridge_library.capabilities.unadvertise_action import UnadvertiseAction
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from rosbridge_library.protocol import Protocol
 
+if TYPE_CHECKING:
+    from rclpy.node import Node
+
+    from rosbridge_library.capability import Capability
+
 
 class RosbridgeProtocol(Protocol):
     """Adds the handlers for the rosbridge opcodes."""
 
-    rosbridge_capabilities = (
+    rosbridge_capabilities: tuple[type[Capability], ...] = (
         Advertise,
         Publish,
         Subscribe,
@@ -71,7 +80,9 @@ class RosbridgeProtocol(Protocol):
 
     parameters = None
 
-    def __init__(self, client_id, node_handle, parameters=None):
+    def __init__(
+        self, client_id: str, node_handle: Node, parameters: dict[str, Any] | None = None
+    ) -> None:
         self.parameters = parameters
         Protocol.__init__(self, client_id, node_handle)
         for capability_class in self.rosbridge_capabilities:

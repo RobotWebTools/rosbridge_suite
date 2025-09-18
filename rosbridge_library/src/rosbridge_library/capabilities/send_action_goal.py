@@ -44,6 +44,7 @@ from rosbridge_library.internal.actions import ActionClientHandler
 from rosbridge_library.internal.message_conversion import extract_values
 
 if TYPE_CHECKING:
+    from rosbridge_library.internal.type_support import FeedbackMessage, ROSMessage
     from rosbridge_library.protocol import Protocol
 
 
@@ -91,17 +92,17 @@ class SendActionGoal(Capability):
 
     def send_action_goal(self, message: dict) -> None:
         # Pull out the ID
-        cid = message.get("id")
+        cid: str | None = message.get("id")
 
         # Typecheck the args
         self.basic_type_check(message, self.send_action_goal_msg_fields)
 
         # Extract the args
-        action = message["action"]
-        action_type = message["action_type"]
-        fragment_size = message.get("fragment_size")
-        compression = message.get("compression", "none")
-        args = message.get("args", [])
+        action: str = message["action"]
+        action_type: str = message["action_type"]
+        fragment_size: int | None = message.get("fragment_size")
+        compression: str = message.get("compression", "none")
+        args: list | dict[str, Any] = message.get("args", [])
 
         if SendActionGoal.actions_glob is not None and SendActionGoal.actions_glob:
             self.protocol.log("debug", f"Action security glob enabled, checking action: {action}")
@@ -132,8 +133,16 @@ class SendActionGoal(Capability):
         f_cb = partial(self._feedback, cid, action) if message.get("feedback", False) else None
 
         # Run action client handler in the same thread.
-        client_handler = ActionClientHandler(
-            trim_action_name(action), action_type, args, s_cb, e_cb, f_cb, self.protocol.node_handle
+        client_handler: ActionClientHandler[ROSMessage, ROSMessage, ROSMessage] = (
+            ActionClientHandler(
+                trim_action_name(action),
+                action_type,
+                args,
+                s_cb,
+                e_cb,
+                f_cb,
+                self.protocol.node_handle,
+            )
         )
 
         if cid is not None:
@@ -163,7 +172,12 @@ class SendActionGoal(Capability):
                 client_handler.send_goal_helper.cancel_goal()
 
     def _success(
-        self, cid: str | None, action: str, _fragment_size: int, _compression: bool, message: dict
+        self,
+        cid: str | None,
+        action: str,
+        _fragment_size: int | None,
+        _compression: str,
+        message: dict,
     ) -> None:
         outgoing_message = {
             "op": "action_result",
@@ -191,7 +205,7 @@ class SendActionGoal(Capability):
             outgoing_message["id"] = cid
         self.protocol.send(outgoing_message)
 
-    def _feedback(self, cid: str | None, action: str, message: Any) -> None:
+    def _feedback(self, cid: str | None, action: str, message: FeedbackMessage[ROSMessage]) -> None:
         outgoing_message = {
             "op": "action_feedback",
             "action": action,

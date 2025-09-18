@@ -32,46 +32,60 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from rclpy.task import Future
+from typing import TYPE_CHECKING, Protocol, TypeVar, runtime_checkable
 
 if TYPE_CHECKING:
-    from rclpy.node import Node
+    from uuid import UUID
 
 
-async def futures_wait_for(node: Node, futures: list[Future], timeout_sec: float) -> None:
-    """Await a list of futures with a timeout."""
-    first_done_future: Future = Future()
+@runtime_checkable
+class ROSMessage(Protocol):
+    """Protocol for ROS message types."""
 
-    def timeout_callback() -> None:
-        first_done_future.set_result(None)
+    __slots__: list[str]
+    _fields_and_field_types: dict[str, str]
 
-    timer = node.create_timer(timeout_sec, timeout_callback)
-
-    def future_done_callback(_arg: Future) -> None:
-        if all(future.done() for future in futures):
-            first_done_future.set_result(None)
-
-    for future in futures:
-        future.add_done_callback(future_done_callback)
-
-    await first_done_future
-
-    timer.cancel()
-    timer.destroy()
+    def get_fields_and_field_types(self) -> dict[str, str]:
+        """Return a dictionary of field names to field types."""
 
 
-async def async_sleep(node: Node, delay_sec: float) -> None:
-    """Block the coroutine for a given time."""
-    sleep_future: Future = Future()
+@runtime_checkable
+class ROSService(Protocol):
+    """Protocol for ROS service types."""
 
-    def timeout_callback() -> None:
-        sleep_future.set_result(None)
+    Request: type[ROSMessage]
+    Response: type[ROSMessage]
+    Event: type[ROSMessage]
 
-    timer = node.create_timer(delay_sec, timeout_callback)
 
-    await sleep_future
+@runtime_checkable
+class ROSAction(Protocol):
+    """Protocol for ROS action types."""
 
-    timer.cancel()
-    timer.destroy()
+    Goal: type[ROSMessage]
+    Result: type[ROSMessage]
+    Feedback: type[ROSMessage]
+
+
+# Type variables for ROS types
+ROSMessageT = TypeVar("ROSMessageT", bound=ROSMessage)
+ROSServiceT = TypeVar("ROSServiceT", bound=ROSService)
+ROSServiceRequestT = TypeVar("ROSServiceRequestT", bound=ROSMessage)
+ROSServiceResponseT = TypeVar("ROSServiceResponseT", bound=ROSMessage)
+ROSActionT = TypeVar("ROSActionT", bound=ROSAction)
+ROSActionGoalT = TypeVar("ROSActionGoalT", bound=ROSMessage)
+ROSActionResultT = TypeVar("ROSActionResultT", bound=ROSMessage)
+ROSActionFeedbackT = TypeVar("ROSActionFeedbackT", bound=ROSMessage)
+
+
+# Backports of rclpy types for type checking
+
+
+class GetResultServiceResponse(ROSMessage, Protocol[ROSActionResultT]):
+    status: int
+    result: ROSActionResultT
+
+
+class FeedbackMessage(ROSMessage, Protocol[ROSActionFeedbackT]):
+    goal_id: UUID
+    feedback: ROSActionFeedbackT

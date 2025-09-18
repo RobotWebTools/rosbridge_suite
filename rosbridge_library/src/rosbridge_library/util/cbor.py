@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 import datetime
 import re
 import struct
@@ -67,6 +69,9 @@ CBOR_TAG_MIME = 36  # following text is MIME message, headers, separators and al
 CBOR_TAG_CBOR_FILEHEADER = 55799  # can open a file with 0xd9d9f7
 
 _CBOR_TAG_BIGNUM_BYTES = struct.pack("B", CBOR_TAG | CBOR_TAG_BIGNUM)
+
+
+# ruff: noqa: ANN001, ANN201, ANN202, ANN204
 
 
 def dumps_int(val):
@@ -172,7 +177,7 @@ def dumps_tag(t, sort_keys=False):
 
 
 def _is_stringish(x):
-    return isinstance(x, (str, bytes))
+    return isinstance(x, str | bytes)
 
 
 def _is_intish(x):
@@ -186,7 +191,7 @@ def dumps(ob, sort_keys=False):
         return dumps_bool(ob)
     if _is_stringish(ob):
         return dumps_string(ob)
-    if isinstance(ob, (list, tuple)):
+    if isinstance(ob, list | tuple):
         return dumps_array(ob, sort_keys=sort_keys)
     # TODO: accept other enumerables and emit a variable length array
     if isinstance(ob, dict):
