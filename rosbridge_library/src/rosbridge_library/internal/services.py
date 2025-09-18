@@ -32,7 +32,7 @@
 from __future__ import annotations
 
 from threading import Event, Thread
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from rclpy.callback_groups import ReentrantCallbackGroup
 
@@ -46,12 +46,16 @@ from rosbridge_library.internal.ros_loader import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from rclpy.client import Client
     from rclpy.node import Node
 
+    from rosbridge_library.internal.type_support import ROSMessage
+
 
 class InvalidServiceException(Exception):
-    def __init__(self, service_name) -> None:
+    def __init__(self, service_name: str) -> None:
         Exception.__init__(self, f"Service {service_name} does not exist")
 
 
@@ -59,7 +63,7 @@ class ServiceCaller(Thread):
     def __init__(
         self,
         service: str,
-        args: dict,
+        args: list | dict[str, Any] | None,
         timeout: float,
         success_callback: Callable[[dict], None],
         error_callback: Callable[[Exception], None],
@@ -106,7 +110,7 @@ class ServiceCaller(Thread):
             self.error(e)
 
 
-def args_to_service_request_instance(inst: Any, args: list | dict | None) -> Any:
+def args_to_service_request_instance(inst: ROSMessage, args: list | dict[str, Any] | None) -> None:
     """
     Populate a service request instance with the provided args.
 
@@ -116,7 +120,7 @@ def args_to_service_request_instance(inst: Any, args: list | dict | None) -> Any
     """
     msg = {}
     if isinstance(args, list):
-        msg = dict(zip(inst.get_fields_and_field_types().keys(), args))
+        msg = dict(zip(inst.get_fields_and_field_types().keys(), args, strict=False))
     elif isinstance(args, dict):
         msg = args
 
@@ -127,7 +131,7 @@ def args_to_service_request_instance(inst: Any, args: list | dict | None) -> Any
 def call_service(
     node_handle: Node,
     service: str,
-    args: dict | None = None,
+    args: list | dict[str, Any] | None = None,
     server_ready_timeout: float = 1.0,
     server_response_timeout: float = 5.0,
 ) -> dict:
@@ -162,7 +166,7 @@ def call_service(
     future = client.call_async(inst)
     event = Event()
 
-    def future_done_callback():
+    def future_done_callback() -> None:
         event.set()
 
     future.add_done_callback(lambda _: future_done_callback())

@@ -31,7 +31,11 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
+from functools import partial
 from threading import Lock, RLock
+from typing import TYPE_CHECKING, Generic, cast
 
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
@@ -43,13 +47,20 @@ from rosbridge_library.internal.topics import (
     TopicNotEstablishedException,
     TypeConflictException,
 )
+from rosbridge_library.internal.type_support import ROSMessageT
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable
+
+    from rclpy.node import Node
+    from rclpy.subscription import Subscription
 
 """ Manages and interfaces with ROS Subscriber objects.  A single subscriber
 is shared between multiple clients
 """
 
 
-class MultiSubscriber:
+class MultiSubscriber(Generic[ROSMessageT]):
     """
     Handles multiple clients for a single subscriber.
 
@@ -58,7 +69,15 @@ class MultiSubscriber:
     or accessing the subscribed clients.
     """
 
-    def __init__(self, topic, client_id, callback, node_handle, msg_type=None, raw=False):
+    def __init__(
+        self,
+        topic: str,
+        client_id: str,
+        callback: Callable[[OutgoingMessage[ROSMessageT]], None],
+        node_handle: Node,
+        msg_type: str | None = None,
+        raw: bool = False,
+    ) -> None:
         """
         Register a subscriber on the specified topic.
 
@@ -76,24 +95,28 @@ class MultiSubscriber:
         """
         # First check to see if the topic is already established
         topics_names_and_types = dict(node_handle.get_topic_names_and_types())
-        topic_type = topics_names_and_types.get(topic)
+        topic_types = topics_names_and_types.get(topic)
 
         # If it's not established and no type was specified, exception
-        if msg_type is None and topic_type is None:
+        if msg_type is None and topic_types is None:
             raise TopicNotEstablishedException(topic)
 
-        # topic_type is a list of types or None at this point; only one type is supported.
-        if topic_type is not None:
-            if len(topic_type) > 1:
-                node_handle.get_logger().warning(f"More than one topic type detected: {topic_type}")
-            topic_type = topic_type[0]
+        # topic_types is a list of types or None at this point; only one type is supported.
+        topic_type: str | None = None
+        if topic_types is not None:
+            if len(topic_types) > 1:
+                node_handle.get_logger().warning(
+                    f"More than one topic type detected: {topic_types}"
+                )
+            topic_type = topic_types[0]
 
         # Use the established topic type if none was specified
         if msg_type is None:
+            assert topic_type is not None
             msg_type = topic_type
 
         # Load the message class, propagating any exceptions from bad msg types
-        msg_class = ros_loader.get_message_class(msg_type)
+        msg_class = cast("type[ROSMessageT]", ros_loader.get_message_class(msg_type))
 
         # Make sure the specified msg type and established msg type are same
         msg_type_string = msg_class_type_repr(msg_class)
@@ -139,12 +162,17 @@ class MultiSubscriber:
         self.callback_group = MutuallyExclusiveCallbackGroup()
 
         self.subscriber = node_handle.create_subscription(
-            msg_class, topic, self.callback, qos, raw=raw, callback_group=self.callback_group
+            msg_class,
+            topic,
+            partial(self.callback, callbacks=None),
+            qos,
+            raw=raw,
+            callback_group=self.callback_group,
         )
-        self.new_subscriber = None
-        self.new_subscriptions = {}
+        self.new_subscriber: Subscription[ROSMessageT] | None = None
+        self.new_subscriptions: dict[str, Callable[[OutgoingMessage[ROSMessageT]], None]] = {}
 
-    def unregister(self):
+    def unregister(self) -> None:
         self.node_handle.destroy_subscription(self.subscriber)
         with self.rlock:
             self.subscriptions.clear()
@@ -152,7 +180,7 @@ class MultiSubscriber:
                 self.node_handle.destroy_subscription(self.new_subscriber)
                 self.new_subscriber = None
 
-    def verify_type(self, msg_type):
+    def verify_type(self, msg_type: str) -> None:
         """
         Verify that the subscriber subscribes to messages of this type.
 
@@ -164,7 +192,9 @@ class MultiSubscriber:
         if ros_loader.get_message_class(msg_type) is not self.msg_class:
             raise TypeConflictException(self.topic, msg_class_type_repr(self.msg_class), msg_type)
 
-    def subscribe(self, client_id, callback):
+    def subscribe(
+        self, client_id: str, callback: Callable[[OutgoingMessage[ROSMessageT]], None]
+    ) -> None:
         """
         Subscribe the specified client to this subscriber.
 
@@ -196,7 +226,7 @@ class MultiSubscriber:
                     callback_group=self.callback_group,
                 )
 
-    def unsubscribe(self, client_id):
+    def unsubscribe(self, client_id: str) -> None:
         """
         Unsubscribe the specified client from this subscriber.
 
@@ -208,12 +238,14 @@ class MultiSubscriber:
             if client_id in self.subscriptions:
                 del self.subscriptions[client_id]
 
-    def has_subscribers(self):
+    def has_subscribers(self) -> bool:
         """Return true if there are subscribers."""
         with self.rlock:
             return len(self.subscriptions) + len(self.new_subscriptions) != 0
 
-    def callback(self, msg, callbacks=None):
+    def callback(
+        self, msg: ROSMessageT, callbacks: Iterable[Callable[[OutgoingMessage], None]] | None = None
+    ) -> None:
         """
         Handle incoming messages on the rclpy subscription.
 
@@ -237,7 +269,7 @@ class MultiSubscriber:
                         f"Exception calling subscribe callback: {exc}"
                     )
 
-    def _new_sub_callback(self, msg):
+    def _new_sub_callback(self, msg: ROSMessageT) -> None:
         """
         Callbacks for new subscribers.
 
@@ -252,6 +284,7 @@ class MultiSubscriber:
             self.callback(msg, self.new_subscriptions.values())
             self.subscriptions.update(self.new_subscriptions)
             self.new_subscriptions = {}
+            assert self.new_subscriber is not None
             self.node_handle.destroy_subscription(self.new_subscriber)
             self.new_subscriber = None
 
@@ -259,11 +292,19 @@ class MultiSubscriber:
 class SubscriberManager:
     """Keeps track of client subscriptions."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._lock = Lock()
-        self._subscribers = {}
+        self._subscribers: dict[str, MultiSubscriber] = {}
 
-    def subscribe(self, client_id, topic, callback, node_handle, msg_type=None, raw=False):
+    def subscribe(
+        self,
+        client_id: str,
+        topic: str,
+        callback: Callable[[OutgoingMessage], None],
+        node_handle: Node,
+        msg_type: str | None = None,
+        raw: bool = False,
+    ) -> None:
         """
         Subscribe to a topic.
 
@@ -283,7 +324,7 @@ class SubscriberManager:
             if msg_type is not None and not raw:
                 self._subscribers[topic].verify_type(msg_type)
 
-    def unsubscribe(self, client_id, topic):
+    def unsubscribe(self, client_id: str, topic: str) -> None:
         """
         Unsubscribe from a topic.
 

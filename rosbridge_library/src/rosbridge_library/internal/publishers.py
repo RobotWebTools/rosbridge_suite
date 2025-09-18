@@ -31,7 +31,10 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 from threading import Timer
+from typing import TYPE_CHECKING, Any, Generic, cast
 
 from rclpy.duration import Duration
 from rclpy.qos import DurabilityPolicy, QoSProfile
@@ -42,9 +45,14 @@ from rosbridge_library.internal.topics import (
     TopicNotEstablishedException,
     TypeConflictException,
 )
+from rosbridge_library.internal.type_support import ROSMessage, ROSMessageT
+
+if TYPE_CHECKING:
+    from rclpy.node import Node
+    from rclpy.publisher import Publisher
 
 
-class MultiPublisher:
+class MultiPublisher(Generic[ROSMessageT]):
     """
     Keeps track of the clients that are using a particular publisher.
 
@@ -52,7 +60,14 @@ class MultiPublisher:
     this publisher.
     """
 
-    def __init__(self, topic, node_handle, msg_type=None, latched_client_id=None, queue_size=100):
+    def __init__(
+        self,
+        topic: str,
+        node_handle: Node,
+        msg_type: str | None = None,
+        latched_client_id: str | None = None,
+        queue_size: int = 100,
+    ) -> None:
         """
         Register a publisher on the specified topic.
 
@@ -70,24 +85,28 @@ class MultiPublisher:
         """
         # First check to see if the topic is already established
         topics_names_and_types = dict(node_handle.get_topic_names_and_types())
-        topic_type = topics_names_and_types.get(topic)
+        topic_types = topics_names_and_types.get(topic)
+        topic_type: str | None = None
 
         # If it's not established and no type was specified, exception
-        if msg_type is None and topic_type is None:
+        if msg_type is None and topic_types is None:
             raise TopicNotEstablishedException(topic)
 
-        # topic_type is a list of types or None at this point; only one type is supported.
-        if topic_type is not None:
-            if len(topic_type) > 1:
-                node_handle.get_logger().warning(f"More than one topic type detected: {topic_type}")
-            topic_type = topic_type[0]
+        # topic_types is a list of types or None at this point; only one type is supported.
+        if topic_types is not None:
+            if len(topic_types) > 1:
+                node_handle.get_logger().warning(
+                    f"More than one topic type detected: {topic_types}"
+                )
+            topic_type = topic_types[0]
 
         # Use the established topic type if none was specified
         if msg_type is None:
+            assert topic_type is not None, "topic_type cannot be None at this point"
             msg_type = topic_type
 
         # Load the message class, propagating any exceptions from bad msg types
-        msg_class = ros_loader.get_message_class(msg_type)
+        msg_class = cast("type[ROSMessageT]", ros_loader.get_message_class(msg_type))
 
         # Make sure the specified msg type and established msg type are same
         msg_type_string = msg_class_type_repr(msg_class)
@@ -95,7 +114,7 @@ class MultiPublisher:
             raise TypeConflictException(topic, topic_type, msg_type_string)
 
         # Create the publisher and associated member variables
-        self.clients = {}
+        self.clients: dict[str, bool] = {}
         self.latched_client_id = latched_client_id
         self.topic = topic
         self.node_handle = node_handle
@@ -115,14 +134,16 @@ class MultiPublisher:
         else:
             publisher_qos.depth = 1
 
-        self.publisher = node_handle.create_publisher(msg_class, topic, qos_profile=publisher_qos)
+        self.publisher: Publisher[ROSMessageT] = node_handle.create_publisher(
+            msg_class, topic, qos_profile=publisher_qos
+        )
 
-    def unregister(self):
+    def unregister(self) -> None:
         """Unregister the publisher and clear the clients."""
         self.node_handle.destroy_publisher(self.publisher)
         self.clients.clear()
 
-    def verify_type(self, msg_type):
+    def verify_type(self, msg_type: str) -> None:
         """
         Verify that the publisher publishes messages of the specified type.
 
@@ -135,7 +156,7 @@ class MultiPublisher:
         if ros_loader.get_message_class(msg_type) is not self.msg_class:
             raise TypeConflictException(self.topic, msg_class_type_repr(self.msg_class), msg_type)
 
-    def publish(self, msg):
+    def publish(self, msg: dict[str, Any]) -> None:
         """
         Publish a message using this publisher.
 
@@ -153,7 +174,7 @@ class MultiPublisher:
         # Publish the message
         self.publisher.publish(inst)
 
-    def register_client(self, client_id):
+    def register_client(self, client_id: str) -> None:
         """
         Register the specified client as a client of this publisher.
 
@@ -161,7 +182,7 @@ class MultiPublisher:
         """
         self.clients[client_id] = True
 
-    def unregister_client(self, client_id):
+    def unregister_client(self, client_id: str) -> None:
         """
         Unregister the specified client from this publisher.
 
@@ -173,7 +194,7 @@ class MultiPublisher:
         if client_id in self.clients:
             del self.clients[client_id]
 
-    def has_clients(self):
+    def has_clients(self) -> bool:
         """Return true if there are clients to this publisher."""
         return len(self.clients) != 0
 
@@ -188,12 +209,20 @@ class PublisherManager:
     then that publisher is unregistered from the ROS Master.
     """
 
-    def __init__(self):
-        self._publishers = {}
-        self.unregister_timers = {}
-        self.unregister_timeout = 10.0
+    def __init__(self) -> None:
+        self._publishers: dict[str, MultiPublisher[ROSMessage]] = {}
+        self.unregister_timers: dict[str, Timer] = {}
+        self.unregister_timeout: float = 10.0
 
-    def register(self, client_id, topic, node_handle, msg_type=None, latch=False, queue_size=100):
+    def register(
+        self,
+        client_id: str,
+        topic: str,
+        node_handle: Node,
+        msg_type: str | None = None,
+        latch: bool = False,
+        queue_size: int = 100,
+    ) -> None:
         """
         Register a publisher on the specified topic.
 
@@ -241,7 +270,7 @@ class PublisherManager:
 
         self._publishers[topic].register_client(client_id)
 
-    def unregister(self, client_id, topic):
+    def unregister(self, client_id: str, topic: str) -> None:
         """
         Unregister a client from the publisher for the given topic.
 
@@ -265,13 +294,13 @@ class PublisherManager:
         )
         self.unregister_timers[topic].start()
 
-    def _unregister_impl(self, topic):
+    def _unregister_impl(self, topic: str) -> None:
         if not self._publishers[topic].has_clients():
             self._publishers[topic].unregister()
             del self._publishers[topic]
         del self.unregister_timers[topic]
 
-    def unregister_all(self, client_id):
+    def unregister_all(self, client_id: str) -> None:
         """
         Unregister a client from all publishers that they are registered to.
 
@@ -280,7 +309,15 @@ class PublisherManager:
         for topic in self._publishers:
             self.unregister(client_id, topic)
 
-    def publish(self, client_id, topic, msg, node_handle, latch=False, queue_size=100):
+    def publish(
+        self,
+        client_id: str,
+        topic: str,
+        msg: dict,
+        node_handle: Node,
+        latch: bool = False,
+        queue_size: int = 100,
+    ) -> None:
         """
         Publish a message on the given topic.
 
