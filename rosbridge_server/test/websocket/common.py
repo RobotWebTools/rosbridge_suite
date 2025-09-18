@@ -175,7 +175,7 @@ def expect_messages(
     into a list and waits for the list to have the expected number of items.
     """
     future = Future()
-    results: list[MsgT] = []
+    results = []
 
     def handler(msg: MsgT) -> None:
         logger.info(f"Received message on {description}: {msg}")  # noqa: G004
