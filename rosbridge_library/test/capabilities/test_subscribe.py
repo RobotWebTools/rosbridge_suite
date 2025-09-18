@@ -128,7 +128,7 @@ class TestSubscribe(unittest.TestCase):
         ) -> None:
             received["msg"] = message
 
-        proto.send = send  # type: ignore[method-assign]
+        proto.send = send  # type: ignore[assignment]
 
         sub.subscribe(loads(dumps({"op": "subscribe", "topic": topic, "type": msg_type})))
 

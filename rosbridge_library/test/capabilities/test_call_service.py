@@ -122,7 +122,7 @@ class TestCallService(unittest.TestCase):
             received["msg"] = message
             received["arrived"] = True
 
-        proto.send = cb  # type: ignore[method-assign]
+        proto.send = cb  # type: ignore[assignment]
 
         s.call_service(send_msg)
 
@@ -160,7 +160,7 @@ class TestCallService(unittest.TestCase):
             received["msg"] = message
             received["arrived"] = True
 
-        proto.send = cb  # type: ignore[method-assign]
+        proto.send = cb  # type: ignore[assignment]
 
         s.call_service(send_msg)
 
@@ -199,7 +199,7 @@ class TestCallService(unittest.TestCase):
             received["msg"] = message
             received["arrived"] = True
 
-        proto.send = cb  # type: ignore[method-assign]
+        proto.send = cb  # type: ignore[assignment]
 
         s.call_service(send_msg)
 
@@ -230,7 +230,7 @@ class TestCallService(unittest.TestCase):
             received["msg"] = message
             received["arrived"] = True
 
-        proto.send = cb  # type: ignore[method-assign]
+        proto.send = cb  # type: ignore[assignment]
 
         s.call_service(send_msg)
 

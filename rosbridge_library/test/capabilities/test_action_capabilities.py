@@ -38,10 +38,10 @@ class TestActionCapabilities(unittest.TestCase):
 
         self.proto = Protocol(self._testMethodName, self.node)
         # change the log function so we can verify errors are logged
-        self.proto.log = self.mock_log  # type: ignore[method-assign]
+        self.proto.log = self.mock_log  # type: ignore[assignment]
         # change the send callback so we can access the rosbridge messages
         # being sent
-        self.proto.send = self.local_send_cb  # type: ignore[method-assign]
+        self.proto.send = self.local_send_cb  # type: ignore[assignment]
         self.advertise = AdvertiseAction(self.proto)
         self.unadvertise = UnadvertiseAction(self.proto)
         self.result = ActionResult(self.proto)

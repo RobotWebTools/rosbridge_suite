@@ -44,7 +44,7 @@ class TestMultiSubscriber(unittest.TestCase):
         msg_type = "std_msgs/String"
 
         self.assertFalse(is_topic_subscribed(self.node, topic))
-        MultiSubscriber(topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type)
+        MultiSubscriber[String](topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type)
         self.assertTrue(is_topic_subscribed(self.node, topic))
 
     def test_unregister_multisubscriber(self) -> None:

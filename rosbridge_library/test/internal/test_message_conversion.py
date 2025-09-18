@@ -54,26 +54,24 @@ class TestMessageConversion(unittest.TestCase):
         for msg in [{"data": data_value}, loads(dumps({"data": data_value}))]:
             inst = ros_loader.get_message_instance(msgtype)
             c.populate_instance(msg, inst)
-            assert hasattr(inst, "data")
-            self.assertEqual(inst.data, data_value)
+            self.assertEqual(inst.data, data_value)  # type: ignore[attr-defined]
             self.validate_instance(inst)
             extracted = c.extract_values(inst)
             for msg2 in [extracted, loads(dumps(extracted))]:
                 self.msgs_equal(msg, msg2)
                 self.assertEqual(msg["data"], msg2["data"])
-                self.assertEqual(msg2["data"], inst.data)
+                self.assertEqual(msg2["data"], inst.data)  # type: ignore[attr-defined]
 
     def do_byte_test(self, data_value: int, msgtype: str) -> None:
         for msg in [{"data": data_value}]:
             inst = ros_loader.get_message_instance(msgtype)
             c.populate_instance(msg, inst)
-            assert hasattr(inst, "data")
-            self.assertEqual(inst.data, bytes([data_value]))
+            self.assertEqual(inst.data, bytes([data_value]))  # type: ignore[attr-defined]
             self.validate_instance(inst)
             extracted = c.extract_values(inst)
             for msg2 in [extracted, loads(dumps(extracted))]:
                 self.assertEqual(msg["data"], msg2["data"])
-                self.assertEqual(bytes([msg2["data"]]), inst.data)
+                self.assertEqual(bytes([msg2["data"]]), inst.data)  # type: ignore[attr-defined]
 
     def do_test(self, orig_msg: dict[str, Any], msgtype: str) -> None:
         for msg in [orig_msg, loads(dumps(orig_msg))]:
@@ -272,10 +270,9 @@ class TestMessageConversion(unittest.TestCase):
         def test_int8_msg(rostype: str, data: list[int] | str) -> Sequence:
             msg = {"data": data}
             inst = ros_loader.get_message_instance(rostype)
-            assert hasattr(inst, "data")
             c.populate_instance(msg, inst)
             self.validate_instance(inst)
-            return inst.data
+            return inst.data  # type: ignore[attr-defined]
 
         for msgtype in ["TestChar", "TestUInt8"]:
             rostype = "rosbridge_test_msgs/" + msgtype
@@ -307,10 +304,9 @@ class TestMessageConversion(unittest.TestCase):
         def test_float32_msg(rostype: str, data: list[float] | list[int]) -> Sequence:
             msg = {"data": data}
             inst = ros_loader.get_message_instance(rostype)
-            assert hasattr(inst, "data")
             c.populate_instance(msg, inst)
             self.validate_instance(inst)
-            return inst.data
+            return inst.data  # type: ignore[attr-defined]
 
         for msgtype in ["TestFloat32Array"]:
             rostype = "rosbridge_test_msgs/" + msgtype
@@ -343,10 +339,9 @@ class TestMessageConversion(unittest.TestCase):
         def test_nestedboundedarray_msg(rostype: str, data: list[float]) -> array.array:
             msg = {"data": {"data": data}}
             inst = ros_loader.get_message_instance(rostype)
-            assert hasattr(inst, "data")
             c.populate_instance(msg, inst)
             self.validate_instance(inst)
-            return inst.data
+            return inst.data  # type: ignore[attr-defined]
 
         for msgtype in ["TestNestedBoundedArray"]:
             rostype = "rosbridge_test_msgs/" + msgtype
