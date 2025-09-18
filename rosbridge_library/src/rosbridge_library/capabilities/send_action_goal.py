@@ -44,9 +44,7 @@ from rosbridge_library.internal.actions import ActionClientHandler
 from rosbridge_library.internal.message_conversion import extract_values
 
 if TYPE_CHECKING:
-    from rclpy.type_support import FeedbackMessage
-
-    from rosbridge_library.internal.type_support import ROSMessage
+    from rosbridge_library.internal.type_support import FeedbackMessage, ROSMessage
     from rosbridge_library.protocol import Protocol
 
 

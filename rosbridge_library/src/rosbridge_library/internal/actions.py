@@ -58,9 +58,12 @@ if TYPE_CHECKING:
     from rclpy.action.client import ClientGoalHandle
     from rclpy.node import Node
     from rclpy.task import Future
-    from rclpy.type_support import FeedbackMessage, GetResultServiceResponse
 
-    from rosbridge_library.internal.type_support import ROSMessage
+    from rosbridge_library.internal.type_support import (
+        FeedbackMessage,
+        GetResultServiceResponse,
+        ROSMessage,
+    )
 
 
 class InvalidActionException(Exception):
