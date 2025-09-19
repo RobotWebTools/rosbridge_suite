@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
 
 import argparse
 import sys
@@ -48,11 +49,11 @@ from tornado.web import Application
 from rosbridge_server import ClientManager, RosbridgeWebSocket
 
 
-def start_hook():
+def start_hook() -> None:
     IOLoop.instance().start()
 
 
-def shutdown_hook():
+def shutdown_hook() -> None:
     IOLoop.instance().stop()
 
 
@@ -113,7 +114,7 @@ def parse_glob_string(glob_string: str) -> list[str]:
 
 
 class RosbridgeWebsocketNode(Node):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("rosbridge_websocket")
 
         RosbridgeWebSocket.node_handle = self
@@ -131,7 +132,7 @@ class RosbridgeWebsocketNode(Node):
 
         self._start_server()
 
-    def _handle_parameters(self):
+    def _handle_parameters(self) -> None:
         # Parse command line arguments
         args = parse_args()
 
@@ -190,7 +191,7 @@ class RosbridgeWebsocketNode(Node):
             self.get_parameter("use_compression").get_parameter_value().bool_value
         )
 
-    def _start_server(self):
+    def _start_server(self) -> None:
         handlers = [(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)]
         if self.url_path != "/":
             handlers = [(rf"{self.url_path}", RosbridgeWebSocket)]
@@ -211,23 +212,20 @@ class RosbridgeWebsocketNode(Node):
                 self.get_logger().info(f"Rosbridge WebSocket server started on port {actual_port}")
                 connected = True
             except OSError as e:  # noqa: PERF203
-                self.get_logger().warn(
+                self.get_logger().warning(
                     f"Unable to start server: {e} Retrying in {self.retry_startup_delay}s."
                 )
                 time.sleep(self.retry_startup_delay)
 
 
-def main(args=None):
-    if args is None:
-        args = sys.argv
-
-    rclpy.init(args=args)
+def main() -> None:
+    rclpy.init()
     node = RosbridgeWebsocketNode()
 
     executor = rclpy.executors.SingleThreadedExecutor()
     executor.add_node(node)
 
-    def spin_ros():
+    def spin_ros() -> None:
         if not rclpy.ok():
             shutdown_hook()
             return

@@ -38,7 +38,7 @@ import traceback
 import uuid
 from collections import deque
 from functools import partial, wraps
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, ParamSpec, TypeVar
 
 from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
@@ -48,6 +48,8 @@ from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from rclpy.node import Node
 
     from .client_manager import ClientManager
@@ -55,17 +57,21 @@ if TYPE_CHECKING:
 _io_loop = IOLoop.instance()
 
 
-def _log_exception():
+def _log_exception() -> None:
     """Log the most recent exception to ROS."""
     exc = traceback.format_exception(*sys.exc_info())
     RosbridgeWebSocket.node_handle.get_logger().error("".join(exc))
 
 
-def log_exceptions(f):
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def log_exceptions(f: Callable[P, R]) -> Callable[P, R]:
     """Log exceptions to ROS."""
 
     @wraps(f)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         try:
             return f(*args, **kwargs)
         except Exception:
@@ -83,16 +89,16 @@ class IncomingQueue(threading.Thread):
     and vice versa.
     """
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: RosbridgeProtocol) -> None:
         threading.Thread.__init__(self)
         self.daemon = True
-        self.queue = deque()
+        self.queue: deque[str] = deque()
         self.protocol = protocol
 
         self.cond = threading.Condition()
         self._finished = False
 
-    def finish(self):
+    def finish(self) -> None:
         """Clear the queue and do not accept further messages."""
         with self.cond:
             self._finished = True
@@ -100,12 +106,12 @@ class IncomingQueue(threading.Thread):
                 self.queue.popleft()
             self.cond.notify()
 
-    def push(self, msg):
+    def push(self, msg: str) -> None:
         with self.cond:
             self.queue.append(msg)
             self.cond.notify()
 
-    def run(self):
+    def run(self) -> None:
         while True:
             with self.cond:
                 if len(self.queue) == 0 and not self._finished:
@@ -137,8 +143,13 @@ class RosbridgeWebSocket(WebSocketHandler):
     # Parameters for the WebSocket handler
     use_compression: ClassVar[bool] = False
 
+    client_id: uuid.UUID
+    protocol: RosbridgeProtocol
+    incoming_queue: IncomingQueue
+
     @log_exceptions
-    def open(self):
+    def open(self, *args: str, **kwargs: str) -> None:  # noqa: ARG002
+        assert self.node_handle is not None
         cls = self.__class__
         assert cls.node_handle is not None, "Node handle must be set before opening a WebSocket"
         try:
@@ -163,13 +174,14 @@ class RosbridgeWebSocket(WebSocketHandler):
         )
 
     @log_exceptions
-    def on_message(self, message):
+    def on_message(self, message: str | bytes) -> None:
         if isinstance(message, bytes):
             message = message.decode("utf-8")
         self.incoming_queue.push(message)
 
     @log_exceptions
-    def on_close(self):
+    def on_close(self) -> None:
+        assert self.node_handle is not None
         cls = self.__class__
         cls.clients_connected -= 1
         if cls.client_manager:
@@ -179,7 +191,7 @@ class RosbridgeWebSocket(WebSocketHandler):
         )
         self.incoming_queue.finish()
 
-    def send_message(self, message, compression="none"):
+    def send_message(self, message: bson.BSON | bytearray | str, compression: str = "none") -> None:
         if isinstance(message, bson.BSON) or compression in ["cbor", "cbor-raw"]:
             binary = True
         else:
@@ -187,18 +199,19 @@ class RosbridgeWebSocket(WebSocketHandler):
 
         _io_loop.add_callback(partial(self.prewrite_message, message, binary))
 
-    async def prewrite_message(self, message, binary):
+    async def prewrite_message(self, message: bson.BSON | bytearray | str, binary: bool) -> None:
+        assert self.node_handle is not None
         cls = self.__class__
         try:
             await self.write_message(message, binary)
         except WebSocketClosedError:
-            cls.node_handle.get_logger().warn(
+            cls.node_handle.get_logger().warning(
                 "WebSocketClosedError: Tried to write to a closed websocket",
                 throttle_duration_sec=1.0,
             )
             # If we end up here, a client has disconnected before its message callback(s) could be removed.
         except StreamClosedError:
-            cls.node_handle.get_logger().warn(
+            cls.node_handle.get_logger().warning(
                 "StreamClosedError: Tried to write to a closed stream",
                 throttle_duration_sec=1.0,
             )
@@ -206,11 +219,11 @@ class RosbridgeWebSocket(WebSocketHandler):
             _log_exception()
 
     @log_exceptions
-    def check_origin(self, origin):  # noqa: ARG002
+    def check_origin(self, origin: str) -> bool:  # noqa: ARG002
         return True
 
     @log_exceptions
-    def get_compression_options(self):
+    def get_compression_options(self) -> dict | None:
         # If this method returns None (the default), compression will be disabled.
         # If it returns a dict (even an empty one), it will be enabled.
         cls = self.__class__

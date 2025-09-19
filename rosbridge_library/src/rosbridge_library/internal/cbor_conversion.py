@@ -1,10 +1,15 @@
+from __future__ import annotations
+
 import struct
+from typing import TYPE_CHECKING, Any
 
 try:
     from cbor import Tag
 except ImportError:
     from rosbridge_library.util.cbor import Tag
 
+if TYPE_CHECKING:
+    from rosbridge_library.internal.type_support import ROSMessage
 
 LIST_TYPES = [list, tuple]
 INT_TYPES = [
@@ -43,7 +48,7 @@ TAGGED_ARRAY_FORMATS = {
 }
 
 
-def extract_cbor_values(msg):
+def extract_cbor_values(msg: ROSMessage) -> dict[str, Any]:
     """
     Extract a dictionary of CBOR-friendly values from a ROS message.
 
@@ -51,7 +56,7 @@ def extract_cbor_values(msg):
 
     Typed arrays will be tagged and packed into byte arrays.
     """
-    out = {}
+    out: dict[str, Any] = {}
     for slot, slot_type in msg.get_fields_and_field_types().items():
         val = getattr(msg, slot)
 

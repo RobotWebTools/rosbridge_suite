@@ -73,7 +73,7 @@ _parameter_type_mapping = [
 ]
 
 
-def init(node: Node, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC):
+def init(node: Node, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC) -> None:
     """
     Initialize params module with a rclpy.node.Node for further use.
 
@@ -88,13 +88,13 @@ def init(node: Node, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC):
     global _node, _timeout_sec
     _node = node
 
-    if not isinstance(timeout_sec, (int, float)) or timeout_sec <= 0:
+    if not isinstance(timeout_sec, int | float) or timeout_sec <= 0:
         msg = "Parameter timeout must be a positive number"
         raise ValueError(msg)
     _timeout_sec = timeout_sec
 
 
-async def set_param(node_name: str, name: str, value: str, params_glob: list[str]):
+async def set_param(node_name: str, name: str, value: str, params_glob: list[str]) -> None:
     """Set a parameter in a given node."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
@@ -117,7 +117,9 @@ async def set_param(node_name: str, name: str, value: str, params_glob: list[str
     await _set_param(node_name, name, value)
 
 
-async def _set_param(node_name: str, name: str, value: str, parameter_type=None):
+async def _set_param(
+    node_name: str, name: str, value: str | None, parameter_type: int | None = None
+) -> None:
     """
     Set a parameter in a given node.
 
@@ -129,16 +131,18 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
     parameter = Parameter()
     parameter.name = name
     if parameter_type is None:
+        assert value is not None
         parameter.value = get_parameter_value(string_value=value)
     else:
         parameter.value = ParameterValue()
         parameter.value.type = parameter_type
         if parameter_type != ParameterType.PARAMETER_NOT_SET:
+            assert value is not None
             setattr(parameter.value, _parameter_type_mapping[parameter_type], loads(value))
 
     assert _node is not None
-    client: Client = _node.create_client(
-        SetParameters,
+    client: Client[SetParameters.Request, SetParameters.Response] = _node.create_client(
+        SetParameters,  # type: ignore[arg-type]
         f"{node_name}/set_parameters",
         callback_group=MutuallyExclusiveCallbackGroup(),
     )
@@ -165,8 +169,9 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
     result = future.result()
 
     assert result is not None
-    if not result.results[0].successful:
-        raise Exception(result.results[0].reason)
+    param_results = next(iter(result.results))
+    if param_results.successful:
+        raise Exception(param_results.reason)
 
 
 async def get_param(node_name: str, name: str, params_glob: str) -> str:
@@ -197,8 +202,8 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     Internal helper function for get_param.
     """
     assert _node is not None
-    client: Client = _node.create_client(
-        GetParameters,
+    client: Client[GetParameters.Request, GetParameters.Response] = _node.create_client(
+        GetParameters,  # type: ignore[arg-type]
         f"{node_name}/get_parameters",
         callback_group=MutuallyExclusiveCallbackGroup(),
     )
@@ -229,10 +234,10 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
         msg = f"Parameter {name} not found"
         raise Exception(msg)
 
-    return result.values[0]
+    return next(iter(result.values))
 
 
-async def has_param(node_name: str, name: str, params_glob: str) -> bool:
+async def has_param(node_name: str, name: str, params_glob: list[str]) -> bool:
     """Check whether a given node has a parameter or not."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
@@ -249,7 +254,7 @@ async def has_param(node_name: str, name: str, params_glob: str) -> bool:
     return 0 < pvalue.type < len(_parameter_type_mapping)
 
 
-async def delete_param(node_name, name, params_glob):
+async def delete_param(node_name: str, name: str, params_glob: list[str]) -> None:
     """Delete a parameter in a given node."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
@@ -267,14 +272,14 @@ async def get_param_names(params_glob: str | None) -> list[str]:
 
     nodes = [get_absolute_node_name(node) for node in get_nodes()]
 
-    futures: list[tuple[str, Future]] = []
+    futures: list[tuple[str, Future[ListParameters.Response]]] = []
     clients = []
     for node_name in nodes:
         if node_name == _node.get_fully_qualified_name():
             continue
 
-        client: Client = _node.create_client(
-            ListParameters,
+        client: Client[ListParameters.Request, ListParameters.Response] = _node.create_client(
+            ListParameters,  # type: ignore[arg-type]
             f"{node_name}/list_parameters",
             callback_group=MutuallyExclusiveCallbackGroup(),
         )

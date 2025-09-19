@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import unittest
-from typing import Any, ClassVar
+from typing import ClassVar
 
 from rosapi import objectutils
 
@@ -17,7 +19,7 @@ class TestUtils(unittest.TestCase):
         global ros_loader
         ros_loader = self.original_ros_loader
 
-    def _mock_get_message_instance(self, type_name: str) -> Any:
+    def _mock_get_message_instance(self, type_name: str) -> object:
         class MockInstance:
             __slots__ = ["_" + type_name]
             _fields_and_field_types: ClassVar = {type_name: type_name}
@@ -47,7 +49,7 @@ class TestUtils(unittest.TestCase):
             __slots__ = ["_check_fields", "_important_data"]
             _fields_and_field_types: ClassVar = {"important_data": "int32"}
 
-            def __init__(self):
+            def __init__(self) -> None:
                 self._important_data = 123
                 self._check_fields = None
 

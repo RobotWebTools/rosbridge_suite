@@ -1,6 +1,6 @@
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2012, Willow Garage, Inc.
+# Copyright (c) 2025, Fictionlab sp. z o.o.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,22 +30,46 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""Exceptions and code common to both publishers and subscribers."""
-
 from __future__ import annotations
 
-
-class TopicNotEstablishedException(Exception):
-    def __init__(self, topic: str) -> None:
-        Exception.__init__(
-            self,
-            f"Cannot infer topic type for topic {topic} as it is not yet advertised",
-        )
+from typing import Protocol, TypeVar, runtime_checkable
 
 
-class TypeConflictException(Exception):
-    def __init__(self, topic: str, orig_type: str, new_type: str) -> None:
-        Exception.__init__(
-            self,
-            f"Tried to register topic {topic} with type {new_type} but it is already established with type {orig_type}",
-        )
+@runtime_checkable
+class ROSMessage(Protocol):
+    """Protocol for ROS message types."""
+
+    __slots__: list[str]
+    _fields_and_field_types: dict[str, str]
+
+    def get_fields_and_field_types(self) -> dict[str, str]:
+        """Return a dictionary of field names to field types."""
+
+
+@runtime_checkable
+class ROSService(Protocol):
+    """Protocol for ROS service types."""
+
+    Request: type[ROSMessage]
+    Response: type[ROSMessage]
+    Event: type[ROSMessage]
+
+
+@runtime_checkable
+class ROSAction(Protocol):
+    """Protocol for ROS action types."""
+
+    Goal: type[ROSMessage]
+    Result: type[ROSMessage]
+    Feedback: type[ROSMessage]
+
+
+# Type variables for ROS types
+ROSMessageT = TypeVar("ROSMessageT", bound=ROSMessage)
+ROSServiceT = TypeVar("ROSServiceT", bound=ROSService)
+ROSServiceRequestT = TypeVar("ROSServiceRequestT", bound=ROSMessage)
+ROSServiceResponseT = TypeVar("ROSServiceResponseT", bound=ROSMessage)
+ROSActionT = TypeVar("ROSActionT", bound=ROSAction)
+ROSActionGoalT = TypeVar("ROSActionGoalT", bound=ROSMessage)
+ROSActionResultT = TypeVar("ROSActionResultT", bound=ROSMessage)
+ROSActionFeedbackT = TypeVar("ROSActionFeedbackT", bound=ROSMessage)

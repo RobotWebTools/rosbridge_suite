@@ -30,8 +30,15 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
 
-def is_topic_published(node, topic_name):
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rclpy.node import Node
+
+
+def is_topic_published(node: Node, topic_name: str) -> bool:
     """Check if a topic is published on a node."""
     published_topic_data = node.get_publisher_names_and_types_by_node(
         node.get_name(), node.get_namespace()
@@ -39,7 +46,7 @@ def is_topic_published(node, topic_name):
     return any(topic[0] == topic_name for topic in published_topic_data)
 
 
-def is_topic_subscribed(node, topic_name):
+def is_topic_subscribed(node: Node, topic_name: str) -> bool:
     """Check if a topic is subscribed to by a node."""
     subscribed_topic_data = node.get_subscriber_names_and_types_by_node(
         node.get_name(), node.get_namespace()

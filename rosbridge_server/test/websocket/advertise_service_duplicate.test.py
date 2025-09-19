@@ -1,14 +1,20 @@
+from __future__ import annotations
+
 import sys
 import unittest
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from rclpy.node import Node
 from std_srvs.srv import SetBool
 from twisted.python import log
 
 if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
+    from common import TestClientProtocol
     from rclpy.client import Client
+    from rclpy.node import Node
+
 
 sys.path.append(str(Path(__file__).parent))  # enable importing from common.py in this directory
 
@@ -22,7 +28,9 @@ generate_test_description = common.generate_test_description
 
 class TestAdvertiseService(unittest.TestCase):
     @websocket_test
-    async def test_double_advertise(self, node: Node, make_client):
+    async def test_double_advertise(
+        self, node: Node, make_client: Callable[[], Awaitable[TestClientProtocol]]
+    ) -> None:
         ws_client1 = await make_client()
         ws_client1.sendJson(
             {
@@ -31,14 +39,18 @@ class TestAdvertiseService(unittest.TestCase):
                 "service": "/test_service",
             }
         )
-        client: Client = node.create_client(SetBool, "/test_service")
+        client: Client = node.create_client(
+            SetBool,  # type: ignore[arg-type]
+            "/test_service",
+        )
         client.wait_for_service()
 
         requests1_future, ws_client1.message_handler = expect_messages(
             1, "WebSocket 1", node.get_logger()
         )
-        assert node.executor is not None
-        requests1_future.add_done_callback(lambda _: node.executor.wake())
+        executor = node.executor
+        assert executor is not None
+        requests1_future.add_done_callback(lambda _: executor.wake())
 
         client.call_async(SetBool.Request(data=True))
 
@@ -72,7 +84,7 @@ class TestAdvertiseService(unittest.TestCase):
         requests2_future, ws_client2.message_handler = expect_messages(
             1, "WebSocket 2", node.get_logger()
         )
-        requests2_future.add_done_callback(lambda _: node.executor.wake())
+        requests2_future.add_done_callback(lambda _: executor.wake())
 
         response2_future = client.call_async(SetBool.Request(data=False))
 

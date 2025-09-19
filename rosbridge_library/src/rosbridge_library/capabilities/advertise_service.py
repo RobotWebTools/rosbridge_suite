@@ -1,41 +1,56 @@
 from __future__ import annotations
 
 import fnmatch
+from typing import TYPE_CHECKING, Any, Generic
 
-import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.task import Future
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.internal.ros_loader import get_service_class
+from rosbridge_library.internal.type_support import (
+    ROSMessage,
+    ROSServiceRequestT,
+    ROSServiceResponseT,
+)
+
+if TYPE_CHECKING:
+    from rclpy.service import Service
+
+    from rosbridge_library.protocol import Protocol
 
 
-class AdvertisedServiceHandler:
+class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT]):
     id_counter = 1
 
-    def __init__(self, service_name, service_type, protocol):
-        self.request_futures = {}
+    def __init__(self, service_name: str, service_type: str, protocol: Protocol) -> None:
+        self.request_futures: dict[str, Future[ROSServiceResponseT]] = {}
         self.service_name = service_name
         self.service_type = service_type
         self.protocol = protocol
         # setup the service
-        self.service_handle = protocol.node_handle.create_service(
-            get_service_class(service_type),
-            service_name,
-            self.handle_request,
-            callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
+        self.service_handle: Service[ROSServiceRequestT, ROSServiceResponseT] = (
+            protocol.node_handle.create_service(
+                get_service_class(service_type),
+                service_name,
+                self.handle_request,  # type: ignore[arg-type]  # rclpy type hint does not support coroutines
+                callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
+            )
         )
 
-    def next_id(self):
+    def next_id(self) -> int:
         next_id_value = self.id_counter
         self.id_counter += 1
         return next_id_value
 
-    async def handle_request(self, req, _res):
+    async def handle_request(
+        self, req: ROSServiceRequestT, _res: ROSServiceResponseT
+    ) -> ROSServiceResponseT:
         # generate a unique ID
         request_id = f"service_request:{self.service_name}:{self.next_id()}"
 
-        future = rclpy.task.Future()
+        future: Future[ROSServiceResponseT] = Future()
         self.request_futures[request_id] = future
 
         # build a request to send to the external client
@@ -48,11 +63,13 @@ class AdvertisedServiceHandler:
         self.protocol.send(request_message)
 
         try:
-            return await future
+            result = await future
+            assert result is not None, "Service response cannot be None"
+            return result
         finally:
             del self.request_futures[request_id]
 
-    def handle_response(self, request_id, res):
+    def handle_response(self, request_id: str, res: ROSServiceResponseT) -> None:
         """
         Handle service response.
 
@@ -65,7 +82,7 @@ class AdvertisedServiceHandler:
                 "warning", f"Received service response for unrecognized id: {request_id}"
             )
 
-    def graceful_shutdown(self):
+    def graceful_shutdown(self) -> None:
         """
         Signal the AdvertisedServiceHandler to shutdown.
 
@@ -91,7 +108,7 @@ class AdvertiseService(Capability):
 
     services_glob: list[str] | None = None
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
@@ -101,12 +118,12 @@ class AdvertiseService(Capability):
         # Register the operations that this capability provides
         protocol.register_operation("advertise_service", self.advertise_service)
 
-    def advertise_service(self, message):
+    def advertise_service(self, message: dict[str, Any]) -> None:
         # Typecheck the args
         self.basic_type_check(message, self.advertise_service_msg_fields)
 
         # parse the incoming message
-        service_name = message["service"]
+        service_name: str = message["service"]
 
         if self.services_glob:
             self.protocol.log(
@@ -141,7 +158,9 @@ class AdvertiseService(Capability):
             del self.protocol.external_service_list[service_name]
 
         # setup and store the service information
-        service_type = message["type"]
-        service_handler = AdvertisedServiceHandler(service_name, service_type, self.protocol)
+        service_type: str = message["type"]
+        service_handler: AdvertisedServiceHandler[ROSMessage, ROSMessage] = (
+            AdvertisedServiceHandler(service_name, service_type, self.protocol)
+        )
         self.protocol.external_service_list[service_name] = service_handler
         self.protocol.log("info", f"Advertised service {service_name}")

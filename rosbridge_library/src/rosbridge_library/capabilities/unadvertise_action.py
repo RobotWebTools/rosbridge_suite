@@ -32,7 +32,7 @@
 from __future__ import annotations
 
 import fnmatch
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capability import Capability
 
@@ -53,9 +53,9 @@ class UnadvertiseAction(Capability):
         # Register the operations that this capability provides
         protocol.register_operation("unadvertise_action", self.unadvertise_action)
 
-    def unadvertise_action(self, message: dict) -> None:
+    def unadvertise_action(self, message: dict[str, Any]) -> None:
         # parse the message
-        action_name = message["action"]
+        action_name: str = message["action"]
 
         if self.actions_glob:
             self.protocol.log(

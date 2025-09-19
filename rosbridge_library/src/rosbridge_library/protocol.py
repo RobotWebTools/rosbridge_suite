@@ -32,21 +32,30 @@
 from __future__ import annotations
 
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capabilities.fragmentation import Fragmentation
 from rosbridge_library.util import bson, json
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-def is_number(s):
+    from rclpy.node import Node
+
+    from rosbridge_library.capabilities.advertise_action import AdvertisedActionHandler
+    from rosbridge_library.capabilities.advertise_service import AdvertisedServiceHandler
+    from rosbridge_library.capability import Capability
+
+
+def is_number(s: object) -> bool | None:
     try:
-        float(s)
+        float(s)  # type: ignore[arg-type]
         return True
     except ValueError:
         return False
 
 
-def has_binary(obj):
+def has_binary(obj: object) -> bool:
     """Return True if obj is a binary or contains a binary attribute."""
     if isinstance(obj, list):
         return any(has_binary(item) for item in obj)
@@ -78,9 +87,9 @@ class Protocol:
     old_buffer = ""
     busy = False
     # global list of non-ros advertised services
-    external_service_list: dict[str, Any]
+    external_service_list: dict[str, AdvertisedServiceHandler]
     # global list of non-ros advertised actions
-    external_action_list: dict[str, Any]
+    external_action_list: dict[str, AdvertisedActionHandler]
 
     max_message_size: int = 1000000
     # if this is too low, ("simple")clients network stacks will get flooded (when sending fragments of a huge message..)
@@ -92,7 +101,9 @@ class Protocol:
 
     parameters: dict[str, Any] | None = None
 
-    def __init__(self, client_id, node_handle, parameters=None):
+    def __init__(
+        self, client_id: str, node_handle: Node, parameters: dict[str, Any] | None = None
+    ) -> None:
         """
         Initialize the protocol with a client ID and a ROS2 node handle.
 
@@ -104,8 +115,8 @@ class Protocol:
         self.node_handle = node_handle
         self.parameters = parameters
 
-        self.capabilities = []
-        self.operations = {}
+        self.capabilities: list[Capability] = []
+        self.operations: dict[str, Callable[[dict[str, Any]], None]] = {}
         self.external_service_list = {}
         self.external_action_list = {}
 
@@ -121,7 +132,7 @@ class Protocol:
 
     # added default message_string="" to allow recalling incoming until buffer is empty without giving a parameter
     # --> allows to get rid of (..or minimize) delay between client-side sends
-    def incoming(self, message_string=""):
+    def incoming(self, message_string: str = "") -> None:
         """
         Process an incoming message from the client.
 
@@ -241,7 +252,7 @@ class Protocol:
             self.old_buffer = self.buffer
             self.incoming()
 
-    def outgoing(self, message, compression="none"):
+    def outgoing(self, message: bson.BSON | bytearray | str, compression: str = "none") -> None:
         """
         Pass an outgoing message to the client.
 
@@ -250,7 +261,9 @@ class Protocol:
         :param message: The wire-level message to send to the client
         """
 
-    def send(self, message, cid=None, compression="none"):
+    def send(
+        self, message: dict[str, Any] | bytes, cid: str | None = None, compression: str = "none"
+    ) -> None:
         """
         Prepare a message for sending to the client.
 
@@ -273,7 +286,9 @@ class Protocol:
 
             fragment_list = None
             if self.fragment_size is not None and len(serialized) > self.fragment_size:
-                mid = message.get("id", None)
+                mid = None
+                if isinstance(message, dict) and "id" in message:
+                    mid = message["id"]
 
                 # TODO: think about splitting into fragments that have specified size including header-fields!
                 # --> estimate header size --> split content into fragments that have the requested overall size,
@@ -297,7 +312,7 @@ class Protocol:
                 self.outgoing(serialized, compression)
                 time.sleep(self.delay_between_messages)
 
-    def finish(self):
+    def finish(self) -> None:
         """
         Indicate that the client is finished and clean up resources.
 
@@ -306,7 +321,11 @@ class Protocol:
         for capability in self.capabilities:
             capability.finish()
 
-    def serialize(self, msg, cid=None):  # noqa: ARG002
+    def serialize(
+        self,
+        msg: bytearray | bson.BSON | dict[str, Any],
+        cid: str | None = None,  # noqa: ARG002
+    ) -> bson.BSON | bytearray | str | None:
         """
         Turn a dictionary of values into the appropriate wire-level representation.
 
@@ -327,7 +346,7 @@ class Protocol:
             self.log("error", f"Unable to serialize message '{msg}': {e}")
             return None
 
-    def deserialize(self, msg, cid=None):  # noqa: ARG002
+    def deserialize(self, msg: str | bytes | bytearray, cid: str | None = None) -> dict[str, Any]:  # noqa: ARG002
         """
         Turn the wire-level representation into a dictionary of values.
 
@@ -363,7 +382,7 @@ class Protocol:
             raise
             # return None
 
-    def register_operation(self, opcode, handler):
+    def register_operation(self, opcode: str, handler: Callable[[dict[str, Any]], None]) -> None:
         """
         Register a handler for an opcode.
 
@@ -372,7 +391,7 @@ class Protocol:
         """
         self.operations[opcode] = handler
 
-    def unregister_operation(self, opcode):
+    def unregister_operation(self, opcode: str) -> None:
         """
         Unregister a handler for an opcode.
 
@@ -381,7 +400,7 @@ class Protocol:
         if opcode in self.operations:
             del self.operations[opcode]
 
-    def add_capability(self, capability_class):
+    def add_capability(self, capability_class: type[Capability]) -> None:
         """
         Add a capability to the protocol.
 
@@ -391,7 +410,7 @@ class Protocol:
         """
         self.capabilities.append(capability_class(self))
 
-    def log(self, level, message, lid=None):
+    def log(self, level: str, message: str, lid: str | None = None) -> None:
         """
         Log a message to the client.
 
@@ -399,7 +418,7 @@ class Protocol:
 
         :param level: The logger level of this message
         :param message: The string message to send to the user
-        :param lid: An associated for this log message
+        :param lid: An associated id for this log message
         """
         stdout_formatted_msg = None
         stdout_formatted_msg = (
@@ -411,7 +430,7 @@ class Protocol:
         if level in {"error", "err"}:
             self.node_handle.get_logger().error(stdout_formatted_msg)
         elif level in {"warning", "warn"}:
-            self.node_handle.get_logger().warn(stdout_formatted_msg)
+            self.node_handle.get_logger().warning(stdout_formatted_msg)
         elif level in {"info", "information"}:
             self.node_handle.get_logger().info(stdout_formatted_msg)
         else:
