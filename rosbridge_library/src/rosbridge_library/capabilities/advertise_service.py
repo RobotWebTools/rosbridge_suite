@@ -106,14 +106,13 @@ class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT])
 class AdvertiseService(Capability):
     advertise_service_msg_fields = ((True, "service", str), (True, "type", str))
 
+    parameter_names = ("services_glob",)
+
     services_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
-
-        if protocol.parameters and "services_glob" in protocol.parameters:
-            self.services_glob = protocol.parameters["services_glob"]
 
         # Register the operations that this capability provides
         protocol.register_operation("advertise_service", self.advertise_service)

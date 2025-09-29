@@ -59,24 +59,18 @@ class SendActionGoal(Capability):
     )
     cancel_action_goal_msg_fields = ((True, "action", str),)
 
+    client_handler_list: dict[str, ActionClientHandler]
+
+    parameter_names = ("actions_glob", "send_action_goals_in_new_thread")
+
     actions_glob: list[str] | None = None
     send_action_goals_in_new_thread: bool = False
-
-    client_handler_list: dict[str, ActionClientHandler]
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
         self.client_handler_list = {}
-
-        if protocol.parameters:
-            if "actions_glob" in protocol.parameters:
-                self.actions_glob = protocol.parameters["actions_glob"]
-            if "send_action_goals_in_new_thread" in protocol.parameters:
-                self.send_action_goals_in_new_thread = protocol.parameters[
-                    "send_action_goals_in_new_thread"
-                ]
 
         # Register the operations that this capability provides
         if self.send_action_goals_in_new_thread:

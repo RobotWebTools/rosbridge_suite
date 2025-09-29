@@ -42,19 +42,22 @@ if TYPE_CHECKING:
 
 
 class UnadvertiseAction(Capability):
+    unadvertise_action_msg_fields = ((True, "action", str),)
+
+    parameter_names = ("actions_glob",)
+
     actions_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
-        if protocol.parameters and "actions_glob" in protocol.parameters:
-            self.actions_glob = protocol.parameters["actions_glob"]
-
         # Register the operations that this capability provides
         protocol.register_operation("unadvertise_action", self.unadvertise_action)
 
     def unadvertise_action(self, message: dict[str, Any]) -> None:
+        self.basic_type_check(message, self.unadvertise_action_msg_fields)
+
         # parse the message
         action_name: str = message["action"]
 

@@ -248,14 +248,13 @@ class Subscribe(Capability):
     )
     unsubscribe_msg_fields = ((True, "topic", str),)
 
+    parameter_names = ("topics_glob",)
+
     topics_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
-
-        if protocol.parameters and "topics_glob" in protocol.parameters:
-            self.topics_glob = protocol.parameters["topics_glob"]
 
         # Register the operations that this capability provides
         protocol.register_operation("subscribe", self.subscribe)

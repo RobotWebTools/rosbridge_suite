@@ -220,14 +220,13 @@ class AdvertisedActionHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActio
 class AdvertiseAction(Capability):
     advertise_action_msg_fields = ((True, "action", str), (True, "type", str))
 
+    parameter_names = ("actions_glob",)
+
     actions_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
-
-        if protocol.parameters and "actions_glob" in protocol.parameters:
-            self.actions_glob = protocol.parameters["actions_glob"]
 
         # Register the operations that this capability provides
         protocol.register_operation("advertise_action", self.advertise_action)

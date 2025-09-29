@@ -99,6 +99,8 @@ class Advertise(Capability):
     advertise_msg_fields = ((True, "topic", str), (True, "type", str))
     unadvertise_msg_fields = ((True, "topic", str),)
 
+    parameter_names = ("topics_glob",)
+
     topics_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
@@ -111,11 +113,9 @@ class Advertise(Capability):
 
         self._registrations: dict[str, Registration] = {}
 
-        if protocol.parameters:
-            if "unregister_timeout" in protocol.parameters:
-                manager.unregister_timeout = protocol.parameters["unregister_timeout"]
-            if "topics_glob" in protocol.parameters:
-                self.topics_glob = protocol.parameters["topics_glob"]
+        # TODO(bjsowa): Find some better way to pass parameters to manager
+        if protocol.parameters and "unregister_timeout" in protocol.parameters:
+            manager.unregister_timeout = protocol.parameters["unregister_timeout"]
 
     def advertise(self, message: dict[str, Any]) -> None:
         # Pull out the ID

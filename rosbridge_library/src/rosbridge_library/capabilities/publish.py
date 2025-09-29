@@ -46,6 +46,8 @@ if TYPE_CHECKING:
 class Publish(Capability):
     publish_msg_fields = ((True, "topic", str),)
 
+    parameter_names = ("topics_glob",)
+
     topics_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
@@ -58,11 +60,9 @@ class Publish(Capability):
         # Save the topics that are published on for the purposes of unregistering
         self._published: dict[str, bool] = {}
 
-        if protocol.parameters:
-            if "unregister_timeout" in protocol.parameters:
-                manager.unregister_timeout = protocol.parameters["unregister_timeout"]
-            if "topics_glob" in protocol.parameters:
-                self.topics_glob = protocol.parameters["topics_glob"]
+        # TODO(bjsowa): Find some better way to pass parameters to manager
+        if protocol.parameters and "unregister_timeout" in protocol.parameters:
+            manager.unregister_timeout = protocol.parameters["unregister_timeout"]
 
     def publish(self, message: dict[str, Any]) -> None:
         # Do basic type checking

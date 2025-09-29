@@ -58,6 +58,8 @@ class Capability:
     Protocol.send() is available to send messages back to the client.
     """
 
+    parameter_names: tuple[str, ...] | None = None
+
     def __init__(self, protocol: Protocol) -> None:
         """
         Abstract class constructor.
@@ -67,6 +69,11 @@ class Capability:
         :param protocol: The protocol instance for this capability instance
         """
         self.protocol = protocol
+
+        if self.parameter_names and self.protocol.parameters:
+            for param_name in self.parameter_names:
+                if param_name in self.protocol.parameters:
+                    setattr(self, param_name, self.protocol.parameters[param_name])
 
     def handle_message(self, message: dict[str, Any]) -> None:
         """

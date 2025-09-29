@@ -51,7 +51,12 @@ class CallService(Capability):
         (False, "compression", str),
     )
 
-    # parameters
+    parameter_names = (
+        "services_glob",
+        "default_call_service_timeout",
+        "call_services_in_new_thread",
+    )
+
     services_glob: list[str] | None = None
     default_timeout: float = 5.0
     call_services_in_new_thread: bool = True
@@ -59,16 +64,6 @@ class CallService(Capability):
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
-
-        if self.protocol.parameters:
-            if "services_glob" in self.protocol.parameters:
-                self.services_glob = self.protocol.parameters["services_glob"]
-            if "default_call_service_timeout" in self.protocol.parameters:
-                self.default_timeout = self.protocol.parameters["default_call_service_timeout"]
-            if "call_services_in_new_thread" in self.protocol.parameters:
-                self.call_services_in_new_thread = self.protocol.parameters[
-                    "call_services_in_new_thread"
-                ]
 
         # Register the operations that this capability provides
         if self.call_services_in_new_thread:
