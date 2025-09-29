@@ -149,7 +149,6 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     @log_exceptions
     def open(self, *args: str, **kwargs: str) -> None:  # noqa: ARG002
-        assert self.node_handle is not None
         cls = self.__class__
         assert cls.node_handle is not None, "Node handle must be set before opening a WebSocket"
         try:
@@ -181,8 +180,8 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     @log_exceptions
     def on_close(self) -> None:
-        assert self.node_handle is not None
         cls = self.__class__
+        assert cls.node_handle is not None
         cls.clients_connected -= 1
         if cls.client_manager:
             cls.client_manager.remove_client(self.client_id, self.request.remote_ip)
@@ -200,8 +199,8 @@ class RosbridgeWebSocket(WebSocketHandler):
         _io_loop.add_callback(partial(self.prewrite_message, message, binary))
 
     async def prewrite_message(self, message: bson.BSON | bytearray | str, binary: bool) -> None:
-        assert self.node_handle is not None
         cls = self.__class__
+        assert cls.node_handle is not None
         try:
             await self.write_message(message, binary)
         except WebSocketClosedError:

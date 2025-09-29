@@ -36,6 +36,7 @@ from __future__ import annotations
 import argparse
 import sys
 import time
+from typing import TYPE_CHECKING, cast
 
 import rclpy
 from rcl_interfaces.msg import ParameterDescriptor
@@ -47,6 +48,9 @@ from tornado.netutil import bind_sockets
 from tornado.web import Application
 
 from rosbridge_server import ClientManager, RosbridgeWebSocket
+
+if TYPE_CHECKING:
+    from tornado.routing import _RuleList
 
 
 def start_hook() -> None:
@@ -138,6 +142,7 @@ class RosbridgeWebsocketNode(Node):
 
         # Declare ROS parameters
         for name, _, default_value, description in SERVER_PARAMETERS + PROTOCOL_PARAMETERS:
+            assert isinstance(default_value, str | int | float | bool)
             value = default_value
             if hasattr(args, name) and getattr(args, name) is not None:
                 # Override the parameter with the command line argument
@@ -171,12 +176,6 @@ class RosbridgeWebsocketNode(Node):
         self.certfile = self.get_parameter("certfile").get_parameter_value().string_value
         self.keyfile = self.get_parameter("keyfile").get_parameter_value().string_value
 
-        # if not set, set to None
-        if self.certfile == "":
-            self.certfile = None
-        if self.keyfile == "":
-            self.keyfile = None
-
         # Tornado application parameters
         self.tornado_settings = {}
         self.tornado_settings["websocket_ping_interval"] = (
@@ -196,13 +195,17 @@ class RosbridgeWebsocketNode(Node):
         if self.url_path != "/":
             handlers = [(rf"{self.url_path}", RosbridgeWebSocket)]
 
-        application = Application(handlers, **self.tornado_settings)
-
+        application = Application(
+            handlers=cast("_RuleList", handlers),
+            default_host=None,
+            transforms=None,
+            **self.tornado_settings,
+        )
         connected = False
         while not connected and self.context.ok():
             try:
                 ssl_options = None
-                if self.certfile is not None and self.keyfile is not None:
+                if self.certfile and self.keyfile:
                     ssl_options = {"certfile": self.certfile, "keyfile": self.keyfile}
                 sockets = bind_sockets(self.port, self.address)
                 actual_port = sockets[0].getsockname()[1]

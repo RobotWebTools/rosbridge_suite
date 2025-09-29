@@ -41,6 +41,8 @@ from std_msgs.msg import Int32
 from rosbridge_msgs.msg import ConnectedClient, ConnectedClients
 
 if TYPE_CHECKING:
+    from uuid import UUID
+
     from rclpy.node import Node
 
 
@@ -62,7 +64,7 @@ class ClientManager:
 
         self._lock = threading.Lock()
         self._client_count = 0
-        self._clients: dict[str, ConnectedClient] = {}
+        self._clients: dict[UUID, ConnectedClient] = {}
         self.__publish()
 
     def __publish(self) -> None:
@@ -71,7 +73,7 @@ class ClientManager:
         self._conn_clients_pub.publish(msg)
         self._client_count_pub.publish(Int32(data=len(msg.clients)))
 
-    def add_client(self, client_id: str, ip_address: str) -> None:
+    def add_client(self, client_id: UUID, ip_address: str) -> None:
         with self._lock:
             client = ConnectedClient()
             client.ip_address = ip_address
@@ -79,7 +81,7 @@ class ClientManager:
             self._clients[client_id] = client
             self.__publish()
 
-    def remove_client(self, client_id: str, ip_address: str) -> None:  # noqa: ARG002
+    def remove_client(self, client_id: UUID, ip_address: str) -> None:  # noqa: ARG002
         with self._lock:
             self._clients.pop(client_id, None)
             self.__publish()
