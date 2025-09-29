@@ -117,8 +117,6 @@ binary_encoder_type = "default"
 bson_only_mode = False
 
 
-# TODO(@jubeira): configure module with a node handle.
-# The original code doesn't seem to actually use these parameters.
 def configure(node_handle: Node | None = None) -> None:
     global binary_encoder, binary_encoder_type, bson_only_mode
 
@@ -145,7 +143,8 @@ def configure(node_handle: Node | None = None) -> None:
 
 
 def get_encoder() -> Callable[[ListType], bytes]:
-    configure()
+    if binary_encoder is None:
+        configure()
     assert binary_encoder is not None, "Binary encoder is not configured"
     return binary_encoder
 

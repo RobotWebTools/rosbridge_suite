@@ -47,6 +47,7 @@ from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado.netutil import bind_sockets
 from tornado.web import Application
 
+from rosbridge_library.internal import message_conversion
 from rosbridge_server import ClientManager, RosbridgeWebSocket
 
 if TYPE_CHECKING:
@@ -85,6 +86,13 @@ PROTOCOL_PARAMETERS = (
         float,
         10.0,
         "How long to wait before unregistering a client from publisher after unadvertising publisher.",
+    ),
+    (
+        "binary_encoder_type",
+        str,
+        "default",
+        "Encoder used for encoding binary data in messages. Available: 'default', 'b64', `bson'. "
+        "Ignored if bson_only_mode is True.",
     ),
     ("bson_only_mode", bool, False, "Use BSON only mode for messages."),
     ("topics_glob", str, "[*]", "Glob patterns for topics publish/subscribe."),
@@ -133,6 +141,9 @@ class RosbridgeWebsocketNode(Node):
         RosbridgeWebSocket.protocol_parameters = self.protocol_parameters
 
         RosbridgeWebSocket.use_compression = self.use_compression
+
+        # Configure the message conversion module
+        message_conversion.configure(node_handle=self)
 
         self._start_server()
 
