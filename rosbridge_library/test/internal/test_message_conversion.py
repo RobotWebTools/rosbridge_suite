@@ -21,6 +21,10 @@ if TYPE_CHECKING:
 
 
 class TestMessageConversion(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        c.configure()
+
     def validate_instance(self, inst1: ROSMessage) -> None:
         """
         Validate that the instance is correct by serializing and deserializing it.

@@ -35,7 +35,6 @@ from __future__ import annotations
 import array
 import math
 import re
-import sys
 from base64 import standard_b64decode, standard_b64encode
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
@@ -44,7 +43,6 @@ import numpy as np
 from builtin_interfaces.msg import Duration as DurationMsg
 from builtin_interfaces.msg import Time as TimeMsg
 from rclpy.clock import ROSClock
-from rclpy.parameter import Parameter
 from std_msgs.msg import Header as HeaderMsg
 
 from rosbridge_library.internal import ros_loader
@@ -55,7 +53,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from rclpy.clock import Clock
-    from rclpy.node import Node
 
 
 type_map = {
@@ -112,40 +109,46 @@ ros_binary_types_list_braces = (
     ("char[]", re.compile(r"char\[[^\]]*\]")),
 )
 
+module_configured = False
 binary_encoder = None
 binary_encoder_type = "default"
 bson_only_mode = False
 
 
-def configure(node_handle: Node | None = None) -> None:
-    global binary_encoder, binary_encoder_type, bson_only_mode
+def configure(parameters: dict[str, Any] | None = None) -> None:
+    """
+    Configure the message_conversion module.
 
-    if node_handle is not None:
-        binary_encoder_type = (
-            node_handle.get_parameter_or("binary_encoder", Parameter("", value="default"))
-            .get_parameter_value()
-            .string_value
-        )
-        bson_only_mode = (
-            node_handle.get_parameter_or("bson_only_mode", Parameter("", value=False))
-            .get_parameter_value()
-            .bool_value
-        )
+    ;param parameters: A dictionary of parameters to configure the module.
+    :type parameters: dict[str, Any] | None
+    :raises ValueError: If an unknown encoder type is specified.
+    """
+    global binary_encoder, binary_encoder_type, bson_only_mode, module_configured
 
-    if binary_encoder is None:
-        if binary_encoder_type == "bson" or bson_only_mode:
-            binary_encoder = bson.Binary
-        elif binary_encoder_type in {"default", "b64"}:
-            binary_encoder = standard_b64encode
-        else:
-            print(f"Unknown encoder type '{binary_encoder_type}'")
-            sys.exit(0)
+    if module_configured:
+        return
+
+    if parameters is not None:
+        if "binary_encoder" in parameters:
+            binary_encoder_type = parameters["binary_encoder"]
+        if "bson_only_mode" in parameters:
+            bson_only_mode = parameters["bson_only_mode"]
+
+    if binary_encoder_type == "bson" or bson_only_mode:
+        binary_encoder = bson.Binary
+    elif binary_encoder_type in {"default", "b64"}:
+        binary_encoder = standard_b64encode
+    else:
+        err_msg = f"Unknown encoder type '{binary_encoder_type}'"
+        raise ValueError(err_msg)
+
+    module_configured = True
 
 
 def get_encoder() -> Callable[[ListType], bytes]:
-    if binary_encoder is None:
-        configure()
-    assert binary_encoder is not None, "Binary encoder is not configured"
+    assert module_configured and binary_encoder is not None, (
+        "message_conversion module is not configured"
+    )
     return binary_encoder
 
 

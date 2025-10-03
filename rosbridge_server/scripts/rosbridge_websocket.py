@@ -47,7 +47,6 @@ from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado.netutil import bind_sockets
 from tornado.web import Application
 
-from rosbridge_library.internal import message_conversion
 from rosbridge_server import ClientManager, RosbridgeWebSocket
 
 if TYPE_CHECKING:
@@ -139,11 +138,7 @@ class RosbridgeWebsocketNode(Node):
         self.protocol_parameters["services_glob"].append("/rosapi/*")
 
         RosbridgeWebSocket.protocol_parameters = self.protocol_parameters
-
         RosbridgeWebSocket.use_compression = self.use_compression
-
-        # Configure the message conversion module
-        message_conversion.configure(node_handle=self)
 
         self._start_server()
 

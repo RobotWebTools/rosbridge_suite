@@ -36,6 +36,7 @@ import time
 from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capabilities.fragmentation import Fragmentation
+from rosbridge_library.internal import message_conversion, publishers
 from rosbridge_library.util import bson, json
 
 if TYPE_CHECKING:
@@ -128,6 +129,10 @@ class Protocol:
                 self.delay_between_messages = self.parameters["delay_between_messages"]
             if "bson_only_mode" in self.parameters:
                 self.bson_only_mode = self.parameters["bson_only_mode"]
+
+        # Configure internal modules
+        message_conversion.configure(self.parameters)
+        publishers.configure(self.parameters)
 
         self.fragment_size = self.max_message_size
 
