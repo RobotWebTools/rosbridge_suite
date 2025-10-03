@@ -60,10 +60,6 @@ class Publish(Capability):
         # Save the topics that are published on for the purposes of unregistering
         self._published: dict[str, bool] = {}
 
-        # TODO(bjsowa): Find some better way to pass parameters to manager
-        if protocol.parameters and "unregister_timeout" in protocol.parameters:
-            manager.unregister_timeout = protocol.parameters["unregister_timeout"]
-
     def publish(self, message: dict[str, Any]) -> None:
         # Do basic type checking
         self.basic_type_check(message, self.publish_msg_fields)

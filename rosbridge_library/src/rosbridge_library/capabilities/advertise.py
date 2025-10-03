@@ -113,10 +113,6 @@ class Advertise(Capability):
 
         self._registrations: dict[str, Registration] = {}
 
-        # TODO(bjsowa): Find some better way to pass parameters to manager
-        if protocol.parameters and "unregister_timeout" in protocol.parameters:
-            manager.unregister_timeout = protocol.parameters["unregister_timeout"]
-
     def advertise(self, message: dict[str, Any]) -> None:
         # Pull out the ID
         aid = message.get("id")
