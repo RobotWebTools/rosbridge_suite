@@ -71,9 +71,9 @@ class Capability:
         self.protocol = protocol
 
         if self.parameter_names and self.protocol.parameters:
-            for param_name in self.parameter_names:
-                if param_name in self.protocol.parameters:
-                    setattr(self, param_name, self.protocol.parameters[param_name])
+            for param_name, param_value in self.protocol.parameters.items():
+                if param_name in self.parameter_names:
+                    setattr(self, param_name, param_value)
 
     def handle_message(self, message: dict[str, Any]) -> None:
         """
