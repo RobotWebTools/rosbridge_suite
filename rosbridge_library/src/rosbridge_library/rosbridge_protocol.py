@@ -83,6 +83,6 @@ class RosbridgeProtocol(Protocol):
     def __init__(
         self, client_id: str, node_handle: Node, parameters: dict[str, Any] | None = None
     ) -> None:
-        Protocol.__init__(self, client_id, node_handle, parameters)
+        super().__init__(client_id, node_handle, parameters)
         for capability_class in self.rosbridge_capabilities:
             self.add_capability(capability_class)
