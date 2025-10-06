@@ -111,7 +111,6 @@ ros_binary_types_list_braces = (
 
 module_configured = False
 binary_encoder = None
-binary_encoder_type = "default"
 bson_only_mode = False
 
 
@@ -123,20 +122,20 @@ def configure(parameters: dict[str, Any] | None = None) -> None:
     :type parameters: dict[str, Any] | None
     :raises ValueError: If an unknown encoder type is specified.
     """
-    global binary_encoder, binary_encoder_type, bson_only_mode, module_configured
+    global binary_encoder, bson_only_mode, module_configured
 
     if module_configured:
         return
 
+    binary_encoder_type = "default"
+
     if parameters is not None:
-        if "binary_encoder" in parameters:
-            binary_encoder_type = parameters["binary_encoder"]
-        if "bson_only_mode" in parameters:
-            bson_only_mode = parameters["bson_only_mode"]
+        binary_encoder_type = parameters.get("binary_encoder", binary_encoder_type)
+        bson_only_mode = parameters.get("bson_only_mode", bson_only_mode)
 
     if binary_encoder_type == "bson" or bson_only_mode:
         binary_encoder = bson.Binary
-    elif binary_encoder_type in {"default", "b64"}:
+    elif binary_encoder_type is None or binary_encoder_type in {"default", "b64"}:
         binary_encoder = standard_b64encode
     else:
         err_msg = f"Unknown encoder type '{binary_encoder_type}'"
