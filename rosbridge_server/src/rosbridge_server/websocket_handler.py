@@ -40,19 +40,16 @@ from collections import deque
 from functools import partial, wraps
 from typing import TYPE_CHECKING, ClassVar, ParamSpec, TypeVar
 
+from rclpy.node import Node
 from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
-
-from rclpy.node import Node
 
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-
-    from rclpy.node import Node
 
     from .client_manager import ClientManager
 
