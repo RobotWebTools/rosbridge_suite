@@ -118,7 +118,7 @@ def configure(parameters: dict[str, Any] | None = None) -> None:
     """
     Configure the message_conversion module.
 
-    ;param parameters: A dictionary of parameters to configure the module.
+    :param parameters: A dictionary of parameters to configure the module.
     :type parameters: dict[str, Any] | None
     :raises ValueError: If an unknown encoder type is specified.
     """
