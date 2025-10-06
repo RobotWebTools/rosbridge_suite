@@ -123,12 +123,9 @@ class Protocol:
         self.external_action_list = {}
 
         if self.parameters:
-            if "max_message_size" in self.parameters:
-                self.max_message_size = self.parameters["max_message_size"]
-            if "delay_between_messages" in self.parameters:
-                self.delay_between_messages = self.parameters["delay_between_messages"]
-            if "bson_only_mode" in self.parameters:
-                self.bson_only_mode = self.parameters["bson_only_mode"]
+            for param_name in ("max_message_size", "delay_between_messages", "bson_only_mode"):
+                if param_name in self.parameters:
+                    setattr(self, param_name, self.parameters[param_name])
 
         # Configure internal modules
         message_conversion.configure(self.parameters)
