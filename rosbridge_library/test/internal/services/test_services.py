@@ -13,8 +13,7 @@ from rcl_interfaces.srv import ListParameters
 from rclpy.executors import Executor, SingleThreadedExecutor
 from rclpy.node import Node
 
-from rosbridge_library.internal import message_conversion as c
-from rosbridge_library.internal import ros_loader, services
+from rosbridge_library.internal import message_conversion, ros_loader, services
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 
 if TYPE_CHECKING:
@@ -56,7 +55,7 @@ class ServiceTester:
 
     def start(self) -> None:
         req = self.srvClass.Request()
-        gen = populate_random_args(c.extract_values(req))
+        gen = populate_random_args(message_conversion.extract_values(req))
         assert isinstance(gen, dict)
         self.input = gen
         thread = services.ServiceCaller(
@@ -73,10 +72,10 @@ class ServiceTester:
     def callback(self, req: ROSMessage, res: ROSMessage) -> ROSMessage:
         self.req = req
         time.sleep(0.1)
-        gen = populate_random_args(c.extract_values(res))
+        gen = populate_random_args(message_conversion.extract_values(res))
         assert isinstance(gen, dict)
         try:
-            res = c.populate_instance(gen, res)
+            res = message_conversion.populate_instance(gen, res)
         except:  # Will print() and raise
             print("populating instance")
             print(res)
@@ -96,11 +95,15 @@ class ServiceTester:
         if hasattr(self, "exc"):
             print(self.exc)
             raise self.exc
-        equality_function(self.input, c.extract_values(self.req))
+        equality_function(self.input, message_conversion.extract_values(self.req))
         equality_function(self.output, self.rsp)
 
 
 class TestServices(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        message_conversion.configure()
+
     def setUp(self) -> None:
         rclpy.init()
         self.executor = SingleThreadedExecutor()
@@ -120,12 +123,14 @@ class TestServices(unittest.TestCase):
             pass
         else:
             self.assertEqual(type(msg1), type(msg2))
-        if type(msg1) in c.list_types:
-            assert isinstance(msg1, c.list_types) and isinstance(msg2, c.list_types)
+        if type(msg1) in message_conversion.list_types:
+            assert isinstance(msg1, message_conversion.list_types) and isinstance(
+                msg2, message_conversion.list_types
+            )
             for x, y in zip(msg1, msg2, strict=False):
                 self.msgs_equal(x, y)
         elif (
-            type(msg1) in c.primitive_types
+            type(msg1) in message_conversion.primitive_types
             or type(msg1) is str
             or np.issubdtype(type(msg1), np.number)
         ):

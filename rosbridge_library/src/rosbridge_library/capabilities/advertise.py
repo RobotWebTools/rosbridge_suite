@@ -99,6 +99,8 @@ class Advertise(Capability):
     advertise_msg_fields = ((True, "topic", str), (True, "type", str))
     unadvertise_msg_fields = ((True, "topic", str),)
 
+    parameter_names = ("topics_glob",)
+
     topics_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
@@ -111,9 +113,6 @@ class Advertise(Capability):
 
         self._registrations: dict[str, Registration] = {}
 
-        if protocol.parameters and "unregister_timeout" in protocol.parameters:
-            manager.unregister_timeout = protocol.parameters.get("unregister_timeout")
-
     def advertise(self, message: dict[str, Any]) -> None:
         # Pull out the ID
         aid = message.get("id")
@@ -124,10 +123,10 @@ class Advertise(Capability):
         latch: bool = message.get("latch", False)
         queue_size: int = message.get("queue_size", 100)
 
-        if Advertise.topics_glob is not None and Advertise.topics_glob:
+        if self.topics_glob:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in Advertise.topics_glob:
+            for glob in self.topics_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",
@@ -159,10 +158,10 @@ class Advertise(Capability):
         self.basic_type_check(message, self.unadvertise_msg_fields)
         topic: str = message["topic"]
 
-        if Advertise.topics_glob is not None and Advertise.topics_glob:
+        if self.topics_glob:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in Advertise.topics_glob:
+            for glob in self.topics_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",

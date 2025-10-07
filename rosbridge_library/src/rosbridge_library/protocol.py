@@ -36,6 +36,7 @@ import time
 from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capabilities.fragmentation import Fragmentation
+from rosbridge_library.internal import message_conversion, publishers
 from rosbridge_library.util import bson, json
 
 if TYPE_CHECKING:
@@ -87,20 +88,24 @@ class Protocol:
     buffer = ""
     old_buffer = ""
     busy = False
-    # if this is too low, ("simple")clients network stacks will get flooded (when sending fragments of a huge message..)
-    # .. depends on message_size/bandwidth/performance/client_limits/...
-    # !! this might be related to (or even be avoided by using) throttle_rate !!
-    delay_between_messages = 0
     # global list of non-ros advertised services
     external_service_list: dict[str, AdvertisedServiceHandler]
     # global list of non-ros advertised actions
     external_action_list: dict[str, AdvertisedActionHandler]
+
+    max_message_size: int = 1000000
+    # if this is too low, ("simple")clients network stacks will get flooded (when sending fragments of a huge message..)
+    # .. depends on message_size/bandwidth/performance/client_limits/...
+    # !! this might be related to (or even be avoided by using) throttle_rate !!
+    delay_between_messages: float = 0.0
     # Use only BSON for the whole communication if the server has been started with bson_only_mode:=True
-    bson_only_mode = False
+    bson_only_mode: bool = False
 
-    parameters = None
+    parameters: dict[str, Any] | None = None
 
-    def __init__(self, client_id: str, node_handle: Node) -> None:
+    def __init__(
+        self, client_id: str, node_handle: Node, parameters: dict[str, Any] | None = None
+    ) -> None:
         """
         Initialize the protocol with a client ID and a ROS2 node handle.
 
@@ -109,16 +114,24 @@ class Protocol:
         :param node_handle: A ROS2 node handle
         """
         self.client_id = client_id
+        self.node_handle = node_handle
+        self.parameters = parameters
+
         self.capabilities: list[Capability] = []
         self.operations: dict[str, Callable[[dict[str, Any]], None]] = {}
-        self.node_handle = node_handle
         self.external_service_list = {}
         self.external_action_list = {}
 
         if self.parameters:
-            self.fragment_size = self.parameters["max_message_size"]
-            self.delay_between_messages = self.parameters["delay_between_messages"]
-            self.bson_only_mode = self.parameters.get("bson_only_mode", False)
+            for param_name in ("max_message_size", "delay_between_messages", "bson_only_mode"):
+                if param_name in self.parameters:
+                    setattr(self, param_name, self.parameters[param_name])
+
+        # Configure internal modules
+        message_conversion.configure(self.parameters)
+        publishers.configure(self.parameters)
+
+        self.fragment_size = self.max_message_size
 
     # added default message_string="" to allow recalling incoming until buffer is empty without giving a parameter
     # --> allows to get rid of (..or minimize) delay between client-side sends
@@ -222,8 +235,7 @@ class Protocol:
         # This way, a client can change/overwrite its active values anytime by just including parameter field in any
         # message sent to rosbridge. Maybe need to be improved to bind parameter values to specific operation.
         if "fragment_size" in msg:
-            self.fragment_size = msg["fragment_size"]
-            # print "fragment size set to:", self.fragment_size
+            self.fragment_size = min(msg["fragment_size"], self.max_message_size)
         if "message_intervall" in msg and is_number(msg["message_intervall"]):
             self.delay_between_messages = msg["message_intervall"]
         if "png" in msg:
