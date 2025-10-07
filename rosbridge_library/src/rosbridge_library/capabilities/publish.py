@@ -46,6 +46,8 @@ if TYPE_CHECKING:
 class Publish(Capability):
     publish_msg_fields = ((True, "topic", str),)
 
+    parameter_names = ("topics_glob",)
+
     topics_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
@@ -58,9 +60,6 @@ class Publish(Capability):
         # Save the topics that are published on for the purposes of unregistering
         self._published: dict[str, bool] = {}
 
-        if protocol.parameters and "unregister_timeout" in protocol.parameters:
-            manager.unregister_timeout = protocol.parameters.get("unregister_timeout")
-
     def publish(self, message: dict[str, Any]) -> None:
         # Do basic type checking
         self.basic_type_check(message, self.publish_msg_fields)
@@ -68,10 +67,10 @@ class Publish(Capability):
         latch: bool = message.get("latch", False)
         queue_size: int = message.get("queue_size", 100)
 
-        if Publish.topics_glob is not None and Publish.topics_glob:
+        if self.topics_glob:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in Publish.topics_glob:
+            for glob in self.topics_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",

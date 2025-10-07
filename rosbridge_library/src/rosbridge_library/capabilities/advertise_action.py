@@ -218,9 +218,11 @@ class AdvertisedActionHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActio
 
 
 class AdvertiseAction(Capability):
-    actions_glob = None
-
     advertise_action_msg_fields = ((True, "action", str), (True, "type", str))
+
+    parameter_names = ("actions_glob",)
+
+    actions_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
@@ -236,13 +238,13 @@ class AdvertiseAction(Capability):
         # parse the incoming message
         action_name: str = message["action"]
 
-        if AdvertiseAction.actions_glob is not None and AdvertiseAction.actions_glob:
+        if self.actions_glob:
             self.protocol.log(
                 "debug",
                 "Action security glob enabled, checking action: " + action_name,
             )
             match = False
-            for glob in AdvertiseAction.actions_glob:
+            for glob in self.actions_glob:
                 if fnmatch.fnmatch(action_name, glob):
                     self.protocol.log(
                         "debug",

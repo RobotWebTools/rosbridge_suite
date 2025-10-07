@@ -51,25 +51,22 @@ class CallService(Capability):
         (False, "compression", str),
     )
 
+    parameter_names = (
+        "services_glob",
+        "default_call_service_timeout",
+        "call_services_in_new_thread",
+    )
+
     services_glob: list[str] | None = None
+    default_timeout: float = 5.0
+    call_services_in_new_thread: bool = True
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
-        self.default_timeout = (
-            protocol.node_handle.get_parameter("default_call_service_timeout")
-            .get_parameter_value()
-            .double_value
-        )
-
         # Register the operations that this capability provides
-        call_services_in_new_thread = (
-            protocol.node_handle.get_parameter("call_services_in_new_thread")
-            .get_parameter_value()
-            .bool_value
-        )
-        if call_services_in_new_thread:
+        if self.call_services_in_new_thread:
             # Calls the service in a separate thread so multiple services can be processed simultaneously.
             protocol.node_handle.get_logger().info("Calling services in new thread")
             protocol.register_operation(
@@ -94,12 +91,12 @@ class CallService(Capability):
         args: list | dict[str, Any] = message.get("args", [])
         timeout: float = message.get("timeout", self.default_timeout)
 
-        if CallService.services_glob is not None and CallService.services_glob:
+        if self.services_glob:
             self.protocol.log(
                 "debug", "Service security glob enabled, checking service: " + service
             )
             match = False
-            for glob in CallService.services_glob:
+            for glob in self.services_glob:
                 if fnmatch.fnmatch(service, glob):
                     self.protocol.log(
                         "debug",

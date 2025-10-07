@@ -26,15 +26,14 @@ class Defragment(Capability):
     # }
     lists: ClassVar[dict[str, dict]] = {}
 
-    fragment_timeout = 600
     opcode = "fragment"
+
+    parameter_names = ("fragment_timeout",)
+
+    fragment_timeout = 600
 
     def __init__(self, protocol: Protocol) -> None:
         Capability.__init__(self, protocol)
-
-        # populate parameters
-        if self.protocol.parameters is not None:
-            self.fragment_timeout = self.protocol.parameters["fragment_timeout"]
 
         protocol.register_operation(self.opcode, self.defragment)
 
