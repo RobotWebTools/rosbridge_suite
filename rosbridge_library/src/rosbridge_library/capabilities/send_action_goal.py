@@ -59,8 +59,12 @@ class SendActionGoal(Capability):
     )
     cancel_action_goal_msg_fields = ((True, "action", str),)
 
-    actions_glob = None
     client_handler_list: dict[str, ActionClientHandler]
+
+    parameter_names = ("actions_glob", "send_action_goals_in_new_thread")
+
+    actions_glob: list[str] | None = None
+    send_action_goals_in_new_thread: bool = False
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
@@ -69,12 +73,7 @@ class SendActionGoal(Capability):
         self.client_handler_list = {}
 
         # Register the operations that this capability provides
-        send_action_goals_in_new_thread = (
-            protocol.node_handle.get_parameter("send_action_goals_in_new_thread")
-            .get_parameter_value()
-            .bool_value
-        )
-        if send_action_goals_in_new_thread:
+        if self.send_action_goals_in_new_thread:
             # Sends the action goal in a separate thread so multiple actions can be processed simultaneously.
             protocol.node_handle.get_logger().info("Sending action goals in new thread")
             protocol.register_operation(
@@ -106,10 +105,10 @@ class SendActionGoal(Capability):
         compression: str = message.get("compression", "none")
         args: list | dict[str, Any] = message.get("args", [])
 
-        if SendActionGoal.actions_glob is not None and SendActionGoal.actions_glob:
+        if self.actions_glob:
             self.protocol.log("debug", f"Action security glob enabled, checking action: {action}")
             match = False
-            for glob in SendActionGoal.actions_glob:
+            for glob in self.actions_glob:
                 if fnmatch.fnmatch(action, glob):
                     self.protocol.log(
                         "debug",

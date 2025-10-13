@@ -104,9 +104,11 @@ class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT])
 
 
 class AdvertiseService(Capability):
-    services_glob: list[str] | None = None
-
     advertise_service_msg_fields = ((True, "service", str), (True, "type", str))
+
+    parameter_names = ("services_glob",)
+
+    services_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
@@ -122,13 +124,13 @@ class AdvertiseService(Capability):
         # parse the incoming message
         service_name: str = message["service"]
 
-        if AdvertiseService.services_glob is not None and AdvertiseService.services_glob:
+        if self.services_glob:
             self.protocol.log(
                 "debug",
                 "Service security glob enabled, checking service: " + service_name,
             )
             match = False
-            for glob in AdvertiseService.services_glob:
+            for glob in self.services_glob:
                 if fnmatch.fnmatch(service_name, glob):
                     self.protocol.log(
                         "debug",

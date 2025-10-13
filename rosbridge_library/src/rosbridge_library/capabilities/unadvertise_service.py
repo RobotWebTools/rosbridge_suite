@@ -10,7 +10,9 @@ if TYPE_CHECKING:
 
 
 class UnadvertiseService(Capability):
-    # unadvertise_service_msg_fields = [(True, "service", (str, unicode))]
+    unadvertise_service_msg_fields = ((True, "service", str),)
+
+    parameter_names = ("services_glob",)
 
     services_glob: list[str] | None = None
 
@@ -22,16 +24,18 @@ class UnadvertiseService(Capability):
         protocol.register_operation("unadvertise_service", self.unadvertise_service)
 
     def unadvertise_service(self, message: dict[str, Any]) -> None:
+        self.basic_type_check(message, self.unadvertise_service_msg_fields)
+
         # parse the message
         service_name: str = message["service"]
 
-        if UnadvertiseService.services_glob is not None and UnadvertiseService.services_glob:
+        if self.services_glob:
             self.protocol.log(
                 "debug",
                 "Service security glob enabled, checking service: " + service_name,
             )
             match = False
-            for glob in UnadvertiseService.services_glob:
+            for glob in self.services_glob:
                 if fnmatch.fnmatch(service_name, glob):
                     self.protocol.log(
                         "debug",

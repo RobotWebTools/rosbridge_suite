@@ -13,8 +13,7 @@ from rclpy.action import ActionClient, ActionServer
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 
-from rosbridge_library.internal import actions, ros_loader
-from rosbridge_library.internal import message_conversion as c
+from rosbridge_library.internal import actions, message_conversion, ros_loader
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 
 if TYPE_CHECKING:
@@ -67,6 +66,10 @@ class ActionTester:
 
 
 class TestActions(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        message_conversion.configure()
+
     def setUp(self) -> None:
         rclpy.init()
         self.executor = SingleThreadedExecutor()
@@ -86,12 +89,14 @@ class TestActions(unittest.TestCase):
             pass
         else:
             self.assertEqual(type(msg1), type(msg2))
-        if type(msg1) in c.list_types:
-            assert isinstance(msg1, c.list_types) and isinstance(msg2, c.list_types)
+        if type(msg1) in message_conversion.list_types:
+            assert isinstance(msg1, message_conversion.list_types) and isinstance(
+                msg2, message_conversion.list_types
+            )
             for x, y in zip(msg1, msg2, strict=False):
                 self.msgs_equal(x, y)
         elif (
-            type(msg1) in c.primitive_types
+            type(msg1) in message_conversion.primitive_types
             or type(msg1) is str
             or np.issubdtype(type(msg1), np.number)
         ):
