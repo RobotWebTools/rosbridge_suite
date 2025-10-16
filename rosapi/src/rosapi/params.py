@@ -48,12 +48,10 @@ from rosapi.proxy import get_nodes
 as JSON in order to facilitate dynamically typed SRV messages """
 
 # Constants
-DEFAULT_PARAM_TIMEOUT_SEC = 1.0  # Reduced from 5.0 for better responsiveness
+DEFAULT_PARAM_TIMEOUT_SEC = 1.0
 
 _node = None
 _timeout_sec = DEFAULT_PARAM_TIMEOUT_SEC
-
-# Client cache to avoid repeated creation/destruction
 _client_cache = {}
 
 _parameter_type_mapping = [
@@ -77,7 +75,7 @@ def init(node: Node, timeout_sec: float | int = DEFAULT_PARAM_TIMEOUT_SEC):
     """
     global _node, _timeout_sec, _client_cache
     _node = node
-    _client_cache = {}  # Clear cache on init
+    _client_cache = {}
 
     if not isinstance(timeout_sec, (int, float)) or timeout_sec <= 0:
         raise ValueError("Parameter timeout must be a positive number")
@@ -92,22 +90,18 @@ def _get_or_create_client(service_type, service_name):
 
     if cache_key in _client_cache:
         client = _client_cache[cache_key]
-        # Check if client is still valid
         if client.service_is_ready():
             return client
         else:
-            # Client is stale, destroy and remove from cache
             _node.destroy_client(client)
             del _client_cache[cache_key]
 
-    # Create new client
     client = _node.create_client(
         service_type,
         service_name,
         callback_group=MutuallyExclusiveCallbackGroup(),
     )
 
-    # Only cache if service is ready
     if client.service_is_ready():
         _client_cache[cache_key] = client
         return client
@@ -117,7 +111,7 @@ def _get_or_create_client(service_type, service_name):
 
 
 def clear_client_cache():
-    """Clear all cached clients (useful for cleanup)"""
+    """Clear all cached clients"""
     global _client_cache
     for client in _client_cache.values():
         _node.destroy_client(client)
@@ -148,7 +142,7 @@ async def set_param(node_name: str, name: str, value: str, params_glob: list[str
 
 async def _set_param(node_name: str, name: str, value: str, parameter_type=None):
     """
-    Internal helper function for set_param - uses client cache for performance.
+    Internal helper function for set_param.
     Attempts to set the given parameter in the target node with the desired value,
     deducing the parameter type if it's not specified.
     parameter_type allows forcing a type for the given value; this is useful to delete parameters.
@@ -165,7 +159,6 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
 
     assert _node is not None
 
-    # Use cached client instead of creating/destroying each time
     client = _get_or_create_client(SetParameters, f"{node_name}/set_parameters")
 
     request = SetParameters.Request()
@@ -204,11 +197,10 @@ async def get_param(node_name: str, name: str, params_glob: str) -> str:
 
 
 async def _get_param(node_name: str, name: str) -> ParameterValue:
-    """Internal helper function for get_param - uses client cache for performance"""
+    """Internal helper function for get_param"""
 
     assert _node is not None
 
-    # Use cached client instead of creating/destroying each time
     client = _get_or_create_client(GetParameters, f"{node_name}/get_parameters")
 
     request = GetParameters.Request()
