@@ -48,10 +48,13 @@ from rosapi.proxy import get_nodes
 as JSON in order to facilitate dynamically typed SRV messages """
 
 # Constants
-DEFAULT_PARAM_TIMEOUT_SEC = 5.0
+DEFAULT_PARAM_TIMEOUT_SEC = 1.0  # Reduced from 5.0 for better responsiveness
 
 _node = None
 _timeout_sec = DEFAULT_PARAM_TIMEOUT_SEC
+
+# Client cache to avoid repeated creation/destruction
+_client_cache = {}
 
 _parameter_type_mapping = [
     "",
@@ -72,12 +75,53 @@ def init(node: Node, timeout_sec: float | int = DEFAULT_PARAM_TIMEOUT_SEC):
     Initializes params module with a rclpy.node.Node for further use.
     This function has to be called before any other for the module to work.
     """
-    global _node, _timeout_sec
+    global _node, _timeout_sec, _client_cache
     _node = node
+    _client_cache = {}  # Clear cache on init
 
     if not isinstance(timeout_sec, (int, float)) or timeout_sec <= 0:
         raise ValueError("Parameter timeout must be a positive number")
     _timeout_sec = timeout_sec
+
+
+def _get_or_create_client(service_type, service_name):
+    """Get existing client from cache or create new one"""
+    global _client_cache
+
+    cache_key = (service_type, service_name)
+
+    if cache_key in _client_cache:
+        client = _client_cache[cache_key]
+        # Check if client is still valid
+        if client.service_is_ready():
+            return client
+        else:
+            # Client is stale, destroy and remove from cache
+            _node.destroy_client(client)
+            del _client_cache[cache_key]
+
+    # Create new client
+    client = _node.create_client(
+        service_type,
+        service_name,
+        callback_group=MutuallyExclusiveCallbackGroup(),
+    )
+
+    # Only cache if service is ready
+    if client.service_is_ready():
+        _client_cache[cache_key] = client
+        return client
+    else:
+        _node.destroy_client(client)
+        raise Exception(f"Service {service_name} is not available")
+
+
+def clear_client_cache():
+    """Clear all cached clients (useful for cleanup)"""
+    global _client_cache
+    for client in _client_cache.values():
+        _node.destroy_client(client)
+    _client_cache = {}
 
 
 async def set_param(node_name: str, name: str, value: str, params_glob: list[str]):
@@ -104,7 +148,7 @@ async def set_param(node_name: str, name: str, value: str, params_glob: list[str
 
 async def _set_param(node_name: str, name: str, value: str, parameter_type=None):
     """
-    Internal helper function for set_param.
+    Internal helper function for set_param - uses client cache for performance.
     Attempts to set the given parameter in the target node with the desired value,
     deducing the parameter type if it's not specified.
     parameter_type allows forcing a type for the given value; this is useful to delete parameters.
@@ -120,15 +164,9 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
             setattr(parameter.value, _parameter_type_mapping[parameter_type], loads(value))
 
     assert _node is not None
-    client = _node.create_client(
-        SetParameters,
-        f"{node_name}/set_parameters",
-        callback_group=MutuallyExclusiveCallbackGroup(),
-    )
 
-    if not client.service_is_ready():
-        _node.destroy_client(client)
-        raise Exception(f"Service {client.srv_name} is not available")
+    # Use cached client instead of creating/destroying each time
+    client = _get_or_create_client(SetParameters, f"{node_name}/set_parameters")
 
     request = SetParameters.Request()
     request.parameters = [parameter]
@@ -136,8 +174,6 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
     future = client.call_async(request)
 
     await futures_wait_for(_node, [future], _timeout_sec)
-
-    _node.destroy_client(client)
 
     if not future.done():
         future.cancel()
@@ -168,18 +204,12 @@ async def get_param(node_name: str, name: str, params_glob: str) -> str:
 
 
 async def _get_param(node_name: str, name: str) -> ParameterValue:
-    """Internal helper function for get_param"""
+    """Internal helper function for get_param - uses client cache for performance"""
 
     assert _node is not None
-    client = _node.create_client(
-        GetParameters,
-        f"{node_name}/get_parameters",
-        callback_group=MutuallyExclusiveCallbackGroup(),
-    )
 
-    if not client.service_is_ready():
-        _node.destroy_client(client)
-        raise Exception(f"Service {client.srv_name} is not available")
+    # Use cached client instead of creating/destroying each time
+    client = _get_or_create_client(GetParameters, f"{node_name}/get_parameters")
 
     request = GetParameters.Request()
     request.names = [name]
@@ -187,8 +217,6 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     future = client.call_async(request)
 
     await futures_wait_for(_node, [future], _timeout_sec)
-
-    _node.destroy_client(client)
 
     if not future.done():
         future.cancel()
