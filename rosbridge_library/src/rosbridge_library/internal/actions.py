@@ -195,7 +195,8 @@ class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
         client: ActionClient[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT] = ActionClient(
             node_handle, action_class, action_name
         )
-        client.wait_for_server(timeout_sec=self.server_timeout_time)
+        if( not client.wait_for_server(timeout_sec=self.server_timeout_time)):
+           raise Exception("No action server available")
         send_goal_future = client.send_goal_async(inst, feedback_callback=feedback_cb)  # type: ignore[arg-type]
         send_goal_future.add_done_callback(self.goal_response_cb)
 
