@@ -228,22 +228,14 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
 
     Internal helper function for get_param.
     """
-    assert _node is not None
-    client = _node.create_client(
-        GetParameters,
-        f"{node_name}/get_parameters",
-        callback_group=MutuallyExclusiveCallbackGroup(),
-    )
-
-    if not client.service_is_ready():
-        _node.destroy_client(client)
-        raise Exception(f"Service {client.srv_name} is not available")
+    client = _get_or_create_client(GetParameters, f"{node_name}/get_parameters")
 
     request = GetParameters.Request()
     request.names = [name]
 
     future = client.call_async(request)
 
+    assert _node is not None
     await futures_wait_for(_node, [future], _timeout_sec)
 
     if not future.done():
