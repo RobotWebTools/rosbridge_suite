@@ -46,14 +46,7 @@ from rosapi.async_helper import futures_wait_for
 from rosapi.proxy import get_nodes
 
 if TYPE_CHECKING:
-    from rcl_interfaces.srv import (
-        GetParameters_Request,
-        GetParameters_Response,
-        ListParameters_Request,
-        ListParameters_Response,
-        SetParameters_Request,
-        SetParameters_Response,
-    )
+    from rcl_interfaces.srv import ListParameters_Request, ListParameters_Response
     from rclpy.client import Client
     from rclpy.node import Node
     from rclpy.task import Future
