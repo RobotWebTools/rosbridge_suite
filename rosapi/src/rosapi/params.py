@@ -50,6 +50,8 @@ if TYPE_CHECKING:
     from rclpy.node import Node
     from rclpy.task import Future
 
+    from rosbridge_library.internal.type_support import ROSServiceT
+
 """ Methods to interact with the param server.  Values have to be passed
 as JSON in order to facilitate dynamically typed SRV messages """
 
@@ -58,7 +60,7 @@ DEFAULT_PARAM_TIMEOUT_SEC = 1.0
 
 _node = None
 _timeout_sec = DEFAULT_PARAM_TIMEOUT_SEC
-_client_cache = {}
+_client_cache: dict[tuple[type, str], Client] = {}
 
 _parameter_type_mapping = [
     "",
@@ -96,19 +98,20 @@ def init(node: Node, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC) -> None:
     _timeout_sec = timeout_sec
 
 
-def _get_or_create_client(service_type, service_name):
-    """Get existing client from cache or create new one"""
-    global _client_cache
-
+def _get_or_create_client(
+    service_type: type[ROSServiceT], service_name: str
+) -> Client[ROSServiceT.Request, ROSServiceT.Response]:
+    """Get existing client from cache or create new one."""
+    assert _node is not None
     cache_key = (service_type, service_name)
 
     if cache_key in _client_cache:
         client = _client_cache[cache_key]
         if client.service_is_ready():
             return client
-        else:
-            _node.destroy_client(client)
-            del _client_cache[cache_key]
+
+        _node.destroy_client(client)
+        del _client_cache[cache_key]
 
     client = _node.create_client(
         service_type,
@@ -119,13 +122,15 @@ def _get_or_create_client(service_type, service_name):
     if client.service_is_ready():
         _client_cache[cache_key] = client
         return client
-    else:
-        _node.destroy_client(client)
-        raise Exception(f"Service {service_name} is not available")
+
+    _node.destroy_client(client)
+    msg = f"Service {service_name} is not available"
+    raise Exception(msg)
 
 
-def clear_client_cache():
-    """Clear all cached clients"""
+def clear_client_cache() -> None:
+    """Clear all cached clients."""
+    assert _node is not None
     global _client_cache
     for client in _client_cache.values():
         _node.destroy_client(client)
