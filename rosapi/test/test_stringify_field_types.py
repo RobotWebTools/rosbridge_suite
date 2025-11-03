@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+from __future__ import annotations
+
+import contextlib
 import unittest
 
 from rosapi.stringify_field_types import stringify_field_types
@@ -6,7 +8,7 @@ from rosbridge_library.internal.ros_loader import InvalidModuleException
 
 
 class TestObjectUtils(unittest.TestCase):
-    def test_stringify_field_types(self):
+    def test_stringify_field_types(self) -> None:
         self.maxDiff = None
 
         self.assertRegex(
@@ -136,7 +138,9 @@ float64 w 1
 """,
         )
 
-        try:
+        # This message is not present on older ROS distributions
+        cm = contextlib.suppress(InvalidModuleException)
+        with cm:
             # We match against a regex here as the Gid.msg differs between distros:
             # Distros up to humble use 24 bytes, more recent distros use 16 bytes.
             # See https://github.com/ros2/rmw_dds_common/pull/68
@@ -152,6 +156,3 @@ MSG: rmw_dds_common/Gid
 char\[(24|16)\] data
 """,
             )
-        except InvalidModuleException:
-            # This message is not present on older ROS distributions
-            pass

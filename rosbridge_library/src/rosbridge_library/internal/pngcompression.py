@@ -30,6 +30,8 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 from base64 import standard_b64decode, standard_b64encode
 from io import BytesIO
 from math import ceil, floor, sqrt
@@ -37,8 +39,12 @@ from math import ceil, floor, sqrt
 from PIL import Image
 
 
-def encode(string):
-    """PNG-compress the string in a square RGB image padded with '\n', return the b64 encoded bytes"""
+def encode(string: str) -> str:
+    r"""
+    PNG-compress the string in a square RGB image padded with '\n'.
+
+    :return: The b64 encoded bytes.
+    """
     string_bytes = string.encode("utf-8")
     length = len(string_bytes)
     width = floor(sqrt(length / 3.0))
@@ -49,14 +55,13 @@ def encode(string):
     buff = BytesIO()
     i.save(buff, "png")
     encoded = standard_b64encode(buff.getvalue())
-    return encoded
+    return encoded.decode()
 
 
-def decode(string):
-    """b64 decode the string, then PNG-decompress and remove the '\n' padding"""
+def decode(string: str) -> str:
+    r"""b64 decode the string, then PNG-decompress and remove the '\n' padding."""
     decoded = standard_b64decode(string)
     buff = BytesIO(decoded)
     i = Image.open(buff, formats=("png",)).convert("RGB")
     dec_str = i.tobytes().decode("utf-8")
-    dec_str = dec_str.replace("\n", "")  # Remove padding from encoding
-    return dec_str
+    return dec_str.replace("\n", "")  # Remove padding from encoding

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2018, Intermodalics
@@ -30,7 +29,10 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import annotations
+
 import threading
+from typing import TYPE_CHECKING
 
 from rclpy.clock import ROSClock
 from rclpy.qos import DurabilityPolicy, QoSProfile
@@ -38,9 +40,14 @@ from std_msgs.msg import Int32
 
 from rosbridge_msgs.msg import ConnectedClient, ConnectedClients
 
+if TYPE_CHECKING:
+    from uuid import UUID
+
+    from rclpy.node import Node
+
 
 class ClientManager:
-    def __init__(self, node_handle):
+    def __init__(self, node_handle: Node) -> None:
         qos = QoSProfile(
             depth=1,
             durability=DurabilityPolicy.TRANSIENT_LOCAL,
@@ -57,16 +64,16 @@ class ClientManager:
 
         self._lock = threading.Lock()
         self._client_count = 0
-        self._clients = {}
+        self._clients: dict[UUID, ConnectedClient] = {}
         self.__publish()
 
-    def __publish(self):
+    def __publish(self) -> None:
         msg = ConnectedClients()
         msg.clients = list(self._clients.values())
         self._conn_clients_pub.publish(msg)
         self._client_count_pub.publish(Int32(data=len(msg.clients)))
 
-    def add_client(self, client_id, ip_address):
+    def add_client(self, client_id: UUID, ip_address: str) -> None:
         with self._lock:
             client = ConnectedClient()
             client.ip_address = ip_address
@@ -74,7 +81,7 @@ class ClientManager:
             self._clients[client_id] = client
             self.__publish()
 
-    def remove_client(self, client_id, ip_address):
+    def remove_client(self, client_id: UUID, ip_address: str) -> None:  # noqa: ARG002
         with self._lock:
             self._clients.pop(client_id, None)
             self.__publish()

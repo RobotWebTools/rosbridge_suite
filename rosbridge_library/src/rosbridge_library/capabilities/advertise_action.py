@@ -30,62 +30,88 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import fnmatch
-from typing import Any
+from typing import TYPE_CHECKING, Generic, cast
 
 from action_msgs.msg import GoalStatus
 from rclpy.action import ActionServer
 from rclpy.action.server import CancelResponse, ServerGoalHandle
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.task import Future
+
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.internal.ros_loader import get_action_class
-from rosbridge_library.protocol import Protocol
+from rosbridge_library.internal.type_support import (
+    ROSActionFeedbackT,
+    ROSActionGoalT,
+    ROSActionResultT,
+    ROSMessage,
+)
+
+if TYPE_CHECKING:
+    from rosbridge_library.protocol import Protocol
 
 
-class AdvertisedActionHandler:
-
+class AdvertisedActionHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
     id_counter = 1
 
     def __init__(
         self, action_name: str, action_type: str, protocol: Protocol, sleep_time: float = 0.001
     ) -> None:
-        self.goal_futures: dict[str, Future] = {}
-        self.goal_handles: dict[str, Any] = {}
-        self.goal_statuses: dict[str, GoalStatus] = {}
+        self.goal_futures: dict[str, Future[ROSActionResultT]] = {}
+        self.goal_handles: dict[
+            str, ServerGoalHandle[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]
+        ] = {}
+        self.goal_statuses: dict[str, int] = {}
 
         self.action_name = action_name
         self.action_type = action_type
         self.protocol = protocol
         self.sleep_time = sleep_time
         # setup the action
-        self.action_server = ActionServer(
-            protocol.node_handle,
-            get_action_class(action_type),
-            action_name,
-            self.execute_callback,
-            cancel_callback=self.cancel_callback,
-            callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
+        self.action_server: ActionServer[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT] = (
+            ActionServer(
+                protocol.node_handle,
+                get_action_class(action_type),
+                action_name,
+                self.execute_callback,  # type: ignore[arg-type]  # rclpy type hint does not support coroutines
+                cancel_callback=self.cancel_callback,  # type: ignore[arg-type]  # rclpy type hint is incorrect
+                callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
+            )
         )
 
     def next_id(self) -> int:
-        id = self.id_counter
+        next_id_value = self.id_counter
         self.id_counter += 1
-        return id
+        return next_id_value
 
-    async def execute_callback(self, goal: Any) -> Any:
-        """Action server goal callback function."""
+    async def execute_callback(
+        self, goal: ServerGoalHandle[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]
+    ) -> ROSActionResultT:
+        """
+        Execute action goal.
+
+        ActionServer callback for executing an action goal.
+        """
         # generate a unique ID
         goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
-        def done_callback(fut: Future) -> None:
+        def done_callback(fut: Future[ROSActionResultT]) -> None:
             if fut.cancelled():
                 goal.abort()
                 self.protocol.log("info", f"Aborted goal {goal_id}")
                 # Send an empty result to avoid stack traces
-                fut.set_result(get_action_class(self.action_type).Result())
+                fut.set_result(
+                    cast("ROSActionResultT", get_action_class(self.action_type).Result())
+                )
             else:
+                if goal_id not in self.goal_statuses:
+                    goal.abort()
+                    return
+
                 status = self.goal_statuses[goal_id]
                 if status == GoalStatus.STATUS_SUCCEEDED:
                     goal.succeed()
@@ -94,7 +120,7 @@ class AdvertisedActionHandler:
                 else:
                     goal.abort()
 
-        future: Future = Future()
+        future: Future[ROSActionResultT] = Future()
         future.add_done_callback(done_callback)
         self.goal_handles[goal_id] = goal
         self.goal_futures[goal_id] = future
@@ -111,15 +137,23 @@ class AdvertisedActionHandler:
         self.protocol.send(goal_message)
 
         try:
-            return await future
+            result = await future
+            assert result is not None, "Action result cannot be None"
+            return result
         finally:
             del self.goal_futures[goal_id]
             del self.goal_handles[goal_id]
 
-    def cancel_callback(self, cancel_request: ServerGoalHandle) -> CancelResponse:
-        """Action server cancel callback function."""
+    def cancel_callback(
+        self, goal: ServerGoalHandle[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]
+    ) -> CancelResponse:
+        """
+        Cancel action goal.
+
+        ActionServer callback for canceling an action goal.
+        """
         for goal_id, goal_handle in self.goal_handles.items():
-            if cancel_request.goal_id == goal_handle.goal_id:
+            if goal.goal_id == goal_handle.goal_id:
                 self.protocol.log("warning", f"Canceling action {goal_id}")
                 cancel_message = {
                     "op": "cancel_action_goal",
@@ -129,17 +163,21 @@ class AdvertisedActionHandler:
                 self.protocol.send(cancel_message)
         return CancelResponse.ACCEPT
 
-    def handle_feedback(self, goal_id: str, feedback: Any) -> None:
+    def handle_feedback(self, goal_id: str, feedback: ROSActionFeedbackT) -> None:
         """
+        Handle action feedback.
+
         Called by the ActionFeedback capability to handle action feedback from the external client.
         """
         if goal_id in self.goal_handles:
-            self.goal_handles[goal_id].publish_feedback(feedback)
+            self.goal_handles[goal_id].publish_feedback(feedback)  # type: ignore[arg-type]
         else:
             self.protocol.log("warning", f"Received action feedback for unrecognized id: {goal_id}")
 
-    def handle_result(self, goal_id: str, result: dict, status: int) -> None:
+    def handle_result(self, goal_id: str, result: ROSActionResultT, status: int) -> None:
         """
+        Handle action result.
+
         Called by the ActionResult capability to handle a successful action result from the external client.
         """
         if goal_id in self.goal_futures:
@@ -150,6 +188,8 @@ class AdvertisedActionHandler:
 
     def handle_abort(self, goal_id: str) -> None:
         """
+        Handle action abort.
+
         Called by the ActionResult capability to handle aborting action result from the external client.
         """
         if goal_id in self.goal_futures:
@@ -160,9 +200,7 @@ class AdvertisedActionHandler:
             )
 
     def graceful_shutdown(self) -> None:
-        """
-        Signal the AdvertisedActionHandler to shutdown.
-        """
+        """Signal the AdvertisedActionHandler to shutdown."""
         if self.goal_futures:
             incomplete_ids = ", ".join(self.goal_futures.keys())
             self.protocol.log(
@@ -180,9 +218,11 @@ class AdvertisedActionHandler:
 
 
 class AdvertiseAction(Capability):
-    actions_glob = None
+    advertise_action_msg_fields = ((True, "action", str), (True, "type", str))
 
-    advertise_action_msg_fields = [(True, "action", str), (True, "type", str)]
+    parameter_names = ("actions_glob",)
+
+    actions_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
@@ -196,15 +236,15 @@ class AdvertiseAction(Capability):
         self.basic_type_check(message, self.advertise_action_msg_fields)
 
         # parse the incoming message
-        action_name = message["action"]
+        action_name: str = message["action"]
 
-        if AdvertiseAction.actions_glob is not None and AdvertiseAction.actions_glob:
+        if self.actions_glob:
             self.protocol.log(
                 "debug",
                 "Action security glob enabled, checking action: " + action_name,
             )
             match = False
-            for glob in AdvertiseAction.actions_glob:
+            for glob in self.actions_glob:
                 if fnmatch.fnmatch(action_name, glob):
                     self.protocol.log(
                         "debug",
@@ -225,13 +265,15 @@ class AdvertiseAction(Capability):
             )
 
         # check for an existing entry
-        if action_name in self.protocol.external_action_list.keys():
+        if action_name in self.protocol.external_action_list:
             self.protocol.log("warn", f"Duplicate action advertised. Overwriting {action_name}.")
             self.protocol.external_action_list[action_name].graceful_shutdown()
             del self.protocol.external_action_list[action_name]
 
         # setup and store the action information
-        action_type = message["type"]
-        action_handler = AdvertisedActionHandler(action_name, action_type, self.protocol)
+        action_type: str = message["type"]
+        action_handler: AdvertisedActionHandler[ROSMessage, ROSMessage, ROSMessage] = (
+            AdvertisedActionHandler(action_name, action_type, self.protocol)
+        )
         self.protocol.external_action_list[action_name] = action_handler
         self.protocol.log("info", f"Advertised action {action_name}")

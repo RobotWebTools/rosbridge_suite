@@ -1,5 +1,114 @@
-[tool.bandit]
-skips = ["B101", "B110", "B311"]
+[project]
+name = "rosbridge_suite"
+requires-python = ">=3.10"
 
 [tool.black]
+# We use ruff for formatting, but black formatter should be compatible with ruff.
 line-length = 100
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    # "AIR",  # Airflow, We don't use this framework
+    # "ERA",  # Eradicate, We allow commented-out code
+    # "FAST", # FastAPI, We don't use this framework
+
+    # flake8 extensions
+    "YTT",    # flake8-2020
+    "ANN",    # flake8-annotations,
+    "ASYNC",  # flake8-async
+    "S",      # flake8-bandit
+    # "BLE",  # flake8-blind-except, Too much hassle to fix (TODO)
+    # "FBT",  # flake8-boolean-trap, We allow boolean traps
+    "B",      # flake8-bugbear
+    "A",      # flake8-builtins
+    # "COM",  # flake8-commas, We don't require trailing commas
+    "C4",     # flake8-comprehensions
+    # "CPY",  # flake8-copyright, preview feature
+    "DTZ",    # flake8-datetimez
+    "T10",    # flake8-debugger
+    # "DJ",   # flake8-django, We don't use this framework
+    "EM",     # flake8-errmsg
+    "EXE",    # flake8-executable
+    # "FIX",  # flake8-fixme, too many TODOs to fix them now
+    "FA",     # flake8-future-annotations
+    "INT",    # flake8-gettext
+    "ISC",    # flake8-implicit-str-concat
+    "ICN",    # flake8-import-conventions
+    "LOG",    # flake8-logging
+    "G",      # flake8-logging-format
+    # "INP",  # flake8-no-pep420, false positives with launch tests
+    "PIE",    # flake8-pie
+    # "T20",  # flake8-print, We allow some print statements
+    "PYI",    # flake8-pyi
+    # "PT",   # flake8-pytest-style, Too many errors to fix for now (TODO)
+    "Q",      # flake8-quotes
+    "RSE",    # flake8-raise
+    "RET",    # flake8-return
+    # "SLF",  # flake8-self, Too many "Private member accessed" errors (TODO)
+    "SIM",    # flake8-simplify
+    "SLOT",   # flake8-slots
+    "TID",    # flake8-tidy-imports
+    # "TD",   # flake8-todos, We don't enforce format for TODO comments
+    "TC",     # flake8-type-checking
+    "ARG",    # flake8-unused-arguments
+    "PTH",    # flake8-use-pathlib
+
+    "FLY",    # flynt
+    "I",      # isort
+    "C90",    # mccabe
+    "NPY",    # numpy
+    "PD",     # pandas-vet
+    # "N",    # pep8-naming, Can't fix without breaking API
+    "PERF",   # Perflint
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    # "DOC",  # pydoclint, preview feature
+    "D",      # pydocstyle
+    "F",      # pyflakes
+    "PGH",    # pygrep-hooks
+    "PL",     # pylint
+    "UP",     # pyupgrade
+    "FURB",   # refurb
+    "RUF",    # ruff
+    # "TRY",  # tryceratops, Too many "Create your own exception" errors (TODO)
+]
+ignore = [
+    "SIM108", # Opinionated: ternary operator does not always look simpler
+
+    # Undocumented code
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+
+    # Conflicting pydocstyle rules
+    "D203", # incorrect-blank-line-before-class
+    "D212", # multi-line-summary-first-line
+
+    "S101", # assert
+    "S110", # try-except-pass
+    "S311", # suspicious-non-cryptographic-random-usage
+
+    # Pylint "too-many" errors
+    "PLR0911",
+    "PLR0912",
+    "PLR0913",
+    "PLR0914",
+    "PLR0915",
+    "PLR0916",
+    "PLR0917",
+
+    "PLR2004", # magic-value-comparison, Too many to fix for now (TODO)
+    "PLW0603", # global-statement, Will need a more sophisticated solution to fix this (TODO)
+]
+
+mccabe.max-complexity = 36
+
+pycodestyle.max-line-length = 120

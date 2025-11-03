@@ -65,6 +65,7 @@
       <param name="unregister_timeout" value="$(var unregister_timeout)"/>
       <param name="use_compression" value="$(var use_compression)"/>
       <param name="call_services_in_new_thread" value="$(var call_services_in_new_thread)"/>
+      <param name="default_call_service_timeout" value="$(var default_call_service_timeout)"/>
       <param name="send_action_goals_in_new_thread" value="$(var send_action_goals_in_new_thread)"/>
 
       <param name="topics_glob" value="$(var topics_glob)"/>

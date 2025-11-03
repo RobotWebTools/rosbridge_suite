@@ -30,19 +30,25 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import annotations
 
 import fnmatch
 from json import dumps, loads
+from typing import TYPE_CHECKING
 
 from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
 from rcl_interfaces.srv import GetParameters, ListParameters, SetParameters
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
-from rclpy.node import Node
 from rclpy.parameter import get_parameter_value
-from rclpy.task import Future
 from ros2node.api import get_absolute_node_name
+
 from rosapi.async_helper import futures_wait_for
 from rosapi.proxy import get_nodes
+
+if TYPE_CHECKING:
+    from rclpy.client import Client
+    from rclpy.node import Node
+    from rclpy.task import Future
 
 """ Methods to interact with the param server.  Values have to be passed
 as JSON in order to facilitate dynamically typed SRV messages """
@@ -68,17 +74,25 @@ _parameter_type_mapping = [
 ]
 
 
-def init(node: Node, timeout_sec: float | int = DEFAULT_PARAM_TIMEOUT_SEC):
+def init(node: Node, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC) -> None:
     """
-    Initializes params module with a rclpy.node.Node for further use.
+    Initialize params module with a rclpy.node.Node for further use.
+
     This function has to be called before any other for the module to work.
+
+    :param node: The rclpy node to use for service calls.
+    :type node: Node
+    :param timeout_sec: The timeout in seconds for service calls.
+    :type timeout_sec: float | int, optional
+    :raises ValueError: If the timeout is not a positive number.
     """
     global _node, _timeout_sec, _client_cache
     _node = node
     _client_cache = {}
 
-    if not isinstance(timeout_sec, (int, float)) or timeout_sec <= 0:
-        raise ValueError("Parameter timeout must be a positive number")
+    if not isinstance(timeout_sec, int | float) or timeout_sec <= 0:
+        msg = "Parameter timeout must be a positive number"
+        raise ValueError(msg)
     _timeout_sec = timeout_sec
 
 
@@ -118,9 +132,8 @@ def clear_client_cache():
     _client_cache = {}
 
 
-async def set_param(node_name: str, name: str, value: str, params_glob: list[str]):
-    """Sets a parameter in a given node"""
-
+async def set_param(node_name: str, name: str, value: str, params_glob: list[str]) -> None:
+    """Set a parameter in a given node."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to set the parameter.
@@ -131,17 +144,23 @@ async def set_param(node_name: str, name: str, value: str, params_glob: list[str
     try:
         d = loads(value)
         value = d if isinstance(d, str) else value
-    except ValueError:
-        raise Exception(
-            "Due to the type flexibility of the ROS parameter server, the value argument to set_param must be a JSON-formatted string."
+    except ValueError as exc:
+        msg = (
+            "Due to the type flexibility of the ROS parameter server, "
+            "the value argument to set_param must be a JSON-formatted string."
         )
+        raise Exception(msg) from exc
 
     node_name = get_absolute_node_name(node_name)
     await _set_param(node_name, name, value)
 
 
-async def _set_param(node_name: str, name: str, value: str, parameter_type=None):
+async def _set_param(
+    node_name: str, name: str, value: str | None, parameter_type: int | None = None
+) -> None:
     """
+    Set a parameter in a given node.
+
     Internal helper function for set_param.
     Attempts to set the given parameter in the target node with the desired value,
     deducing the parameter type if it's not specified.
@@ -150,14 +169,14 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
     parameter = Parameter()
     parameter.name = name
     if parameter_type is None:
+        assert value is not None
         parameter.value = get_parameter_value(string_value=value)
     else:
         parameter.value = ParameterValue()
         parameter.value.type = parameter_type
         if parameter_type != ParameterType.PARAMETER_NOT_SET:
+            assert value is not None
             setattr(parameter.value, _parameter_type_mapping[parameter_type], loads(value))
-
-    assert _node is not None
 
     client = _get_or_create_client(SetParameters, f"{node_name}/set_parameters")
 
@@ -166,26 +185,29 @@ async def _set_param(node_name: str, name: str, value: str, parameter_type=None)
 
     future = client.call_async(request)
 
+    assert _node is not None
     await futures_wait_for(_node, [future], _timeout_sec)
 
     if not future.done():
         future.cancel()
-        raise Exception("Timeout occurred")
+        msg = "Timeout occurred"
+        raise Exception(msg)
 
     result = future.result()
 
     assert result is not None
-    if not result.results[0].successful:
-        raise Exception(result.results[0].reason)
+    param_results = next(iter(result.results))
+    if param_results.successful:
+        raise Exception(param_results.reason)
 
 
 async def get_param(node_name: str, name: str, params_glob: str) -> str:
-    """Gets a parameter from a given node"""
-
+    """Get a parameter from a given node."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to get the parameter.
-        raise Exception(f"Parameter {name} does not match any of the glob strings")
+        msg = f"Parameter {name} does not match any of the glob strings"
+        raise Exception(msg)
     # If the glob list is empty (i.e. false) or the parameter matches
     # one of the glob strings, continue to get the parameter.
 
@@ -193,15 +215,29 @@ async def get_param(node_name: str, name: str, params_glob: str) -> str:
     pvalue = await _get_param(node_name, name)
     value = getattr(pvalue, _parameter_type_mapping[pvalue.type])
 
+    # Convert array types to lists for JSON serialization
+    if hasattr(value, "tolist"):  # This will catch numpy arrays and Python arrays
+        value = value.tolist()
+
     return dumps(value)
 
 
 async def _get_param(node_name: str, name: str) -> ParameterValue:
-    """Internal helper function for get_param"""
+    """
+    Get a parameter from a given node.
 
+    Internal helper function for get_param.
+    """
     assert _node is not None
+    client = _node.create_client(
+        GetParameters,
+        f"{node_name}/get_parameters",
+        callback_group=MutuallyExclusiveCallbackGroup(),
+    )
 
-    client = _get_or_create_client(GetParameters, f"{node_name}/get_parameters")
+    if not client.service_is_ready():
+        _node.destroy_client(client)
+        raise Exception(f"Service {client.srv_name} is not available")
 
     request = GetParameters.Request()
     request.names = [name]
@@ -212,20 +248,21 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
 
     if not future.done():
         future.cancel()
-        raise Exception("Timeout occurred")
+        msg = "Timeout occurred"
+        raise Exception(msg)
 
     result = future.result()
 
     assert result is not None
     if len(result.values) == 0:
-        raise Exception(f"Parameter {name} not found")
+        msg = f"Parameter {name} not found"
+        raise Exception(msg)
 
-    return result.values[0]
+    return next(iter(result.values))
 
 
-async def has_param(node_name: str, name: str, params_glob: str) -> bool:
-    """Checks whether a given node has a parameter or not"""
-
+async def has_param(node_name: str, name: str, params_glob: list[str]) -> bool:
+    """Check whether a given node has a parameter or not."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to set the parameter.
@@ -241,9 +278,8 @@ async def has_param(node_name: str, name: str, params_glob: str) -> bool:
     return 0 < pvalue.type < len(_parameter_type_mapping)
 
 
-async def delete_param(node_name, name, params_glob):
-    """Deletes a parameter in a given node"""
-
+async def delete_param(node_name: str, name: str, params_glob: list[str]) -> None:
+    """Delete a parameter in a given node."""
     if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
         # If the glob list is not empty and there are no glob matches,
         # stop the attempt to delete the parameter.
@@ -260,14 +296,14 @@ async def get_param_names(params_glob: str | None) -> list[str]:
 
     nodes = [get_absolute_node_name(node) for node in get_nodes()]
 
-    futures: list[tuple[str, Future]] = []
+    futures: list[tuple[str, Future[ListParameters.Response]]] = []
     clients = []
     for node_name in nodes:
         if node_name == _node.get_fully_qualified_name():
             continue
 
-        client = _node.create_client(
-            ListParameters,
+        client: Client[ListParameters.Request, ListParameters.Response] = _node.create_client(
+            ListParameters,  # type: ignore[arg-type]
             f"{node_name}/list_parameters",
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
@@ -301,5 +337,4 @@ async def get_param_names(params_glob: str | None) -> list[str]:
         return list(
             filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob), params)
         )
-    else:
-        return params
+    return params

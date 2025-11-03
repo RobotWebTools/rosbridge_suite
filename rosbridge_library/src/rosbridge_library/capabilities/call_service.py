@@ -30,41 +30,43 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import fnmatch
 from functools import partial
 from threading import Thread
+from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.services import ServiceCaller
 
+if TYPE_CHECKING:
+    from rosbridge_library.protocol import Protocol
+
 
 class CallService(Capability):
-
-    call_service_msg_fields = [
+    call_service_msg_fields = (
         (True, "service", str),
         (False, "fragment_size", (int, type(None))),
         (False, "compression", str),
-    ]
+    )
 
-    services_glob = None
+    parameter_names = (
+        "services_glob",
+        "default_call_service_timeout",
+        "call_services_in_new_thread",
+    )
 
-    def __init__(self, protocol):
+    services_glob: list[str] | None = None
+    default_timeout: float = 5.0
+    call_services_in_new_thread: bool = True
+
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
-        self.default_timeout = (
-            protocol.node_handle.get_parameter("default_call_service_timeout")
-            .get_parameter_value()
-            .double_value
-        )
-
         # Register the operations that this capability provides
-        call_services_in_new_thread = (
-            protocol.node_handle.get_parameter("call_services_in_new_thread")
-            .get_parameter_value()
-            .bool_value
-        )
-        if call_services_in_new_thread:
+        if self.call_services_in_new_thread:
             # Calls the service in a separate thread so multiple services can be processed simultaneously.
             protocol.node_handle.get_logger().info("Calling services in new thread")
             protocol.register_operation(
@@ -75,26 +77,26 @@ class CallService(Capability):
             protocol.node_handle.get_logger().info("Calling services in existing thread")
             protocol.register_operation("call_service", self.call_service)
 
-    def call_service(self, message):
+    def call_service(self, message: dict[str, Any]) -> None:
         # Pull out the ID
-        cid = message.get("id", None)
+        cid: str | None = message.get("id")
 
         # Typecheck the args
         self.basic_type_check(message, self.call_service_msg_fields)
 
         # Extract the args
-        service = message["service"]
-        fragment_size = message.get("fragment_size", None)
-        compression = message.get("compression", "none")
-        args = message.get("args", [])
-        timeout = message.get("timeout", self.default_timeout)
+        service: str = message["service"]
+        fragment_size: int | None = message.get("fragment_size")
+        compression: str = message.get("compression", "none")
+        args: list | dict[str, Any] = message.get("args", [])
+        timeout: float = message.get("timeout", self.default_timeout)
 
-        if CallService.services_glob is not None and CallService.services_glob:
+        if self.services_glob:
             self.protocol.log(
                 "debug", "Service security glob enabled, checking service: " + service
             )
             match = False
-            for glob in CallService.services_glob:
+            for glob in self.services_glob:
                 if fnmatch.fnmatch(service, glob):
                     self.protocol.log(
                         "debug",
@@ -128,7 +130,14 @@ class CallService(Capability):
             self.protocol.node_handle,
         ).run()
 
-    def _success(self, cid, service, fragment_size, compression, message):
+    def _success(
+        self,
+        cid: str | None,
+        service: str,
+        _fragment_size: int | None,
+        _compression: str,
+        message: dict[str, Any],
+    ) -> None:
         outgoing_message = {
             "op": "service_response",
             "service": service,
@@ -140,8 +149,8 @@ class CallService(Capability):
         # TODO: fragmentation, compression
         self.protocol.send(outgoing_message)
 
-    def _failure(self, cid, service, exc):
-        self.protocol.log("error", "call_service %s: %s" % (type(exc).__name__, str(exc)), cid)
+    def _failure(self, cid: str | None, service: str, exc: Exception) -> None:
+        self.protocol.log("error", f"call_service {type(exc).__name__}: {exc!s}", cid)
         # send response with result: false
         outgoing_message = {
             "op": "service_response",
@@ -154,14 +163,15 @@ class CallService(Capability):
         self.protocol.send(outgoing_message)
 
 
-def trim_servicename(service):
+def trim_servicename(service: str) -> str:
     if "#" in service:
         return service[: service.find("#")]
     return service
 
 
-def extract_id(service, cid):
+def extract_id(service: str, cid: str | None) -> str | None:
     if cid is not None:
         return cid
-    elif "#" in service:
+    if "#" in service:
         return service[service.find("#") + 1 :]
+    return None

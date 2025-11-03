@@ -1,32 +1,41 @@
+from __future__ import annotations
+
 import fnmatch
+from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capability import Capability
 
+if TYPE_CHECKING:
+    from rosbridge_library.protocol import Protocol
+
 
 class UnadvertiseService(Capability):
+    unadvertise_service_msg_fields = ((True, "service", str),)
 
-    # unadvertise_service_msg_fields = [(True, "service", (str, unicode))]
+    parameter_names = ("services_glob",)
 
-    services_glob = None
+    services_glob: list[str] | None = None
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
         # Register the operations that this capability provides
         protocol.register_operation("unadvertise_service", self.unadvertise_service)
 
-    def unadvertise_service(self, message):
-        # parse the message
-        service_name = message["service"]
+    def unadvertise_service(self, message: dict[str, Any]) -> None:
+        self.basic_type_check(message, self.unadvertise_service_msg_fields)
 
-        if UnadvertiseService.services_glob is not None and UnadvertiseService.services_glob:
+        # parse the message
+        service_name: str = message["service"]
+
+        if self.services_glob:
             self.protocol.log(
                 "debug",
                 "Service security glob enabled, checking service: " + service_name,
             )
             match = False
-            for glob in UnadvertiseService.services_glob:
+            for glob in self.services_glob:
                 if fnmatch.fnmatch(service_name, glob):
                     self.protocol.log(
                         "debug",
@@ -48,7 +57,7 @@ class UnadvertiseService(Capability):
             )
 
         # unregister service in ROS
-        if service_name in self.protocol.external_service_list.keys():
+        if service_name in self.protocol.external_service_list:
             self.protocol.external_service_list[service_name].graceful_shutdown()
             self.protocol.external_service_list[service_name].service_handle.destroy()
             del self.protocol.external_service_list[service_name]

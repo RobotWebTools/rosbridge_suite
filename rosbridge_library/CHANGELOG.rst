@@ -2,6 +2,25 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.3.0 (2025-05-19)
+------------------
+* Don't subscribe with Transient local QoS when there are volatile publishers (`#1023 <https://github.com/RobotWebTools/rosbridge_suite/issues/1023>`_)
+* Contributors: Talha Işık
+
+2.2.0 (2025-02-26)
+------------------
+* Default subscriber QOS to BestEffort, account for TRANSIENT_LOCAL (`#991 <https://github.com/RobotWebTools/rosbridge_suite/issues/991>`_)
+* Fix action cancelling/aborting (`#1013 <https://github.com/RobotWebTools/rosbridge_suite/issues/1013>`_)
+* Fix randomly failing subscribe unsubscribe test (`#1008 <https://github.com/RobotWebTools/rosbridge_suite/issues/1008>`_)
+* Update maintainers (`#1000 <https://github.com/RobotWebTools/rosbridge_suite/issues/1000>`_)
+* Add timeout option to call_service messages (`#984 <https://github.com/RobotWebTools/rosbridge_suite/issues/984>`_)
+* Fix infinite loop in QueueMessageHandler (`#983 <https://github.com/RobotWebTools/rosbridge_suite/issues/983>`_)
+* Use monotonic clock for time measuring (`#982 <https://github.com/RobotWebTools/rosbridge_suite/issues/982>`_)
+* Add ament_mypy test and fix all mypy errors (`#980 <https://github.com/RobotWebTools/rosbridge_suite/issues/980>`_)
+* Drop support for ROS 2 Iron (`#981 <https://github.com/RobotWebTools/rosbridge_suite/issues/981>`_)
+* Remove first handler update as queue update is blocked (`#974 <https://github.com/RobotWebTools/rosbridge_suite/issues/974>`_)
+* Contributors: Błażej Sowa, Sebastian Castro, ewak, William Wedler, Mike Wake, Daisuke Sato, lboorman
+
 2.1.0 (2024-10-08)
 ------------------
 

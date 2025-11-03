@@ -1,7 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 import socket
 
 from rosbridge_library.util import json
+
+# ruff: noqa: ANN201
 
 # ##################### variables begin ########################################
 # these parameters should be changed to match the actual environment           #
@@ -28,7 +30,8 @@ def request_service():
     service_request_object = {
         "op": "call_service",  # op-code for rosbridge
         "service": "/" + service_name,  # select service
-        "fragment_size": receiving_fragment_size,  # optional: tells rosbridge to send fragments if message size is bigger than requested
+        # optional: tells rosbridge to send fragments if message size is bigger than requested
+        "fragment_size": receiving_fragment_size,
         "message_intervall": receive_message_intervall,
         "args": {
             "pose": {
@@ -36,7 +39,8 @@ def request_service():
                 "orientation": {"y": 0.0, "x": 0.0, "z": 0.0, "w": 0.0},
             }
         },
-        # "count" : request_byte_count           # count is the parameter for send_bytes as defined in srv-file (always put into args field!)
+        # count is the parameter for send_bytes as defined in srv-file (always put into args field!)
+        # "count" : request_byte_count
     }
     service_request = json.dumps(service_request_object)
     print("sending JSON-message to rosbridge:", service_request)
@@ -91,13 +95,14 @@ try:
                 )  # split buffer into fragments and re-fill curly brackets
                 result = []
                 for fragment_str in result_string:
-                    if fragment_str[0] != "{":
-                        fragment_str = "{" + fragment_str
-                    if fragment_str[len(fragment_str) - 1] != "}":
-                        fragment_str = fragment_str + "}"
+                    frag = fragment_str
+                    if frag[0] != "{":
+                        frag = "{" + frag
+                    if frag[len(frag) - 1] != "}":
+                        frag = frag + "}"
                     try:
                         result.append(
-                            json.loads(fragment_str)
+                            json.loads(frag)
                         )  # try to parse json from string, and append if successful
                     except Exception:
                         # print(e)
@@ -125,9 +130,9 @@ try:
             # print(e)
             pass
 
-    returned_data = json.loads(
-        reconstructed
-    )  # when service response is received --> access it (as defined in srv-file)
+    # when service response is received --> access it (as defined in srv-file)
+    assert reconstructed is not None
+    returned_data = json.loads(reconstructed)
     if returned_data["values"] is None:
         print("response was None -> service was not available")
     else:

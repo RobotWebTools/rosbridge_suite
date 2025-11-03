@@ -6,9 +6,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.10'
 
@@ -21,8 +21,8 @@ jobs:
         include:
           # Test supported ROS 2 distributions
           # https://docs.ros.org/en/rolling/Releases.html
-          # NOTE: Humble does not work on the `ros2` branch, so it is tested in its own branch.
-          - ros: jazzy
+          # NOTE: Humble and Jazzy do not work on the `ros2` branch, so they are tested in their own branches.
+          - ros: kilted
             os: ubuntu-24.04
           - ros: rolling
             os: ubuntu-24.04
@@ -31,7 +31,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: ros_ws/src
 

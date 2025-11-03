@@ -1,10 +1,12 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 import socket
 import sys
 import time
 from random import randint
 
 from rosbridge_library.util import json
+
+# ruff: noqa: ANN001, ANN201
 
 # ##################### variables begin ########################################
 # these parameters should be changed to match the actual environment           #
@@ -16,11 +18,13 @@ max_msg_length = 20000  # bytes
 rosbridge_ip = "localhost"  # hostname or ip
 rosbridge_port = 9090  # port as integer
 
-service_type = "rosbridge_test_msgs/TestNestedService"  # make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+# make sure this matches an existing service type on rosbridge-server (in specified srv_module)
+service_type = "rosbridge_test_msgs/TestNestedService"
 service_name = "nested_srv"  # service name
 
 send_fragment_size = 1000
-# delay between sends to rosbridge is not needed anymore, if using my version of protocol (uses buffer to collect data from stream)
+# delay between sends to rosbridge is not needed anymore, if using my version of protocol
+# (uses buffer to collect data from stream)
 send_fragment_delay = 0.000  # 1
 receive_fragment_size = 10
 receive_message_intervall = 0.0
@@ -35,14 +39,14 @@ receive_message_intervall = 0.0
 
 def calculate_service_response(request):
     request_object = json.loads(request)  # parse string for service request
-    # args = request_object["args"]  # get parameter field (args)                   # unused variable
-    #    count = int(args["count"] )                                                # get parameter(s) as described in corresponding ROS srv-file
+    # args = request_object["args"]  # get parameter field (args)
+    # count = int(args["count"])  # get parameter(s) as described in corresponding ROS srv-file
     #
-    #    message = ""                                                               # calculate service response
-    #    for i in range(0,count):
-    #        message += str(chr(randint(32,126)))
-    #        if i% 100000 == 0:
-    #            print count - i, "bytes left to generate"
+    # message = ""  # calculate service response
+    # for i in range(0,count):
+    #     message += str(chr(randint(32,126)))
+    #     if i% 100000 == 0:
+    #         print count - i, "bytes left to generate"
 
     message = {"data": {"data": 42.0}}
 
@@ -57,10 +61,11 @@ def calculate_service_response(request):
     response_object = {
         "op": "service_response",
         "id": request_object["id"],
-        "data": service_response_data,  # put service response in "data"-field of response object (in this case it's twice "data", because response value is also named data (in srv-file)
+        # put service response in "data"-field of response object
+        # (in this case it's twice "data", because response value is also named data, in srv-file)
+        "data": service_response_data,
     }
-    response_message = json.dumps(response_object)
-    return response_message
+    return json.dumps(response_object)
 
 
 # ##################### service_calculation end ################################
@@ -80,7 +85,7 @@ def connect_tcp_socket():
     return tcp_sock
 
 
-def advertise_service():  # advertise service
+def advertise_service() -> None:  # advertise service
     advertise_message_object = {
         "op": "advertise_service",
         "type": service_type,
@@ -92,7 +97,7 @@ def advertise_service():  # advertise service
     tcp_socket.send(str(advertise_message))
 
 
-def unadvertise_service():  # unadvertise service
+def unadvertise_service() -> None:  # unadvertise service
     unadvertise_message_object = {"op": "unadvertise_service", "service": service_name}
     unadvertise_message = json.dumps(unadvertise_message_object)
     tcp_socket.send(str(unadvertise_message))
@@ -128,12 +133,13 @@ def wait_for_service_request():  # receive data from rosbridge
                     "}{"
                 )  # split buffer into fragments and re-fill with curly brackets
                 result = []
-                for fragment in result_string:
-                    if fragment[0] != "{":
-                        fragment = "{" + fragment
-                    if fragment[len(fragment) - 1] != "}":
-                        fragment = fragment + "}"
-                    result.append(json.loads(fragment))
+                for fragment_str in result_string:
+                    frag = fragment_str
+                    if frag[0] != "{":
+                        frag = "{" + frag
+                    if frag[len(frag) - 1] != "}":
+                        frag = frag + "}"
+                    result.append(json.loads(frag))
 
                 try:  # try to defragment when received all fragments
                     fragment_count = len(result)
@@ -162,14 +168,13 @@ def wait_for_service_request():  # receive data from rosbridge
             except Exception as e:
                 print("defrag_error:", buffer)
                 print(e)
-                pass
     except Exception:
         # print "network-error(?):", e
         pass
     return data
 
 
-def send_service_response(response):  # send response to rosbridge
+def send_service_response(response) -> None:  # send response to rosbridge
     tcp_socket.send(response)
 
 
@@ -246,7 +251,6 @@ try:  # allows to catch KeyboardInterrupt
                     )  # (not needed if using patched rosbridge protocol.py)
         except Exception as e:
             print(e)
-            pass
 except KeyboardInterrupt:
     try:
         unadvertise_service()  # unadvertise service

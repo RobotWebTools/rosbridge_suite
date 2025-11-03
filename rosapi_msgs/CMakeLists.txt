@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(rosapi_msgs)
 
-find_package(ament_cmake_ros REQUIRED)
+find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
@@ -23,6 +23,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/ServiceProviders.srv
   srv/ServiceRequestDetails.srv
   srv/ServiceResponseDetails.srv
+  srv/ActionGoalDetails.srv
+  srv/ActionResultDetails.srv
+  srv/ActionFeedbackDetails.srv
+  srv/ActionType.srv
   srv/Services.srv
   srv/ServicesForType.srv
   srv/ServiceType.srv

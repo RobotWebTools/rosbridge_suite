@@ -31,33 +31,44 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import fnmatch
+from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
 
+if TYPE_CHECKING:
+    from rclpy.node import Node
+
+    from rosbridge_library.protocol import Protocol
+
 
 class Registration:
-    """Keeps track of how many times a client has requested to advertise
-    a publisher.
+    """
+    Keeps track of how many times a client has requested to advertise a publisher.
 
     A client could advertise and unadvertise a topic multiple times, and we
     must make sure that the underlying publisher is only created and destroyed
     at the appropriate moments
-
     """
 
-    def __init__(self, client_id, topic, node_handle):
+    DUMMY_ADV_ID = "dummy_adv_id"
+
+    def __init__(self, client_id: str, topic: str, node_handle: Node) -> None:
         # Initialise variables
         self.client_id = client_id
         self.topic = topic
-        self.clients = {}
+        self.clients: dict[str, bool] = {}
         self.node_handle = node_handle
 
-    def unregister(self):
+    def unregister(self) -> None:
         manager.unregister(self.client_id, self.topic)
 
-    def register_advertisement(self, msg_type, adv_id=None, latch=False, queue_size=100):
+    def register_advertisement(
+        self, msg_type: str, adv_id: str | None = None, latch: bool = False, queue_size: int = 100
+    ) -> None:
         # Register with the publisher manager, propagating any exception
         manager.register(
             self.client_id,
@@ -68,26 +79,31 @@ class Registration:
             queue_size=queue_size,
         )
 
-        self.clients[adv_id] = True
+        if adv_id is not None:
+            self.clients[adv_id] = True
+        else:
+            # If no adv_id is provided, use a dummy one
+            self.clients[Registration.DUMMY_ADV_ID] = True
 
-    def unregister_advertisement(self, adv_id=None):
+    def unregister_advertisement(self, adv_id: str | None = None) -> None:
         if adv_id is None:
             self.clients.clear()
         elif adv_id in self.clients:
             del self.clients[adv_id]
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return len(self.clients) == 0
 
 
 class Advertise(Capability):
+    advertise_msg_fields = ((True, "topic", str), (True, "type", str))
+    unadvertise_msg_fields = ((True, "topic", str),)
 
-    advertise_msg_fields = [(True, "topic", str), (True, "type", str)]
-    unadvertise_msg_fields = [(True, "topic", str)]
+    parameter_names = ("topics_glob",)
 
-    topics_glob = None
+    topics_glob: list[str] | None = None
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
@@ -95,26 +111,22 @@ class Advertise(Capability):
         protocol.register_operation("advertise", self.advertise)
         protocol.register_operation("unadvertise", self.unadvertise)
 
-        # Initialize class variables
-        self._registrations = {}
+        self._registrations: dict[str, Registration] = {}
 
-        if protocol.parameters and "unregister_timeout" in protocol.parameters:
-            manager.unregister_timeout = protocol.parameters.get("unregister_timeout")
-
-    def advertise(self, message):
+    def advertise(self, message: dict[str, Any]) -> None:
         # Pull out the ID
-        aid = message.get("id", None)
+        aid = message.get("id")
 
         self.basic_type_check(message, self.advertise_msg_fields)
-        topic = message["topic"]
-        msg_type = message["type"]
-        latch = message.get("latch", False)
-        queue_size = message.get("queue_size", 100)
+        topic: str = message["topic"]
+        msg_type: str = message["type"]
+        latch: bool = message.get("latch", False)
+        queue_size: int = message.get("queue_size", 100)
 
-        if Advertise.topics_glob is not None and Advertise.topics_glob:
+        if self.topics_glob:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in Advertise.topics_glob:
+            for glob in self.topics_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",
@@ -139,17 +151,17 @@ class Advertise(Capability):
         # Register, propagating any exceptions
         self._registrations[topic].register_advertisement(msg_type, aid, latch, queue_size)
 
-    def unadvertise(self, message):
+    def unadvertise(self, message: dict[str, Any]) -> None:
         # Pull out the ID
-        aid = message.get("id", None)
+        aid: str | None = message.get("id")
 
         self.basic_type_check(message, self.unadvertise_msg_fields)
-        topic = message["topic"]
+        topic: str = message["topic"]
 
-        if Advertise.topics_glob is not None and Advertise.topics_glob:
+        if self.topics_glob:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in Advertise.topics_glob:
+            for glob in self.topics_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",
@@ -176,7 +188,7 @@ class Advertise(Capability):
             self._registrations[topic].unregister()
             del self._registrations[topic]
 
-    def finish(self):
+    def finish(self) -> None:
         for registration in self._registrations.values():
             registration.unregister()
         self._registrations.clear()

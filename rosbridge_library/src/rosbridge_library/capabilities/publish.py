@@ -31,19 +31,26 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import fnmatch
+from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
 
+if TYPE_CHECKING:
+    from rosbridge_library.protocol import Protocol
+
 
 class Publish(Capability):
+    publish_msg_fields = ((True, "topic", str),)
 
-    publish_msg_fields = [(True, "topic", str)]
+    parameter_names = ("topics_glob",)
 
-    topics_glob = None
+    topics_glob: list[str] | None = None
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
@@ -51,22 +58,19 @@ class Publish(Capability):
         protocol.register_operation("publish", self.publish)
 
         # Save the topics that are published on for the purposes of unregistering
-        self._published = {}
+        self._published: dict[str, bool] = {}
 
-        if protocol.parameters and "unregister_timeout" in protocol.parameters:
-            manager.unregister_timeout = protocol.parameters.get("unregister_timeout")
-
-    def publish(self, message):
+    def publish(self, message: dict[str, Any]) -> None:
         # Do basic type checking
         self.basic_type_check(message, self.publish_msg_fields)
-        topic = message["topic"]
-        latch = message.get("latch", False)
-        queue_size = message.get("queue_size", 100)
+        topic: str = message["topic"]
+        latch: bool = message.get("latch", False)
+        queue_size: int = message.get("queue_size", 100)
 
-        if Publish.topics_glob is not None and Publish.topics_glob:
+        if self.topics_glob:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in Publish.topics_glob:
+            for glob in self.topics_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",
@@ -94,7 +98,7 @@ class Publish(Capability):
         self._published[topic] = True
 
         # Get the message if one was provided
-        msg = message.get("msg", {})
+        msg: dict[str, Any] = message.get("msg", {})
 
         # Publish the message
         manager.publish(
@@ -106,7 +110,7 @@ class Publish(Capability):
             queue_size=queue_size,
         )
 
-    def finish(self):
+    def finish(self) -> None:
         client_id = self.protocol.client_id
         for topic in self._published:
             manager.unregister(client_id, topic)
