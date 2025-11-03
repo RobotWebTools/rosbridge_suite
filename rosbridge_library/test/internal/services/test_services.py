@@ -19,6 +19,7 @@ from rosbridge_library.internal.message_conversion import FieldTypeMismatchExcep
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from rcl_interfaces.srv import ListParameters_Request, ListParameters_Response
     from rclpy.client import Client
     from rclpy.service import Service
 
@@ -182,8 +183,8 @@ class TestServices(unittest.TestCase):
         self.node.declare_parameter("test_parameter", 1.0)
 
         # First, call the service the 'proper' way
-        p: Client[ListParameters.Request, ListParameters.Response] = self.node.create_client(
-            ListParameters,  # type: ignore[arg-type]
+        p: Client[ListParameters_Request, ListParameters_Response] = self.node.create_client(
+            ListParameters,
             self.node.get_name() + "/list_parameters",
         )
         p.wait_for_service(0.5)
@@ -212,8 +213,8 @@ class TestServices(unittest.TestCase):
         self.node.declare_parameter("test_parameter", 1.0)
 
         # First, call the service the 'proper' way
-        p: Client[ListParameters.Request, ListParameters.Response] = self.node.create_client(
-            ListParameters,  # type: ignore[arg-type]
+        p: Client[ListParameters_Request, ListParameters_Response] = self.node.create_client(
+            ListParameters,
             self.node.get_name() + "/list_parameters",
         )
         p.wait_for_service(0.5)

@@ -64,7 +64,7 @@ class TestCBORConversion(unittest.TestCase):
         # msg: ROSMessage
         # msg_type: type[ROSMessage]
         for msg_type in [Int8, Int16, Int32, Int64]:
-            msg = msg_type(data=-5)
+            msg = msg_type(data=-5)  # type: ignore[abstract]
             assert isinstance(msg, Int8 | Int16 | Int32 | Int64)
             extracted = extract_cbor_values(msg)
 
@@ -72,7 +72,7 @@ class TestCBORConversion(unittest.TestCase):
             self.assertEqual(type(extracted["data"]), int, f"type={msg_type}")
 
         for msg_type in [UInt8, UInt16, UInt32, UInt64]:
-            msg = msg_type(data=5)
+            msg = msg_type(data=5)  # type: ignore[abstract]
             assert isinstance(msg, UInt8 | UInt16 | UInt32 | UInt64)
             extracted = extract_cbor_values(msg)
 
@@ -80,7 +80,7 @@ class TestCBORConversion(unittest.TestCase):
             self.assertEqual(type(extracted["data"]), int, f"type={msg_type}")
 
         for msg_type in [Float32, Float64]:
-            msg = msg_type(data=2.3)
+            msg = msg_type(data=2.3)  # type: ignore[abstract]
             assert isinstance(msg, Float32 | Float64)
             extracted = extract_cbor_values(msg)
 
@@ -117,7 +117,7 @@ class TestCBORConversion(unittest.TestCase):
             UInt32MultiArray,
             UInt64MultiArray,
         ]:
-            msg = msg_type(data=[0, 1, 2])
+            msg = msg_type(data=[0, 1, 2])  # type: ignore[abstract]
             assert isinstance(
                 msg,
                 Int8MultiArray
