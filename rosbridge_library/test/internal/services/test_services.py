@@ -182,7 +182,7 @@ class TestServices(unittest.TestCase):
 
         # First, call the service the 'proper' way
         p = self.node.create_client(
-            ListParameters,  # type: ignore[arg-type]
+            ListParameters,
             self.node.get_name() + "/list_parameters",
         )
         p.wait_for_service(0.5)
@@ -212,7 +212,7 @@ class TestServices(unittest.TestCase):
 
         # First, call the service the 'proper' way
         p = self.node.create_client(
-            ListParameters,  # type: ignore[arg-type]
+            ListParameters,
             self.node.get_name() + "/list_parameters",
         )
         p.wait_for_service(0.5)

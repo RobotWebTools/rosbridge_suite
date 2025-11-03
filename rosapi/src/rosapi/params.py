@@ -141,7 +141,7 @@ async def _set_param(
 
     assert _node is not None
     client = _node.create_client(
-        SetParameters,  # type: ignore[arg-type]
+        SetParameters,
         f"{node_name}/set_parameters",
         callback_group=MutuallyExclusiveCallbackGroup(),
     )
@@ -202,7 +202,7 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     """
     assert _node is not None
     client = _node.create_client(
-        GetParameters,  # type: ignore[arg-type]
+        GetParameters,
         f"{node_name}/get_parameters",
         callback_group=MutuallyExclusiveCallbackGroup(),
     )
@@ -278,7 +278,7 @@ async def get_param_names(params_glob: str | None) -> list[str]:
             continue
 
         client = _node.create_client(
-            ListParameters,  # type: ignore[arg-type]
+            ListParameters,
             f"{node_name}/list_parameters",
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
