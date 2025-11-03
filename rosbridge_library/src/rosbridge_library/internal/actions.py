@@ -55,7 +55,7 @@ from rosbridge_library.internal.type_support import (
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from action_msgs.srv import CancelGoal
+    from action_msgs.srv import CancelGoal_Response
     from rclpy.action.client import ClientGoalHandle
     from rclpy.node import Node
     from rclpy.task import Future
@@ -172,7 +172,7 @@ class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
         )
         result_future.add_done_callback(self.get_result_cb)
 
-    def goal_cancel_cb(self, _: Future[CancelGoal.Response]) -> None:
+    def goal_cancel_cb(self, _: Future[CancelGoal_Response]) -> None:
         self.goal_canceled = True
 
     def send_goal(

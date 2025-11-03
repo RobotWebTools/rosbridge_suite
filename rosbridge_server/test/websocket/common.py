@@ -66,7 +66,7 @@ def generate_test_description() -> LaunchDescription:
 
 async def get_server_port(node: Node) -> int:
     """Return the port which the WebSocket server is running on."""
-    client: Client = node.create_client(GetParameters, "/rosbridge_websocket/get_parameters")  # type: ignore[arg-type]
+    client: Client = node.create_client(GetParameters, "/rosbridge_websocket/get_parameters")
     try:
         if not client.wait_for_service(5):
             msg = "GetParameters service not available"

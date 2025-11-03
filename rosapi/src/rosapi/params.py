@@ -46,6 +46,14 @@ from rosapi.async_helper import futures_wait_for
 from rosapi.proxy import get_nodes
 
 if TYPE_CHECKING:
+    from rcl_interfaces.srv import (
+        GetParameters_Request,
+        GetParameters_Response,
+        ListParameters_Request,
+        ListParameters_Response,
+        SetParameters_Request,
+        SetParameters_Response,
+    )
     from rclpy.client import Client
     from rclpy.node import Node
     from rclpy.task import Future
@@ -141,8 +149,8 @@ async def _set_param(
             setattr(parameter.value, _parameter_type_mapping[parameter_type], loads(value))
 
     assert _node is not None
-    client: Client[SetParameters.Request, SetParameters.Response] = _node.create_client(
-        SetParameters,  # type: ignore[arg-type]
+    client: Client[SetParameters_Request, SetParameters_Response] = _node.create_client(
+        SetParameters,
         f"{node_name}/set_parameters",
         callback_group=MutuallyExclusiveCallbackGroup(),
     )
@@ -202,8 +210,8 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     Internal helper function for get_param.
     """
     assert _node is not None
-    client: Client[GetParameters.Request, GetParameters.Response] = _node.create_client(
-        GetParameters,  # type: ignore[arg-type]
+    client: Client[GetParameters_Request, GetParameters_Response] = _node.create_client(
+        GetParameters,
         f"{node_name}/get_parameters",
         callback_group=MutuallyExclusiveCallbackGroup(),
     )
@@ -272,14 +280,14 @@ async def get_param_names(params_glob: str | None) -> list[str]:
 
     nodes = [get_absolute_node_name(node) for node in get_nodes()]
 
-    futures: list[tuple[str, Future[ListParameters.Response]]] = []
+    futures: list[tuple[str, Future[ListParameters_Response]]] = []
     clients = []
     for node_name in nodes:
         if node_name == _node.get_fully_qualified_name():
             continue
 
-        client: Client[ListParameters.Request, ListParameters.Response] = _node.create_client(
-            ListParameters,  # type: ignore[arg-type]
+        client: Client[ListParameters_Request, ListParameters_Response] = _node.create_client(
+            ListParameters,
             f"{node_name}/list_parameters",
             callback_group=MutuallyExclusiveCallbackGroup(),
         )

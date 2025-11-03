@@ -41,7 +41,7 @@ class TestAdvertiseService(unittest.TestCase):
             }
         )
         client: Client = node.create_client(
-            SetBool,  # type: ignore[arg-type]
+            SetBool,
             "/test_service",
         )
         client.wait_for_service()
