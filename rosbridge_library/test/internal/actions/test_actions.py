@@ -17,7 +17,6 @@ from rosbridge_library.internal import actions, message_conversion, ros_loader
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 
 if TYPE_CHECKING:
-    from rclpy.action.client import ClientGoalHandle
     from rclpy.action.server import ServerGoalHandle
     from rclpy.executors import Executor
     from rclpy.task import Future

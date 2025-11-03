@@ -5,7 +5,7 @@ import time
 import unittest
 from json import dumps, loads
 from threading import Thread
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup
