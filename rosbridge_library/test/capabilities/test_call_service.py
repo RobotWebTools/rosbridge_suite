@@ -21,27 +21,28 @@ from rosbridge_library.internal.exceptions import (
 from rosbridge_library.protocol import Protocol
 
 if TYPE_CHECKING:
+    from std_srvs.srv import SetBool_Request, SetBool_Response, Trigger_Request, Trigger_Response
     from rclpy.client import Client
     from rclpy.service import Service
 
 
 class TestCallService(unittest.TestCase):
-    def trigger_cb(self, _request: Trigger.Request, response: Trigger.Response) -> Trigger.Response:
+    def trigger_cb(self, _request: Trigger_Request, response: Trigger_Response) -> Trigger_Response:
         """Handle request for a test service with no arguments."""
         response.success = True
         response.message = "called trigger service successfully"
         return response
 
     def trigger_long_cb(
-        self, _request: Trigger.Request, response: Trigger.Response
-    ) -> Trigger.Response:
+        self, _request: Trigger_Request, response: Trigger_Response
+    ) -> Trigger_Response:
         """Handle request for a long running test service with no arguments."""
         time.sleep(0.5)
         response.success = True
         response.message = "called trigger service successfully"
         return response
 
-    def set_bool_cb(self, request: SetBool.Request, response: SetBool.Response) -> SetBool.Response:
+    def set_bool_cb(self, request: SetBool_Request, response: SetBool_Response) -> SetBool_Response:
         """Handle request for a test service with arguments."""
         response.success = request.data
         if request.data:
@@ -64,13 +65,13 @@ class TestCallService(unittest.TestCase):
 
         # Create service servers with a separate callback group
         self.cb_group = ReentrantCallbackGroup()
-        self.trigger_srv: Service[Trigger.Request, Trigger.Response] = self.node.create_service(
+        self.trigger_srv: Service[Trigger_Request, Trigger_Response] = self.node.create_service(
             Trigger,  # type: ignore[arg-type]
             self.node.get_name() + "/trigger",
             self.trigger_cb,
             callback_group=self.cb_group,
         )
-        self.trigger_long_srv: Service[Trigger.Request, Trigger.Response] = (
+        self.trigger_long_srv: Service[Trigger_Request, Trigger_Response] = (
             self.node.create_service(
                 Trigger,  # type: ignore[arg-type]
                 self.node.get_name() + "/trigger_long",
@@ -78,7 +79,7 @@ class TestCallService(unittest.TestCase):
                 callback_group=self.cb_group,
             )
         )
-        self.set_bool_srv: Service[SetBool.Request, SetBool.Response] = self.node.create_service(
+        self.set_bool_srv: Service[SetBool_Request, SetBool_Response] = self.node.create_service(
             SetBool,  # type: ignore[arg-type]
             self.node.get_name() + "/set_bool",
             self.set_bool_cb,
@@ -109,7 +110,7 @@ class TestCallService(unittest.TestCase):
         self.assertRaises(InvalidArgumentException, s.call_service, msg)
 
     def test_call_service_works(self) -> None:
-        client: Client[Trigger.Request, Trigger.Response] = self.node.create_client(
+        client: Client[Trigger_Request, Trigger_Response] = self.node.create_client(
             Trigger,  # type: ignore[arg-type]
             self.trigger_srv.srv_name,
         )
@@ -140,7 +141,7 @@ class TestCallService(unittest.TestCase):
         self.assertEqual(values["message"], "called trigger service successfully")
 
     def test_call_service_args(self) -> None:
-        client: Client[SetBool.Request, SetBool.Response] = self.node.create_client(
+        client: Client[SetBool_Request, SetBool_Response] = self.node.create_client(
             SetBool,  # type: ignore[arg-type]
             self.set_bool_srv.srv_name,
         )
@@ -178,7 +179,7 @@ class TestCallService(unittest.TestCase):
         self.assertEqual(values["message"], "set bool to true")
 
     def test_call_service_fails(self) -> None:
-        client: Client[Trigger.Request, Trigger.Response] = self.node.create_client(
+        client: Client[Trigger_Request, Trigger_Response] = self.node.create_client(
             Trigger,  # type: ignore[arg-type]
             self.trigger_srv.srv_name,
         )
@@ -215,7 +216,7 @@ class TestCallService(unittest.TestCase):
         self.assertFalse(received["msg"]["result"])
 
     def test_call_service_timeout(self) -> None:
-        client: Client[Trigger.Request, Trigger.Response] = self.node.create_client(
+        client: Client[Trigger_Request, Trigger_Response] = self.node.create_client(
             Trigger,  # type: ignore[arg-type]
             self.trigger_long_srv.srv_name,
         )

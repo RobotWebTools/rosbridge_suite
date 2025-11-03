@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
     from common import TestClientProtocol
     from rclpy.node import Node
-    # from rclpy.task import Future
+    from std_srvs.srv import SetBool_Request, SetBool_Response
 
 log.startLogging(sys.stderr)
 
@@ -32,7 +32,7 @@ class TestCallService(unittest.TestCase):
     async def test_one_call(
         self, node: Node, make_client: Callable[[], Awaitable[TestClientProtocol]]
     ) -> None:
-        def service_cb(req: SetBool.Request, res: SetBool.Response) -> SetBool.Response:
+        def service_cb(req: SetBool_Request, res: SetBool_Response) -> SetBool_Response:
             self.assertTrue(req.data)
             res.success = True
             res.message = "Hello, world!"
@@ -72,7 +72,7 @@ class TestCallService(unittest.TestCase):
 
         node.destroy_service(service)
 
-        def service_long_cb(req: SetBool.Request, res: SetBool.Response) -> SetBool.Response:
+        def service_long_cb(req: SetBool_Request, res: SetBool_Response) -> SetBool_Response:
             time.sleep(0.2)
             self.assertTrue(req.data)
             res.success = True

@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
     from common import TestClientProtocol
+    from example_interfaces.action._fibonacci import Fibonacci_Result
     from rclpy.action.server import ServerGoalHandle
     from rclpy.node import Node
 
@@ -33,7 +34,7 @@ class TestSendActionGoal(unittest.TestCase):
     def cancel_callback(self, _: ServerGoalHandle) -> CancelResponse:
         return CancelResponse.ACCEPT
 
-    def execute_callback(self, goal: ServerGoalHandle) -> Fibonacci.Result:
+    def execute_callback(self, goal: ServerGoalHandle) -> Fibonacci_Result:
         feedback_msg = Fibonacci.Feedback()
         feedback_msg.sequence = [0, 1]
 
