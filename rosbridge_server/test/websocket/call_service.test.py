@@ -39,7 +39,7 @@ class TestCallService(unittest.TestCase):
             return res
 
         service = node.create_service(
-            SetBool,  # type: ignore[arg-type]
+            SetBool,
             "/test_service",
             service_cb,
             callback_group=ReentrantCallbackGroup(),
@@ -80,7 +80,7 @@ class TestCallService(unittest.TestCase):
             return res
 
         service = node.create_service(
-            SetBool,  # type: ignore[arg-type]
+            SetBool,
             "/test_service_long",
             service_long_cb,
             callback_group=ReentrantCallbackGroup(),

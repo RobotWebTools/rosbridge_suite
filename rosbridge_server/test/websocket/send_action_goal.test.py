@@ -56,7 +56,7 @@ class TestSendActionGoal(unittest.TestCase):
     ) -> None:
         action_server = ActionServer(
             node,
-            Fibonacci,  # type: ignore[arg-type]
+            Fibonacci,
             "/test_fibonacci_action",
             execute_callback=self.execute_callback,
             cancel_callback=self.cancel_callback,  # type: ignore[arg-type]

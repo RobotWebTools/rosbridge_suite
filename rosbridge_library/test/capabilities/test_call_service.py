@@ -66,21 +66,21 @@ class TestCallService(unittest.TestCase):
         # Create service servers with a separate callback group
         self.cb_group = ReentrantCallbackGroup()
         self.trigger_srv: Service[Trigger_Request, Trigger_Response] = self.node.create_service(
-            Trigger,  # type: ignore[arg-type]
+            Trigger,
             self.node.get_name() + "/trigger",
             self.trigger_cb,
             callback_group=self.cb_group,
         )
         self.trigger_long_srv: Service[Trigger_Request, Trigger_Response] = (
             self.node.create_service(
-                Trigger,  # type: ignore[arg-type]
+                Trigger,
                 self.node.get_name() + "/trigger_long",
                 self.trigger_long_cb,
                 callback_group=self.cb_group,
             )
         )
         self.set_bool_srv: Service[SetBool_Request, SetBool_Response] = self.node.create_service(
-            SetBool,  # type: ignore[arg-type]
+            SetBool,
             self.node.get_name() + "/set_bool",
             self.set_bool_cb,
             callback_group=self.cb_group,
@@ -111,7 +111,7 @@ class TestCallService(unittest.TestCase):
 
     def test_call_service_works(self) -> None:
         client: Client[Trigger_Request, Trigger_Response] = self.node.create_client(
-            Trigger,  # type: ignore[arg-type]
+            Trigger,
             self.trigger_srv.srv_name,
         )
         assert client.wait_for_service(1.0)
@@ -142,7 +142,7 @@ class TestCallService(unittest.TestCase):
 
     def test_call_service_args(self) -> None:
         client: Client[SetBool_Request, SetBool_Response] = self.node.create_client(
-            SetBool,  # type: ignore[arg-type]
+            SetBool,
             self.set_bool_srv.srv_name,
         )
         assert client.wait_for_service(1.0)
@@ -180,7 +180,7 @@ class TestCallService(unittest.TestCase):
 
     def test_call_service_fails(self) -> None:
         client: Client[Trigger_Request, Trigger_Response] = self.node.create_client(
-            Trigger,  # type: ignore[arg-type]
+            Trigger,
             self.trigger_srv.srv_name,
         )
         assert client.wait_for_service(1.0)
@@ -217,7 +217,7 @@ class TestCallService(unittest.TestCase):
 
     def test_call_service_timeout(self) -> None:
         client: Client[Trigger_Request, Trigger_Response] = self.node.create_client(
-            Trigger,  # type: ignore[arg-type]
+            Trigger,
             self.trigger_long_srv.srv_name,
         )
         assert client.wait_for_service(1.0)
