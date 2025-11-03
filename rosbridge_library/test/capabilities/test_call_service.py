@@ -21,9 +21,9 @@ from rosbridge_library.internal.exceptions import (
 from rosbridge_library.protocol import Protocol
 
 if TYPE_CHECKING:
-    from std_srvs.srv import SetBool_Request, SetBool_Response, Trigger_Request, Trigger_Response
     from rclpy.client import Client
     from rclpy.service import Service
+    from std_srvs.srv import SetBool_Request, SetBool_Response, Trigger_Request, Trigger_Response
 
 
 class TestCallService(unittest.TestCase):
