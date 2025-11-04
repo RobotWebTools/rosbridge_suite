@@ -11,14 +11,13 @@ import rclpy
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
-from std_msgs.msg import String
-
 from rosbridge_library.capabilities import subscribe
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
     MissingArgumentException,
 )
 from rosbridge_library.protocol import Protocol
+from std_msgs.msg import String
 
 
 class TestSubscribe(unittest.TestCase):

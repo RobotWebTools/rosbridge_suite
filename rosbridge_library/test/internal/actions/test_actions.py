@@ -12,7 +12,6 @@ from example_interfaces.action import Fibonacci
 from rclpy.action import ActionClient, ActionServer
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
-
 from rosbridge_library.internal import actions, message_conversion, ros_loader
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 

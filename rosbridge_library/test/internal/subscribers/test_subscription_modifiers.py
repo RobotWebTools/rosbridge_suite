@@ -8,7 +8,6 @@ from typing import Any
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
-
 from rosbridge_library.internal.subscription_modifiers import (
     MessageHandler,
     QueueMessageHandler,

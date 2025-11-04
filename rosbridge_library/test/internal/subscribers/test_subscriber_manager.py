@@ -10,14 +10,13 @@ import rclpy
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
-from std_msgs.msg import String
-
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.topics import (
     TopicNotEstablishedException,
     TypeConflictException,
 )
 from rosbridge_library.util.ros import is_topic_subscribed
+from std_msgs.msg import String
 
 if TYPE_CHECKING:
     from rosbridge_library.internal.outgoing_message import OutgoingMessage

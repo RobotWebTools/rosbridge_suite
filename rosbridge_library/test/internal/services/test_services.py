@@ -12,7 +12,6 @@ import rclpy
 from rcl_interfaces.srv import ListParameters
 from rclpy.executors import Executor, SingleThreadedExecutor
 from rclpy.node import Node
-
 from rosbridge_library.internal import message_conversion, ros_loader, services
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 
@@ -20,7 +19,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from rclpy.service import Service
-
     from rosbridge_library.internal.type_support import ROSMessage
 
 
