@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.4.0 (2025-11-04)
+------------------
 * chore: Update pre-commit hooks (backport `#1090 <https://github.com/RobotWebTools/rosbridge_suite/issues/1090>`_) (`#1092 <https://github.com/RobotWebTools/rosbridge_suite/issues/1092>`_)
 * Fix mypy errors (backport `#1084 <https://github.com/RobotWebTools/rosbridge_suite/issues/1084>`_) (`#1085 <https://github.com/RobotWebTools/rosbridge_suite/issues/1085>`_)
 * feat: New parameter and cli arguments handling (backport `#1060 <https://github.com/RobotWebTools/rosbridge_suite/issues/1060>`_) (`#1081 <https://github.com/RobotWebTools/rosbridge_suite/issues/1081>`_)
