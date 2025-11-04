@@ -2,6 +2,20 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.0.0 (2025-11-04)
+------------------
+* chore: Update pre-commit hooks (`#1090 <https://github.com/RobotWebTools/rosbridge_suite/issues/1090>`_)
+* Fix mypy errors (`#1084 <https://github.com/RobotWebTools/rosbridge_suite/issues/1084>`_)
+* refactor: Add type annotations to all functions and methods (`#1069 <https://github.com/RobotWebTools/rosbridge_suite/issues/1069>`_)
+* fix: Change warn to warning (`#1067 <https://github.com/RobotWebTools/rosbridge_suite/issues/1067>`_)
+* refactor: Enable various ruff checks and fix lint errors (`#1059 <https://github.com/RobotWebTools/rosbridge_suite/issues/1059>`_)
+* chore: Use ruff to replace other linters used in pre-commit hook (`#1058 <https://github.com/RobotWebTools/rosbridge_suite/issues/1058>`_)
+* Add pydocstyle lint checks and fix rosdoc2 warnings (`#1056 <https://github.com/RobotWebTools/rosbridge_suite/issues/1056>`_)
+* fix: Clean up package dependencies (`#1053 <https://github.com/RobotWebTools/rosbridge_suite/issues/1053>`_)
+* feat: Add interface and service for retrieving action type (`#1046 <https://github.com/RobotWebTools/rosbridge_suite/issues/1046>`_)
+* fix: ament_mypy errors (`#1039 <https://github.com/RobotWebTools/rosbridge_suite/issues/1039>`_)
+* Contributors: Błażej Sowa, MNV Chaitanya Kumar, pascalauroboa
+
 2.3.0 (2025-05-19)
 ------------------
 * Handle extra IDL slots when doing array introspection (`#1031 <https://github.com/RobotWebTools/rosbridge_suite/issues/1031>`_)

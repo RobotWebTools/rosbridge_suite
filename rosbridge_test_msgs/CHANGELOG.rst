@@ -2,6 +2,11 @@
 Changelog for package rosbridge_test_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.0.0 (2025-11-04)
+------------------
+* fix: Clean up package dependencies (`#1053 <https://github.com/RobotWebTools/rosbridge_suite/issues/1053>`_)
+* Contributors: Błażej Sowa
+
 2.3.0 (2025-05-19)
 ------------------
 
