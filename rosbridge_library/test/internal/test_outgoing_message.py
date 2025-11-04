@@ -3,9 +3,8 @@ from __future__ import annotations
 
 import unittest
 
-from std_msgs.msg import String
-
 from rosbridge_library.internal.outgoing_message import OutgoingMessage
+from std_msgs.msg import String
 
 
 class TestOutgoingMessage(unittest.TestCase):
