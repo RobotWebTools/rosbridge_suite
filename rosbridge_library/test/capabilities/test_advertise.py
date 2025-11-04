@@ -9,7 +9,6 @@ from threading import Thread
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
-
 from rosbridge_library.capabilities.advertise import Advertise
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.exceptions import (

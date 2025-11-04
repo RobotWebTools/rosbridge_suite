@@ -11,14 +11,13 @@ import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
-from std_srvs.srv import SetBool, Trigger
-
 from rosbridge_library.capabilities.call_service import CallService
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
     MissingArgumentException,
 )
 from rosbridge_library.protocol import Protocol
+from std_srvs.srv import SetBool, Trigger
 
 if TYPE_CHECKING:
     from std_srvs.srv import SetBool_Request, SetBool_Response, Trigger_Request, Trigger_Response

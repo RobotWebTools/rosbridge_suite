@@ -10,11 +10,10 @@ import rclpy
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
-from std_msgs.msg import Int32, String
-
 from rosbridge_library.internal.subscribers import MultiSubscriber
 from rosbridge_library.internal.topics import TypeConflictException
 from rosbridge_library.util.ros import is_topic_subscribed
+from std_msgs.msg import Int32, String
 
 if TYPE_CHECKING:
     from rosbridge_library.internal.outgoing_message import OutgoingMessage

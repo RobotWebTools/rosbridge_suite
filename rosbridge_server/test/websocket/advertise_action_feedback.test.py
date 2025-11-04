@@ -21,7 +21,6 @@ if TYPE_CHECKING:
     from common import TestClientProtocol
     from rclpy.node import Node
     from rclpy.task import Future
-
     from rosbridge_library.internal.type_support import FeedbackMessage
 
 log.startLogging(sys.stderr)
