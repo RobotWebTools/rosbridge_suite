@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 from builtin_interfaces.msg import Time as TimeMsg
 from rclpy.serialization import deserialize_message, serialize_message
-
 from rosbridge_library.internal import message_conversion, ros_loader
 
 if TYPE_CHECKING:
@@ -150,21 +149,21 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(int16, "std_msgs/Int16")
             self.do_primitive_test(int16, "std_msgs/Int32")
             self.do_primitive_test(int16, "std_msgs/Int64")
-            self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/Int8")
+            self.assertRaises(AssertionError, self.do_primitive_test, int16, "std_msgs/Int8")
 
         int32s = [-2147483647, 2147483647]
         for int32 in int32s:
             self.do_primitive_test(int32, "std_msgs/Int32")
             self.do_primitive_test(int32, "std_msgs/Int64")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Int8")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Int16")
+            self.assertRaises(AssertionError, self.do_primitive_test, int32, "std_msgs/Int8")
+            self.assertRaises(AssertionError, self.do_primitive_test, int32, "std_msgs/Int16")
 
         int64s = [-9223372036854775807, 9223372036854775807]
         for int64 in int64s:
             self.do_primitive_test(int64, "std_msgs/Int64")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int8")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int16")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int32")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/Int8")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/Int16")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/Int32")
 
     def test_unsigned_int_base_msgs(self) -> None:
         int8s = range(256)
@@ -180,16 +179,16 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(int16, "std_msgs/UInt16")
             self.do_primitive_test(int16, "std_msgs/UInt32")
             self.do_primitive_test(int16, "std_msgs/UInt64")
-            self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/Char")
-            self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/UInt8")
+            self.assertRaises(AssertionError, self.do_primitive_test, int16, "std_msgs/Char")
+            self.assertRaises(AssertionError, self.do_primitive_test, int16, "std_msgs/UInt8")
 
         int32s = [2147483647, 2147483648, 4294967295]
         for int32 in int32s:
             self.do_primitive_test(int32, "std_msgs/UInt32")
             self.do_primitive_test(int32, "std_msgs/UInt64")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Char")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/UInt8")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/UInt16")
+            self.assertRaises(AssertionError, self.do_primitive_test, int32, "std_msgs/Char")
+            self.assertRaises(AssertionError, self.do_primitive_test, int32, "std_msgs/UInt8")
+            self.assertRaises(AssertionError, self.do_primitive_test, int32, "std_msgs/UInt16")
 
         int64s = [
             4294967296,
@@ -199,10 +198,10 @@ class TestMessageConversion(unittest.TestCase):
         ]
         for int64 in int64s:
             self.do_primitive_test(int64, "std_msgs/UInt64")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Char")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt8")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt16")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt32")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/Char")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/UInt8")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/UInt16")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/UInt32")
 
     def test_byte_base_msg(self) -> None:
         int8s = range(256)
