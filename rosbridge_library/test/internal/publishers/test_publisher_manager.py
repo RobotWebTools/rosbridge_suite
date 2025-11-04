@@ -10,8 +10,6 @@ import rclpy
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
-from std_msgs.msg import String
-
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 from rosbridge_library.internal.publishers import manager
 from rosbridge_library.internal.topics import (
@@ -19,6 +17,7 @@ from rosbridge_library.internal.topics import (
     TypeConflictException,
 )
 from rosbridge_library.util.ros import is_topic_published
+from std_msgs.msg import String
 
 # Reduce this from its default of 10 to speed up tests
 manager.unregister_timeout = 1.0
