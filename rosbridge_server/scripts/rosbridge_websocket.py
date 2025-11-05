@@ -97,9 +97,9 @@ PROTOCOL_PARAMETERS = (
     ("topics_glob", str, "[*]", "Glob patterns for topics publish/subscribe."),
     ("services_glob", str, "[*]", "Glob patterns for services call/advertise."),
     ("actions_glob", str, "[*]", "Glob patterns for actions send/advertise."),
-    ("call_services_in_new_thread", bool, True, "Call services in a new threads."),
-    ("default_call_service_timeout", float, 5.0, "Default timeout for service calls."),
-    ("send_action_goals_in_new_thread", bool, True, "Send action goals in a new threads."),
+    ("call_services_in_new_thread", bool, False, "Call services in a new threads."),
+    ("default_call_service_timeout", float, 0.0, "Default timeout for service calls."),
+    ("send_action_goals_in_new_thread", bool, False, "Send action goals in a new threads."),
 )
 
 
@@ -132,6 +132,7 @@ class RosbridgeWebsocketNode(Node):
         RosbridgeWebSocket.client_manager = ClientManager(self)
 
         self._handle_parameters()
+        self._check_deprecated_parameters()
 
         # To be able to access the list of topics and services,
         # you must be able to access the rosapi services.
@@ -225,6 +226,31 @@ class RosbridgeWebsocketNode(Node):
                     f"Unable to start server: {e} Retrying in {self.retry_startup_delay}s."
                 )
                 time.sleep(self.retry_startup_delay)
+
+    def _check_deprecated_parameters(self) -> None:
+        if self.protocol_parameters["default_call_service_timeout"] == 0.0:
+            self.get_logger().warn(
+                "The 'default_call_service_timeout' parameter is currently set to 0.0, "
+                "which means service calls will block indefinitely if no response is received. "
+                "Please note that in the Jazzy and later releases, the default value for this parameter "
+                "will be updated to 5.0 seconds."
+            )
+
+        if self.protocol_parameters["call_services_in_new_thread"] is False:
+            self.get_logger().warn(
+                "The 'call_services_in_new_thread' parameter is currently set to False, "
+                "which means service calls will block the main thread. "
+                "Please note that in the Jazzy and later releases, the default value for this parameter "
+                "will be updated to True."
+            )
+
+        if self.protocol_parameters["send_action_goals_in_new_thread"] is False:
+            self.get_logger().warn(
+                "The 'send_action_goals_in_new_thread' parameter is currently set to False, "
+                "which means sending action goals will block the main thread. "
+                "Please note that in the Jazzy and later releases, the default value for this parameter "
+                "will be updated to True."
+            )
 
 
 def main() -> None:
