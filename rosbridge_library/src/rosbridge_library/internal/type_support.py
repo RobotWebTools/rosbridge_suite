@@ -1,6 +1,6 @@
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2023, Willow Garage, Inc.
+# Copyright (c) 2025, Fictionlab sp. z o.o.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,23 +32,60 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol, TypeVar, runtime_checkable
 
 if TYPE_CHECKING:
-    from rclpy.node import Node
+    from uuid import UUID
 
 
-def is_topic_published(node: Node, topic_name: str) -> bool:
-    """Check if a topic is published on a node."""
-    published_topic_data = node.get_publisher_names_and_types_by_node(
-        node.get_name(), node.get_namespace()
-    )
-    return any(topic[0] == topic_name for topic in published_topic_data)
+@runtime_checkable
+class ROSMessage(Protocol):
+    """Protocol for ROS message types."""
+
+    __slots__: list[str]
+    _fields_and_field_types: dict[str, str]
+
+    def get_fields_and_field_types(self) -> dict[str, str]:
+        """Return a dictionary of field names to field types."""
 
 
-def is_topic_subscribed(node: Node, topic_name: str) -> bool:
-    """Check if a topic is subscribed to by a node."""
-    subscribed_topic_data = node.get_subscriber_names_and_types_by_node(
-        node.get_name(), node.get_namespace()
-    )
-    return any(topic[0] == topic_name for topic in subscribed_topic_data)
+@runtime_checkable
+class ROSService(Protocol):
+    """Protocol for ROS service types."""
+
+    Request: type[ROSMessage]
+    Response: type[ROSMessage]
+    Event: type[ROSMessage]
+
+
+@runtime_checkable
+class ROSAction(Protocol):
+    """Protocol for ROS action types."""
+
+    Goal: type[ROSMessage]
+    Result: type[ROSMessage]
+    Feedback: type[ROSMessage]
+
+
+# Type variables for ROS types
+ROSMessageT = TypeVar("ROSMessageT", bound=ROSMessage)
+ROSServiceT = TypeVar("ROSServiceT", bound=ROSService)
+ROSServiceRequestT = TypeVar("ROSServiceRequestT", bound=ROSMessage)
+ROSServiceResponseT = TypeVar("ROSServiceResponseT", bound=ROSMessage)
+ROSActionT = TypeVar("ROSActionT", bound=ROSAction)
+ROSActionGoalT = TypeVar("ROSActionGoalT", bound=ROSMessage)
+ROSActionResultT = TypeVar("ROSActionResultT", bound=ROSMessage)
+ROSActionFeedbackT = TypeVar("ROSActionFeedbackT", bound=ROSMessage)
+
+
+# Backports of rclpy types for type checking
+
+
+class GetResultServiceResponse(ROSMessage, Protocol[ROSActionResultT]):
+    status: int
+    result: ROSActionResultT
+
+
+class FeedbackMessage(ROSMessage, Protocol[ROSActionFeedbackT]):
+    goal_id: UUID
+    feedback: ROSActionFeedbackT

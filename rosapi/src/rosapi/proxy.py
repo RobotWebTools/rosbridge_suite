@@ -30,6 +30,10 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from ros2action.api import get_action_names_and_types
 from ros2interface.api import type_completer
 from ros2node.api import (
@@ -43,10 +47,15 @@ from ros2topic.api import get_topic_names, get_topic_names_and_types
 
 from .glob_helper import any_match, filter_globs
 
-_node = None
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from rclpy.node import Node
+
+_node: Node | None = None
 
 
-def init(node):
+def init(node: Node) -> None:
     """
     Initialize proxy module with a rclpy.node.Node for further use.
 
@@ -59,24 +68,28 @@ def init(node):
     _node = node
 
 
-def get_topics(topics_glob, include_hidden=False):
+def get_topics(topics_glob: list[str], include_hidden: bool = False) -> list[str]:
     """Return a list of all the active topics in the ROS system."""
     topic_names = get_topic_names(node=_node, include_hidden_topics=include_hidden)
     return filter_globs(topics_glob, topic_names)
 
 
-def get_interfaces():
+def get_interfaces() -> list[str]:
     """Return a list of all the types in the ROS system."""
     return type_completer()
 
 
-def get_topics_and_types(topics_glob, include_hidden=False):
+def get_topics_and_types(
+    topics_glob: list[str], include_hidden: bool = False
+) -> tuple[list[str], list[str]]:
     return get_publications_and_types(
         topics_glob, get_topic_names_and_types, include_hidden_topics=include_hidden
     )
 
 
-def get_topics_for_type(topic_type, topics_glob, include_hidden=False):
+def get_topics_for_type(
+    topic_type: str, topics_glob: list[str], include_hidden: bool = False
+) -> list[str]:
     topic_names_and_types = get_topic_names_and_types(
         node=_node, include_hidden_topics=include_hidden
     )
@@ -85,14 +98,16 @@ def get_topics_for_type(topic_type, topics_glob, include_hidden=False):
     return filter_globs(topics_glob, topics_for_type)
 
 
-def get_services(services_glob, include_hidden=False):
+def get_services(services_glob: list[str], include_hidden: bool = False) -> list[str]:
     """Return a list of all the services advertised in the ROS system."""
     # Filter the list of services by whether they are public before returning.
     service_names = get_service_names(node=_node, include_hidden_services=include_hidden)
     return filter_globs(services_glob, service_names)
 
 
-def get_services_and_types(services_glob, include_hidden=False):
+def get_services_and_types(
+    services_glob: list[str], include_hidden: bool = False
+) -> tuple[list[str], list[str]]:
     return get_publications_and_types(
         services_glob,
         get_service_names_and_types,
@@ -100,7 +115,9 @@ def get_services_and_types(services_glob, include_hidden=False):
     )
 
 
-def get_services_for_type(service_type, services_glob, include_hidden=False):
+def get_services_for_type(
+    service_type: str, services_glob: list[str], include_hidden: bool = False
+) -> list[str]:
     """Return a list of services as specific service type."""
     # Filter the list of services by whether they are public before returning.
     services_names_and_types = get_service_names_and_types(
@@ -113,7 +130,11 @@ def get_services_for_type(service_type, services_glob, include_hidden=False):
     return filter_globs(services_glob, services_for_type)
 
 
-def get_publications_and_types(glob, getter_function, **include_hidden_publications):
+def get_publications_and_types(
+    glob: list[str],
+    getter_function: Callable,
+    **include_hidden_publications: bool,
+) -> tuple[list[str], list[str]]:
     """
     Get a list of topic or service publications and their types.
 
@@ -138,13 +159,15 @@ def get_publications_and_types(glob, getter_function, **include_hidden_publicati
     return filtered_publications, filtered_publication_types
 
 
-def get_nodes(include_hidden=False):
+def get_nodes(include_hidden: bool = False) -> list[str]:
     """Return a list of all the nodes registered in the ROS system."""
     node_names = get_node_names(node=_node, include_hidden_nodes=include_hidden)
     return [node_name.full_name for node_name in node_names]
 
 
-def get_node_info(node_name, include_hidden=False):
+def get_node_info(
+    node_name: str, include_hidden: bool = False
+) -> tuple[list[str], list[str], list[str]] | None:
     node_names = get_node_names(node=_node, include_hidden_nodes=include_hidden)
     if node_name in [n.full_name for n in node_names]:
         # Only the name of each item is required as output.
@@ -156,31 +179,31 @@ def get_node_info(node_name, include_hidden=False):
     return None
 
 
-def get_node_publications(node_name):
+def get_node_publications(node_name: str) -> list[str]:
     """Return a list of topic names that are being published by the specified node."""
     publishers = get_publisher_info(node=_node, remote_node_name=node_name)
     return [publisher.name for publisher in publishers]
 
 
-def get_node_subscriptions(node_name):
+def get_node_subscriptions(node_name: str) -> list[str]:
     """Return a list of topic names that are being subscribed by the specified node."""
     subscribers = get_subscriber_info(node=_node, remote_node_name=node_name)
     return [subscriber.name for subscriber in subscribers]
 
 
-def get_node_services(node_name):
+def get_node_services(node_name: str) -> list[str]:
     """Return a list of service names that are being hosted by the specified node."""
     services = get_service_server_info(node=_node, remote_node_name=node_name)
     return [service.name for service in services]
 
 
-def get_node_service_types(node_name):
+def get_node_service_types(node_name: str) -> list[str]:
     """Return a list of service types that are being hosted by the specified node."""
     services = get_service_server_info(node=_node, remote_node_name=node_name)
     return [service.types[0] for service in services]
 
 
-def get_topic_type(topic, topics_glob):
+def get_topic_type(topic: str, topics_glob: list[str]) -> str:
     """Return the type of the specified ROS topic."""
     # Note: this doesn't consider hidden topics.
     topics, types = get_topics_and_types(topics_glob)
@@ -191,7 +214,7 @@ def get_topic_type(topic, topics_glob):
         return ""
 
 
-def filter_action_servers(topics):
+def filter_action_servers(topics: list[str]) -> list[str]:
     """Return a list of action servers."""
     # Note(@jubeira): filtering by topic should be enough; services can be taken into account as well.
     action_servers = []
@@ -220,7 +243,7 @@ def filter_action_servers(topics):
     return action_servers
 
 
-def get_service_type(service, services_glob):
+def get_service_type(service: str, services_glob: list[str]) -> str:
     """Return the type of the specified ROS service,."""
     # Note: this doesn't consider hidden services.
     services, types = get_services_and_types(services_glob)
@@ -231,7 +254,9 @@ def get_service_type(service, services_glob):
         return ""
 
 
-def get_channel_info(channel, channels_glob, getter_function, include_hidden=False):
+def get_channel_info(
+    channel: str, channels_glob: list[str], getter_function: Callable, include_hidden: bool = False
+) -> list[str]:
     """
     Return a list of node names that are publishing on a specified channel.
 
@@ -259,21 +284,23 @@ def get_channel_info(channel, channels_glob, getter_function, include_hidden=Fal
     return []
 
 
-def get_publishers(topic, topics_glob, include_hidden=False):
+def get_publishers(topic: str, topics_glob: list[str], include_hidden: bool = False) -> list[str]:
     """Return a list of node names that are publishing the specified topic."""
     return get_channel_info(
         topic, topics_glob, get_node_publications, include_hidden=include_hidden
     )
 
 
-def get_subscribers(topic, topics_glob, include_hidden=False):
+def get_subscribers(topic: str, topics_glob: list[str], include_hidden: bool = False) -> list[str]:
     """Return a list of node names that are subscribing to the specified topic."""
     return get_channel_info(
         topic, topics_glob, get_node_subscriptions, include_hidden=include_hidden
     )
 
 
-def get_service_providers(queried_type, services_glob, include_hidden=False):
+def get_service_providers(
+    queried_type: str, services_glob: list[str], include_hidden: bool = False
+) -> list[str]:
     """Return a list of node names that are advertising a service with the specified type."""
     return get_channel_info(
         queried_type,
@@ -283,7 +310,9 @@ def get_service_providers(queried_type, services_glob, include_hidden=False):
     )
 
 
-def get_service_node(queried_type, services_glob, include_hidden=False):
+def get_service_node(
+    queried_type: str, services_glob: list[str], include_hidden: bool = False
+) -> str:
     """Return the name of the node that is providing the given service, or empty string."""
     node_name = get_channel_info(
         queried_type, services_glob, get_node_services, include_hidden=include_hidden
@@ -293,13 +322,13 @@ def get_service_node(queried_type, services_glob, include_hidden=False):
     return ""
 
 
-def get_action_type(action_name, include_hidden=False):
+def get_action_type(action_name: str) -> str:
     """
     Return the type of the specified ROS action.
 
     If the action does not exist, an empty string is returned.
     """
-    names_and_types = get_action_names_and_types(node=_node, include_hidden_actions=include_hidden)
+    names_and_types = get_action_names_and_types(node=_node)
 
     for name, types in names_and_types:
         if name == action_name and types:

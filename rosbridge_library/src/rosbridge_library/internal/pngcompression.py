@@ -30,6 +30,8 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 from base64 import standard_b64decode, standard_b64encode
 from io import BytesIO
 from math import ceil, floor, sqrt
@@ -37,7 +39,7 @@ from math import ceil, floor, sqrt
 from PIL import Image
 
 
-def encode(string):
+def encode(string: str) -> str:
     r"""
     PNG-compress the string in a square RGB image padded with '\n'.
 
@@ -56,7 +58,7 @@ def encode(string):
     return encoded.decode()
 
 
-def decode(string):
+def decode(string: str) -> str:
     r"""b64 decode the string, then PNG-decompress and remove the '\n' padding."""
     decoded = standard_b64decode(string)
     buff = BytesIO(decoded)

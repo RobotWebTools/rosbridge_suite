@@ -30,14 +30,23 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import fnmatch
+from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capability import Capability
-from rosbridge_library.protocol import Protocol
+
+if TYPE_CHECKING:
+    from rosbridge_library.protocol import Protocol
 
 
 class UnadvertiseAction(Capability):
-    actions_glob = None
+    unadvertise_action_msg_fields = ((True, "action", str),)
+
+    parameter_names = ("actions_glob",)
+
+    actions_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
@@ -46,17 +55,19 @@ class UnadvertiseAction(Capability):
         # Register the operations that this capability provides
         protocol.register_operation("unadvertise_action", self.unadvertise_action)
 
-    def unadvertise_action(self, message: dict) -> None:
-        # parse the message
-        action_name = message["action"]
+    def unadvertise_action(self, message: dict[str, Any]) -> None:
+        self.basic_type_check(message, self.unadvertise_action_msg_fields)
 
-        if UnadvertiseAction.actions_glob is not None and UnadvertiseAction.actions_glob:
+        # parse the message
+        action_name: str = message["action"]
+
+        if self.actions_glob:
             self.protocol.log(
                 "debug",
                 f"Action security glob enabled, checking action: {action_name}",
             )
             match = False
-            for glob in UnadvertiseAction.actions_glob:
+            for glob in self.actions_glob:
                 if fnmatch.fnmatch(action_name, glob):
                     self.protocol.log(
                         "debug",

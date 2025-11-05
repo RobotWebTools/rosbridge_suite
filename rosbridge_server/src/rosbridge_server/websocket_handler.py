@@ -30,13 +30,17 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import sys
 import threading
 import traceback
 import uuid
 from collections import deque
 from functools import partial, wraps
+from typing import TYPE_CHECKING, ClassVar, ParamSpec, TypeVar
 
+from rclpy.node import Node
 from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
@@ -44,20 +48,30 @@ from tornado.websocket import WebSocketClosedError, WebSocketHandler
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
 from rosbridge_library.util import bson
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from .client_manager import ClientManager
+
 _io_loop = IOLoop.instance()
 
 
-def _log_exception():
+def _log_exception() -> None:
     """Log the most recent exception to ROS."""
     exc = traceback.format_exception(*sys.exc_info())
+    assert RosbridgeWebSocket.node_handle is not None
     RosbridgeWebSocket.node_handle.get_logger().error("".join(exc))
 
 
-def log_exceptions(f):
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def log_exceptions(f: Callable[P, R]) -> Callable[P, R]:
     """Log exceptions to ROS."""
 
     @wraps(f)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         try:
             return f(*args, **kwargs)
         except Exception:
@@ -75,16 +89,16 @@ class IncomingQueue(threading.Thread):
     and vice versa.
     """
 
-    def __init__(self, protocol):
+    def __init__(self, protocol: RosbridgeProtocol) -> None:
         threading.Thread.__init__(self)
         self.daemon = True
-        self.queue = deque()
+        self.queue: deque[str] = deque()
         self.protocol = protocol
 
         self.cond = threading.Condition()
         self._finished = False
 
-    def finish(self):
+    def finish(self) -> None:
         """Clear the queue and do not accept further messages."""
         with self.cond:
             self._finished = True
@@ -92,12 +106,12 @@ class IncomingQueue(threading.Thread):
                 self.queue.popleft()
             self.cond.notify()
 
-    def push(self, msg):
+    def push(self, msg: str) -> None:
         with self.cond:
             self.queue.append(msg)
             self.cond.notify()
 
-    def run(self):
+    def run(self) -> None:
         while True:
             with self.cond:
                 if len(self.queue) == 0 and not self._finished:
@@ -114,33 +128,33 @@ class IncomingQueue(threading.Thread):
 
 
 class RosbridgeWebSocket(WebSocketHandler):
-    clients_connected = 0
-    use_compression = False
+    # Class variable to track the number of connected client
+    clients_connected: ClassVar[int] = 0
 
-    # The following are passed on to RosbridgeProtocol
-    # defragmentation.py:
-    fragment_timeout = 600  # seconds
-    # protocol.py:
-    delay_between_messages = 0  # seconds
-    max_message_size = 10000000  # bytes
-    unregister_timeout = 10.0  # seconds
-    bson_only_mode = False
-    node_handle = None
+    # Class variable to manage connected clients
+    client_manager: ClassVar[ClientManager | None] = None
+
+    # Node handle to pass to RosbridgeProtocol when opening a connection
+    node_handle: ClassVar[Node | None] = None
+
+    # Parameters to pass to RosbridgeProtocol when opening a connection
+    protocol_parameters: ClassVar = {}
+
+    # Parameters for the WebSocket handler
+    use_compression: ClassVar[bool] = False
+
+    client_id: uuid.UUID
+    protocol: RosbridgeProtocol
+    incoming_queue: IncomingQueue
 
     @log_exceptions
-    def open(self):
+    def open(self, *args: str, **kwargs: str) -> None:  # noqa: ARG002
         cls = self.__class__
-        parameters = {
-            "fragment_timeout": cls.fragment_timeout,
-            "delay_between_messages": cls.delay_between_messages,
-            "max_message_size": cls.max_message_size,
-            "unregister_timeout": cls.unregister_timeout,
-            "bson_only_mode": cls.bson_only_mode,
-        }
+        assert isinstance(cls.node_handle, Node), "Node handle was not set"
         try:
             self.client_id = uuid.uuid4()
             self.protocol = RosbridgeProtocol(
-                self.client_id, cls.node_handle, parameters=parameters
+                self.client_id, cls.node_handle, parameters=cls.protocol_parameters
             )
             self.incoming_queue = IncomingQueue(self.protocol)
             self.incoming_queue.start()
@@ -148,6 +162,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             self.set_nodelay(True)
             cls.clients_connected += 1
             if cls.client_manager:
+                assert self.request.remote_ip is not None
                 cls.client_manager.add_client(self.client_id, self.request.remote_ip)
         except Exception as exc:
             cls.node_handle.get_logger().error(
@@ -159,23 +174,25 @@ class RosbridgeWebSocket(WebSocketHandler):
         )
 
     @log_exceptions
-    def on_message(self, message):
+    def on_message(self, message: str | bytes) -> None:
         if isinstance(message, bytes):
             message = message.decode("utf-8")
         self.incoming_queue.push(message)
 
     @log_exceptions
-    def on_close(self):
+    def on_close(self) -> None:
         cls = self.__class__
+        assert isinstance(cls.node_handle, Node), "Node handle was not set"
         cls.clients_connected -= 1
         if cls.client_manager:
+            assert self.request.remote_ip is not None
             cls.client_manager.remove_client(self.client_id, self.request.remote_ip)
         cls.node_handle.get_logger().info(
             f"Client disconnected. {cls.clients_connected} clients total."
         )
         self.incoming_queue.finish()
 
-    def send_message(self, message, compression="none"):
+    def send_message(self, message: bson.BSON | bytearray | str, compression: str = "none") -> None:
         if isinstance(message, bson.BSON) or compression in ["cbor", "cbor-raw"]:
             binary = True
         else:
@@ -183,8 +200,9 @@ class RosbridgeWebSocket(WebSocketHandler):
 
         _io_loop.add_callback(partial(self.prewrite_message, message, binary))
 
-    async def prewrite_message(self, message, binary):
+    async def prewrite_message(self, message: bson.BSON | bytearray | str, binary: bool) -> None:
         cls = self.__class__
+        assert isinstance(cls.node_handle, Node), "Node handle was not set"
         try:
             await self.write_message(message, binary)
         except WebSocketClosedError:
@@ -202,11 +220,11 @@ class RosbridgeWebSocket(WebSocketHandler):
             _log_exception()
 
     @log_exceptions
-    def check_origin(self, origin):  # noqa: ARG002
+    def check_origin(self, origin: str) -> bool:  # noqa: ARG002
         return True
 
     @log_exceptions
-    def get_compression_options(self):
+    def get_compression_options(self) -> dict | None:
         # If this method returns None (the default), compression will be disabled.
         # If it returns a dict (even an empty one), it will be enabled.
         cls = self.__class__

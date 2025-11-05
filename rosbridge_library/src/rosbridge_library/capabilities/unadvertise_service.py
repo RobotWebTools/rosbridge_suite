@@ -1,31 +1,41 @@
+from __future__ import annotations
+
 import fnmatch
+from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capability import Capability
 
+if TYPE_CHECKING:
+    from rosbridge_library.protocol import Protocol
+
 
 class UnadvertiseService(Capability):
-    # unadvertise_service_msg_fields = [(True, "service", (str, unicode))]
+    unadvertise_service_msg_fields = ((True, "service", str),)
 
-    services_glob = None
+    parameter_names = ("services_glob",)
 
-    def __init__(self, protocol):
+    services_glob: list[str] | None = None
+
+    def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
         # Register the operations that this capability provides
         protocol.register_operation("unadvertise_service", self.unadvertise_service)
 
-    def unadvertise_service(self, message):
-        # parse the message
-        service_name = message["service"]
+    def unadvertise_service(self, message: dict[str, Any]) -> None:
+        self.basic_type_check(message, self.unadvertise_service_msg_fields)
 
-        if UnadvertiseService.services_glob is not None and UnadvertiseService.services_glob:
+        # parse the message
+        service_name: str = message["service"]
+
+        if self.services_glob:
             self.protocol.log(
                 "debug",
                 "Service security glob enabled, checking service: " + service_name,
             )
             match = False
-            for glob in UnadvertiseService.services_glob:
+            for glob in self.services_glob:
                 if fnmatch.fnmatch(service_name, glob):
                     self.protocol.log(
                         "debug",
