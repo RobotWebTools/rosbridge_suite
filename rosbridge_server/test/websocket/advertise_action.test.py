@@ -59,7 +59,7 @@ class TestAdvertiseAction(unittest.TestCase):
         )
         client: ActionClient = ActionClient(
             node,
-            Fibonacci,  # type: ignore[arg-type]
+            Fibonacci,
             "/test_fibonacci_action",
         )
         client.wait_for_server()
