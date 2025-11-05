@@ -374,7 +374,7 @@ def _loads_tb(fp, tb, limit=None, depth=0, returntags=False):
         pf = struct.unpack_from("!d", data, 0)
         return (pf[0], 9)
 
-    tag, tag_aux, aux, bytes_read = _tag_aux(fp, tb)
+    tag, tag_aux, aux, bytes_read = _tag_aux(fp, tb)  # noqa: RUF059
 
     if tag == CBOR_UINT:
         return (aux, bytes_read)
@@ -433,7 +433,7 @@ def loads_bytes(fp, aux, btag=CBOR_BYTES):
         if tb == CBOR_BREAK:
             total_bytes_read += 1
             break
-        tag, tag_aux, aux, bytes_read = _tag_aux(fp, tb)
+        tag, tag_aux, aux, bytes_read = _tag_aux(fp, tb)  # noqa: RUF059
         assert tag == btag, "variable length value contains unexpected component"
         ob = fp.read(aux)
         chunklist.append(ob)

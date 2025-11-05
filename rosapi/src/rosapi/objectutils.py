@@ -37,9 +37,10 @@ import logging
 import re
 from typing import Any, TypeVar
 
-from rosapi.stringify_field_types import stringify_field_types
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.type_support import ROSMessage
+
+from rosapi.stringify_field_types import stringify_field_types
 
 logger = logging.getLogger(__name__)
 

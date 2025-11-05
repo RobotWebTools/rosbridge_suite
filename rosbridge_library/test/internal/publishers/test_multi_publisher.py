@@ -10,7 +10,6 @@ import rclpy
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
-
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 from rosbridge_library.internal.publishers import MultiPublisher
@@ -18,9 +17,8 @@ from rosbridge_library.internal.topics import TypeConflictException
 from rosbridge_library.util.ros import is_topic_published
 
 if TYPE_CHECKING:
-    from std_msgs.msg import String
-
     from rosbridge_library.internal.type_support import ROSMessage
+    from std_msgs.msg import String
 
 
 class TestMultiPublisher(unittest.TestCase):

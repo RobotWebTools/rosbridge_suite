@@ -9,7 +9,6 @@ from typing import Any
 
 import rclpy
 from rclpy.node import Node
-
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.call_service import CallService
 from rosbridge_library.capabilities.service_response import ServiceResponse
