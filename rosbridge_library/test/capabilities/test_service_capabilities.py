@@ -26,11 +26,13 @@ class TestServiceCapabilities(unittest.TestCase):
         rclpy.init()
         self.node = Node("test_service_capabilities")
 
-        self.node.declare_parameter("call_services_in_new_thread", False)
-        self.node.declare_parameter("default_call_service_timeout", 5.0)
-        self.node.declare_parameter("send_action_goals_in_new_thread", False)
+        protocol_parameters = {
+            "call_services_in_new_thread": False,
+            "default_call_service_timeout": 5.0,
+            "send_action_goals_in_new_thread": False,
+        }
 
-        self.proto = Protocol(self._testMethodName, self.node)
+        self.proto = Protocol(self._testMethodName, self.node, protocol_parameters)
         # change the log function so we can verify errors are logged
         self.proto.log = self.mock_log  # type: ignore[assignment]
         # change the send callback so we can access the rosbridge messages

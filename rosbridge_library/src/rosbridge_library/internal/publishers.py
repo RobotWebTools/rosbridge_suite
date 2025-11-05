@@ -337,3 +337,23 @@ class PublisherManager:
 
 
 manager = PublisherManager()
+
+module_configured = False
+
+
+def configure(parameters: dict[str, Any] | None = None) -> None:
+    """
+    Configure the publishers module.
+
+    :param parameters: A dictionary of parameters to configure the module.
+    :type parameters: dict[str, Any] | None
+    """
+    global module_configured
+
+    if module_configured:
+        return
+
+    if parameters is not None and "unregister_timeout" in parameters:
+        manager.unregister_timeout = float(parameters["unregister_timeout"])
+
+    module_configured = True
