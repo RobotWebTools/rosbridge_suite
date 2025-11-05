@@ -2,8 +2,8 @@
 Changelog for package rosapi_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.2 (2025-11-05)
+------------------
 * chore: Update maintainers (`#1066 <https://github.com/RobotWebTools/rosbridge_suite/issues/1066>`_)
 * feat: Add action type and details services to rosapi (`#1065 <https://github.com/RobotWebTools/rosbridge_suite/issues/1065>`_)
 * Add pydocstyle lint checks and fix rosdoc2 warnings (`#1057 <https://github.com/RobotWebTools/rosbridge_suite/issues/1057>`_)

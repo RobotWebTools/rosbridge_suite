@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.2 (2025-11-05)
+------------------
 * chore: Update pre-commit hooks (backport `#1090 <https://github.com/RobotWebTools/rosbridge_suite/issues/1090>`_) (`#1100 <https://github.com/RobotWebTools/rosbridge_suite/issues/1100>`_)
 * Fix mypy errors (backport `#1084 <https://github.com/RobotWebTools/rosbridge_suite/issues/1084>`_) (`#1099 <https://github.com/RobotWebTools/rosbridge_suite/issues/1099>`_)
 * feat: Add type annotations, new parameter handling (backport `#1069 <https://github.com/RobotWebTools/rosbridge_suite/issues/1069>`_, `#1060 <https://github.com/RobotWebTools/rosbridge_suite/issues/1060>`_) (`#1098 <https://github.com/RobotWebTools/rosbridge_suite/issues/1098>`_)
