@@ -29,7 +29,7 @@ class ActionTester:
         self.executor.add_node(self.node)
         self.action_server = ActionServer(
             self.node,
-            Fibonacci,  # type: ignore[arg-type]
+            Fibonacci,
             "get_fibonacci_sequence",
             self.execute_callback,
         )
@@ -156,7 +156,7 @@ class TestActions(unittest.TestCase):
         # First, call the action the 'proper' way
         client = ActionClient(
             self.node,
-            Fibonacci,  # type: ignore[arg-type]
+            Fibonacci,
             "get_fibonacci_sequence",
         )
         client.wait_for_server()
