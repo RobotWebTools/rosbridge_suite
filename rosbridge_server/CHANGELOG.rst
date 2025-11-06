@@ -2,6 +2,20 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.2 (2025-11-05)
+------------------
+* chore: Update pre-commit hooks (backport `#1090 <https://github.com/RobotWebTools/rosbridge_suite/issues/1090>`_) (`#1100 <https://github.com/RobotWebTools/rosbridge_suite/issues/1100>`_)
+* Fix mypy errors (backport `#1084 <https://github.com/RobotWebTools/rosbridge_suite/issues/1084>`_) (`#1099 <https://github.com/RobotWebTools/rosbridge_suite/issues/1099>`_)
+* feat: Add type annotations, new parameter handling (backport `#1069 <https://github.com/RobotWebTools/rosbridge_suite/issues/1069>`_, `#1060 <https://github.com/RobotWebTools/rosbridge_suite/issues/1060>`_) (`#1098 <https://github.com/RobotWebTools/rosbridge_suite/issues/1098>`_)
+* fix: Change warn to warning (`#1068 <https://github.com/RobotWebTools/rosbridge_suite/issues/1068>`_)
+* chore: Update maintainers (`#1066 <https://github.com/RobotWebTools/rosbridge_suite/issues/1066>`_)
+* fix: rosbridge_websocket cooperative shutdown (`#1064 <https://github.com/RobotWebTools/rosbridge_suite/issues/1064>`_)
+* refactor: Enable ruff and ament_mypy checks and fix lint errors (`#1063 <https://github.com/RobotWebTools/rosbridge_suite/issues/1063>`_)
+* chore: Use ruff to replace other linters used in pre-commit hook (`#1062 <https://github.com/RobotWebTools/rosbridge_suite/issues/1062>`_)
+* Add pydocstyle lint checks and fix rosdoc2 warnings (`#1057 <https://github.com/RobotWebTools/rosbridge_suite/issues/1057>`_)
+* fix: Clean up package dependencies (`#1054 <https://github.com/RobotWebTools/rosbridge_suite/issues/1054>`_)
+* Contributors: Błażej Sowa, Sebastian Castro, cyan-at, pascalauroboa
+
 2.0.1 (2025-05-19)
 ------------------
 * Add missing service timeout parameter to conditional launch (`#1030 <https://github.com/RobotWebTools/rosbridge_suite/issues/1030>`_)
