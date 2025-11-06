@@ -37,6 +37,7 @@ import sys
 import threading
 import traceback
 import uuid
+from asyncio.events import AbstractEventLoop
 from collections import deque
 from functools import wraps
 from typing import TYPE_CHECKING, ClassVar, ParamSpec, TypeVar
@@ -48,7 +49,6 @@ from tornado.iostream import StreamClosedError
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
 
 if TYPE_CHECKING:
-    from asyncio.events import AbstractEventLoop
     from collections.abc import Callable
 
     from .client_manager import ClientManager
@@ -192,6 +192,7 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     def send_message(self, message: bson.BSON | bytearray | str, compression: str = "none") -> None:
         cls = self.__class__
+        assert isinstance(cls.event_loop, AbstractEventLoop), "Event loop was not set"
 
         if isinstance(message, bson.BSON) or compression in ["cbor", "cbor-raw"]:
             binary = True
