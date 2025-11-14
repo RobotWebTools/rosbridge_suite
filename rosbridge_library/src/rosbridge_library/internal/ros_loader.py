@@ -231,6 +231,11 @@ def _load_class(
         raise InvalidModuleException(modname, subname, exc) from exc
 
     try:
+        # Special case for action feedback messages
+        if subname == "action" and classname.endswith("_FeedbackMessage"):
+            action_name, name = classname.rsplit("_", 1)
+            return getattr(getattr(pypkg, action_name).Impl, name)
+
         return getattr(pypkg, classname)
     except Exception as exc:
         raise InvalidClassException(modname, subname, classname, exc) from exc
