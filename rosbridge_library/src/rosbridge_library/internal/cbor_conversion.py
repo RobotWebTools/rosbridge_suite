@@ -3,10 +3,7 @@ from __future__ import annotations
 import struct
 from typing import TYPE_CHECKING, Any
 
-try:
-    from cbor import Tag
-except ImportError:
-    from rosbridge_library.util.cbor import Tag
+from cbor2 import CBORTag
 
 if TYPE_CHECKING:
     from rosbridge_library.internal.type_support import ROSMessage
@@ -99,7 +96,7 @@ def extract_cbor_values(msg: ROSMessage) -> dict[str, Any]:
             tag, fmt = TAGGED_ARRAY_FORMATS[slot_type]
             fmt_to_length = fmt.format(len(val))
             packed = struct.pack(fmt_to_length, *val)
-            out[slot] = Tag(tag=tag, value=packed)
+            out[slot] = CBORTag(tag=tag, value=packed)
 
         # array of messages
         elif type(val) in LIST_TYPES:

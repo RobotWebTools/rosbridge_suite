@@ -5,17 +5,12 @@ import struct
 import unittest
 from array import array
 
+from builtin_interfaces.msg import Duration, Time
+from cbor2 import CBORTag
 from rosbridge_library.internal.cbor_conversion import (
     TAGGED_ARRAY_FORMATS,
     extract_cbor_values,
 )
-
-try:
-    from cbor import Tag
-except ImportError:
-    from rosbridge_library.util.cbor import Tag
-
-from builtin_interfaces.msg import Duration, Time
 from std_msgs.msg import (
     Bool,
     Float32,
@@ -131,7 +126,7 @@ class TestCBORConversion(unittest.TestCase):
             extracted = extract_cbor_values(msg)
 
             tag = extracted["data"]
-            self.assertEqual(type(tag), Tag, f"type={msg_type}")
+            self.assertEqual(type(tag), CBORTag, f"type={msg_type}")
             self.assertEqual(type(tag.value), bytes, f"type={msg_type}")
 
             # This is as consistent as the message definitions.
@@ -156,7 +151,7 @@ class TestCBORConversion(unittest.TestCase):
             extracted = extract_cbor_values(msg)
 
             tag = extracted["data"]
-            self.assertEqual(type(tag), Tag, f"type={msg_type}")
+            self.assertEqual(type(tag), CBORTag, f"type={msg_type}")
             self.assertEqual(type(tag.value), bytes, f"type={msg_type}")
 
             # This is as consistent as the message definitions.

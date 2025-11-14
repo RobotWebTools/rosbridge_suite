@@ -2,16 +2,13 @@ from __future__ import annotations
 
 from typing import Any, Generic
 
+from cbor2 import dumps as encode_cbor
+
 from rosbridge_library.internal.cbor_conversion import extract_cbor_values
 from rosbridge_library.internal.message_conversion import (
     extract_values as extract_json_values,
 )
 from rosbridge_library.internal.type_support import ROSMessageT
-
-try:
-    from cbor import dumps as encode_cbor
-except ImportError:
-    from rosbridge_library.util.cbor import dumps as encode_cbor
 
 
 class OutgoingMessage(Generic[ROSMessageT]):
