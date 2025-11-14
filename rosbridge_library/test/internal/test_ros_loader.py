@@ -143,6 +143,7 @@ class TestROSLoader(unittest.TestCase):
             "visualization_msgs/InteractiveMarkerUpdate",
             "nav_msgs/GridCells",
             "sensor_msgs/PointCloud2",
+            "example_interfaces/action/Fibonacci_FeedbackMessage",
         ]
         for x in assortedmsgs:
             self.assertNotEqual(ros_loader.get_message_class(x), None)
