@@ -2,6 +2,9 @@
 Changelog for package rosbridge_test_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.3 (2025-11-17)
+------------------
+
 2.0.2 (2025-11-05)
 ------------------
 * chore: Update maintainers (`#1066 <https://github.com/RobotWebTools/rosbridge_suite/issues/1066>`_)

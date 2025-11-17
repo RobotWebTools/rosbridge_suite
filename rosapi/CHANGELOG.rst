@@ -2,6 +2,9 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.3 (2025-11-17)
+------------------
+
 2.0.2 (2025-11-05)
 ------------------
 * chore: Update pre-commit hooks (backport `#1090 <https://github.com/RobotWebTools/rosbridge_suite/issues/1090>`_) (`#1100 <https://github.com/RobotWebTools/rosbridge_suite/issues/1100>`_)

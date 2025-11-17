@@ -2,6 +2,11 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.3 (2025-11-17)
+------------------
+* fix: Don't add rosapi services to glob patterns if we pass empty `services_glob` parameter (backport `#1115 <https://github.com/RobotWebTools/rosbridge_suite/issues/1115>`_) (`#1117 <https://github.com/RobotWebTools/rosbridge_suite/issues/1117>`_)
+* Contributors: Błażej Sowa
+
 2.0.2 (2025-11-05)
 ------------------
 * chore: Update pre-commit hooks (backport `#1090 <https://github.com/RobotWebTools/rosbridge_suite/issues/1090>`_) (`#1100 <https://github.com/RobotWebTools/rosbridge_suite/issues/1100>`_)
