@@ -105,7 +105,7 @@ class SendActionGoal(Capability):
         compression: str = message.get("compression", "none")
         args: list | dict[str, Any] = message.get("args", [])
 
-        if self.actions_glob:
+        if self.actions_glob is not None:
             self.protocol.log("debug", f"Action security glob enabled, checking action: {action}")
             match = False
             for glob in self.actions_glob:

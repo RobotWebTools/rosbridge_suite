@@ -29,7 +29,7 @@ class UnadvertiseService(Capability):
         # parse the message
         service_name: str = message["service"]
 
-        if self.services_glob:
+        if self.services_glob is not None:
             self.protocol.log(
                 "debug",
                 "Service security glob enabled, checking service: " + service_name,

@@ -61,7 +61,7 @@ class UnadvertiseAction(Capability):
         # parse the message
         action_name: str = message["action"]
 
-        if self.actions_glob:
+        if self.actions_glob is not None:
             self.protocol.log(
                 "debug",
                 f"Action security glob enabled, checking action: {action_name}",
