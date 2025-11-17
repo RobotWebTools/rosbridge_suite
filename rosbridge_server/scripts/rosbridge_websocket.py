@@ -112,13 +112,15 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args(args)
 
 
-def parse_glob_string(glob_string: str) -> list[str]:
+def parse_glob_string(glob_string: str) -> list[str] | None:
     """
     Parse a glob string into a list of patterns.
 
     The glob string is expected to be in the format: "['pattern1', 'pattern2']"
     """
-    if not glob_string or glob_string == "[]":
+    if not glob_string:
+        return None
+    if glob_string == "[]":
         return []
     # Remove the surrounding brackets and split by comma
     return [s.strip().strip("'") for s in glob_string[1:-1].split(",") if s.strip()]
