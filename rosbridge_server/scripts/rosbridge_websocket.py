@@ -94,9 +94,9 @@ PROTOCOL_PARAMETERS = (
         "Ignored if bson_only_mode is True.",
     ),
     ("bson_only_mode", bool, False, "Use BSON only mode for messages."),
-    ("topics_glob", str, "[*]", "Glob patterns for topics publish/subscribe."),
-    ("services_glob", str, "[*]", "Glob patterns for services call/advertise."),
-    ("actions_glob", str, "[*]", "Glob patterns for actions send/advertise."),
+    ("topics_glob", str, "", "Glob patterns for topics publish/subscribe."),
+    ("services_glob", str, "", "Glob patterns for services call/advertise."),
+    ("actions_glob", str, "", "Glob patterns for actions send/advertise."),
     ("call_services_in_new_thread", bool, False, "Call services in a new threads."),
     ("default_call_service_timeout", float, 0.0, "Default timeout for service calls."),
     ("send_action_goals_in_new_thread", bool, False, "Send action goals in a new threads."),
@@ -112,13 +112,15 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args(args)
 
 
-def parse_glob_string(glob_string: str) -> list[str]:
+def parse_glob_string(glob_string: str) -> list[str] | None:
     """
     Parse a glob string into a list of patterns.
 
     The glob string is expected to be in the format: "['pattern1', 'pattern2']"
     """
-    if not glob_string or glob_string == "[]":
+    if not glob_string:
+        return None
+    if glob_string == "[]":
         return []
     # Remove the surrounding brackets and split by comma
     return [s.strip().strip("'") for s in glob_string[1:-1].split(",") if s.strip()]
@@ -136,7 +138,8 @@ class RosbridgeWebsocketNode(Node):
 
         # To be able to access the list of topics and services,
         # you must be able to access the rosapi services.
-        self.protocol_parameters["services_glob"].append("/rosapi/*")
+        if self.protocol_parameters["services_glob"] is not None:
+            self.protocol_parameters["services_glob"].append("/rosapi/*")
 
         RosbridgeWebSocket.protocol_parameters = self.protocol_parameters
         RosbridgeWebSocket.use_compression = self.use_compression

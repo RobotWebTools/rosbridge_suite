@@ -67,7 +67,7 @@ class Publish(Capability):
         latch: bool = message.get("latch", False)
         queue_size: int = message.get("queue_size", 100)
 
-        if self.topics_glob:
+        if self.topics_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in self.topics_glob:
