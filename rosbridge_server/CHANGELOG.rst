@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.1 (2025-11-17)
+------------------
 * fix: Don't add rosapi services to glob patterns if we pass empty `services_glob` parameter (`#1115 <https://github.com/RobotWebTools/rosbridge_suite/issues/1115>`_)
 * Contributors: Błażej Sowa
 

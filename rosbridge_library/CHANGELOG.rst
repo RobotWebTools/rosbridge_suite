@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.1 (2025-11-17)
+------------------
 * fix: Don't add rosapi services to glob patterns if we pass empty `services_glob` parameter (`#1115 <https://github.com/RobotWebTools/rosbridge_suite/issues/1115>`_)
 * feat: Allow importing action feedback message types (`#1108 <https://github.com/RobotWebTools/rosbridge_suite/issues/1108>`_)
 * feat: Replace cbor with cbor2 library, remove inline implementation (`#1107 <https://github.com/RobotWebTools/rosbridge_suite/issues/1107>`_)
