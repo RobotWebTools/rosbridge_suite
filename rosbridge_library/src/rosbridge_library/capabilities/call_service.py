@@ -91,7 +91,7 @@ class CallService(Capability):
         args: list | dict[str, Any] = message.get("args", [])
         timeout: float = message.get("timeout", self.default_timeout)
 
-        if self.services_glob:
+        if self.services_glob is not None:
             self.protocol.log(
                 "debug", "Service security glob enabled, checking service: " + service
             )
