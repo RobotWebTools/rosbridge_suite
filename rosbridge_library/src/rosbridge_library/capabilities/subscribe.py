@@ -272,7 +272,7 @@ class Subscribe(Capability):
         # Make the subscription
         topic: str = msg["topic"]
 
-        if self.topics_glob is not None and self.topics_glob:
+        if self.topics_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in self.topics_glob:
