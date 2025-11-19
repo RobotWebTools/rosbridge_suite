@@ -1,4 +1,4 @@
-This document is a declaration of software quality for the `rosbridge_suite` packages, based on the guidelines in [REP-2004](https://www.ros.org/reps/rep-2004.html). The following packages are covered by this declaration:
+This document is a declaration of software quality for the `rosbridge_suite` packages, based on the guidelines in [REP-2004](https://reps.openrobotics.org/rep-2004/). The following packages are covered by this declaration:
 
 - rosapi
 - rosapi_msgs
@@ -12,7 +12,7 @@ This document is a declaration of software quality for the `rosbridge_suite` pac
 
 The package `rosbridge_suite` claims to be in the **Quality Level 3** category.
 
-Below are the rationales, notes, and caveats for this claim, organized by each requirement listed in the [Package Requirements for Quality Level N in REP-2004](https://www.ros.org/reps/rep-2004.html).
+Below are the rationales, notes, and caveats for this claim, organized by each requirement listed in the [Package Requirements for Quality Level N in REP-2004](https://reps.openrobotics.org/rep-2004/).
 
 ## Version Policy [1]
 
@@ -69,10 +69,10 @@ New features are required to have tests before being added.
 
 ## Platform Support [6]
 
-`rosbridge_suite` supports all of the tier 1 platforms as described in [REP-2000](https://www.ros.org/reps/rep-2000.html#support-tiers). Tests are currently only run against Ubuntu Linux.
+`rosbridge_suite` supports all of the tier 1 platforms as described in [REP-2000](https://reps.openrobotics.org/rep-2000/#support-tiers). Tests are currently only run against Ubuntu Linux.
 
 ## Security [7]
 
 ### Vulnerability Disclosure Policy [7.i]
 
-This package conforms to the Vulnerability Disclosure Policy in [REP-2006](https://www.ros.org/reps/rep-2006.html).
+This package conforms to the Vulnerability Disclosure Policy in [REP-2006](https://reps.openrobotics.org/rep-2006/).
