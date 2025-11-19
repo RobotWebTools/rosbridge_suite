@@ -58,7 +58,7 @@ class CallService(Capability):
     )
 
     services_glob: list[str] | None = None
-    default_timeout: float = 5.0
+    default_call_service_timeout: float = 5.0
     call_services_in_new_thread: bool = True
 
     def __init__(self, protocol: Protocol) -> None:
@@ -89,7 +89,7 @@ class CallService(Capability):
         fragment_size: int | None = message.get("fragment_size")
         compression: str = message.get("compression", "none")
         args: list | dict[str, Any] = message.get("args", [])
-        timeout: float = message.get("timeout", self.default_timeout)
+        timeout: float = message.get("timeout", self.default_call_service_timeout)
 
         if self.services_glob is not None:
             self.protocol.log(
