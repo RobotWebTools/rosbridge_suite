@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.4.2 (2025-11-20)
+------------------
 * fix: Invert success check for set_param function (backport `#1133 <https://github.com/RobotWebTools/rosbridge_suite/issues/1133>`_) (`#1134 <https://github.com/RobotWebTools/rosbridge_suite/issues/1134>`_)
 * Contributors: Błażej Sowa
 
