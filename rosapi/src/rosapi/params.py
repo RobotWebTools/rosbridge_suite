@@ -178,7 +178,7 @@ async def _set_param(
 
     assert result is not None
     param_results = next(iter(result.results))
-    if param_results.successful:
+    if not param_results.successful:
         raise Exception(param_results.reason)
 
 
