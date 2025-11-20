@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>rosapi</name>
-  <version>2.0.3</version>
+  <version>2.0.4</version>
   <description>
 Provides services for getting various ROS meta-information, including ROS topic, services, interfaces or
 action servers and managing ROS parameters.

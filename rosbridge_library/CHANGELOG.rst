@@ -2,6 +2,12 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.4 (2025-11-20)
+------------------
+* fix: Apply service timeout parameter correctly (backport `#1125 <https://github.com/RobotWebTools/rosbridge_suite/issues/1125>`_) (`#1130 <https://github.com/RobotWebTools/rosbridge_suite/issues/1130>`_)
+  Co-authored-by: Mike Lanighan <45465435+mlanighan@users.noreply.github.com>
+* Contributors: Błażej Sowa
+
 2.0.3 (2025-11-17)
 ------------------
 * fix: Don't add rosapi services to glob patterns if we pass empty `services_glob` parameter (backport `#1115 <https://github.com/RobotWebTools/rosbridge_suite/issues/1115>`_) (`#1117 <https://github.com/RobotWebTools/rosbridge_suite/issues/1117>`_)
