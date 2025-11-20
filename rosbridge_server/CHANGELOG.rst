@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.2 (2025-11-20)
+------------------
 * fix: Use correct type for delay_between_messages parameter in launch file (`#1126 <https://github.com/RobotWebTools/rosbridge_suite/issues/1126>`_)
 * Contributors: Błażej Sowa
 

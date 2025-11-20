@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.2 (2025-11-20)
+------------------
 * fix: Apply service timeout parameter correctly (`#1125 <https://github.com/RobotWebTools/rosbridge_suite/issues/1125>`_)
 * Contributors: Mike Lanighan
 
