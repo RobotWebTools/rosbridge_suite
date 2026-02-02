@@ -28,7 +28,7 @@ jobs:
             container: ubuntu:noble
 
     name: ROS 2 ${{ matrix.ros }} (${{ matrix.container }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # container: ${{ matrix.container }}
 
     steps:
