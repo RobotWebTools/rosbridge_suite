@@ -51,8 +51,8 @@ jobs:
         run: |
           echo -e "\e[35;1msource /opt/ros/${{ matrix.ros }}/setup.bash\e[0m"
           source /opt/ros/${{ matrix.ros }}/setup.bash
-          echo -e "\e[35;1mecho -e "printenv | sort\e[0m"
-          echo -e "printenv | sort
+          echo -e "\e[35;1mprintenv | sort\e[0m"
+          printenv | sort
           echo -e "\e[35;1mwhich pip3\e[0m"
           which pip3
           echo -e "\e[35;1mpip3 freeze\e[0m"
