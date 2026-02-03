@@ -36,6 +36,11 @@ jobs:
         with:
           path: ros_ws/src
 
+      - name: Install CMake
+        uses: ssrobins/install-cmake@v1
+        with:
+          version: 3.28.3
+
       - uses: ros-tooling/setup-ros@v0.7
 
       - uses: ros-tooling/action-ros-ci@v0.4
