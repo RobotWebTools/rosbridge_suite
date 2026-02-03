@@ -48,3 +48,4 @@ jobs:
           source /opt/ros/${{ matrix.ros }}/setup.bash
           printenv | sort
           pip3 freeze
+          python3 -c "from ament_package.templates import get_environment_hook_template_path;print('done')"
