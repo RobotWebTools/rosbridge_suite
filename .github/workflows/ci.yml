@@ -69,7 +69,7 @@ jobs:
           python3 -c "import sys;print(sys.path)"
           echo -e "\e[35;1mpython3 -c \"import ament_package;print(ament_package.__file__)\"\e[0m"
           python3 -c "import ament_package;print(ament_package.__file__)"
-          echo -e "\e[35;1mpython3 -c "from ament_package.templates import get_environment_hook_template_path;print('done')"\e[0m"
+          echo -e "\e[35;1mpython3 -c \"from ament_package.templates import get_environment_hook_template_path;print('done')\"\e[0m"
           python3 -c "from ament_package.templates import get_environment_hook_template_path;print('done')"
           echo -e "\e[35;1mwhich cmake\e[0m"
           which cmake
