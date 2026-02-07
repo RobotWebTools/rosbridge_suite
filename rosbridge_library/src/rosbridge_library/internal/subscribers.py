@@ -306,6 +306,7 @@ class SubscriberManager:
         node_handle: Node,
         msg_type: str | None = None,
         raw: bool = False,
+        qos: QoSProfile | None = None,
     ) -> None:
         """
         Subscribe to a topic.
