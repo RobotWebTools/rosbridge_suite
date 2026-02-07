@@ -43,6 +43,8 @@ from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
 from rosbridge_library.internal.type_support import ROSMessageT
 
+from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy, HistoryPolicy, LivelinessPolicy
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -116,6 +118,7 @@ class Subscription(Generic[ROSMessageT]):
         queue_length: int = 0,
         fragment_size: int | None = None,
         compression: str = "none",
+        qos: QoSProfile | None = None,
     ) -> None:
         """
         Add another client's subscription request.
@@ -156,6 +159,7 @@ class Subscription(Generic[ROSMessageT]):
             self.node_handle,
             msg_type=msg_type,
             raw=raw,
+            qos=qos,
         )
 
     def unsubscribe(self, sid: str | None = None) -> None:
@@ -245,6 +249,7 @@ class Subscribe(Capability):
         (False, "fragment_size", int),
         (False, "queue_length", int),
         (False, "compression", str),
+        (False, "qos", QoSProfile)
     )
     unsubscribe_msg_fields = ((True, "topic", str),)
 
@@ -307,6 +312,17 @@ class Subscribe(Capability):
             "fragment_size": msg.get("fragment_size"),
             "queue_length": msg.get("queue_length", 0),
             "compression": msg.get("compression", "none"),
+            "qos": (
+                QoSProfile(
+                    depth=msg.get("qos_depth", 10),
+                    durability=msg.get("durability_policy", DurabilityPolicy.SYSTEM_DEFAULT),
+                    reliability=msg.get("reliability_policy", ReliabilityPolicy.SYSTEM_DEFAULT),
+                    history=msg.get("history_policy", HistoryPolicy.SYSTEM_DEFAULT),
+                    liveliness=msg.get("liveliness_policy", LivelinessPolicy.SYSTEM_DEFAULT),
+                )
+                if "qos" in msg
+                else None
+            )
         }
         self._subscriptions[topic].subscribe(**subscribe_args)
 

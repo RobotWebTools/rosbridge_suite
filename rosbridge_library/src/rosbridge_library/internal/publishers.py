@@ -67,6 +67,7 @@ class MultiPublisher(Generic[ROSMessageT]):
         msg_type: str | None = None,
         latched_client_id: str | None = None,
         queue_size: int = 100,
+        qos : QoSProfile | None = None,
     ) -> None:
         """
         Register a publisher on the specified topic.
@@ -119,23 +120,28 @@ class MultiPublisher(Generic[ROSMessageT]):
         self.topic = topic
         self.node_handle = node_handle
         self.msg_class = msg_class
+        self.publisher_qos: QoSProfile = None
+
         # Adding a lifespan solves the problem of late-joining subscribers
         # without the need of a custom message publisher implementation.
-        publisher_qos = QoSProfile(
-            depth=queue_size,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
-        )
+        if qos is None:
+            self.publisher_qos = QoSProfile(
+                depth=queue_size,
+                durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            )
+        else:
+            self.publisher_qos = qos;
 
         # For latched clients, no lifespan has to be specified (i.e. latch forever).
         # Otherwise we want to keep the messages for a second to prevent late-joining subscribers from
         # missing messages.
         if latched_client_id is None:
-            publisher_qos.lifespan = Duration(seconds=1)
+            self.publisher_qos.lifespan = Duration(seconds=1)
         else:
-            publisher_qos.depth = 1
+            self.publisher_qos.depth = 1
 
         self.publisher: Publisher[ROSMessageT] = node_handle.create_publisher(
-            msg_class, topic, qos_profile=publisher_qos
+            msg_class, topic, qos_profile=self.publisher_qos
         )
 
     def unregister(self) -> None:
@@ -222,6 +228,7 @@ class PublisherManager:
         msg_type: str | None = None,
         latch: bool = False,
         queue_size: int = 100,
+        qos: QoSProfile | None = None,
     ) -> None:
         """
         Register a publisher on the specified topic.
@@ -247,6 +254,7 @@ class PublisherManager:
                 msg_type=msg_type,
                 latched_client_id=latched_client_id,
                 queue_size=queue_size,
+                qos=qos,
             )
         elif latch and self._publishers[topic].latched_client_id != client_id:
             node_handle.get_logger().warning(

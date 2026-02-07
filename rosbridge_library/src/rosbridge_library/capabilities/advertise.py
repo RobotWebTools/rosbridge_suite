@@ -39,6 +39,8 @@ from typing import TYPE_CHECKING, Any
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
 
+from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy, HistoryPolicy, LivelinessPolicy
+
 if TYPE_CHECKING:
     from rclpy.node import Node
 
@@ -67,7 +69,7 @@ class Registration:
         manager.unregister(self.client_id, self.topic)
 
     def register_advertisement(
-        self, msg_type: str, adv_id: str | None = None, latch: bool = False, queue_size: int = 100
+        self, msg_type: str, adv_id: str | None = None, latch: bool = False, queue_size: int = 100, qos: QoSProfile | None = None
     ) -> None:
         # Register with the publisher manager, propagating any exception
         manager.register(
@@ -77,6 +79,7 @@ class Registration:
             msg_type=msg_type,
             latch=latch,
             queue_size=queue_size,
+            qos=qos,
         )
 
         if adv_id is not None:
@@ -122,6 +125,16 @@ class Advertise(Capability):
         msg_type: str = message["type"]
         latch: bool = message.get("latch", False)
         queue_size: int = message.get("queue_size", 100)
+        qos: QoSProfile | None = QoSProfile(
+            depth=message.get("qos_depth", 10),
+            durability=message.get("durability_policy", DurabilityPolicy.SYSTEM_DEFAULT),
+            reliability=message.get("reliability_policy", ReliabilityPolicy.SYSTEM_DEFAULT),
+            history=message.get("history_policy", HistoryPolicy.SYSTEM_DEFAULT),
+            liveliness=message.get("liveliness_policy", LivelinessPolicy.SYSTEM_DEFAULT),
+        )
+
+        if message["durability_policy"] is None or message["history_policy"] is None or message["liveliness_policy"] is None or message["reliability_policy"] is None:
+            qos = None
 
         if self.topics_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
@@ -149,7 +162,7 @@ class Advertise(Capability):
             self._registrations[topic] = Registration(client_id, topic, self.protocol.node_handle)
 
         # Register, propagating any exceptions
-        self._registrations[topic].register_advertisement(msg_type, aid, latch, queue_size)
+        self._registrations[topic].register_advertisement(msg_type=msg_type, adv_id=aid, latch=latch, queue_size=queue_size, qos=qos)
 
     def unadvertise(self, message: dict[str, Any]) -> None:
         # Pull out the ID

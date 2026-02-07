@@ -38,7 +38,7 @@ from threading import Lock, RLock
 from typing import TYPE_CHECKING, Generic, cast
 
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
-from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
+from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy, HistoryPolicy, LivelinessPolicy
 
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
@@ -77,6 +77,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         node_handle: Node,
         msg_type: str | None = None,
         raw: bool = False,
+        qos: QoSProfile | None = None,
     ) -> None:
         """
         Register a subscriber on the specified topic.
@@ -134,21 +135,22 @@ class MultiSubscriber(Generic[ROSMessageT]):
         # - https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html
         # - https://github.com/RobotWebTools/rosbridge_suite/issues/551
         # - https://github.com/RobotWebTools/rosbridge_suite/issues/769
-        qos = QoSProfile(
-            depth=10,
-            durability=DurabilityPolicy.VOLATILE,
-            reliability=ReliabilityPolicy.BEST_EFFORT,
-        )
+        if qos is None:
+            qos = QoSProfile(
+                depth=10,
+                durability=DurabilityPolicy.VOLATILE,
+                reliability=ReliabilityPolicy.BEST_EFFORT,
+            )
 
-        infos = node_handle.get_publishers_info_by_topic(topic)
+            infos = node_handle.get_publishers_info_by_topic(topic)
 
-        if len(infos) > 0 and all(
-            pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
-        ):
-            qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
-            qos.reliability = ReliabilityPolicy.RELIABLE
-        if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
-            qos.reliability = ReliabilityPolicy.BEST_EFFORT
+            if len(infos) > 0 and all(
+                pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
+            ):
+                qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
+                qos.reliability = ReliabilityPolicy.RELIABLE
+            if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+                qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
