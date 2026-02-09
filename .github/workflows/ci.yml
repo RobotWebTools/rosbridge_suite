@@ -40,7 +40,57 @@ jobs:
         with:
           path: ros_ws/src
 
+      - name: Show environment
+        if: always()
+        continue-on-error: true
+        run: |
+          echo -e "\e[35;1msource /opt/ros/${{ matrix.ros }}/setup.bash\e[0m"
+          source /opt/ros/${{ matrix.ros }}/setup.bash
+          echo -e "\e[35;1mprintenv | sort\e[0m"
+          printenv | sort
+          echo -e "\e[35;1mwhich pip3\e[0m"
+          which pip3
+          echo -e "\e[35;1mpip3 freeze\e[0m"
+          pip3 freeze
+          echo -e "\e[35;1mwhich python3\e[0m"
+          which python3
+          echo -e "\e[35;1mpython3 -c \"import sys;print(sys.path)\"\e[0m"
+          python3 -c "import sys;print(sys.path)"
+          echo -e "\e[35;1mpython3 -c \"import ament_package;print(ament_package.__file__)\"\e[0m"
+          python3 -c "import ament_package;print(ament_package.__file__)"
+          echo -e "\e[35;1mpython3 -c \"from ament_package.templates import get_environment_hook_template_path;print('done')\"\e[0m"
+          python3 -c "from ament_package.templates import get_environment_hook_template_path;print('done')"
+          echo -e "\e[35;1mwhich cmake\e[0m"
+          which cmake
+          echo -e "\e[35;1mcmake --version\e[0m"
+          cmake --version
+
       - uses: ros-tooling/setup-ros@v0.7
+
+      - name: Show environment
+        if: always()
+        continue-on-error: true
+        run: |
+          echo -e "\e[35;1msource /opt/ros/${{ matrix.ros }}/setup.bash\e[0m"
+          source /opt/ros/${{ matrix.ros }}/setup.bash
+          echo -e "\e[35;1mprintenv | sort\e[0m"
+          printenv | sort
+          echo -e "\e[35;1mwhich pip3\e[0m"
+          which pip3
+          echo -e "\e[35;1mpip3 freeze\e[0m"
+          pip3 freeze
+          echo -e "\e[35;1mwhich python3\e[0m"
+          which python3
+          echo -e "\e[35;1mpython3 -c \"import sys;print(sys.path)\"\e[0m"
+          python3 -c "import sys;print(sys.path)"
+          echo -e "\e[35;1mpython3 -c \"import ament_package;print(ament_package.__file__)\"\e[0m"
+          python3 -c "import ament_package;print(ament_package.__file__)"
+          echo -e "\e[35;1mpython3 -c \"from ament_package.templates import get_environment_hook_template_path;print('done')\"\e[0m"
+          python3 -c "from ament_package.templates import get_environment_hook_template_path;print('done')"
+          echo -e "\e[35;1mwhich cmake\e[0m"
+          which cmake
+          echo -e "\e[35;1mcmake --version\e[0m"
+          cmake --version
 
       - uses: ros-tooling/action-ros-ci@v0.4
         id: action_ros_ci_step
@@ -48,7 +98,8 @@ jobs:
           target-ros2-distro: ${{ matrix.ros }}
 
       - name: Show environment
-        if: ${{ always() }}
+        if: always()
+        continue-on-error: true
         run: |
           echo -e "\e[35;1msource /opt/ros/${{ matrix.ros }}/setup.bash\e[0m"
           source /opt/ros/${{ matrix.ros }}/setup.bash
