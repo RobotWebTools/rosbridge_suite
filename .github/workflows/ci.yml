@@ -6,6 +6,9 @@ defaults:
   run:
     shell: bash
 
+env:
+  PSModulePath: ""
+
 jobs:
   lint:
     runs-on: ubuntu-latest
