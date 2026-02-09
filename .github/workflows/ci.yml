@@ -124,6 +124,6 @@ jobs:
 
       - uses: actions/upload-artifact@v6
         with:
-          name: colcon-logs
+          name: colcon-logs-${{ matrix.ros }}
           path: ${{ steps.action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
         if: always()
