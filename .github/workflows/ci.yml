@@ -43,6 +43,7 @@ jobs:
       - uses: ros-tooling/setup-ros@v0.7
 
       - uses: ros-tooling/action-ros-ci@v0.4
+        id: action_ros_ci_step
         with:
           target-ros2-distro: ${{ matrix.ros }}
 
@@ -69,3 +70,10 @@ jobs:
           which cmake
           echo -e "\e[35;1mcmake --version\e[0m"
           cmake --version
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: colcon-logs
+          path: ${{ steps.action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
+        if: always()
+
