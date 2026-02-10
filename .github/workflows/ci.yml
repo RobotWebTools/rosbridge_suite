@@ -7,7 +7,7 @@ defaults:
     shell: bash
 
 env:
-  PSModulePath: ""
+  COLCON_EXTENSION_BLOCKLIST: colcon_core.shell.powershell
 
 jobs:
   lint:
