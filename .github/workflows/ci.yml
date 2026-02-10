@@ -2,6 +2,13 @@ name: CI
 
 on: [push, pull_request]
 
+defaults:
+  run:
+    shell: bash
+
+env:
+  COLCON_EXTENSION_BLOCKLIST: colcon_core.shell.powershell
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -34,5 +41,12 @@ jobs:
       - uses: ros-tooling/setup-ros@v0.7
 
       - uses: ros-tooling/action-ros-ci@v0.4
+        id: action_ros_ci_step
         with:
           target-ros2-distro: ${{ matrix.ros }}
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: colcon-logs-${{ matrix.ros }}
+          path: ${{ steps.action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
+        if: always()
