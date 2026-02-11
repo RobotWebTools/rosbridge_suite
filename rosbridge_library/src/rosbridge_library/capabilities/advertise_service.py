@@ -66,6 +66,12 @@ class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT])
             result = await future
             assert result is not None, "Service response cannot be None"
             return result
+        except Exception as e:
+            self.protocol.log(
+                "error",
+                f"Error while waiting for response to service request with id {request_id}: {e}",
+            )
+            raise e
         finally:
             del self.request_futures[request_id]
 
