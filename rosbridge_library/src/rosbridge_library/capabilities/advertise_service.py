@@ -106,7 +106,7 @@ class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT])
             for future_id in self.request_futures:
                 future = self.request_futures[future_id]
                 future.set_exception(RuntimeError(f"Service {self.service_name} was unadvertised"))
-        self.service_handle.destroy()
+        self.protocol.node_handle.destroy_service(self.service_handle)
 
 
 class AdvertiseService(Capability):
