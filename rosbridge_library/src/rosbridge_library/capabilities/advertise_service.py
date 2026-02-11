@@ -71,7 +71,7 @@ class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT])
                 "error",
                 f"Error while waiting for response to service request with id {request_id}: {e}",
             )
-            raise e
+            raise
         finally:
             del self.request_futures[request_id]
 
