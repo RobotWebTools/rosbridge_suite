@@ -61,12 +61,10 @@ class TestSubscriberManager(unittest.TestCase):
         self.assertFalse(topic in manager._subscribers)
         self.assertTopicNotSubscribed(topic)
         manager.subscribe(client, topic, lambda _: None, self.node, msg_type)
-        time.sleep(0.05)
         self.assertTrue(topic in manager._subscribers)
         self.assertTopicSubscribed(topic)
 
         manager.unsubscribe(client, topic)
-        time.sleep(0.05)
         self.assertFalse(topic in manager._subscribers)
         self.assertTopicNotSubscribed(topic)
 
