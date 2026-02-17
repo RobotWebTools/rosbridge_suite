@@ -38,7 +38,8 @@ from threading import Lock, RLock
 from typing import TYPE_CHECKING, Generic, cast
 
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
-from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
+from rclpy.qos import DurabilityPolicy, QoSPolicyKind, QoSProfile, ReliabilityPolicy
+from rclpy.qos_overriding_options import QoSOverridingOptions
 
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
@@ -150,6 +151,8 @@ class MultiSubscriber(Generic[ROSMessageT]):
         if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
             qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
+        qos_overrides = self._get_qos_overrides(node_handle, topic)
+
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
         self.subscriptions = {client_id: callback}
@@ -158,6 +161,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         self.node_handle = node_handle
         self.topic = topic
         self.qos = qos
+        self.qos_overrides = qos_overrides
         self.raw = raw
         self.callback_group = MutuallyExclusiveCallbackGroup()
 
@@ -167,6 +171,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
             partial(self.callback, callbacks=None),
             qos,
             raw=raw,
+            qos_overriding_options=self.qos_overrides,
             callback_group=self.callback_group,
         )
         self.new_subscriber: Subscription[ROSMessageT] | None = None
@@ -223,8 +228,24 @@ class MultiSubscriber(Generic[ROSMessageT]):
                     self._new_sub_callback,
                     self.qos,
                     raw=self.raw,
+                    qos_overriding_options=self.qos_overrides,
                     callback_group=self.callback_group,
                 )
+
+    @staticmethod
+    def _get_qos_overrides(node_handle: Node, topic: str) -> QoSOverridingOptions | None:
+        prefix = f"qos_overrides.{topic}.subscription."
+        overrides = getattr(node_handle, "_parameter_overrides", {})
+        if not any(name.startswith(prefix) for name in overrides):
+            return None
+        return QoSOverridingOptions(
+            policy_kinds=[
+                QoSPolicyKind.DURABILITY,
+                QoSPolicyKind.RELIABILITY,
+                QoSPolicyKind.HISTORY,
+                QoSPolicyKind.DEPTH,
+            ]
+        )
 
     def unsubscribe(self, client_id: str) -> None:
         """

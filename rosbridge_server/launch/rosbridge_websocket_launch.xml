@@ -24,6 +24,7 @@
   <arg name="services_glob" default="" />
   <arg name="params_glob" default="" />
   <arg name="params_timeout" default="5.0" />
+  <arg name="qos_overrides_path" default="$(find-pkg-share rosbridge_server)/config/empty_qos_overrides.yaml" />
   <arg name="bson_only_mode" default="false" />
 
   <arg name="respawn" default="false"/>
@@ -32,6 +33,7 @@
 
   <group if="$(var ssl)">
     <node name="rosbridge_websocket" namespace="$(var namespace)" pkg="rosbridge_server" exec="rosbridge_websocket" output="screen" respawn="$(var respawn)" >
+      <param from="$(var qos_overrides_path)" />
       <param name="certfile" value="$(var certfile)" />
       <param name="keyfile" value="$(var keyfile)" />
       <param name="port" value="$(var port)"/>
@@ -55,6 +57,7 @@
 
   <group unless="$(var ssl)">
     <node name="rosbridge_websocket" namespace="$(var namespace)" pkg="rosbridge_server" exec="rosbridge_websocket" output="screen" respawn="$(var respawn)">
+      <param from="$(var qos_overrides_path)" />
       <param name="port" value="$(var port)"/>
       <param name="address" value="$(var address)"/>
       <param name="url_path" value="$(var url_path)"/>
