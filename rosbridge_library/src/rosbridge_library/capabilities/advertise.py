@@ -80,7 +80,7 @@ class Registration:
         adv_id: str | None = None,
         latch: bool = False,
         queue_size: int = 100,
-        qos: QoSProfile | None = None
+        qos: QoSProfile | None = None,
     ) -> None:
         # Register with the publisher manager, propagating any exception
         manager.register(
@@ -148,7 +148,7 @@ class Advertise(Capability):
             "durability_policy",
             "history_policy",
             "liveliness_policy",
-            "reliability_policy"
+            "reliability_policy",
         }:
             qos = None
 

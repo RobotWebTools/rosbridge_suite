@@ -328,7 +328,7 @@ class Subscribe(Capability):
                 )
                 if "qos" in msg
                 else None
-            )
+            ),
         }
         self._subscriptions[topic].subscribe(**subscribe_args)
 
