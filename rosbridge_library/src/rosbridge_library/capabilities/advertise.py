@@ -75,7 +75,12 @@ class Registration:
         manager.unregister(self.client_id, self.topic)
 
     def register_advertisement(
-        self, msg_type: str, adv_id: str | None = None, latch: bool = False, queue_size: int = 100, qos: QoSProfile | None = None
+        self,
+        msg_type: str,
+        adv_id: str | None = None,
+        latch: bool = False,
+        queue_size: int = 100,
+        qos: QoSProfile | None = None
     ) -> None:
         # Register with the publisher manager, propagating any exception
         manager.register(
@@ -139,7 +144,12 @@ class Advertise(Capability):
             liveliness=message.get("liveliness_policy", LivelinessPolicy.SYSTEM_DEFAULT),
         )
 
-        if message.keys() & {"durability_policy", "history_policy", "liveliness_policy", "reliability_policy"}:
+        if message.keys() & {
+            "durability_policy",
+            "history_policy",
+            "liveliness_policy",
+            "reliability_policy"
+        }:
             qos = None
 
         if self.topics_glob is not None:
@@ -168,7 +178,9 @@ class Advertise(Capability):
             self._registrations[topic] = Registration(client_id, topic, self.protocol.node_handle)
 
         # Register, propagating any exceptions
-        self._registrations[topic].register_advertisement(msg_type=msg_type, adv_id=aid, latch=latch, queue_size=queue_size, qos=qos)
+        self._registrations[topic].register_advertisement(
+            msg_type=msg_type, adv_id=aid, latch=latch, queue_size=queue_size, qos=qos
+        )
 
     def unadvertise(self, message: dict[str, Any]) -> None:
         # Pull out the ID

@@ -255,7 +255,7 @@ class Subscribe(Capability):
         (False, "fragment_size", int),
         (False, "queue_length", int),
         (False, "compression", str),
-        (False, "qos", QoSProfile)
+        (False, "qos", QoSProfile),
     )
     unsubscribe_msg_fields = ((True, "topic", str),)
 

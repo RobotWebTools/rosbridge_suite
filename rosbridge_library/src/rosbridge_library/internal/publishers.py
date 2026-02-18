@@ -67,7 +67,7 @@ class MultiPublisher(Generic[ROSMessageT]):
         msg_type: str | None = None,
         latched_client_id: str | None = None,
         queue_size: int = 100,
-        qos : QoSProfile | None = None,
+        qos: QoSProfile | None = None,
     ) -> None:
         """
         Register a publisher on the specified topic.
