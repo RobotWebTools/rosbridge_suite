@@ -120,7 +120,7 @@ class MultiPublisher(Generic[ROSMessageT]):
         self.topic = topic
         self.node_handle = node_handle
         self.msg_class = msg_class
-        self.publisher_qos: QoSProfile = None
+        self.publisher_qos: QoSProfile | None = None
 
         # Adding a lifespan solves the problem of late-joining subscribers
         # without the need of a custom message publisher implementation.
@@ -130,7 +130,7 @@ class MultiPublisher(Generic[ROSMessageT]):
                 durability=DurabilityPolicy.TRANSIENT_LOCAL,
             )
         else:
-            self.publisher_qos = qos;
+            self.publisher_qos = qos
 
         # For latched clients, no lifespan has to be specified (i.e. latch forever).
         # Otherwise we want to keep the messages for a second to prevent late-joining subscribers from

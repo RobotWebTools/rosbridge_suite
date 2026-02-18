@@ -37,19 +37,19 @@ from functools import partial
 from threading import Lock
 from typing import TYPE_CHECKING, Any, Generic
 
+from rclpy.qos import (
+    DurabilityPolicy,
+    HistoryPolicy,
+    LivelinessPolicy,
+    QoSProfile,
+    ReliabilityPolicy,
+)
+
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.pngcompression import encode as encode_png
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
 from rosbridge_library.internal.type_support import ROSMessageT
-
-from rclpy.qos import (
-    QoSProfile,
-    ReliabilityPolicy,
-    DurabilityPolicy,
-    HistoryPolicy,
-    LivelinessPolicy,
-)
 
 if TYPE_CHECKING:
     from collections.abc import Callable

@@ -36,16 +36,16 @@ from __future__ import annotations
 import fnmatch
 from typing import TYPE_CHECKING, Any
 
-from rosbridge_library.capability import Capability
-from rosbridge_library.internal.publishers import manager
-
 from rclpy.qos import (
-    QoSProfile,
-    ReliabilityPolicy,
     DurabilityPolicy,
     HistoryPolicy,
     LivelinessPolicy,
+    QoSProfile,
+    ReliabilityPolicy,
 )
+
+from rosbridge_library.capability import Capability
+from rosbridge_library.internal.publishers import manager
 
 if TYPE_CHECKING:
     from rclpy.node import Node
@@ -139,7 +139,7 @@ class Advertise(Capability):
             liveliness=message.get("liveliness_policy", LivelinessPolicy.SYSTEM_DEFAULT),
         )
 
-        if message.keys() & {'durability_policy', 'history_policy', 'liveliness_policy', 'reliability_policy'}:
+        if message.keys() & {"durability_policy", "history_policy", "liveliness_policy", "reliability_policy"}:
             qos = None
 
         if self.topics_glob is not None:
