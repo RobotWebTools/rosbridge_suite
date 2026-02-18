@@ -38,7 +38,11 @@ from threading import Lock, RLock
 from typing import TYPE_CHECKING, Generic, cast
 
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
-from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy, HistoryPolicy, LivelinessPolicy
+from rclpy.qos import (
+    QoSProfile,
+    ReliabilityPolicy,
+    DurabilityPolicy,
+)
 
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
@@ -319,7 +323,7 @@ class SubscriberManager:
         with self._lock:
             if topic not in self._subscribers:
                 self._subscribers[topic] = MultiSubscriber(
-                    topic, client_id, callback, node_handle, msg_type=msg_type, raw=raw
+                    topic, client_id, callback, node_handle, msg_type=msg_type, raw=raw, qos=qos
                 )
             else:
                 self._subscribers[topic].subscribe(client_id, callback)
