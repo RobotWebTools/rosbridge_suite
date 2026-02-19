@@ -163,8 +163,8 @@ class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
         self.goal_handle = future.result()
         assert self.goal_handle is not None
         if not self.goal_handle.accepted:
-            msg = "Action goal was rejected"
-            raise Exception(msg)
+            self.result = Exception("Action goal was rejected")
+            return
         result_future: Future = self.goal_handle.get_result_async()
         result_future.add_done_callback(self.get_result_cb)
 
@@ -197,6 +197,10 @@ class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
             time.sleep(self.sleep_time)
 
         client.destroy()
+
+        if isinstance(self.result, Exception):
+            raise self.result
+
         if self.result is not None:
             # Turn the response into JSON and pass to the callback
             json_response = extract_values(self.result)
