@@ -37,30 +37,41 @@ class TestMultiSubscriber(unittest.TestCase):
         self.executor.shutdown()
         rclpy.shutdown()
 
+    def assertTopicSubscribed(self, topic: str, timeout: float = 1.0) -> None:
+        start_time = time.monotonic()
+        while not is_topic_subscribed(self.node, topic):
+            time.sleep(0.05)
+            if time.monotonic() - start_time > timeout:
+                self.fail(f"Timed out waiting for topic '{topic}' to be subscribed.")
+
+    def assertTopicNotSubscribed(self, topic: str, timeout: float = 1.0) -> None:
+        start_time = time.monotonic()
+        while is_topic_subscribed(self.node, topic):
+            time.sleep(0.05)
+            if time.monotonic() - start_time > timeout:
+                self.fail(f"Timed out waiting for topic '{topic}' to be unsubscribed.")
+
     def test_register_multisubscriber(self) -> None:
         """Register a subscriber on a clean topic with a good msg type."""
         topic = "/test_register_multisubscriber"
         msg_type = "std_msgs/String"
 
-        self.assertFalse(is_topic_subscribed(self.node, topic))
+        self.assertTopicNotSubscribed(topic)
         MultiSubscriber(topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type)
-        time.sleep(0.05)
-        self.assertTrue(is_topic_subscribed(self.node, topic))
+        self.assertTopicSubscribed(topic)
 
     def test_unregister_multisubscriber(self) -> None:
         """Register and unregister a subscriber on a clean topic with a good msg type."""
         topic = "/test_unregister_multisubscriber"
         msg_type = "std_msgs/String"
 
-        self.assertFalse(is_topic_subscribed(self.node, topic))
+        self.assertTopicNotSubscribed(topic)
         multi: MultiSubscriber[String] = MultiSubscriber(
             topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type
         )
-        time.sleep(0.05)
-        self.assertTrue(is_topic_subscribed(self.node, topic))
+        self.assertTopicSubscribed(topic)
         multi.unregister()
-        time.sleep(0.05)
-        self.assertFalse(is_topic_subscribed(self.node, topic))
+        self.assertTopicNotSubscribed(topic)
 
     def test_verify_type(self) -> None:
         topic = "/test_verify_type"
@@ -90,12 +101,11 @@ class TestMultiSubscriber(unittest.TestCase):
         topic = "/test_subscribe_unsubscribe"
         msg_type = "std_msgs/String"
 
-        self.assertFalse(is_topic_subscribed(self.node, topic))
+        self.assertTopicNotSubscribed(topic)
         multi: MultiSubscriber[String] = MultiSubscriber(
             topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type
         )
-        time.sleep(0.05)
-        self.assertTrue(is_topic_subscribed(self.node, topic))
+        self.assertTopicSubscribed(topic)
         self.assertEqual(len(multi.new_subscriptions), 0)
 
         multi.subscribe(self.client_id, lambda _: None)
@@ -105,8 +115,7 @@ class TestMultiSubscriber(unittest.TestCase):
         self.assertEqual(len(multi.new_subscriptions), 0)
 
         multi.unregister()
-        time.sleep(0.1)
-        self.assertFalse(is_topic_subscribed(self.node, topic))
+        self.assertTopicNotSubscribed(topic)
 
     def test_subscribe_receive_json(self) -> None:
         topic = "/test_subscribe_receive_json"
