@@ -66,6 +66,12 @@ class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT])
             result = await future
             assert result is not None, "Service response cannot be None"
             return result
+        except Exception as e:
+            self.protocol.log(
+                "error",
+                f"Error while waiting for response to service request with id {request_id}: {e}",
+            )
+            raise
         finally:
             del self.request_futures[request_id]
 
@@ -100,7 +106,7 @@ class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT])
             for future_id in self.request_futures:
                 future = self.request_futures[future_id]
                 future.set_exception(RuntimeError(f"Service {self.service_name} was unadvertised"))
-        self.service_handle.destroy()
+        self.protocol.node_handle.destroy_service(self.service_handle)
 
 
 class AdvertiseService(Capability):
