@@ -22,7 +22,7 @@ install(FILES
 
 if(BUILD_TESTING)
   find_package(launch_testing_ament_cmake REQUIRED)
-  
+
   # Run each test with both SingleThreadedExecutor and EventsExecutor
   set(TEST_FILES
     test/websocket/advertise_action.test.py
@@ -35,7 +35,7 @@ if(BUILD_TESTING)
     test/websocket/best_effort_publisher.test.py
     test/websocket/multiple_subscribers_raw.test.py
   )
-  
+
   foreach(TEST_FILE ${TEST_FILES})
     # Extract base name for test naming
     get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
@@ -45,7 +45,7 @@ if(BUILD_TESTING)
       TARGET ${TEST_NAME}_singlethreaded
       ARGS "use_events_executor:=false"
     )
-    
+
     # Run with EventsExecutor
     add_launch_test(${TEST_FILE}
       TARGET ${TEST_NAME}_events
