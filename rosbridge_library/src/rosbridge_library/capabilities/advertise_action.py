@@ -97,10 +97,6 @@ class AdvertisedActionHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActio
             if fut.cancelled():
                 goal.abort()
                 self.protocol.log("info", f"Aborted goal {goal_id}")
-                # Send an empty result to avoid stack traces
-                fut.set_result(
-                    cast("ROSActionResultT", get_action_class(self.action_type).Result())
-                )
             else:
                 if goal_id not in self.goal_statuses:
                     goal.abort()
@@ -132,7 +128,9 @@ class AdvertisedActionHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActio
 
         try:
             result = await future
-            assert result is not None, "Action result cannot be None"
+            if result is None:
+                # Return empty result when cancelled/aborted
+                return cast("ROSActionResultT", get_action_class(self.action_type).Result())
             return result
         finally:
             del self.goal_futures[goal_id]
