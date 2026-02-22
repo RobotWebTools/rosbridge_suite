@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import contextlib
 import time
 import unittest
 from json import dumps, loads
@@ -271,7 +272,9 @@ class TestServiceCapabilities(unittest.TestCase):
         self.received_message = None
         start_time = time.monotonic()
         while self.received_message is None:
-            rclpy.spin_once(self.node, timeout_sec=0.1)
+            # TODO: Remove this suppress once this is merged: https://github.com/ros2/rclpy/pull/1582
+            with contextlib.suppress(RuntimeError):
+                rclpy.spin_once(self.node, timeout_sec=0.1)
             if time.monotonic() - start_time > 1.0:
                 self.fail(
                     "Timed out waiting for service_response after unadvertise (expected timeout response)."
