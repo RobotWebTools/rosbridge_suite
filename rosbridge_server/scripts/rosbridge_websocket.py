@@ -34,16 +34,19 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
+import signal
 import sys
+import threading
 import time
 from typing import TYPE_CHECKING, cast
 
 import rclpy
 from rcl_interfaces.msg import ParameterDescriptor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.utilities import remove_ros_args
 from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado.netutil import bind_sockets
 from tornado.web import Application
 
@@ -51,14 +54,6 @@ from rosbridge_server import ClientManager, RosbridgeWebSocket
 
 if TYPE_CHECKING:
     from tornado.routing import _RuleList
-
-
-def start_hook() -> None:
-    IOLoop.instance().start()
-
-
-def shutdown_hook() -> None:
-    IOLoop.instance().stop()
 
 
 SERVER_PARAMETERS = (
@@ -132,6 +127,7 @@ class RosbridgeWebsocketNode(Node):
 
         RosbridgeWebSocket.node_handle = self
         RosbridgeWebSocket.client_manager = ClientManager(self)
+        RosbridgeWebSocket.event_loop = asyncio.get_event_loop()
 
         self._handle_parameters()
 
@@ -230,30 +226,42 @@ class RosbridgeWebsocketNode(Node):
                 time.sleep(self.retry_startup_delay)
 
 
-def main() -> None:
-    rclpy.init()
+async def async_main() -> None:
+    rclpy.init(args=sys.argv, signal_handler_options=rclpy.signals.SignalHandlerOptions.NO)
+
     node = RosbridgeWebsocketNode()
 
-    executor = rclpy.executors.SingleThreadedExecutor()
+    executor = SingleThreadedExecutor()
     executor.add_node(node)
 
-    def spin_ros() -> None:
-        if not rclpy.ok():
-            shutdown_hook()
-            return
-        executor.spin_once(timeout_sec=0.01)
+    spin_thread = threading.Thread(target=executor.spin)
+    spin_thread.start()
 
-    spin_callback = PeriodicCallback(spin_ros, 1)
-    spin_callback.start()
-    try:
-        start_hook()
-        node.destroy_node()
-        rclpy.shutdown()
-    except KeyboardInterrupt:
+    loop = asyncio.get_running_loop()
+    stop_event = asyncio.Event()
+    signal_handled = False
+
+    def handle_signal() -> None:
+        nonlocal signal_handled
+        if signal_handled:
+            return
         print("Exiting due to SIGINT")
-    finally:
-        spin_callback.stop()
-        shutdown_hook()  # shutdown hook to stop the server
+        stop_event.set()
+        executor.shutdown()
+        signal_handled = True
+
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, handle_signal)
+
+    await stop_event.wait()
+    spin_thread.join()
+
+    node.destroy_node()
+    rclpy.shutdown()
+
+
+def main() -> None:
+    asyncio.run(async_main())
 
 
 if __name__ == "__main__":
