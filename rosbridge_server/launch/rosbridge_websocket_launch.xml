@@ -5,6 +5,7 @@
   <arg name="ssl" default="false" />
   <arg name="certfile" default=""/>
   <arg name="keyfile" default="" />
+  <arg name="use_events_executor" default="false" />
 
   <arg name="namespace" default="" />
 
@@ -37,6 +38,7 @@
       <param name="port" value="$(var port)"/>
       <param name="address" value="$(var address)"/>
       <param name="url_path" value="$(var url_path)"/>
+      <param name="use_events_executor" value="$(var use_events_executor)"/>
       <param name="retry_startup_delay" value="$(var retry_startup_delay)"/>
       <param name="fragment_timeout" value="$(var fragment_timeout)"/>
       <param name="delay_between_messages" value="$(var delay_between_messages)"/>
@@ -58,6 +60,7 @@
       <param name="port" value="$(var port)"/>
       <param name="address" value="$(var address)"/>
       <param name="url_path" value="$(var url_path)"/>
+      <param name="use_events_executor" value="$(var use_events_executor)"/>
       <param name="retry_startup_delay" value="$(var retry_startup_delay)"/>
       <param name="fragment_timeout" value="$(var fragment_timeout)"/>
       <param name="delay_between_messages" value="$(var delay_between_messages)"/>
