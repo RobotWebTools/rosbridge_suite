@@ -7,7 +7,9 @@ from typing import TYPE_CHECKING, Any, TypeVar
 import launch_ros
 import rclpy
 from autobahn.twisted.websocket import WebSocketClientFactory, WebSocketClientProtocol
+from launch.actions import DeclareLaunchArgument
 from launch.launch_description import LaunchDescription
+from launch.substitutions import LaunchConfiguration
 from launch_testing.actions import ReadyToTest
 from rcl_interfaces.srv import GetParameters
 from rclpy.executors import SingleThreadedExecutor
@@ -47,21 +49,30 @@ class TestClientProtocol(WebSocketClientProtocol):
         self.message_handler(payload if binary else json.loads(payload))
 
 
-def _generate_node() -> launch_ros.actions.Node:
-    return launch_ros.actions.Node(
-        executable="rosbridge_websocket",
-        package="rosbridge_server",
-        parameters=[{"port": 0}],
-    )
-
-
 def generate_test_description() -> LaunchDescription:
     """
     Generate a launch description that runs the websocket server.
 
     Re-export this from a test file and use add_launch_test() to run the test.
+    This supports parameterization via the 'use_events_executor' launch argument.
     """
-    return LaunchDescription([_generate_node(), ReadyToTest()])
+    return LaunchDescription(
+        [
+            DeclareLaunchArgument(
+                "use_events_executor",
+                default_value="false",
+                description="Use EventsExecutor instead of SingleThreadedExecutor",
+            ),
+            launch_ros.actions.Node(
+                executable="rosbridge_websocket",
+                package="rosbridge_server",
+                parameters=[
+                    {"port": 0, "use_events_executor": LaunchConfiguration("use_events_executor")}
+                ],
+            ),
+            ReadyToTest(),
+        ]
+    )
 
 
 async def get_server_port(node: Node) -> int:
