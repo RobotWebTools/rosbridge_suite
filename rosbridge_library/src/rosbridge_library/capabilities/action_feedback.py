@@ -30,18 +30,23 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion, ros_loader
-from rosbridge_library.protocol import Protocol
+
+if TYPE_CHECKING:
+    from rosbridge_library.protocol import Protocol
 
 
 class ActionFeedback(Capability):
-
-    action_feedback_msg_fields = [
+    action_feedback_msg_fields = (
         (True, "action", str),
         (False, "id", str),
         (False, "values", dict),
-    ]
+    )
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
@@ -55,12 +60,12 @@ class ActionFeedback(Capability):
         self.basic_type_check(message, self.action_feedback_msg_fields)
 
         # check for the action
-        action_name = message["action"]
+        action_name: str = message["action"]
         if action_name in self.protocol.external_action_list:
             action_handler = self.protocol.external_action_list[action_name]
             # parse the message
-            goal_id = message["id"]
-            values = message["values"]
+            goal_id: str = message["id"]
+            values: dict[str, Any] = message["values"]
             # create a message instance
             feedback = ros_loader.get_action_feedback_instance(action_handler.action_type)
             message_conversion.populate_instance(values, feedback)

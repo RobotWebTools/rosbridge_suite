@@ -30,14 +30,24 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
     MissingArgumentException,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from rosbridge_library.protocol import Protocol
+
 
 class Capability:
-    """Handles the operation-specific logic of a rosbridge message
+    """
+    Handles the operation-specific logic of a rosbridge message.
 
     May define one or more opcodes to handle, for example 'publish' or
     'call_service'
@@ -46,63 +56,73 @@ class Capability:
     managed by the client's own protocol instance.
 
     Protocol.send() is available to send messages back to the client.
-
     """
 
-    def __init__(self, protocol):
-        """Abstract class constructor.  All capabilities require a handle to
-        the containing protocol.
+    parameter_names: tuple[str, ...] | None = None
 
-        Keyword arguments:
-        protocol -- the protocol instance for this capability instance
+    def __init__(self, protocol: Protocol) -> None:
+        """
+        Abstract class constructor.
 
+        All capabilities require a handle to the containing protocol.
+
+        :param protocol: The protocol instance for this capability instance
         """
         self.protocol = protocol
 
-    def handle_message(self, message):
-        """Handle an incoming message.
+        if self.parameter_names and self.protocol.parameters:
+            for param_name, param_value in self.protocol.parameters.items():
+                if param_name in self.parameter_names:
+                    setattr(self, param_name, param_value)
 
-        Called by the protocol after having already checked the message op code
-
-        Keyword arguments:
-        message -- the incoming message, deserialized into a dictionary
-
+    def handle_message(self, message: dict[str, Any]) -> None:
         """
-        pass
+        Handle an incoming message.
 
-    def finish(self):
-        """Notify this capability that the client is finished and that it's
-        time to free up resources."""
-        pass
+        Called by the protocol after having already checked the message op code.
 
-    def basic_type_check(self, msg, types_info):
-        """Performs basic typechecking on fields in msg.
+        :param message: The incoming message, deserialized into a dictionary
+        """
 
-        Keyword arguments:
-        msg        -- a message, deserialized into a dictionary
-        types_info -- a list of tuples (mandatory, fieldname, fieldtype) where
-                mandatory - boolean, is the field mandatory
-                fieldname - the name of the field in the message
-                fieldtypes - the expected python type of the field or list of types
+    def finish(self) -> None:
+        """
+        Notify this capability that the client is finished.
 
-        Throws:
-        MissingArgumentException -- if a field is mandatory but not present in
-        the message
-        InvalidArgumentException -- if a field is present but not of the type
-        specified by fieldtype
+        Tells the capability that it's time to free up resources.
+        """
 
+    def basic_type_check(
+        self, msg: dict[str, Any], types_info: Sequence[tuple[bool, str, type | tuple[type, ...]]]
+    ) -> None:
+        """
+        Perform basic typechecking on fields in msg.
+
+        :param msg: A message, deserialized into a dictionary
+        :param types_info: A sequence of tuples (mandatory, fieldname, fieldtype) where
+
+            - mandatory - boolean, is the field mandatory
+            - fieldname - the name of the field in the message
+            - fieldtypes - the expected python type of the field or tuple of types
+
+        :raises MissingArgumentException: If a field is mandatory but not present in the message
+        :raises InvalidArgumentException: If a field is present but not of the type specified by
+            fieldtype
         """
         for mandatory, fieldname, fieldtypes in types_info:
             if mandatory and fieldname not in msg:
-                raise MissingArgumentException(f"Expected a {fieldname} field but none was found.")
-            elif fieldname in msg:
-                if not isinstance(fieldtypes, tuple):
-                    fieldtypes = (fieldtypes,)
+                err_msg = f"Expected a {fieldname} field but none was found."
+                raise MissingArgumentException(err_msg)
+            if fieldname in msg:
+                current_fieldtypes = fieldtypes
+                if not isinstance(current_fieldtypes, tuple):
+                    current_fieldtypes = (current_fieldtypes,)
                 valid = False
-                for typ in fieldtypes:
+                for typ in current_fieldtypes:
                     if isinstance(msg[fieldname], typ):
                         valid = True
                 if not valid:
-                    raise InvalidArgumentException(
-                        f"Expected field {fieldname} to be one of {fieldtypes}. Invalid value: {msg[fieldname]}"
+                    err_msg = (
+                        f"Expected field {fieldname} to be one of {current_fieldtypes}. "
+                        f"Invalid value: {msg[fieldname]}"
                     )
+                    raise InvalidArgumentException(err_msg)

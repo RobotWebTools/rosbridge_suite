@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+from __future__ import annotations
+
 import time
 import unittest
 from json import dumps, loads
@@ -19,7 +21,7 @@ from rosbridge_library.util.ros import is_topic_published
 
 
 class TestAdvertise(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         rclpy.init()
         self.executor = SingleThreadedExecutor()
         self.node = Node("test_advertise")
@@ -29,13 +31,13 @@ class TestAdvertise(unittest.TestCase):
 
         manager.unregister_timeout = 1.0
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.executor.remove_node(self.node)
         self.node.destroy_node()
         self.executor.shutdown()
         rclpy.shutdown()
 
-    def test_missing_arguments(self):
+    def test_missing_arguments(self) -> None:
         proto = Protocol("hello", self.node)
         adv = Advertise(proto)
         msg = {"op": "advertise"}
@@ -47,7 +49,7 @@ class TestAdvertise(unittest.TestCase):
         msg = {"op": "advertise", "type": "std_msgs/String"}
         self.assertRaises(MissingArgumentException, adv.advertise, loads(dumps(msg)))
 
-    def test_invalid_arguments(self):
+    def test_invalid_arguments(self) -> None:
         proto = Protocol("hello", self.node)
         adv = Advertise(proto)
 
@@ -57,7 +59,7 @@ class TestAdvertise(unittest.TestCase):
         msg = {"op": "advertise", "topic": "/jon", "type": 3}
         self.assertRaises(InvalidArgumentException, adv.advertise, loads(dumps(msg)))
 
-    def test_invalid_msg_typestrings(self):
+    def test_invalid_msg_typestrings(self) -> None:
         invalid = [
             "",
             "/",
@@ -90,7 +92,7 @@ class TestAdvertise(unittest.TestCase):
                 ros_loader.InvalidTypeStringException, adv.advertise, loads(dumps(msg))
             )
 
-    def test_invalid_msg_package(self):
+    def test_invalid_msg_package(self) -> None:
         nonexistent = [
             "roslib/Time",
             "roslib/Duration",
@@ -115,7 +117,7 @@ class TestAdvertise(unittest.TestCase):
             }
             self.assertRaises(ros_loader.InvalidModuleException, adv.advertise, loads(dumps(msg)))
 
-    def test_invalid_msg_classes(self):
+    def test_invalid_msg_classes(self) -> None:
         nonexistent = [
             "builtin_interfaces/SpaceTime",
             "std_msgs/Spool",
@@ -134,7 +136,7 @@ class TestAdvertise(unittest.TestCase):
             }
             self.assertRaises(ros_loader.InvalidClassException, adv.advertise, loads(dumps(msg)))
 
-    def test_valid_msg_classes(self):
+    def test_valid_msg_classes(self) -> None:
         assortedmsgs = [
             "geometry_msgs/Pose",
             "action_msgs/GoalStatus",
@@ -158,16 +160,20 @@ class TestAdvertise(unittest.TestCase):
             adv.advertise(loads(dumps(msg)))
             adv.unadvertise(loads(dumps(msg)))
 
-    def test_do_advertise(self):
+    def test_do_advertise(self) -> None:
         proto = Protocol("hello", self.node)
         adv = Advertise(proto)
         topic = "/test_do_advertise"
-        type = "std_msgs/String"
+        type_name = "std_msgs/String"
 
-        msg = {"op": "advertise", "topic": topic, "type": type}
+        msg = {"op": "advertise", "topic": topic, "type": type_name}
         adv.advertise(loads(dumps(msg)))
         self.assertTrue(is_topic_published(self.node, topic))
         adv.unadvertise(loads(dumps(msg)))
         self.assertTrue(is_topic_published(self.node, topic))
         time.sleep(manager.unregister_timeout + 1.0)
         self.assertFalse(is_topic_published(self.node, topic))
+
+
+if __name__ == "__main__":
+    unittest.main()

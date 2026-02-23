@@ -1,32 +1,52 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import unittest
 from base64 import standard_b64encode
 from json import dumps, loads
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
+from builtin_interfaces.msg import Time as TimeMsg
 from rclpy.serialization import deserialize_message, serialize_message
-from rosbridge_library.internal import message_conversion as c
-from rosbridge_library.internal import ros_loader
+from rosbridge_library.internal import message_conversion, ros_loader
+
+if TYPE_CHECKING:
+    import array
+    from collections.abc import Sequence
+
+    from rosbridge_library.internal.type_support import ROSMessage
 
 
 class TestMessageConversion(unittest.TestCase):
-    def validate_instance(self, inst1):
-        """Serializes and deserializes the inst to typecheck and ensure that
-        instances are correct"""
+    @classmethod
+    def setUpClass(cls) -> None:
+        message_conversion.configure()
+
+    def validate_instance(self, inst1: ROSMessage) -> None:
+        """
+        Validate that the instance is correct by serializing and deserializing it.
+
+        Serializes and deserializes the inst to typecheck and ensure that instances are correct.
+        """
         inst2 = deserialize_message(serialize_message(inst1), type(inst1))
         self.assertEqual(inst1, inst2)
 
-    def msgs_equal(self, msg1, msg2):
+    def msgs_equal(self, msg1: object, msg2: object) -> None:
         if isinstance(msg1, str) and isinstance(msg2, str):
             pass
         else:
             self.assertEqual(type(msg1), type(msg2))
-        if type(msg1) in c.list_types:
-            for x, y in zip(msg1, msg2):
+        if type(msg1) in message_conversion.list_types:
+            assert isinstance(msg1, message_conversion.list_types) and isinstance(
+                msg2, message_conversion.list_types
+            )
+            for x, y in zip(msg1, msg2, strict=False):
                 self.msgs_equal(x, y)
-        elif type(msg1) in c.primitive_types or type(msg1) is str:
+        elif type(msg1) in message_conversion.primitive_types or type(msg1) is str:
             self.assertEqual(msg1, msg2)
         else:
+            assert isinstance(msg1, dict) and isinstance(msg2, dict)
             for x in msg1:
                 self.assertTrue(x in msg2)
             for x in msg2:
@@ -34,77 +54,89 @@ class TestMessageConversion(unittest.TestCase):
             for x in msg1:
                 self.msgs_equal(msg1[x], msg2[x])
 
-    def do_primitive_test(self, data_value, msgtype):
+    def do_primitive_test(self, data_value: object, msgtype: str) -> None:
         for msg in [{"data": data_value}, loads(dumps({"data": data_value}))]:
             inst = ros_loader.get_message_instance(msgtype)
-            c.populate_instance(msg, inst)
+            message_conversion.populate_instance(msg, inst)
+            assert hasattr(inst, "data")
             self.assertEqual(inst.data, data_value)
             self.validate_instance(inst)
-            extracted = c.extract_values(inst)
+            extracted = message_conversion.extract_values(inst)
             for msg2 in [extracted, loads(dumps(extracted))]:
                 self.msgs_equal(msg, msg2)
                 self.assertEqual(msg["data"], msg2["data"])
                 self.assertEqual(msg2["data"], inst.data)
 
-    def do_byte_test(self, data_value, msgtype):
+    def do_byte_test(self, data_value: int, msgtype: str) -> None:
         for msg in [{"data": data_value}]:
             inst = ros_loader.get_message_instance(msgtype)
-            c.populate_instance(msg, inst)
+            message_conversion.populate_instance(msg, inst)
+            assert hasattr(inst, "data")
             self.assertEqual(inst.data, bytes([data_value]))
             self.validate_instance(inst)
-            extracted = c.extract_values(inst)
+            extracted = message_conversion.extract_values(inst)
             for msg2 in [extracted, loads(dumps(extracted))]:
                 self.assertEqual(msg["data"], msg2["data"])
                 self.assertEqual(bytes([msg2["data"]]), inst.data)
 
-    def do_test(self, orig_msg, msgtype):
+    def do_test(self, orig_msg: dict[str, Any], msgtype: str) -> None:
         for msg in [orig_msg, loads(dumps(orig_msg))]:
             inst = ros_loader.get_message_instance(msgtype)
-            c.populate_instance(msg, inst)
+            message_conversion.populate_instance(msg, inst)
             self.validate_instance(inst)
-            extracted = c.extract_values(inst)
+            extracted = message_conversion.extract_values(inst)
             for msg2 in [extracted, loads(dumps(extracted))]:
                 self.msgs_equal(msg, msg2)
 
-    def test_int_primitives(self):
+    def test_int_primitives(self) -> None:
         # Test raw primitives
         for msg in range(-100, 100):
             for rostype in ["int8", "int16", "int32", "int64"]:
-                self.assertEqual(c._to_primitive_inst(msg, rostype, rostype, []), msg)
-                self.assertEqual(c._to_inst(msg, rostype, rostype), msg)
+                self.assertEqual(
+                    message_conversion._to_primitive_inst(msg, rostype, rostype, []), msg
+                )
+                self.assertEqual(message_conversion._to_inst(msg, rostype, rostype), msg)
         # Test raw primitives
-        for msg in range(0, 200):
+        for msg in range(200):
             for rostype in ["uint8", "uint16", "uint32", "uint64"]:
-                self.assertEqual(c._to_primitive_inst(msg, rostype, rostype, []), msg)
-                self.assertEqual(c._to_inst(msg, rostype, rostype), msg)
+                self.assertEqual(
+                    message_conversion._to_primitive_inst(msg, rostype, rostype, []), msg
+                )
+                self.assertEqual(message_conversion._to_inst(msg, rostype, rostype), msg)
 
-    def test_byte_primitives(self):
+    def test_byte_primitives(self) -> None:
         # Test raw primitives
-        for msg in range(0, 200):
+        for msg in range(200):
             for rostype in ["octet"]:
-                self.assertEqual(c._to_primitive_inst(msg, rostype, rostype, []), bytes([msg]))
-                self.assertEqual(c._to_inst(msg, rostype, rostype), bytes([msg]))
+                self.assertEqual(
+                    message_conversion._to_primitive_inst(msg, rostype, rostype, []), bytes([msg])
+                )
+                self.assertEqual(message_conversion._to_inst(msg, rostype, rostype), bytes([msg]))
 
-    def test_bool_primitives(self):
-        self.assertTrue(c._to_primitive_inst(True, "bool", "bool", []))
-        self.assertTrue(c._to_inst(True, "bool", "bool"))
-        self.assertFalse(c._to_primitive_inst(False, "bool", "bool", []))
-        self.assertFalse(c._to_inst(False, "bool", "bool"))
+    def test_bool_primitives(self) -> None:
+        self.assertTrue(message_conversion._to_primitive_inst(True, "bool", "bool", []))
+        self.assertTrue(message_conversion._to_inst(True, "bool", "bool"))
+        self.assertFalse(message_conversion._to_primitive_inst(False, "bool", "bool", []))
+        self.assertFalse(message_conversion._to_inst(False, "bool", "bool"))
 
-    def test_float_primitives(self):
+    def test_float_primitives(self) -> None:
         for msg in [0.12341234 + i for i in range(-100, 100)]:
             for rostype in ["float32", "float64"]:
-                self.assertEqual(c._to_primitive_inst(msg, rostype, rostype, []), msg)
-                self.assertEqual(c._to_inst(msg, rostype, rostype), msg)
-                c._to_inst(msg, rostype, rostype)
+                self.assertEqual(
+                    message_conversion._to_primitive_inst(msg, rostype, rostype, []), msg
+                )
+                self.assertEqual(message_conversion._to_inst(msg, rostype, rostype), msg)
+                message_conversion._to_inst(msg, rostype, rostype)
 
-    def test_float_special_cases(self):
+    def test_float_special_cases(self) -> None:
         for msg in [1e9999999, -1e9999999, float("nan")]:
             for rostype in ["float32", "float64"]:
-                self.assertEqual(c._from_inst(msg, rostype), None)
-                self.assertEqual(dumps({"data": c._from_inst(msg, rostype)}), '{"data": null}')
+                self.assertEqual(message_conversion._from_inst(msg, rostype), None)
+                self.assertEqual(
+                    dumps({"data": message_conversion._from_inst(msg, rostype)}), '{"data": null}'
+                )
 
-    def test_signed_int_base_msgs(self):
+    def test_signed_int_base_msgs(self) -> None:
         int8s = range(-127, 128)
         for int8 in int8s:
             self.do_primitive_test(int8, "std_msgs/Int8")
@@ -117,24 +149,24 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(int16, "std_msgs/Int16")
             self.do_primitive_test(int16, "std_msgs/Int32")
             self.do_primitive_test(int16, "std_msgs/Int64")
-            self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/Int8")
+            self.assertRaises(AssertionError, self.do_primitive_test, int16, "std_msgs/Int8")
 
         int32s = [-2147483647, 2147483647]
         for int32 in int32s:
             self.do_primitive_test(int32, "std_msgs/Int32")
             self.do_primitive_test(int32, "std_msgs/Int64")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Int8")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Int16")
+            self.assertRaises(AssertionError, self.do_primitive_test, int32, "std_msgs/Int8")
+            self.assertRaises(AssertionError, self.do_primitive_test, int32, "std_msgs/Int16")
 
         int64s = [-9223372036854775807, 9223372036854775807]
         for int64 in int64s:
             self.do_primitive_test(int64, "std_msgs/Int64")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int8")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int16")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Int32")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/Int8")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/Int16")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/Int32")
 
-    def test_unsigned_int_base_msgs(self):
-        int8s = range(0, 256)
+    def test_unsigned_int_base_msgs(self) -> None:
+        int8s = range(256)
         for int8 in int8s:
             self.do_primitive_test(int8, "std_msgs/Char")
             self.do_primitive_test(int8, "std_msgs/UInt8")
@@ -147,16 +179,16 @@ class TestMessageConversion(unittest.TestCase):
             self.do_primitive_test(int16, "std_msgs/UInt16")
             self.do_primitive_test(int16, "std_msgs/UInt32")
             self.do_primitive_test(int16, "std_msgs/UInt64")
-            self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/Char")
-            self.assertRaises(Exception, self.do_primitive_test, int16, "std_msgs/UInt8")
+            self.assertRaises(AssertionError, self.do_primitive_test, int16, "std_msgs/Char")
+            self.assertRaises(AssertionError, self.do_primitive_test, int16, "std_msgs/UInt8")
 
         int32s = [2147483647, 2147483648, 4294967295]
         for int32 in int32s:
             self.do_primitive_test(int32, "std_msgs/UInt32")
             self.do_primitive_test(int32, "std_msgs/UInt64")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/Char")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/UInt8")
-            self.assertRaises(Exception, self.do_primitive_test, int32, "std_msgs/UInt16")
+            self.assertRaises(AssertionError, self.do_primitive_test, int32, "std_msgs/Char")
+            self.assertRaises(AssertionError, self.do_primitive_test, int32, "std_msgs/UInt8")
+            self.assertRaises(AssertionError, self.do_primitive_test, int32, "std_msgs/UInt16")
 
         int64s = [
             4294967296,
@@ -166,53 +198,56 @@ class TestMessageConversion(unittest.TestCase):
         ]
         for int64 in int64s:
             self.do_primitive_test(int64, "std_msgs/UInt64")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/Char")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt8")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt16")
-            self.assertRaises(Exception, self.do_primitive_test, int64, "std_msgs/UInt32")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/Char")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/UInt8")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/UInt16")
+            self.assertRaises(AssertionError, self.do_primitive_test, int64, "std_msgs/UInt32")
 
-    def test_byte_base_msg(self):
-        int8s = range(0, 256)
+    def test_byte_base_msg(self) -> None:
+        int8s = range(256)
         for int8 in int8s:
             self.do_byte_test(int8, "std_msgs/Byte")
 
-    def test_bool_base_msg(self):
+    def test_bool_base_msg(self) -> None:
         self.do_primitive_test(True, "std_msgs/Bool")
         self.do_primitive_test(False, "std_msgs/Bool")
 
-    def test_string_base_msg(self):
-        for x in c.ros_primitive_types:
+    def test_string_base_msg(self) -> None:
+        for x in message_conversion.ros_primitive_types:
             self.do_primitive_test(x, "std_msgs/String")
 
-    def test_time_msg(self):
-        now_inst = c._to_inst("now", "builtin_interfaces/Time", "builtin_interfaces/Time")
+    def test_time_msg(self) -> None:
+        now_inst = message_conversion._to_inst(
+            "now", "builtin_interfaces/Time", "builtin_interfaces/Time"
+        )
+        assert isinstance(now_inst, TimeMsg)
         self.assertTrue("sec" in now_inst.get_fields_and_field_types())
         self.assertTrue("nanosec" in now_inst.get_fields_and_field_types())
 
-        msg = {"sec": 3, "nanosec": 5}
+        msg: dict[str, Any] = {"sec": 3, "nanosec": 5}
         self.do_test(msg, "builtin_interfaces/Time")
 
         msg = {"times": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
         self.do_test(msg, "rosbridge_test_msgs/TestTimeArray")
 
         # For ROS1 compatibility
-        inst1 = c._to_inst(
+        inst1 = message_conversion._to_inst(
             {"sec": 3, "nanosec": 5}, "builtin_interfaces/Time", "builtin_interfaces/Time"
         )
-        inst2 = c._to_inst(
+        inst2 = message_conversion._to_inst(
             {"secs": 3, "nsecs": 5}, "builtin_interfaces/Time", "builtin_interfaces/Time"
         )
         self.assertEqual(inst1, inst2)
 
-    def test_duration_msg(self):
-        msg = {"sec": 3, "nanosec": 5}
+    def test_duration_msg(self) -> None:
+        msg: dict[str, Any] = {"sec": 3, "nanosec": 5}
         self.do_test(msg, "builtin_interfaces/Duration")
 
         msg = {"durations": [{"sec": 3, "nanosec": 5}, {"sec": 2, "nanosec": 7}]}
         self.do_test(msg, "rosbridge_test_msgs/TestDurationArray")
 
-    def test_header_msg(self):
-        msg = {
+    def test_header_msg(self) -> None:
+        msg: dict[str, Any] = {
             "stamp": {"sec": 12347, "nanosec": 322304},
             "frame_id": "2394dnfnlcx;v[p234j]",
         }
@@ -225,7 +260,7 @@ class TestMessageConversion(unittest.TestCase):
         msg = {"header": [msg["header"], msg["header"], msg["header"]]}
         self.do_test(msg, "rosbridge_test_msgs/TestHeaderArray")
 
-    def test_assorted_msgs(self):
+    def test_assorted_msgs(self) -> None:
         assortedmsgs = [
             "geometry_msgs/Pose",
             "action_msgs/GoalStatus",
@@ -242,18 +277,19 @@ class TestMessageConversion(unittest.TestCase):
         ]
         for rostype in assortedmsgs:
             inst = ros_loader.get_message_instance(rostype)
-            msg = c.extract_values(inst)
+            msg = message_conversion.extract_values(inst)
             self.do_test(msg, rostype)
             _ = loads(dumps(msg))
             inst2 = ros_loader.get_message_instance(rostype)
-            c.populate_instance(msg, inst2)
+            message_conversion.populate_instance(msg, inst2)
             self.assertEqual(inst, inst2)
 
-    def test_int8array(self):
-        def test_int8_msg(rostype, data):
+    def test_int8array(self) -> None:
+        def test_int8_msg(rostype: str, data: list[int] | str) -> Sequence:
             msg = {"data": data}
             inst = ros_loader.get_message_instance(rostype)
-            c.populate_instance(msg, inst)
+            assert hasattr(inst, "data")
+            message_conversion.populate_instance(msg, inst)
             self.validate_instance(inst)
             return inst.data
 
@@ -261,7 +297,7 @@ class TestMessageConversion(unittest.TestCase):
             rostype = "rosbridge_test_msgs/" + msgtype
 
             # From List[int]
-            int8s = list(range(0, 256))
+            int8s = list(range(256))
             ret = test_int8_msg(rostype, int8s)
             np.testing.assert_array_equal(ret, np.array(int8s))
 
@@ -274,7 +310,7 @@ class TestMessageConversion(unittest.TestCase):
             rostype = "rosbridge_test_msgs/" + msgtype
 
             # From List[int]
-            int8s = list(range(0, 16))
+            int8s = list(range(16))
             ret = test_int8_msg(rostype, int8s)
             np.testing.assert_array_equal(ret, np.array(int8s))
 
@@ -283,11 +319,12 @@ class TestMessageConversion(unittest.TestCase):
             ret = test_int8_msg(rostype, b64str_int8s)
             np.testing.assert_array_equal(ret, np.array(int8s))
 
-    def test_float32array(self):
-        def test_float32_msg(rostype, data):
+    def test_float32array(self) -> None:
+        def test_float32_msg(rostype: str, data: list[float] | list[int]) -> Sequence:
             msg = {"data": data}
             inst = ros_loader.get_message_instance(rostype)
-            c.populate_instance(msg, inst)
+            assert hasattr(inst, "data")
+            message_conversion.populate_instance(msg, inst)
             self.validate_instance(inst)
             return inst.data
 
@@ -295,12 +332,12 @@ class TestMessageConversion(unittest.TestCase):
             rostype = "rosbridge_test_msgs/" + msgtype
 
             # From List[float]
-            floats = list(map(float, range(0, 256)))
+            floats = list(map(float, range(256)))
             ret = test_float32_msg(rostype, floats)
             np.testing.assert_array_equal(ret, np.array(floats))
 
             # From List[int]
-            ints = list(map(int, range(0, 256)))
+            ints = list(map(int, range(256)))
             ret = test_float32_msg(rostype, ints)
             np.testing.assert_array_equal(ret, np.array(ints))
 
@@ -308,21 +345,22 @@ class TestMessageConversion(unittest.TestCase):
             rostype = "rosbridge_test_msgs/" + msgtype
 
             # From List[float]
-            floats = list(map(float, range(0, 16)))
+            floats = list(map(float, range(16)))
             ret = test_float32_msg(rostype, floats)
             np.testing.assert_array_equal(ret, np.array(floats))
 
             # From List[int]
-            ints = list(map(int, range(0, 16)))
+            ints = list(map(int, range(16)))
             ret = test_float32_msg(rostype, ints)
             np.testing.assert_array_equal(ret, np.array(ints))
 
     # Test a float32 array with a length with non-numeric characters in it
-    def test_float32_complexboundedarray(self):
-        def test_nestedboundedarray_msg(rostype, data):
+    def test_float32_complexboundedarray(self) -> None:
+        def test_nestedboundedarray_msg(rostype: str, data: list[float]) -> array.array:
             msg = {"data": {"data": data}}
             inst = ros_loader.get_message_instance(rostype)
-            c.populate_instance(msg, inst)
+            assert hasattr(inst, "data")
+            message_conversion.populate_instance(msg, inst)
             self.validate_instance(inst)
             return inst.data
 
@@ -330,7 +368,11 @@ class TestMessageConversion(unittest.TestCase):
             rostype = "rosbridge_test_msgs/" + msgtype
 
             # From List[float]
-            floats = list(map(float, range(0, 16)))
+            floats = list(map(float, range(16)))
             ret = test_nestedboundedarray_msg(rostype, floats)
 
-            self.assertEqual(c._from_inst(ret, rostype), {"data": floats})
+            self.assertEqual(message_conversion._from_inst(ret, rostype), {"data": floats})
+
+
+if __name__ == "__main__":
+    unittest.main()

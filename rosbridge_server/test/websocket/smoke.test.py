@@ -1,16 +1,24 @@
-#!/usr/bin/env python
-import os
+from __future__ import annotations
+
 import sys
 import unittest
+from pathlib import Path
+from typing import TYPE_CHECKING
 
-from rclpy.node import Node
 from std_msgs.msg import String
 from twisted.python import log
 
-sys.path.append(os.path.dirname(__file__))  # enable importing from common.py in this directory
+sys.path.append(str(Path(__file__).parent))  # enable importing from common.py in this directory
 
-import common  # noqa: E402
-from common import expect_messages, sleep, websocket_test  # noqa: E402
+import common
+from common import expect_messages, sleep, websocket_test
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
+    from common import TestClientProtocol
+    from rclpy.node import Node
+    from rclpy.task import Future
 
 log.startLogging(sys.stderr)
 
@@ -19,7 +27,9 @@ generate_test_description = common.generate_test_description
 
 class TestWebsocketSmoke(unittest.TestCase):
     @websocket_test
-    async def test_smoke(self, node: Node, make_client):
+    async def test_smoke(
+        self, node: Node, make_client: Callable[[], Awaitable[TestClientProtocol]]
+    ) -> None:
         ws_client = await make_client()
         # For consistency, the number of messages must not exceed the the protocol
         # Subscriber queue_size.
@@ -31,14 +41,16 @@ class TestWebsocketSmoke(unittest.TestCase):
         B_STRING = "B" * MSG_SIZE
         WARMUP_DELAY = 1.0  # seconds
 
+        sub_completed_future: Future[list[String]]
         sub_completed_future, sub_handler = expect_messages(
             NUM_MSGS, "ROS subscriber", node.get_logger()
         )
         ws_completed_future, ws_client.message_handler = expect_messages(
             NUM_MSGS, "WebSocket", node.get_logger()
         )
-        assert node.executor is not None
-        ws_completed_future.add_done_callback(lambda _: node.executor.wake())
+        executor = node.executor
+        assert executor is not None
+        ws_completed_future.add_done_callback(lambda _: executor.wake())
 
         sub_a = node.create_subscription(String, A_TOPIC, sub_handler, NUM_MSGS)
         pub_b = node.create_publisher(String, B_TOPIC, NUM_MSGS)
@@ -77,6 +89,9 @@ class TestWebsocketSmoke(unittest.TestCase):
 
         ros_received = await sub_completed_future
         ws_received = await ws_completed_future
+
+        assert ros_received is not None
+        assert ws_received is not None
 
         for msg in ws_received:
             self.assertEqual("publish", msg["op"])

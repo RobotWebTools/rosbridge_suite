@@ -1,18 +1,26 @@
-#!/usr/bin/env python
-import os
+from __future__ import annotations
+
 import sys
 import time
 import unittest
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 from rclpy.callback_groups import ReentrantCallbackGroup
-from rclpy.node import Node
 from std_srvs.srv import SetBool
 from twisted.python import log
 
-sys.path.append(os.path.dirname(__file__))  # enable importing from common.py in this directory
+sys.path.append(str(Path(__file__).parent))  # enable importing from common.py in this directory
 
-import common  # noqa: E402
-from common import expect_messages, websocket_test  # noqa: E402
+import common
+from common import expect_messages, websocket_test
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
+    from common import TestClientProtocol
+    from rclpy.node import Node
+    from std_srvs.srv import SetBool_Request, SetBool_Response
 
 log.startLogging(sys.stderr)
 
@@ -21,23 +29,29 @@ generate_test_description = common.generate_test_description
 
 class TestCallService(unittest.TestCase):
     @websocket_test
-    async def test_one_call(self, node: Node, make_client):
-        def service_cb(req, res):
+    async def test_one_call(
+        self, node: Node, make_client: Callable[[], Awaitable[TestClientProtocol]]
+    ) -> None:
+        def service_cb(req: SetBool_Request, res: SetBool_Response) -> SetBool_Response:
             self.assertTrue(req.data)
             res.success = True
             res.message = "Hello, world!"
             return res
 
         service = node.create_service(
-            SetBool, "/test_service", service_cb, callback_group=ReentrantCallbackGroup()
+            SetBool,
+            "/test_service",
+            service_cb,
+            callback_group=ReentrantCallbackGroup(),
         )
 
         ws_client = await make_client()
         responses_future, ws_client.message_handler = expect_messages(
             1, "WebSocket", node.get_logger()
         )
-        assert node.executor is not None
-        responses_future.add_done_callback(lambda _: node.executor.wake())
+        executor = node.executor
+        assert executor is not None
+        responses_future.add_done_callback(lambda _: executor.wake())
 
         ws_client.sendJson(
             {
@@ -49,7 +63,8 @@ class TestCallService(unittest.TestCase):
         )
 
         responses = await responses_future
-        self.assertEqual(len(responses), 1)
+        assert responses is not None and len(responses) == 1
+
         self.assertEqual(responses[0]["op"], "service_response")
         self.assertEqual(responses[0]["service"], "/test_service")
         self.assertEqual(responses[0]["values"], {"success": True, "message": "Hello, world!"})
@@ -57,7 +72,7 @@ class TestCallService(unittest.TestCase):
 
         node.destroy_service(service)
 
-        def service_long_cb(req, res):
+        def service_long_cb(req: SetBool_Request, res: SetBool_Response) -> SetBool_Response:
             time.sleep(0.2)
             self.assertTrue(req.data)
             res.success = True
@@ -65,13 +80,16 @@ class TestCallService(unittest.TestCase):
             return res
 
         service = node.create_service(
-            SetBool, "/test_service_long", service_long_cb, callback_group=ReentrantCallbackGroup()
+            SetBool,
+            "/test_service_long",
+            service_long_cb,
+            callback_group=ReentrantCallbackGroup(),
         )
 
         responses_future, ws_client.message_handler = expect_messages(
             2, "WebSocket", node.get_logger()
         )
-        responses_future.add_done_callback(lambda _: node.executor.wake())
+        responses_future.add_done_callback(lambda _: executor.wake())
 
         ws_client.sendJson(
             {
@@ -94,7 +112,8 @@ class TestCallService(unittest.TestCase):
         )
 
         responses = await responses_future
-        self.assertEqual(len(responses), 2)
+        assert responses is not None and len(responses) == 2
+
         self.assertEqual(responses[0]["op"], "service_response")
         self.assertEqual(responses[0]["service"], "/test_service_long")
         self.assertEqual(

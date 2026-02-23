@@ -30,20 +30,26 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from rclpy.node import Node
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from rclpy.task import Future
 
+if TYPE_CHECKING:
+    from rclpy.node import Node
 
-async def futures_wait_for(node: Node, futures: list[Future], timeout_sec: float):
+
+async def futures_wait_for(node: Node, futures: list[Future], timeout_sec: float) -> None:
     """Await a list of futures with a timeout."""
     first_done_future: Future = Future()
 
-    def timeout_callback():
+    def timeout_callback() -> None:
         first_done_future.set_result(None)
 
     timer = node.create_timer(timeout_sec, timeout_callback)
 
-    def future_done_callback(arg):
+    def future_done_callback(_arg: Future) -> None:
         if all(future.done() for future in futures):
             first_done_future.set_result(None)
 
@@ -56,11 +62,11 @@ async def futures_wait_for(node: Node, futures: list[Future], timeout_sec: float
     timer.destroy()
 
 
-async def async_sleep(node: Node, delay_sec: float):
+async def async_sleep(node: Node, delay_sec: float) -> None:
     """Block the coroutine for a given time."""
     sleep_future: Future = Future()
 
-    def timeout_callback():
+    def timeout_callback() -> None:
         sleep_future.set_result(None)
 
     timer = node.create_timer(delay_sec, timeout_callback)

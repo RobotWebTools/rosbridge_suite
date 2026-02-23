@@ -30,11 +30,17 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import sys
 import time
 import traceback
 from collections import deque
 from threading import Condition, Thread
+from typing import TYPE_CHECKING, Generic, TypeVar
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 """ Sits between incoming messages from a subscription, and the outgoing
 publish method.  Provides throttling / buffering capabilities.
@@ -43,9 +49,20 @@ When the parameters change, the handler may transition to a different kind
 of handler
 """
 
+MsgT = TypeVar("MsgT")
 
-class MessageHandler:
-    def __init__(self, previous_handler=None, publish=None):
+
+class MessageHandler(Generic[MsgT]):
+    last_publish: float
+    throttle_rate: float
+    queue_length: int
+    publish: Callable[[MsgT], None] | None
+
+    def __init__(
+        self,
+        previous_handler: MessageHandler | None = None,
+        publish: Callable[[MsgT], None] | None = None,
+    ) -> None:
         if previous_handler:
             self.last_publish = previous_handler.last_publish
             self.throttle_rate = previous_handler.throttle_rate
@@ -57,61 +74,62 @@ class MessageHandler:
             self.queue_length = 0
             self.publish = publish
 
-    def set_throttle_rate(self, throttle_rate):
+    def set_throttle_rate(self, throttle_rate: float) -> MessageHandler:
         self.throttle_rate = throttle_rate / 1000.0
         return self.transition()
 
-    def set_queue_length(self, queue_length):
+    def set_queue_length(self, queue_length: int) -> MessageHandler:
         self.queue_length = queue_length
         return self.transition()
 
-    def time_remaining(self):
+    def time_remaining(self) -> float:
         return max((self.last_publish + self.throttle_rate) - time.monotonic(), 0)
 
-    def handle_message(self, msg):
+    def handle_message(self, msg: MsgT) -> None:
         self.last_publish = time.monotonic()
+        if self.publish is None:
+            err_msg = "No publish method set for MessageHandler"
+            raise RuntimeError(err_msg)
         self.publish(msg)
 
-    def transition(self):
-        if self.throttle_rate == 0 and self.queue_length == 0:
-            return self
-        elif self.queue_length == 0:
-            return ThrottleMessageHandler(self)
-        else:
+    def transition(self) -> MessageHandler:
+        if self.queue_length > 0:
             return QueueMessageHandler(self)
+        if self.throttle_rate > 0:
+            return ThrottleMessageHandler(self)
+        return self
 
-    def finish(self, block=True):
+    def finish(self, block: bool = True) -> None:
         pass
 
 
-class ThrottleMessageHandler(MessageHandler):
-    def handle_message(self, msg):
+class ThrottleMessageHandler(MessageHandler[MsgT]):
+    def handle_message(self, msg: MsgT) -> None:
         if self.time_remaining() == 0:
             MessageHandler.handle_message(self, msg)
 
-    def transition(self):
-        if self.throttle_rate == 0 and self.queue_length == 0:
-            return MessageHandler(self)
-        elif self.queue_length == 0:
-            return self
-        else:
+    def transition(self) -> MessageHandler:
+        if self.queue_length > 0:
             return QueueMessageHandler(self)
+        if self.throttle_rate > 0:
+            return self
+        return MessageHandler(self)
 
-    def finish(self, block=True):
+    def finish(self, block: bool = True) -> None:
         pass
 
 
-class QueueMessageHandler(MessageHandler, Thread):
-    def __init__(self, previous_handler):
+class QueueMessageHandler(MessageHandler[MsgT], Thread):
+    def __init__(self, previous_handler: MessageHandler) -> None:
         Thread.__init__(self)
         MessageHandler.__init__(self, previous_handler)
         self.daemon = True
-        self.queue = deque(maxlen=self.queue_length)
+        self.queue: deque[MsgT] = deque(maxlen=self.queue_length)
         self.c = Condition()
         self.alive = True
         self.start()
 
-    def handle_message(self, msg):
+    def handle_message(self, msg: MsgT) -> None:
         with self.c:
             if not self.alive:
                 return
@@ -120,24 +138,28 @@ class QueueMessageHandler(MessageHandler, Thread):
             if should_notify:
                 self.c.notify()
 
-    def transition(self):
-        if self.throttle_rate == 0 and self.queue_length == 0:
-            self.finish()
-            return MessageHandler(self)
-        elif self.queue_length == 0:
-            self.finish()
-            return ThrottleMessageHandler(self)
-        else:
+    def transition(self) -> MessageHandler:
+        if self.queue_length > 0:
             with self.c:
                 old_queue = self.queue
                 self.queue = deque(maxlen=self.queue_length)
                 while len(old_queue) > 0:
                     self.queue.append(old_queue.popleft())
                 self.c.notify()
-            return self
+                return self
+        self.finish()
+        if self.throttle_rate > 0:
+            return ThrottleMessageHandler(self)
+        return MessageHandler(self)
 
-    def finish(self, block=True):
-        """If throttle was set to 0, this pushes all buffered messages"""
+    def finish(self, block: bool = True) -> None:
+        """
+        Notify the thread to finish, and optionally wait for it to finish.
+
+        If throttle was set to 0, this pushes all buffered messages.
+
+        :param block: If True, wait for the thread to finish before returning
+        """
         # Notify the thread to finish
         with self.c:
             self.alive = False
@@ -146,7 +168,7 @@ class QueueMessageHandler(MessageHandler, Thread):
         if block:
             self.join()
 
-    def run(self):
+    def run(self) -> None:
         while self.alive:
             msg = None
             with self.c:
@@ -165,5 +187,5 @@ class QueueMessageHandler(MessageHandler, Thread):
             try:
                 msg = self.queue.popleft()
                 MessageHandler.handle_message(self, msg)
-            except Exception:
+            except Exception:  # noqa: PERF203
                 traceback.print_exc(file=sys.stderr)

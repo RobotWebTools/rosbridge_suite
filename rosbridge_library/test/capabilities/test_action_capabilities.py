@@ -1,8 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+from __future__ import annotations
+
 import time
 import unittest
 from json import dumps, loads
 from threading import Thread
+from typing import Any
 
 import rclpy
 from action_msgs.msg import GoalStatus
@@ -23,55 +26,62 @@ from rosbridge_library.protocol import Protocol
 
 
 class TestActionCapabilities(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         rclpy.init()
         self.executor = MultiThreadedExecutor()
         self.node = Node("test_action_capabilities")
         self.executor.add_node(self.node)
 
-        self.node.declare_parameter("call_services_in_new_thread", False)
-        self.node.declare_parameter("send_action_goals_in_new_thread", False)
+        protocol_parameters = {
+            "call_services_in_new_thread": False,
+            "send_action_goals_in_new_thread": False,
+        }
 
-        self.proto = Protocol(self._testMethodName, self.node)
+        self.proto = Protocol(self._testMethodName, self.node, protocol_parameters)
         # change the log function so we can verify errors are logged
-        self.proto.log = self.mock_log
+        self.proto.log = self.mock_log  # type: ignore[method-assign]
         # change the send callback so we can access the rosbridge messages
         # being sent
-        self.proto.send = self.local_send_cb
+        self.proto.send = self.local_send_cb  # type: ignore[method-assign]
         self.advertise = AdvertiseAction(self.proto)
         self.unadvertise = UnadvertiseAction(self.proto)
         self.result = ActionResult(self.proto)
         self.send_goal = SendActionGoal(self.proto)
         self.feedback = ActionFeedback(self.proto)
-        self.received_message = None
-        self.log_entries = []
+        self.received_message: dict[str, Any] | bytes | None = None
+        self.log_entries: list[tuple[str, str]] = []
 
         self.exec_thread = Thread(target=self.executor.spin)
         self.exec_thread.start()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.executor.remove_node(self.node)
         self.executor.shutdown()
         rclpy.shutdown()
 
-    def local_send_cb(self, msg):
-        self.received_message = msg
+    def local_send_cb(
+        self,
+        message: dict[str, Any] | bytes,
+        cid: str | None = None,  # noqa: ARG002
+        compression: str = "none",  # noqa: ARG002
+    ) -> None:
+        self.received_message = message
 
-    def feedback_subscriber_cb(self, msg):
+    def feedback_subscriber_cb(self, msg: Fibonacci_FeedbackMessage) -> None:
         self.latest_feedback = msg
 
-    def mock_log(self, loglevel, message, _=None):
-        self.log_entries.append((loglevel, message))
+    def mock_log(self, level: str, message: str, lid: str | None = None) -> None:  # noqa: ARG002
+        self.log_entries.append((level, message))
 
-    def test_advertise_missing_arguments(self):
+    def test_advertise_missing_arguments(self) -> None:
         advertise_msg = loads(dumps({"op": "advertise_action"}))
         self.assertRaises(MissingArgumentException, self.advertise.advertise_action, advertise_msg)
 
-    def test_advertise_invalid_arguments(self):
+    def test_advertise_invalid_arguments(self) -> None:
         advertise_msg = loads(dumps({"op": "advertise_action", "type": 42, "action": None}))
         self.assertRaises(InvalidArgumentException, self.advertise.advertise_action, advertise_msg)
 
-    def test_result_missing_arguments(self):
+    def test_result_missing_arguments(self) -> None:
         result_msg = loads(dumps({"op": "action_result"}))
         self.assertRaises(MissingArgumentException, self.result.action_result, result_msg)
 
@@ -80,11 +90,11 @@ class TestActionCapabilities(unittest.TestCase):
         result_msg = loads(dumps({"op": "action_result", "id": "dummy_action", "values": "none"}))
         self.assertRaises(MissingArgumentException, self.result.action_result, result_msg)
 
-    def test_result_invalid_arguments(self):
+    def test_result_invalid_arguments(self) -> None:
         result_msg = loads(dumps({"op": "action_result", "action": 5, "result": "error"}))
         self.assertRaises(InvalidArgumentException, self.result.action_result, result_msg)
 
-    def test_advertise_action(self):
+    def test_advertise_action(self) -> None:
         action_path = "/fibonacci_action_1"
         advertise_msg = loads(
             dumps(
@@ -97,7 +107,7 @@ class TestActionCapabilities(unittest.TestCase):
         )
         self.advertise.advertise_action(advertise_msg)
 
-    def test_execute_advertised_action(self):
+    def test_execute_advertised_action(self) -> None:
         # Advertise the action
         action_path = "/fibonacci_action_2"
         advertise_msg = loads(
@@ -206,7 +216,7 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["values"]["sequence"], [0, 1, 1, 2, 3, 5])
         self.assertEqual(self.received_message["status"], GoalStatus.STATUS_SUCCEEDED)
 
-    def test_cancel_advertised_action(self):
+    def test_cancel_advertised_action(self) -> None:
         # Advertise the action
         action_path = "/fibonacci_action_3"
         advertise_msg = loads(
@@ -296,7 +306,7 @@ class TestActionCapabilities(unittest.TestCase):
         self.assertEqual(self.received_message["values"]["sequence"], [])
         self.assertEqual(self.received_message["status"], GoalStatus.STATUS_CANCELED)
 
-    def test_unadvertise_action(self):
+    def test_unadvertise_action(self) -> None:
         # Advertise the action
         action_path = "/fibonacci_action_4"
         advertise_msg = loads(
