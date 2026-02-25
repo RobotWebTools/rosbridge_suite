@@ -193,6 +193,9 @@ class RosbridgeWebsocketNode(Node):
         self.tornado_settings["websocket_ping_timeout"] = (
             self.get_parameter("websocket_ping_timeout").get_parameter_value().double_value
         )
+        self.tornado_settings["websocket_max_message_size"] = (
+            self.get_parameter("max_message_size").get_parameter_value().integer_value
+        )
 
         # WebSocket handler parameters
         self.use_compression = (
