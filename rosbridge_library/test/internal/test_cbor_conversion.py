@@ -5,6 +5,7 @@ import struct
 import unittest
 from array import array
 
+import numpy as np
 from builtin_interfaces.msg import Duration, Time
 from cbor2 import CBORTag
 from rosbridge_library.internal.cbor_conversion import (
@@ -204,18 +205,14 @@ class TestCBORConversion(unittest.TestCase):
             self.assertEqual(type(key), str)
 
     def test_numpy_array(self) -> None:
-        import numpy as np
 
-        # In ROS 2, fixed-size array fields (e.g. float64[3]) are backed by
-        # numpy arrays. Their slot type is not in TAGGED_ARRAY_FORMATS, so they
-        # must be handled separately via .tolist().
         class FakeMsg:
             def get_fields_and_field_types(self) -> dict[str, str]:
                 return {"data": "float64[3]"}
 
             data = np.array([1.0, 2.0, 3.0])
 
-        extracted = extract_cbor_values(FakeMsg())  # type: ignore[arg-type]
+        extracted = extract_cbor_values(FakeMsg())
         self.assertEqual(type(extracted["data"]), list)
         self.assertEqual(extracted["data"], [1.0, 2.0, 3.0])
 
