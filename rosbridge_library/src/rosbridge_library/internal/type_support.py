@@ -32,36 +32,54 @@
 
 from __future__ import annotations
 
-from typing import Protocol, TypeVar, runtime_checkable
+from typing import Any, Protocol, TypeVar, runtime_checkable
 
+from rclpy.action.client import ActionClient as _ActionClient
+from rclpy.action.client import ClientGoalHandle as _ClientGoalHandle
+from rclpy.action.server import ActionServer as _ActionServer
+from rclpy.action.server import ServerGoalHandle as _ServerGoalHandle
 
-@runtime_checkable
-class ROSMessage(Protocol):
-    """Protocol for ROS message types."""
+try:
+    from rosidl_pycommon.interface_base_classes import (
+        BaseAction,
+        BaseMessage,
+        BaseService,
+    )
 
-    __slots__: list[str]
-    _fields_and_field_types: dict[str, str]
+    ROSMessage = BaseMessage
+    ROSService = BaseService
+    ROSAction = BaseAction
 
-    def get_fields_and_field_types(self) -> dict[str, str]:
-        """Return a dictionary of field names to field types."""
+except ImportError:
+    # Fallback to Protocols if interface base classes are not available
+    # TODO: Remove this fallback once we drop support for Kilted
 
+    @runtime_checkable
+    class ROSMessage(Protocol):  # type: ignore[no-redef]
+        """Protocol for ROS message types."""
 
-@runtime_checkable
-class ROSService(Protocol):
-    """Protocol for ROS service types."""
+        __slots__: list[str]
+        _fields_and_field_types: dict[str, str]
 
-    Request: type[ROSMessage]
-    Response: type[ROSMessage]
-    Event: type[ROSMessage]
+        def get_fields_and_field_types(self) -> dict[str, str]:
+            """Return a dictionary of field names to field types."""
 
+    @runtime_checkable
+    class ROSService(Protocol):  # type: ignore[no-redef]
+        """Protocol for ROS service types."""
 
-@runtime_checkable
-class ROSAction(Protocol):
-    """Protocol for ROS action types."""
+        Request: type[ROSMessage]
+        Response: type[ROSMessage]
+        Event: type[ROSMessage]
 
-    Goal: type[ROSMessage]
-    Result: type[ROSMessage]
-    Feedback: type[ROSMessage]
+    @runtime_checkable
+    class ROSAction(Protocol):  # type: ignore[no-redef]
+        """Protocol for ROS action types."""
+
+        Goal: type[ROSMessage]
+        Result: type[ROSMessage]
+        Feedback: type[ROSMessage]
+        Impl: type[Any]
 
 
 # Type variables for ROS types
@@ -73,3 +91,40 @@ ROSActionT = TypeVar("ROSActionT", bound=ROSAction)
 ROSActionGoalT = TypeVar("ROSActionGoalT", bound=ROSMessage)
 ROSActionResultT = TypeVar("ROSActionResultT", bound=ROSMessage)
 ROSActionFeedbackT = TypeVar("ROSActionFeedbackT", bound=ROSMessage)
+
+try:
+    from rosidl_pycommon.interface_base_classes import BaseImpl
+
+    ROSActionImplT = TypeVar("ROSActionImplT", bound=BaseImpl[Any, Any, Any])
+
+    ActionClientType = _ActionClient[
+        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+    ]
+    ClientGoalHandleType = _ClientGoalHandle[
+        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+    ]
+    ActionServerType = _ActionServer[
+        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+    ]
+    ServerGoalHandleType = _ServerGoalHandle[
+        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+    ]
+
+except ImportError:
+    # Fallback to old type variables if BaseImpl is not available
+    # TODO: Remove this fallback once we drop support for Kilted
+
+    ROSActionImplT = TypeVar("ROSActionImplT")  # type: ignore[misc]
+
+    ActionClientType = _ActionClient[  # type: ignore[misc]
+        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT
+    ]
+    ClientGoalHandleType = _ClientGoalHandle[  # type: ignore[misc]
+        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT
+    ]
+    ActionServerType = _ActionServer[  # type: ignore[misc]
+        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT
+    ]
+    ServerGoalHandleType = _ServerGoalHandle[  # type: ignore[misc]
+        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT
+    ]
