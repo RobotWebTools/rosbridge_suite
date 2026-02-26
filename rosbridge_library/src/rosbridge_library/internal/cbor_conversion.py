@@ -99,7 +99,7 @@ def extract_cbor_values(msg: ROSMessage) -> dict[str, Any]:
             out[slot] = CBORTag(tag=tag, value=packed)
 
         # fixed-size primitive arrays
-        elif hasattr(val, 'tolist'):
+        elif hasattr(val, "tolist"):
             out[slot] = val.tolist()
 
         # array of messages
