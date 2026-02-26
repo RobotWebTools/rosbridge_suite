@@ -205,7 +205,6 @@ class TestCBORConversion(unittest.TestCase):
             self.assertEqual(type(key), str)
 
     def test_numpy_array(self) -> None:
-
         class FakeMsg:
             def get_fields_and_field_types(self) -> dict[str, str]:
                 return {"data": "float64[3]"}
