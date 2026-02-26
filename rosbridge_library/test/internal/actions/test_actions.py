@@ -33,13 +33,8 @@ class ActionTester:
         self.executor = executor
         self.node = Node("action_tester")
         self.executor.add_node(self.node)
-        self.action_server: ActionServer[
-            Fibonacci_Goal, Fibonacci_Result, Fibonacci_Feedback, Any
-        ] = ActionServer(
-            self.node,
-            Fibonacci,
-            "get_fibonacci_sequence",
-            self.execute_callback,
+        self.action_server = ActionServer(
+            self.node, Fibonacci, "get_fibonacci_sequence", self.execute_callback
         )
 
     def __del__(self) -> None:
@@ -164,13 +159,7 @@ class TestActions(unittest.TestCase):
             received["msg"] = response.result
 
         # First, call the action the 'proper' way
-        client: ActionClient[Fibonacci_Goal, Fibonacci_Result, Fibonacci_Feedback, Any] = (
-            ActionClient(
-                self.node,
-                Fibonacci,
-                "get_fibonacci_sequence",
-            )
-        )
+        client = ActionClient(self.node, Fibonacci, "get_fibonacci_sequence")
         client.wait_for_server()
         goal = Fibonacci.Goal()
         goal.order = 5
