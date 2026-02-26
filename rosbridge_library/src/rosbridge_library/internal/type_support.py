@@ -32,55 +32,17 @@
 
 from __future__ import annotations
 
-from typing import Any, Protocol, TypeVar, runtime_checkable
+from typing import Any, TypeAlias, TypeVar
 
 from rclpy.action.client import ActionClient as _ActionClient
 from rclpy.action.client import ClientGoalHandle as _ClientGoalHandle
 from rclpy.action.server import ActionServer as _ActionServer
 from rclpy.action.server import ServerGoalHandle as _ServerGoalHandle
+from rosidl_pycommon.interface_base_classes import BaseAction, BaseImpl, BaseMessage, BaseService
 
-try:
-    from rosidl_pycommon.interface_base_classes import (
-        BaseAction,
-        BaseMessage,
-        BaseService,
-    )
-
-    ROSMessage = BaseMessage
-    ROSService = BaseService
-    ROSAction = BaseAction
-
-except ImportError:
-    # Fallback to Protocols if interface base classes are not available
-    # TODO: Remove this fallback once we drop support for Kilted
-
-    @runtime_checkable
-    class ROSMessage(Protocol):  # type: ignore[no-redef]
-        """Protocol for ROS message types."""
-
-        __slots__: list[str]
-        _fields_and_field_types: dict[str, str]
-
-        def get_fields_and_field_types(self) -> dict[str, str]:
-            """Return a dictionary of field names to field types."""
-
-    @runtime_checkable
-    class ROSService(Protocol):  # type: ignore[no-redef]
-        """Protocol for ROS service types."""
-
-        Request: type[ROSMessage]
-        Response: type[ROSMessage]
-        Event: type[ROSMessage]
-
-    @runtime_checkable
-    class ROSAction(Protocol):  # type: ignore[no-redef]
-        """Protocol for ROS action types."""
-
-        Goal: type[ROSMessage]
-        Result: type[ROSMessage]
-        Feedback: type[ROSMessage]
-        Impl: type[Any]
-
+ROSMessage: TypeAlias = BaseMessage
+ROSService: TypeAlias = BaseService
+ROSAction: TypeAlias = BaseAction
 
 # Type variables for ROS types
 ROSMessageT = TypeVar("ROSMessageT", bound=ROSMessage)
@@ -91,40 +53,17 @@ ROSActionT = TypeVar("ROSActionT", bound=ROSAction)
 ROSActionGoalT = TypeVar("ROSActionGoalT", bound=ROSMessage)
 ROSActionResultT = TypeVar("ROSActionResultT", bound=ROSMessage)
 ROSActionFeedbackT = TypeVar("ROSActionFeedbackT", bound=ROSMessage)
+ROSActionImplT = TypeVar("ROSActionImplT", bound=BaseImpl[Any, Any, Any])
 
-try:
-    from rosidl_pycommon.interface_base_classes import BaseImpl
-
-    ROSActionImplT = TypeVar("ROSActionImplT", bound=BaseImpl[Any, Any, Any])
-
-    ActionClientType = _ActionClient[
-        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
-    ]
-    ClientGoalHandleType = _ClientGoalHandle[
-        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
-    ]
-    ActionServerType = _ActionServer[
-        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
-    ]
-    ServerGoalHandleType = _ServerGoalHandle[
-        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
-    ]
-
-except ImportError:
-    # Fallback to old type variables if BaseImpl is not available
-    # TODO: Remove this fallback once we drop support for Kilted
-
-    ROSActionImplT = TypeVar("ROSActionImplT")  # type: ignore[misc]
-
-    ActionClientType = _ActionClient[  # type: ignore[misc]
-        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT
-    ]
-    ClientGoalHandleType = _ClientGoalHandle[  # type: ignore[misc]
-        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT
-    ]
-    ActionServerType = _ActionServer[  # type: ignore[misc]
-        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT
-    ]
-    ServerGoalHandleType = _ServerGoalHandle[  # type: ignore[misc]
-        ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT
-    ]
+ActionClientType: TypeAlias = _ActionClient[
+    ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+]
+ClientGoalHandleType: TypeAlias = _ClientGoalHandle[
+    ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+]
+ActionServerType: TypeAlias = _ActionServer[
+    ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+]
+ServerGoalHandleType: TypeAlias = _ServerGoalHandle[
+    ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+]
