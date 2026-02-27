@@ -49,7 +49,7 @@ jobs:
         with:
           target-ros2-distro: ${{ matrix.ros }}
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: colcon-logs-${{ matrix.ros }}
           path: ${{ steps.action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
