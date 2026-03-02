@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.0.0 (2026-03-02)
+------------------
 * fix: Use new interface base classes for type checking, drop Kilted support (`#1164 <https://github.com/RobotWebTools/rosbridge_suite/issues/1164>`_)
 * fix: numpy.ndarray not handled in CBOR serialization (`#1161 <https://github.com/RobotWebTools/rosbridge_suite/issues/1161>`_)
 * fix: Handle action rejection and server timeout (`#1139 <https://github.com/RobotWebTools/rosbridge_suite/issues/1139>`_)

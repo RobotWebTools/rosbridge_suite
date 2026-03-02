@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.0.0 (2026-03-02)
+------------------
 * feat: Add an option to use EventsExecutor (`#1157 <https://github.com/RobotWebTools/rosbridge_suite/issues/1157>`_)
 * fix: Reduce idle CPU consumption of websocket server (`#1040 <https://github.com/RobotWebTools/rosbridge_suite/issues/1040>`_)
 * Contributors: Błażej Sowa
