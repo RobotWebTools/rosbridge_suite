@@ -2,6 +2,11 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.5.0 (2026-03-02)
+------------------
+* fix: Reduce idle CPU consumption of websocket server (backport `#1040 <https://github.com/RobotWebTools/rosbridge_suite/issues/1040>`_) (`#1153 <https://github.com/RobotWebTools/rosbridge_suite/issues/1153>`_)
+* Contributors: Błażej Sowa
+
 2.4.2 (2025-11-20)
 ------------------
 * fix: Use correct type for delay_between_messages parameter in launch file (backport `#1126 <https://github.com/RobotWebTools/rosbridge_suite/issues/1126>`_) (`#1131 <https://github.com/RobotWebTools/rosbridge_suite/issues/1131>`_)
