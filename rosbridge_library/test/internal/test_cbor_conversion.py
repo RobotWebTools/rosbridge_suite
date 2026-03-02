@@ -11,6 +11,7 @@ from rosbridge_library.internal.cbor_conversion import (
     TAGGED_ARRAY_FORMATS,
     extract_cbor_values,
 )
+from sensor_msgs.msg import Imu
 from std_msgs.msg import (
     Bool,
     Float32,
@@ -202,6 +203,13 @@ class TestCBORConversion(unittest.TestCase):
         keys = extracted.keys()
         for key in keys:
             self.assertEqual(type(key), str)
+
+    def test_numpy_array(self) -> None:
+        msg = Imu()
+        extracted = extract_cbor_values(msg)
+        covariance = extracted["orientation_covariance"]
+        self.assertEqual(type(covariance), list)
+        self.assertEqual(len(covariance), 9)
 
 
 if __name__ == "__main__":

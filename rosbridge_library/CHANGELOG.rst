@@ -2,6 +2,14 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.0.0 (2026-03-02)
+------------------
+* fix: Use new interface base classes for type checking, drop Kilted support (`#1164 <https://github.com/RobotWebTools/rosbridge_suite/issues/1164>`_)
+* fix: numpy.ndarray not handled in CBOR serialization (`#1161 <https://github.com/RobotWebTools/rosbridge_suite/issues/1161>`_)
+* fix: Handle action rejection and server timeout (`#1139 <https://github.com/RobotWebTools/rosbridge_suite/issues/1139>`_)
+* fix: Failing service and subscription tests (`#1147 <https://github.com/RobotWebTools/rosbridge_suite/issues/1147>`_)
+* Contributors: Błażej Sowa, Spir0u, atofetti-botbot
+
 3.0.2 (2025-11-20)
 ------------------
 * fix: Apply service timeout parameter correctly (`#1125 <https://github.com/RobotWebTools/rosbridge_suite/issues/1125>`_)
