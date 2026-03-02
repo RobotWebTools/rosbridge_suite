@@ -57,15 +57,12 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from action_msgs.srv import CancelGoal_Response
+    from rclpy.action.client import ClientGoalHandle
     from rclpy.node import Node
     from rclpy.task import Future
     from rclpy.type_support import FeedbackMessage, GetResultServiceResponse
 
-    from rosbridge_library.internal.type_support import (
-        ActionClientType,
-        ClientGoalHandleType,
-        ROSMessage,
-    )
+    from rosbridge_library.internal.type_support import ROSMessage
 
 
 class InvalidActionException(Exception):
@@ -157,7 +154,10 @@ class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROS
     def __init__(self, server_timeout_time: float = 1.0, sleep_time: float = 0.001) -> None:
         self.server_timeout_time = server_timeout_time
         self.sleep_time = sleep_time
-        self.goal_handle: ClientGoalHandleType | None = None
+        self.goal_handle: (
+            ClientGoalHandle[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT]
+            | None
+        ) = None
         self.goal_canceled = False
 
     def get_result_cb(self, future: Future[GetResultServiceResponse[ROSActionResultT]]) -> None:
@@ -165,7 +165,9 @@ class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROS
 
     def goal_response_cb(
         self,
-        future: Future[ClientGoalHandleType],
+        future: Future[
+            ClientGoalHandle[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT]
+        ],
     ) -> None:
         self.goal_handle = future.result()
         assert self.goal_handle is not None
@@ -198,7 +200,9 @@ class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROS
         args_to_action_goal_instance(inst, args)
 
         self.result = None
-        client: ActionClientType = ActionClient(node_handle, action_class, action_name)
+        client = ActionClient[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT](
+            node_handle, action_class, action_name
+        )
         if not client.wait_for_server(timeout_sec=self.server_timeout_time):
             msg = "No action server available"
             raise Exception(msg)

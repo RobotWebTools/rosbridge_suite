@@ -34,10 +34,6 @@ from __future__ import annotations
 
 from typing import Any, TypeAlias, TypeVar
 
-from rclpy.action.client import ActionClient as _ActionClient
-from rclpy.action.client import ClientGoalHandle as _ClientGoalHandle
-from rclpy.action.server import ActionServer as _ActionServer
-from rclpy.action.server import ServerGoalHandle as _ServerGoalHandle
 from rosidl_pycommon.interface_base_classes import BaseAction, BaseImpl, BaseMessage, BaseService
 
 ROSMessage: TypeAlias = BaseMessage
@@ -54,16 +50,3 @@ ROSActionGoalT = TypeVar("ROSActionGoalT", bound=ROSMessage)
 ROSActionResultT = TypeVar("ROSActionResultT", bound=ROSMessage)
 ROSActionFeedbackT = TypeVar("ROSActionFeedbackT", bound=ROSMessage)
 ROSActionImplT = TypeVar("ROSActionImplT", bound=BaseImpl[Any, Any, Any])
-
-ActionClientType: TypeAlias = _ActionClient[
-    ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
-]
-ClientGoalHandleType: TypeAlias = _ClientGoalHandle[
-    ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
-]
-ActionServerType: TypeAlias = _ActionServer[
-    ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
-]
-ServerGoalHandleType: TypeAlias = _ServerGoalHandle[
-    ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
-]

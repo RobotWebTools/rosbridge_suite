@@ -45,16 +45,16 @@ from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
 from rosbridge_library.internal.ros_loader import get_action_class
 from rosbridge_library.internal.type_support import (
-    ActionServerType,
     ROSActionFeedbackT,
     ROSActionGoalT,
     ROSActionImplT,
     ROSActionResultT,
     ROSMessage,
-    ServerGoalHandleType,
 )
 
 if TYPE_CHECKING:
+    from rclpy.action.server import ServerGoalHandle
+
     from rosbridge_library.protocol import Protocol
 
 
@@ -67,7 +67,10 @@ class AdvertisedActionHandler(
         self, action_name: str, action_type: str, protocol: Protocol, sleep_time: float = 0.001
     ) -> None:
         self.goal_futures: dict[str, Future[ROSActionResultT]] = {}
-        self.goal_handles: dict[str, ServerGoalHandleType] = {}
+        self.goal_handles: dict[
+            str,
+            ServerGoalHandle[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT],
+        ] = {}
         self.goal_statuses: dict[str, int] = {}
 
         self.action_name = action_name
@@ -75,7 +78,9 @@ class AdvertisedActionHandler(
         self.protocol = protocol
         self.sleep_time = sleep_time
         # setup the action
-        self.action_server: ActionServerType = ActionServer(
+        self.action_server = ActionServer[
+            ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+        ](
             protocol.node_handle,
             get_action_class(action_type),
             action_name,
@@ -89,7 +94,12 @@ class AdvertisedActionHandler(
         self.id_counter += 1
         return next_id_value
 
-    async def execute_callback(self, goal: ServerGoalHandleType) -> ROSActionResultT:
+    async def execute_callback(
+        self,
+        goal: ServerGoalHandle[
+            ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+        ],
+    ) -> ROSActionResultT:
         """
         Execute action goal.
 
@@ -141,7 +151,12 @@ class AdvertisedActionHandler(
             del self.goal_futures[goal_id]
             del self.goal_handles[goal_id]
 
-    def cancel_callback(self, goal: ServerGoalHandleType) -> CancelResponse:
+    def cancel_callback(
+        self,
+        goal: ServerGoalHandle[
+            ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+        ],
+    ) -> CancelResponse:
         """
         Cancel action goal.
 
