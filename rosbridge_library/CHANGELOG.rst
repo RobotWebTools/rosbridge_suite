@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.5 (2026-03-02)
+------------------
 * fix: numpy.ndarray not handled in CBOR serialization (backport `#1161 <https://github.com/RobotWebTools/rosbridge_suite/issues/1161>`_) (`#1163 <https://github.com/RobotWebTools/rosbridge_suite/issues/1163>`_)
 * fix: Handle action rejection and server timeout (backport `#1139 <https://github.com/RobotWebTools/rosbridge_suite/issues/1139>`_) (`#1156 <https://github.com/RobotWebTools/rosbridge_suite/issues/1156>`_)
 * fix: Failing service and subscription tests (backport `#1147 <https://github.com/RobotWebTools/rosbridge_suite/issues/1147>`_) (`#1155 <https://github.com/RobotWebTools/rosbridge_suite/issues/1155>`_)
