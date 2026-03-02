@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.5.0 (2026-03-02)
+------------------
 * fix: Reduce idle CPU consumption of websocket server (backport `#1040 <https://github.com/RobotWebTools/rosbridge_suite/issues/1040>`_) (`#1153 <https://github.com/RobotWebTools/rosbridge_suite/issues/1153>`_)
 * Contributors: Błażej Sowa
 
