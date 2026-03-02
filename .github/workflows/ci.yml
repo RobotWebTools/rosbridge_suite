@@ -28,9 +28,7 @@ jobs:
         include:
           # Test supported ROS 2 distributions
           # https://docs.ros.org/en/rolling/Releases.html
-          # NOTE: Humble and Jazzy do not work on the `ros2` branch, so they are tested in their own branches.
-          - ros: kilted
-            os: ubuntu-24.04
+          # NOTE: Humble, Jazzy and Kilted do not work on the `ros2` branch, so they are tested in their own branches.
           - ros: rolling
             os: ubuntu-24.04
 
@@ -49,7 +47,7 @@ jobs:
         with:
           target-ros2-distro: ${{ matrix.ros }}
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: colcon-logs-${{ matrix.ros }}
           path: ${{ steps.action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
