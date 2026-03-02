@@ -2,6 +2,12 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.1.0 (2026-03-02)
+------------------
+* feat: Add an option to use EventsExecutor (`#1157 <https://github.com/RobotWebTools/rosbridge_suite/issues/1157>`_)
+* fix: Reduce idle CPU consumption of websocket server (`#1040 <https://github.com/RobotWebTools/rosbridge_suite/issues/1040>`_)
+* Contributors: Błażej Sowa
+
 3.0.2 (2025-11-20)
 ------------------
 * fix: Use correct type for delay_between_messages parameter in launch file (`#1126 <https://github.com/RobotWebTools/rosbridge_suite/issues/1126>`_)
