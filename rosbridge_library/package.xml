@@ -26,6 +26,7 @@ ROS action, like subscribe, publish, call service, and interact with params.
   <exec_depend>python3-ujson</exec_depend>
   <exec_depend>rcl_interfaces</exec_depend>
   <exec_depend>rclpy</exec_depend>
+  <exec_depend>rosidl_pycommon</exec_depend>
 
   <test_depend>action_msgs</test_depend>
   <test_depend>ament_cmake_mypy</test_depend>
