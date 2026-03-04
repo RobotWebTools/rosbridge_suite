@@ -142,7 +142,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         # - https://github.com/RobotWebTools/rosbridge_suite/issues/551
         # - https://github.com/RobotWebTools/rosbridge_suite/issues/769
         if qos is None:
-            qos = QoSProfile(
+            qos: QoSProfile = QoSProfile(
                 depth=10,
                 durability=DurabilityPolicy.VOLATILE,
                 reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -153,15 +153,11 @@ class MultiSubscriber(Generic[ROSMessageT]):
             if len(infos) > 0 and all(
                 pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
             ):
-                qos = QoSProfile(
-                    depth=10,
-                    durability=DurabilityPolicy.TRANSIENT_LOCAL,
-                    reliability=ReliabilityPolicy.RELIABLE,
-                )
+                qos.durability=DurabilityPolicy.TRANSIENT_LOCAL
+                qos.reliability=ReliabilityPolicy.RELIABLE
+
             if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
-                qos = QoSProfile(
-                    reliability=ReliabilityPolicy.BEST_EFFORT,
-                )
+                qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
