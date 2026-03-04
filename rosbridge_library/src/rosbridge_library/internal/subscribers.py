@@ -150,14 +150,13 @@ class MultiSubscriber(Generic[ROSMessageT]):
 
             infos = node_handle.get_publishers_info_by_topic(topic)
 
-            if len(infos) > 0 and all(
-                pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
-            ):
-                qos.durability=DurabilityPolicy.TRANSIENT_LOCAL
-                qos.reliability=ReliabilityPolicy.RELIABLE
+            if len(infos) > 0:
+                if all(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
+                    qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
+                    qos.reliability = ReliabilityPolicy.RELIABLE
 
-            if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
-                qos.reliability = ReliabilityPolicy.BEST_EFFORT
+                if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+                    qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
@@ -166,7 +165,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         self.msg_class = msg_class
         self.node_handle = node_handle
         self.topic = topic
-        self.qos = qos
+        self.qos_profile: QoSProfile | int = qos
         self.raw = raw
         self.callback_group = MutuallyExclusiveCallbackGroup()
 
@@ -174,7 +173,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
             msg_class,
             topic,
             partial(self.callback, callbacks=None),
-            qos,
+            qos_profile=self.qos_profile,
             raw=raw,
             callback_group=self.callback_group,
         )
@@ -230,7 +229,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
                     self.msg_class,
                     self.topic,
                     self._new_sub_callback,
-                    self.qos,
+                    qos_profile=self.qos_profile,
                     raw=self.raw,
                     callback_group=self.callback_group,
                 )
