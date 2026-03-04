@@ -143,6 +143,8 @@ class Subscription(Generic[ROSMessageT]):
             allowed outgoing messages
         :param compression: "none" if no compression, or some other value if
             compression is to be used (current valid values are 'png')
+        :param qos: None if unset, or a QoSProfile object if custom QOS profile
+            is to be used
         """
         client_details = {
             "throttle_rate": throttle_rate,

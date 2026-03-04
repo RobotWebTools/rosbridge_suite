@@ -278,12 +278,14 @@ If you wish to advertise that you are or will be publishing a topic, then use th
 { "op": "advertise",
   (optional) "id": <string>,
   "topic": <string>,
-  "type": <string>
+  "type": <string>,
+  (optional) "qos": <QoSProfile>
 }
 ```
 
  * **topic** – the string name of the topic to advertise
  * **type** – the string type to advertise for the topic
+ * **qos** - the qos profile of the topic to advertise
 
    * If the topic does not already exist, and the type specified is a valid
      type, then the topic will be established with this type.
@@ -354,7 +356,8 @@ then the current time will be automatically inserted.
   (optional) "throttle_rate": <int>,
   (optional) "queue_length": <int>,
   (optional) "fragment_size": <int>,
-  (optional) "compression": <string>
+  (optional) "compression": <string>,
+  (optional) "qos": <QoSProfile>
 }
 ```
 
@@ -378,6 +381,8 @@ which to send messages.
     be fragmented.
  * **compression** – an optional string to specify the compression scheme to be
     used on messages. Valid values are "none", "png", "cbor", and "cbor-raw".
+ * **qos** - the qos profile of the topic to subscribe to. If left off, profile
+    will attempt to be inferred
 
 If queue_length is specified, then messages are placed into the queue before
 being sent. Messages are sent from the head of the queue. If the queue gets

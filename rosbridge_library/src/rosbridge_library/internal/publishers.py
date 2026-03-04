@@ -78,6 +78,8 @@ class MultiPublisher(Generic[ROSMessageT]):
             attempt will be made to infer the topic type
         :param latch: (optional) If a client requested this publisher to be latched,
             provide the client_id of that client here
+        :param qos: (optional) If a QoSProfile is provided, topic will be created
+            with supplied profile, else default "transient_local" durability setting
 
         :raises TopicNotEstablishedException: If no msg_type was specified by the caller and the
             topic is not yet established, so a topic type cannot be inferred
@@ -242,6 +244,7 @@ class PublisherManager:
         :param msg_type: (optional) The type to publish
         :param latch: (optional) Whether to make this publisher latched
         :param queue_size: (optional) Publisher queue_size to use
+        :param qos: (optional) Publisher QoSProfile to use
 
         :raises Exception: exceptions are propagated from the MultiPublisher if there is a problem
             loading the specified msg class or establishing the publisher

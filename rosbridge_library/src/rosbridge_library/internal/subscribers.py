@@ -92,6 +92,8 @@ class MultiSubscriber(Generic[ROSMessageT]):
         :param node_handle: Handle to a rclpy node to create the publisher
         :param msg_type: (optional) The type to register the subscriber as.  If not provided, an
             attempt will be made to infer the topic type
+        :param qos: (optional) The QoS profile to register the subscriber with. If not provided,
+            an attempt will be made to maximize compatibility
 
         :raises TopicNotEstablishedException: If no msg_type was specified by the caller and the
             topic is not yet established, so a topic type cannot be inferred
@@ -151,10 +153,15 @@ class MultiSubscriber(Generic[ROSMessageT]):
             if len(infos) > 0 and all(
                 pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
             ):
-                qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
-                qos.reliability = ReliabilityPolicy.RELIABLE
+                qos = QoSProfile(
+                    depth=10,
+                    durability=DurabilityPolicy.TRANSIENT_LOCAL,
+                    reliability=ReliabilityPolicy.RELIABLE,
+                )
             if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
-                qos.reliability = ReliabilityPolicy.BEST_EFFORT
+                qos = QoSProfile(
+                    reliability=ReliabilityPolicy.BEST_EFFORT,
+                )
 
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
@@ -319,6 +326,7 @@ class SubscriberManager:
         :param topic: The name of the topic to subscribe to
         :param callback: The callback to call for incoming messages on the topic
         :param msg_type: (optional) The type of the topic
+        :param qos: (optional) The QoSProfile of the topic
         """
         with self._lock:
             if topic not in self._subscribers:
