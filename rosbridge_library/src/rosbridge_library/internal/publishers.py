@@ -37,7 +37,10 @@ from threading import Timer
 from typing import TYPE_CHECKING, Any, Generic, cast
 
 from rclpy.duration import Duration
-from rclpy.qos import DurabilityPolicy, QoSProfile
+from rclpy.qos import (
+    HistoryPolicy,
+    QoSProfile,
+)
 
 from rosbridge_library.internal import message_conversion, ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
@@ -45,7 +48,10 @@ from rosbridge_library.internal.topics import (
     TopicNotEstablishedException,
     TypeConflictException,
 )
-from rosbridge_library.internal.type_support import ROSMessage, ROSMessageT
+from rosbridge_library.internal.type_support import (
+    ROSMessage,
+    ROSMessageT,
+)
 
 if TYPE_CHECKING:
     from rclpy.node import Node
@@ -121,7 +127,7 @@ class MultiPublisher(Generic[ROSMessageT]):
         self.topic = topic
         self.node_handle = node_handle
         self.msg_class = msg_class
-        self.publisher_qos: QoSProfile | int = 100
+        self.publisher_qos: QoSProfile | int = 10
 
         # Adding a lifespan solves the problem of late-joining subscribers
         # without the need of a custom message publisher implementation.
@@ -131,6 +137,7 @@ class MultiPublisher(Generic[ROSMessageT]):
             # missing messages.
             if latched_client_id is None:
                 self.publisher_qos = QoSProfile(
+                    history = HistoryPolicy.KEEP_ALL,
                     lifespan = Duration(seconds=1)
                 )
             else:
@@ -226,8 +233,7 @@ class PublisherManager:
         node_handle: Node,
         msg_type: str | None = None,
         latch: bool = False,
-        queue_size: int = 100,
-        qos: QoSProfile | None = None,
+        qos: QoSProfile | int = 10,
     ) -> None:
         """
         Register a publisher on the specified topic.
@@ -240,7 +246,6 @@ class PublisherManager:
         :param node_handle: Handle to a rclpy node to create the publisher
         :param msg_type: (optional) The type to publish
         :param latch: (optional) Whether to make this publisher latched
-        :param queue_size: (optional) Publisher queue_size to use
         :param qos: (optional) Publisher QoSProfile to use
 
         :raises Exception: exceptions are propagated from the MultiPublisher if there is a problem
@@ -253,7 +258,6 @@ class PublisherManager:
                 node_handle,
                 msg_type=msg_type,
                 latched_client_id=latched_client_id,
-                queue_size=queue_size,
                 qos=qos,
             )
         elif latch and self._publishers[topic].latched_client_id != client_id:
@@ -324,7 +328,7 @@ class PublisherManager:
         msg: dict,
         node_handle: Node,
         latch: bool = False,
-        queue_size: int = 100,
+        qos: QoSProfile | int = 10,
     ) -> None:
         """
         Publish a message on the given topic.
@@ -336,13 +340,13 @@ class PublisherManager:
         :param msg: A JSON-like dict of fields and values
         :param node_handle: Handle to a rclpy node to create the publisher
         :param latch: (optional) Whether to make this publisher latched
-        :param queue_size: (optional) Publisher queue_size to use
+        :param qos: (optional) QoSProfile to use for this publisher
 
         :raises Exception: A variety of exceptions are propagated. They can be thrown if there is
             a problem setting up or getting the publisher, or if the provided msg does not map to
             the msg class of the publisher.
         """
-        self.register(client_id, topic, node_handle, latch=latch, queue_size=queue_size)
+        self.register(client_id, topic, node_handle, latch=latch, qos=qos)
 
         self._publishers[topic].publish(msg)
 

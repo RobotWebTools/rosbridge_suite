@@ -81,7 +81,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         node_handle: Node,
         msg_type: str | None = None,
         raw: bool = False,
-        qos: QoSProfile | None = None,
+        qos: QoSProfile | int = 10,
     ) -> None:
         """
         Register a subscriber on the specified topic.
@@ -93,7 +93,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         :param msg_type: (optional) The type to register the subscriber as.  If not provided, an
             attempt will be made to infer the topic type
         :param qos: (optional) The QoS profile to register the subscriber with. If not provided,
-            an attempt will be made to maximize compatibility
+            ROS default QoSProfile will be used
 
         :raises TopicNotEstablishedException: If no msg_type was specified by the caller and the
             topic is not yet established, so a topic type cannot be inferred
@@ -141,9 +141,9 @@ class MultiSubscriber(Generic[ROSMessageT]):
         # - https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html
         # - https://github.com/RobotWebTools/rosbridge_suite/issues/551
         # - https://github.com/RobotWebTools/rosbridge_suite/issues/769
-        if qos is None:
+        if qos is int:
             qos: QoSProfile = QoSProfile(
-                depth=10,
+                depth=qos,
                 durability=DurabilityPolicy.VOLATILE,
                 reliability=ReliabilityPolicy.BEST_EFFORT,
             )
@@ -151,11 +151,15 @@ class MultiSubscriber(Generic[ROSMessageT]):
             infos = node_handle.get_publishers_info_by_topic(topic)
 
             if len(infos) > 0:
-                if all(pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos):
+                if all(
+                    pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
+                ):
                     qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
                     qos.reliability = ReliabilityPolicy.RELIABLE
 
-                if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+                if any(
+                    pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos
+                ):
                     qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
         # Create the subscriber and associated member variables
@@ -215,14 +219,16 @@ class MultiSubscriber(Generic[ROSMessageT]):
             # In any case, the first message is handled using new_sub_callback,
             # which adds the new callback to the subscriptions dictionary.
             self.new_subscriptions.update({client_id: callback})
-            infos = self.node_handle.get_publishers_info_by_topic(self.topic)
 
-            if len(infos) > 0 and all(
-                pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
-            ):
-                self.qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
-            if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
-                self.qos.reliability = ReliabilityPolicy.BEST_EFFORT
+            # Shouldn't need to attempt this now
+            # infos = self.node_handle.get_publishers_info_by_topic(self.topic)
+
+            # if len(infos) > 0 and all(
+            #     pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
+            # ):
+            #     self.qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
+            # if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+            #     self.qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
             if self.new_subscriber is None:
                 self.new_subscriber = self.node_handle.create_subscription(
@@ -312,7 +318,7 @@ class SubscriberManager:
         node_handle: Node,
         msg_type: str | None = None,
         raw: bool = False,
-        qos: QoSProfile | None = None,
+        qos: QoSProfile | int = 10,
     ) -> None:
         """
         Subscribe to a topic.

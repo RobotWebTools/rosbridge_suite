@@ -124,7 +124,7 @@ class Subscription(Generic[ROSMessageT]):
         queue_length: int = 0,
         fragment_size: int | None = None,
         compression: str = "none",
-        qos: QoSProfile | None = None,
+        qos: QoSProfile | int = 10,
     ) -> None:
         """
         Add another client's subscription request.
@@ -143,7 +143,7 @@ class Subscription(Generic[ROSMessageT]):
             allowed outgoing messages
         :param compression: "none" if no compression, or some other value if
             compression is to be used (current valid values are 'png')
-        :param qos: None if unset, or a QoSProfile object if custom QOS profile
+        :param qos: queue_depth of 10 if unset, or a QoSProfile object if custom QOS profile
             is to be used
         """
         client_details = {
@@ -328,8 +328,10 @@ class Subscribe(Capability):
                     history=msg.get("history_policy", HistoryPolicy.SYSTEM_DEFAULT),
                     liveliness=msg.get("liveliness_policy", LivelinessPolicy.SYSTEM_DEFAULT),
                 )
-                if "qos" in msg
-                else None
+                if any(key in msg for key in [
+                    "qos_depth", "durability_policy", "reliability_policy", "history_policy", "liveliness_policy"
+                ])
+                else 10
             ),
         }
         self._subscriptions[topic].subscribe(**subscribe_args)

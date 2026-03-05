@@ -79,8 +79,7 @@ class Registration:
         msg_type: str,
         adv_id: str | None = None,
         latch: bool = False,
-        queue_size: int = 100,
-        qos: QoSProfile | None = None,
+        qos: QoSProfile | int = 10,
     ) -> None:
         # Register with the publisher manager, propagating any exception
         manager.register(
@@ -89,7 +88,6 @@ class Registration:
             self.node_handle,
             msg_type=msg_type,
             latch=latch,
-            queue_size=queue_size,
             qos=qos,
         )
 
@@ -135,14 +133,7 @@ class Advertise(Capability):
         topic: str = message["topic"]
         msg_type: str = message["type"]
         latch: bool = message.get("latch", False)
-        queue_size: int = message.get("queue_size", 100)
-        qos: QoSProfile | None = QoSProfile(
-            depth=message.get("qos_depth", 10),
-            durability=message.get("durability_policy", DurabilityPolicy.SYSTEM_DEFAULT),
-            reliability=message.get("reliability_policy", ReliabilityPolicy.SYSTEM_DEFAULT),
-            history=message.get("history_policy", HistoryPolicy.SYSTEM_DEFAULT),
-            liveliness=message.get("liveliness_policy", LivelinessPolicy.SYSTEM_DEFAULT),
-        )
+        qos: QoSProfile | int
 
         if message.keys() & {
             "durability_policy",
@@ -150,8 +141,15 @@ class Advertise(Capability):
             "liveliness_policy",
             "reliability_policy",
         }:
-            qos = None
-
+            qos = QoSProfile(
+                depth=message.get("qos_depth", 10),
+                durability=message.get("durability_policy", DurabilityPolicy.SYSTEM_DEFAULT),
+                reliability=message.get("reliability_policy", ReliabilityPolicy.SYSTEM_DEFAULT),
+                history=message.get("history_policy", HistoryPolicy.SYSTEM_DEFAULT),
+                liveliness=message.get("liveliness_policy", LivelinessPolicy.SYSTEM_DEFAULT),
+            )
+        else:
+            qos = 10
         if self.topics_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
@@ -179,7 +177,7 @@ class Advertise(Capability):
 
         # Register, propagating any exceptions
         self._registrations[topic].register_advertisement(
-            msg_type=msg_type, adv_id=aid, latch=latch, queue_size=queue_size, qos=qos
+            msg_type=msg_type, adv_id=aid, latch=latch, qos=qos
         )
 
     def unadvertise(self, message: dict[str, Any]) -> None:

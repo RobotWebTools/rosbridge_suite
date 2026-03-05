@@ -354,7 +354,6 @@ then the current time will be automatically inserted.
   "topic": <string>,
   (optional) "type": <string>,
   (optional) "throttle_rate": <int>,
-  (optional) "queue_length": <int>,
   (optional) "fragment_size": <int>,
   (optional) "compression": <string>,
   (optional) "qos": <QoSProfile>
@@ -373,26 +372,14 @@ which to send messages.
  * **topic** – the name of the topic to subscribe to
  * **throttle_rate** – the minimum amount of time (in ms) that must elapse
     between messages being sent. Defaults to 0
- * **queue_length** – the size of the queue to buffer messages. Messages are
-    buffered as a result of the throttle_rate. Defaults to 0 (no queueing).
  * **id** – if specified, then this specific subscription can be unsubscribed
     by referencing the ID.
  * **fragment_size** – the maximum size that a message can take before it is to
     be fragmented.
  * **compression** – an optional string to specify the compression scheme to be
     used on messages. Valid values are "none", "png", "cbor", and "cbor-raw".
- * **qos** - the qos profile of the topic to subscribe to. If left off, profile
-    will attempt to be inferred
-
-If queue_length is specified, then messages are placed into the queue before
-being sent. Messages are sent from the head of the queue. If the queue gets
-full, the oldest message is removed and replaced by the newest message.
-
-If a client has multiple subscriptions to the same topic, then messages are
-sent at the lowest throttle_rate, with the lowest fragmentation size, and
-highest queue_length. It is recommended that the client provides IDs for its
-subscriptions, to enable rosbridge to effectively choose the appropriate
-fragmentation size and publishing rate.
+* **qos** - the qos profile of the topic to subscribe to. If not specified,
+    queue_depth is set to 10
 
 #### 3.3.5 Unsubscribe
 
