@@ -39,9 +39,8 @@ from typing import TYPE_CHECKING, Generic, cast
 
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.qos import (
-    DurabilityPolicy,
     QoSProfile,
-    ReliabilityPolicy,
+    QoSPresetProfiles,
 )
 
 from rosbridge_library.internal import ros_loader
@@ -81,7 +80,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         node_handle: Node,
         msg_type: str | None = None,
         raw: bool = False,
-        qos: QoSProfile | int = 10,
+        qos: QoSProfile = QoSPresetProfiles.SYSTEM_DEFAULT.value,
     ) -> None:
         """
         Register a subscriber on the specified topic.
@@ -130,38 +129,6 @@ class MultiSubscriber(Generic[ROSMessageT]):
         if topic_type is not None and topic_type != msg_type_string:
             raise TypeConflictException(topic, topic_type, msg_type_string)
 
-        # Certain combinations of publisher and subscriber QoS parameters are
-        # incompatible. Here we make a "best effort" attempt to match existing
-        # publishers for the requested topic. This is not perfect because more
-        # publishers may come online after our subscriber is set up, but we try
-        # to provide sane defaults.
-        # For this reason we use volatile durability and best effort reliability
-        # to prioritize topic compatibility when the publisher policy is not known.
-        # For more information, see:
-        # - https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html
-        # - https://github.com/RobotWebTools/rosbridge_suite/issues/551
-        # - https://github.com/RobotWebTools/rosbridge_suite/issues/769
-        if qos is int:
-            qos: QoSProfile = QoSProfile(
-                depth=qos,
-                durability=DurabilityPolicy.VOLATILE,
-                reliability=ReliabilityPolicy.BEST_EFFORT,
-            )
-
-            infos = node_handle.get_publishers_info_by_topic(topic)
-
-            if len(infos) > 0:
-                if all(
-                    pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
-                ):
-                    qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
-                    qos.reliability = ReliabilityPolicy.RELIABLE
-
-                if any(
-                    pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos
-                ):
-                    qos.reliability = ReliabilityPolicy.BEST_EFFORT
-
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
         self.subscriptions = {client_id: callback}
@@ -169,7 +136,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         self.msg_class = msg_class
         self.node_handle = node_handle
         self.topic = topic
-        self.qos_profile: QoSProfile | int = qos
+        self.qos_profile: QoSProfile = qos
         self.raw = raw
         self.callback_group = MutuallyExclusiveCallbackGroup()
 
@@ -219,16 +186,6 @@ class MultiSubscriber(Generic[ROSMessageT]):
             # In any case, the first message is handled using new_sub_callback,
             # which adds the new callback to the subscriptions dictionary.
             self.new_subscriptions.update({client_id: callback})
-
-            # Shouldn't need to attempt this now
-            # infos = self.node_handle.get_publishers_info_by_topic(self.topic)
-
-            # if len(infos) > 0 and all(
-            #     pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
-            # ):
-            #     self.qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
-            # if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
-            #     self.qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
             if self.new_subscriber is None:
                 self.new_subscriber = self.node_handle.create_subscription(
@@ -318,7 +275,7 @@ class SubscriberManager:
         node_handle: Node,
         msg_type: str | None = None,
         raw: bool = False,
-        qos: QoSProfile | int = 10,
+        qos: QoSProfile = QoSPresetProfiles.SYSTEM_DEFAULT.value,
     ) -> None:
         """
         Subscribe to a topic.

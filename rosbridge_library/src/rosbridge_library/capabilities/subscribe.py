@@ -43,6 +43,7 @@ from rclpy.qos import (
     LivelinessPolicy,
     QoSProfile,
     ReliabilityPolicy,
+    QoSPresetProfiles,
 )
 
 from rosbridge_library.capability import Capability
@@ -124,7 +125,7 @@ class Subscription(Generic[ROSMessageT]):
         queue_length: int = 0,
         fragment_size: int | None = None,
         compression: str = "none",
-        qos: QoSProfile | int = 10,
+        qos: QoSProfile = QoSPresetProfiles.SYSTEM_DEFAULT.value,
     ) -> None:
         """
         Add another client's subscription request.
@@ -143,8 +144,7 @@ class Subscription(Generic[ROSMessageT]):
             allowed outgoing messages
         :param compression: "none" if no compression, or some other value if
             compression is to be used (current valid values are 'png')
-        :param qos: queue_depth of 10 if unset, or a QoSProfile object if custom QOS profile
-            is to be used
+        :param qos: The QoS Profile to use. Defaults to the SYSTEM_DEFAULT profile if unset
         """
         client_details = {
             "throttle_rate": throttle_rate,
@@ -257,7 +257,11 @@ class Subscribe(Capability):
         (False, "fragment_size", int),
         (False, "queue_length", int),
         (False, "compression", str),
-        (False, "qos", QoSProfile),
+        (False, "qos.depth", int),
+        (False, "qos.durability", DurabilityPolicy),
+        (False, "qos.reliability", ReliabilityPolicy),
+        (False, "qos.history", HistoryPolicy),
+        (False, "qos.liveliness", LivelinessPolicy),
     )
     unsubscribe_msg_fields = ((True, "topic", str),)
 
@@ -320,18 +324,12 @@ class Subscribe(Capability):
             "fragment_size": msg.get("fragment_size"),
             "queue_length": msg.get("queue_length", 0),
             "compression": msg.get("compression", "none"),
-            "qos": (
-                QoSProfile(
-                    depth=msg.get("qos_depth", 10),
-                    durability=msg.get("durability_policy", DurabilityPolicy.SYSTEM_DEFAULT),
-                    reliability=msg.get("reliability_policy", ReliabilityPolicy.SYSTEM_DEFAULT),
-                    history=msg.get("history_policy", HistoryPolicy.SYSTEM_DEFAULT),
-                    liveliness=msg.get("liveliness_policy", LivelinessPolicy.SYSTEM_DEFAULT),
-                )
-                if any(key in msg for key in [
-                    "qos_depth", "durability_policy", "reliability_policy", "history_policy", "liveliness_policy"
-                ])
-                else 10
+            "qos": QoSProfile(
+                depth=msg.get("qos.depth", 10),
+                durability=msg.get("qos.durability", DurabilityPolicy.SYSTEM_DEFAULT),
+                reliability=msg.get("qos.reliability", ReliabilityPolicy.SYSTEM_DEFAULT),
+                history=msg.get("qos.history", HistoryPolicy.SYSTEM_DEFAULT),
+                liveliness=msg.get("qos.liveliness", LivelinessPolicy.SYSTEM_DEFAULT),
             ),
         }
         self._subscriptions[topic].subscribe(**subscribe_args)

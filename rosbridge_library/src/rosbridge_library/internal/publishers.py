@@ -137,8 +137,7 @@ class MultiPublisher(Generic[ROSMessageT]):
             # missing messages.
             if latched_client_id is None:
                 self.publisher_qos = QoSProfile(
-                    history = HistoryPolicy.KEEP_ALL,
-                    lifespan = Duration(seconds=1)
+                    history = HistoryPolicy.KEEP_ALL, lifespan = Duration(seconds=1)
                 )
             else:
                 self.publisher_qos = 1

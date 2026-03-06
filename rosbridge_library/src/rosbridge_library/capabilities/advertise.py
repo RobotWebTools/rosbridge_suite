@@ -42,6 +42,7 @@ from rclpy.qos import (
     LivelinessPolicy,
     QoSProfile,
     ReliabilityPolicy,
+    QoSPresetProfiles,
 )
 
 from rosbridge_library.capability import Capability
@@ -79,7 +80,7 @@ class Registration:
         msg_type: str,
         adv_id: str | None = None,
         latch: bool = False,
-        qos: QoSProfile | int = 10,
+        qos: QoSProfile = QoSPresetProfiles.SYSTEM_DEFAULT.value,
     ) -> None:
         # Register with the publisher manager, propagating any exception
         manager.register(
@@ -133,23 +134,14 @@ class Advertise(Capability):
         topic: str = message["topic"]
         msg_type: str = message["type"]
         latch: bool = message.get("latch", False)
-        qos: QoSProfile | int
+        qos: QoSProfile = QoSProfile(
+            depth=message.get("qos.depth", 10),
+            durability=message.get("qos.durability", DurabilityPolicy.SYSTEM_DEFAULT),
+            reliability=message.get("qos.reliability", ReliabilityPolicy.SYSTEM_DEFAULT),
+            history=message.get("qos.history", HistoryPolicy.SYSTEM_DEFAULT),
+            liveliness=message.get("qos.liveliness", LivelinessPolicy.SYSTEM_DEFAULT),
+        )
 
-        if message.keys() & {
-            "durability_policy",
-            "history_policy",
-            "liveliness_policy",
-            "reliability_policy",
-        }:
-            qos = QoSProfile(
-                depth=message.get("qos_depth", 10),
-                durability=message.get("durability_policy", DurabilityPolicy.SYSTEM_DEFAULT),
-                reliability=message.get("reliability_policy", ReliabilityPolicy.SYSTEM_DEFAULT),
-                history=message.get("history_policy", HistoryPolicy.SYSTEM_DEFAULT),
-                liveliness=message.get("liveliness_policy", LivelinessPolicy.SYSTEM_DEFAULT),
-            )
-        else:
-            qos = 10
         if self.topics_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False

@@ -93,21 +93,13 @@ class Publish(Capability):
         else:
             self.protocol.log("debug", "No topic security glob, not checking publish.")
 
-        if message.keys() & {
-            "durability_policy",
-            "history_policy",
-            "liveliness_policy",
-            "reliability_policy",
-        }:
-            qos = QoSProfile(
-                depth=message.get("qos_depth", 10),
-                durability=message.get("durability_policy", DurabilityPolicy.SYSTEM_DEFAULT),
-                reliability=message.get("reliability_policy", ReliabilityPolicy.SYSTEM_DEFAULT),
-                history=message.get("history_policy", HistoryPolicy.SYSTEM_DEFAULT),
-                liveliness=message.get("liveliness_policy", LivelinessPolicy.SYSTEM_DEFAULT),
-            )
-        else:
-            qos = None
+        qos = QoSProfile(
+            depth=message.get("qos.depth", 10),
+            durability=message.get("qos.durability", DurabilityPolicy.SYSTEM_DEFAULT),
+            reliability=message.get("qos.reliability", ReliabilityPolicy.SYSTEM_DEFAULT),
+            history=message.get("qos.history", HistoryPolicy.SYSTEM_DEFAULT),
+            liveliness=message.get("qos.liveliness", LivelinessPolicy.SYSTEM_DEFAULT),
+        )
 
         # Register as a publishing client, propagating any exceptions
         client_id = self.protocol.client_id

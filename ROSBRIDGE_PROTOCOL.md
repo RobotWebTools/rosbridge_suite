@@ -279,13 +279,21 @@ If you wish to advertise that you are or will be publishing a topic, then use th
   (optional) "id": <string>,
   "topic": <string>,
   "type": <string>,
-  (optional) "qos": <QoSProfile>
+  (optional) "qos.depth": int,
+  (optional) "qos.durability": DurabilityPolicy,
+  (optional) "qos.reliability": ReliabilityPolicy,
+  (optional) "qos.history": HistoryPolicy,
+  (optional) "qos.liveliness": LivelinessPolicy,
 }
 ```
 
  * **topic** – the string name of the topic to advertise
  * **type** – the string type to advertise for the topic
- * **qos** - the qos profile of the topic to advertise
+ * **qos.depth** - the queue depth of the qos profile to use. If unset, uses system default setting
+ * **qos.durability** - the durability policy of the qos profile to use. If unset, uses system default setting
+ * **qos.reliability** - the reliability policy of the qos profile to use. If unset, uses system default setting
+ * **qos.history** - the history policy of the qos profile to use. If unset, uses system default setting
+ * **qos.liveliness** - the liveliness policy of the qos profile to use. If unset, uses system default setting
 
    * If the topic does not already exist, and the type specified is a valid
      type, then the topic will be established with this type.
@@ -356,7 +364,11 @@ then the current time will be automatically inserted.
   (optional) "throttle_rate": <int>,
   (optional) "fragment_size": <int>,
   (optional) "compression": <string>,
-  (optional) "qos": <QoSProfile>
+  (optional) "qos.depth": int,
+  (optional) "qos.durability": DurabilityPolicy,
+  (optional) "qos.reliability": ReliabilityPolicy,
+  (optional) "qos.history": HistoryPolicy,
+  (optional) "qos.liveliness": LivelinessPolicy,
 }
 ```
 
@@ -378,8 +390,11 @@ which to send messages.
     be fragmented.
  * **compression** – an optional string to specify the compression scheme to be
     used on messages. Valid values are "none", "png", "cbor", and "cbor-raw".
-* **qos** - the qos profile of the topic to subscribe to. If not specified,
-    queue_depth is set to 10
+ * **qos.depth** - the queue depth of the qos profile to use. If unset, uses system default setting
+ * **qos.durability** - the durability policy of the qos profile to use. If unset, uses system default setting
+ * **qos.reliability** - the reliability policy of the qos profile to use. If unset, uses system default setting
+ * **qos.history** - the history policy of the qos profile to use. If unset, uses system default setting
+ * **qos.liveliness** - the liveliness policy of the qos profile to use. If unset, uses system default setting
 
 #### 3.3.5 Unsubscribe
 
