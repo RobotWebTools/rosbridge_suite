@@ -38,8 +38,8 @@ from typing import TYPE_CHECKING, Any, Generic, cast
 
 from rclpy.duration import Duration
 from rclpy.qos import (
-    HistoryPolicy,
     QoSProfile,
+    QoSPresetProfiles,
 )
 
 from rosbridge_library.internal import message_conversion, ros_loader
@@ -72,7 +72,7 @@ class MultiPublisher(Generic[ROSMessageT]):
         node_handle: Node,
         msg_type: str | None = None,
         latched_client_id: str | None = None,
-        qos: QoSProfile | None = None,
+        qos: QoSProfile = QoSPresetProfiles.SYSTEM_DEFAULT.value,
     ) -> None:
         """
         Register a publisher on the specified topic.
@@ -84,7 +84,7 @@ class MultiPublisher(Generic[ROSMessageT]):
         :param latch: (optional) If a client requested this publisher to be latched,
             provide the client_id of that client here
         :param qos: (optional) If a QoSProfile is provided, topic will be created
-            with supplied profile, else default "transient_local" durability setting
+            with supplied profile, else ROS SYSTEM_DEFAULT QoS profile
 
         :raises TopicNotEstablishedException: If no msg_type was specified by the caller and the
             topic is not yet established, so a topic type cannot be inferred
@@ -127,23 +127,7 @@ class MultiPublisher(Generic[ROSMessageT]):
         self.topic = topic
         self.node_handle = node_handle
         self.msg_class = msg_class
-        self.publisher_qos: QoSProfile | int = 10
-
-        # Adding a lifespan solves the problem of late-joining subscribers
-        # without the need of a custom message publisher implementation.
-        if qos is None:
-            # For latched clients, no lifespan has to be specified (i.e. latch forever).
-            # Otherwise we want to keep the messages for a second to prevent late-joining subscribers from
-            # missing messages.
-            if latched_client_id is None:
-                self.publisher_qos = QoSProfile(
-                    history = HistoryPolicy.KEEP_ALL, lifespan = Duration(seconds=1)
-                )
-            else:
-                self.publisher_qos = 1
-        else:
-            self.publisher_qos = qos
-
+        self.publisher_qos: QoSProfile = qos
 
         self.publisher: Publisher[ROSMessageT] = node_handle.create_publisher(
             msg_class, topic, qos_profile=self.publisher_qos
@@ -232,7 +216,7 @@ class PublisherManager:
         node_handle: Node,
         msg_type: str | None = None,
         latch: bool = False,
-        qos: QoSProfile | int = 10,
+        qos: QoSProfile = QoSPresetProfiles.SYSTEM_DEFAULT.value,
     ) -> None:
         """
         Register a publisher on the specified topic.
@@ -327,7 +311,7 @@ class PublisherManager:
         msg: dict,
         node_handle: Node,
         latch: bool = False,
-        qos: QoSProfile | int = 10,
+        qos: QoSProfile = QoSPresetProfiles.SYSTEM_DEFAULT.value,
     ) -> None:
         """
         Publish a message on the given topic.
