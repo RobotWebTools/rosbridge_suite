@@ -84,7 +84,11 @@ class Fragmentation(Capability):
             mid = str(self.fragmentation_seed)
             self.fragmentation_seed = self.fragmentation_seed + 1
 
-        serialized = self.protocol.serialize(message, mid)
+        serialized: bytes | str | None
+        if isinstance(message, bytes):
+            serialized = message
+        else:
+            serialized = self.protocol.serialize(message, mid)
 
         if serialized is None:
             return []
