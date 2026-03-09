@@ -41,9 +41,9 @@ from rclpy.qos import (
     DurabilityPolicy,
     HistoryPolicy,
     LivelinessPolicy,
+    QoSPresetProfiles,
     QoSProfile,
     ReliabilityPolicy,
-    QoSPresetProfiles,
 )
 
 from rosbridge_library.capability import Capability

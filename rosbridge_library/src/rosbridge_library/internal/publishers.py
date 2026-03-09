@@ -36,10 +36,9 @@ from __future__ import annotations
 from threading import Timer
 from typing import TYPE_CHECKING, Any, Generic, cast
 
-from rclpy.duration import Duration
 from rclpy.qos import (
-    QoSProfile,
     QoSPresetProfiles,
+    QoSProfile,
 )
 
 from rosbridge_library.internal import message_conversion, ros_loader

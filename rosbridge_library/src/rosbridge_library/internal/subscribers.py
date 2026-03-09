@@ -39,8 +39,8 @@ from typing import TYPE_CHECKING, Generic, cast
 
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.qos import (
-    QoSProfile,
     QoSPresetProfiles,
+    QoSProfile,
 )
 
 from rosbridge_library.internal import ros_loader
