@@ -29,14 +29,19 @@ class TestClientProtocol(WebSocketClientProtocol):
     """Set message_handler to handle messages received from the server."""
 
     message_handler: Callable[[Any], None]
+    on_close_handler: Callable[[bool, int, str], None]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
         self.connected_future: Future[None] = Future()
         self.message_handler = lambda _: None
+        self.on_close_handler = lambda _, __, ___: None
         super().__init__(*args, **kwargs)
 
     def onOpen(self) -> None:
         self.connected_future.set_result(None)
+
+    def onClose(self, wasClean: bool, code: int, reason: str) -> None:
+        self.on_close_handler(wasClean, code, reason)
 
     def sendJson(self, msg_dict: dict[str, Any], *, times: int = 1) -> None:
         msg = json.dumps(msg_dict).encode("utf-8")
@@ -124,13 +129,17 @@ def run_websocket_test(
     executor.add_node(node)
 
     async def task() -> None:
-        await test_fn(node, lambda: connect_to_server(node))
-        reactor.callFromThread(reactor.stop)  # type: ignore[attr-defined]
+        try:
+            await test_fn(node, lambda: connect_to_server(node))
+        finally:
+            reactor.stop()
 
     future = executor.create_task(task)
 
     reactor.callInThread(executor.spin_until_future_complete, future)  # type: ignore[attr-defined]
     reactor.run(installSignalHandlers=False)  # type: ignore[attr-defined]
+
+    future.result()
 
     executor.remove_node(node)
     node.destroy_node()
