@@ -30,8 +30,7 @@ class TestTornadoSettings(unittest.TestCase):
     ) -> None:
         failed_code = 0
 
-        def on_close_handler(wasClean: bool, code: int, reason: str) -> None:
-            print(f" hello jumbo client closed: wasClean={wasClean}, code={code}, reason={reason}")
+        def on_close_handler(_wasClean: bool, code: int, _reason: str) -> None:
             nonlocal failed_code
             failed_code = code
 
