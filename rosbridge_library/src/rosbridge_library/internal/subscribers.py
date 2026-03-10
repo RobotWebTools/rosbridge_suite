@@ -39,8 +39,9 @@ from typing import TYPE_CHECKING, Generic, cast
 
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.qos import (
-    QoSPresetProfiles,
+    DurabilityPolicy,
     QoSProfile,
+    ReliabilityPolicy,
 )
 
 from rosbridge_library.internal import ros_loader
@@ -80,7 +81,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         node_handle: Node,
         msg_type: str | None = None,
         raw: bool = False,
-        qos: QoSProfile = QoSPresetProfiles.SYSTEM_DEFAULT.value,
+        qos: QoSProfile | None = None,
     ) -> None:
         """
         Register a subscriber on the specified topic.
@@ -92,7 +93,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         :param msg_type: (optional) The type to register the subscriber as.  If not provided, an
             attempt will be made to infer the topic type
         :param qos: (optional) The QoS profile to register the subscriber with. If not provided,
-            ROS default QoSProfile will be used
+            a "best effort" will be made to make the subscription work
 
         :raises TopicNotEstablishedException: If no msg_type was specified by the caller and the
             topic is not yet established, so a topic type cannot be inferred
@@ -128,6 +129,23 @@ class MultiSubscriber(Generic[ROSMessageT]):
         msg_type_string = msg_class_type_repr(msg_class)
         if topic_type is not None and topic_type != msg_type_string:
             raise TypeConflictException(topic, topic_type, msg_type_string)
+
+        if qos is None:
+            qos = QoSProfile(
+                depth=10,
+                durability=DurabilityPolicy.VOLATILE,
+                reliability=ReliabilityPolicy.BEST_EFFORT,
+            )
+
+            infos = node_handle.get_publishers_info_by_topic(topic)
+
+            if len(infos) > 0 and all(
+                pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
+            ):
+                qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
+                qos.reliability = ReliabilityPolicy.RELIABLE
+            if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+                qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
@@ -275,7 +293,7 @@ class SubscriberManager:
         node_handle: Node,
         msg_type: str | None = None,
         raw: bool = False,
-        qos: QoSProfile = QoSPresetProfiles.SYSTEM_DEFAULT.value,
+        qos: QoSProfile | None = None,
     ) -> None:
         """
         Subscribe to a topic.

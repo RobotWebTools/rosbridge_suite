@@ -36,16 +36,9 @@ from __future__ import annotations
 import fnmatch
 from typing import TYPE_CHECKING, Any
 
-from rclpy.qos import (
-    DurabilityPolicy,
-    HistoryPolicy,
-    LivelinessPolicy,
-    QoSProfile,
-    ReliabilityPolicy,
-)
-
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
+from rosbridge_library.internal.qos_extraction import ExtractQoSProfile
 
 if TYPE_CHECKING:
     from rosbridge_library.protocol import Protocol
@@ -73,6 +66,7 @@ class Publish(Capability):
         self.basic_type_check(message, self.publish_msg_fields)
         topic: str = message["topic"]
         latch: bool = message.get("latch", False)
+        qos = ExtractQoSProfile(message.get("qos"))
 
         if self.topics_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
@@ -92,14 +86,6 @@ class Publish(Capability):
                 return
         else:
             self.protocol.log("debug", "No topic security glob, not checking publish.")
-
-        qos = QoSProfile(
-            depth=message.get("qos.depth", 10),
-            durability=message.get("qos.durability", DurabilityPolicy.SYSTEM_DEFAULT),
-            reliability=message.get("qos.reliability", ReliabilityPolicy.SYSTEM_DEFAULT),
-            history=message.get("qos.history", HistoryPolicy.SYSTEM_DEFAULT),
-            liveliness=message.get("qos.liveliness", LivelinessPolicy.SYSTEM_DEFAULT),
-        )
 
         # Register as a publishing client, propagating any exceptions
         client_id = self.protocol.client_id

@@ -36,20 +36,13 @@ from __future__ import annotations
 import fnmatch
 from typing import TYPE_CHECKING, Any
 
-from rclpy.qos import (
-    DurabilityPolicy,
-    HistoryPolicy,
-    LivelinessPolicy,
-    QoSPresetProfiles,
-    QoSProfile,
-    ReliabilityPolicy,
-)
-
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
+from rosbridge_library.internal.qos_extraction import ExtractQoSProfile
 
 if TYPE_CHECKING:
     from rclpy.node import Node
+    from rclpy.qos import QoSProfile
 
     from rosbridge_library.protocol import Protocol
 
@@ -80,7 +73,7 @@ class Registration:
         msg_type: str,
         adv_id: str | None = None,
         latch: bool = False,
-        qos: QoSProfile = QoSPresetProfiles.SYSTEM_DEFAULT.value,
+        qos: QoSProfile | None = None,
     ) -> None:
         # Register with the publisher manager, propagating any exception
         manager.register(
@@ -134,13 +127,7 @@ class Advertise(Capability):
         topic: str = message["topic"]
         msg_type: str = message["type"]
         latch: bool = message.get("latch", False)
-        qos: QoSProfile = QoSProfile(
-            depth=message.get("qos.depth", 10),
-            durability=message.get("qos.durability", DurabilityPolicy.SYSTEM_DEFAULT),
-            reliability=message.get("qos.reliability", ReliabilityPolicy.SYSTEM_DEFAULT),
-            history=message.get("qos.history", HistoryPolicy.SYSTEM_DEFAULT),
-            liveliness=message.get("qos.liveliness", LivelinessPolicy.SYSTEM_DEFAULT),
-        )
+        qos: QoSProfile | None = ExtractQoSProfile(message.get("qos"))
 
         if self.topics_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
