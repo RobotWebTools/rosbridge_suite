@@ -47,11 +47,8 @@ from std_msgs.msg import Header as HeaderMsg
 
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.type_support import ROSMessage
-from rosbridge_library.util import bson
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
     from rclpy.clock import Clock
 
 
@@ -108,47 +105,6 @@ ros_binary_types_list_braces = (
     ("uint8[]", re.compile(r"uint8\[[^\]]*\]")),
     ("char[]", re.compile(r"char\[[^\]]*\]")),
 )
-
-module_configured = False
-binary_encoder = None
-bson_only_mode = False
-
-
-def configure(parameters: dict[str, Any] | None = None) -> None:
-    """
-    Configure the message_conversion module.
-
-    :param parameters: A dictionary of parameters to configure the module.
-    :type parameters: dict[str, Any] | None
-    :raises ValueError: If an unknown encoder type is specified.
-    """
-    global binary_encoder, bson_only_mode, module_configured
-
-    if module_configured:
-        return
-
-    binary_encoder_type = "default"
-
-    if parameters is not None:
-        binary_encoder_type = parameters.get("binary_encoder", binary_encoder_type)
-        bson_only_mode = parameters.get("bson_only_mode", bson_only_mode)
-
-    if binary_encoder_type == "bson" or bson_only_mode:
-        binary_encoder = bson.Binary
-    elif binary_encoder_type is None or binary_encoder_type in {"default", "b64"}:
-        binary_encoder = standard_b64encode
-    else:
-        err_msg = f"Unknown encoder type '{binary_encoder_type}'"
-        raise ValueError(err_msg)
-
-    module_configured = True
-
-
-def get_encoder() -> Callable[[ListType], bytes]:
-    assert module_configured and binary_encoder is not None, (
-        "message_conversion module is not configured"
-    )
-    return binary_encoder
 
 
 class InvalidMessageException(Exception):
@@ -239,7 +195,10 @@ def _from_inst(
             if not isinstance(inst, list_types):
                 err_msg = f"inst is not a list type, but a {type(inst)}"
                 raise TypeError(err_msg)
-            encoded = get_encoder()(inst)
+            if isinstance(inst, list | tuple):
+                # Convert non-bytes iterable object to bytes for encoding
+                inst = bytes(inst)
+            encoded = standard_b64encode(inst)
             return encoded.decode("ascii")
 
     # Check for time or duration
@@ -268,9 +227,6 @@ def _from_inst(
 
 
 def _from_primitive_inst(inst: PrimitiveType | bytes, rostype: str) -> PrimitiveType | bytes | None:
-    if bson_only_mode:
-        return inst
-
     # JSON does not support Inf and NaN. They are mapped to None and encoded as null
     if rostype in type_map["float"]:
         if not isinstance(inst, float):

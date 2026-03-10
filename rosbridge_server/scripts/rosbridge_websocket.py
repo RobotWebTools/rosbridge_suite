@@ -84,14 +84,6 @@ PROTOCOL_PARAMETERS = (
         10.0,
         "How long to wait before unregistering a client from publisher after unadvertising publisher.",
     ),
-    (
-        "binary_encoder_type",
-        str,
-        "default",
-        "Encoder used for encoding binary data in messages. Available: 'default', 'b64', `bson'. "
-        "Ignored if bson_only_mode is True.",
-    ),
-    ("bson_only_mode", bool, False, "Use BSON only mode for messages."),
     ("topics_glob", str, "", "Glob patterns for topics publish/subscribe."),
     ("services_glob", str, "", "Glob patterns for services call/advertise."),
     ("actions_glob", str, "", "Glob patterns for actions send/advertise."),
