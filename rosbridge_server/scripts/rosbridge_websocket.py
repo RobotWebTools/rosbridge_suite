@@ -66,8 +66,8 @@ SERVER_PARAMETERS = (
     ("certfile", str, "", "Path to the SSL certificate file."),
     ("keyfile", str, "", "Path to the SSL key file."),
     # Tornado settings
-    ("websocket_ping_interval", float, 0, "Interval in seconds for WebSocket ping messages."),
-    ("websocket_ping_timeout", float, 30, "Timeout in seconds for WebSocket ping responses."),
+    ("websocket_ping_interval", float, 0.0, "Interval in seconds for WebSocket ping messages."),
+    ("websocket_ping_timeout", float, 30.0, "Timeout in seconds for WebSocket ping responses."),
     # Websocket handler parameters
     ("use_compression", bool, False, "Enable compression for WebSocket messages."),
     # Executor parameters
