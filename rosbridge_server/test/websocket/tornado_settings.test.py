@@ -1,30 +1,22 @@
 from __future__ import annotations
 
 import sys
-import time
 import unittest
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from rclpy.callback_groups import ReentrantCallbackGroup
 from twisted.python import log
 
 sys.path.append(str(Path(__file__).parent))  # enable importing from common.py in this directory
 
 import common
-from common import expect_messages, sleep, websocket_test
+from common import sleep, websocket_test
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
     from common import TestClientProtocol
     from rclpy.node import Node
-
-    from rosbridge_test_msgs.srv import (
-        TestArrayRequest,
-        TestArrayRequest_Request,
-        TestArrayRequest_Response,
-    )
 
 log.startLogging(sys.stderr)
 

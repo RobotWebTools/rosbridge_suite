@@ -22,7 +22,6 @@ install(FILES
 
 if(BUILD_TESTING)
   find_package(launch_testing_ament_cmake REQUIRED)
-<<<<<<< HEAD
 
   # Run each test with both SingleThreadedExecutor and EventsExecutor
   set(TEST_FILES
