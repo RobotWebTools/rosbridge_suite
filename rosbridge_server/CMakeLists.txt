@@ -35,6 +35,7 @@ if(BUILD_TESTING)
     test/websocket/transient_local_publisher.test.py
     test/websocket/best_effort_publisher.test.py
     test/websocket/multiple_subscribers_raw.test.py
+    test/websocket/tornado_settings.test.py
   )
 
   foreach(TEST_FILE ${TEST_FILES})
