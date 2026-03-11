@@ -116,6 +116,7 @@ class Subscription(Generic[ROSMessageT]):
         sid: str,
         msg_type: str | None = None,
         throttle_rate: int = 0,
+        queue_length: int = 0,
         fragment_size: int | None = None,
         compression: str = "none",
         qos: QoSProfile | None = None,
@@ -131,6 +132,7 @@ class Subscription(Generic[ROSMessageT]):
         :param msg_type: The type of the message to subscribe to
         :param throttle_rate: The minimum time (in ms) allowed between messages
             being sent. If multiple subscriptions, the lower of these is used
+        :param queue_length: For backward compatability. Used only if qos is unset.
         :param fragment_size: None if no fragmentation, or the maximum length of
             allowed outgoing messages
         :param compression: "none" if no compression, or some other value if
@@ -138,9 +140,10 @@ class Subscription(Generic[ROSMessageT]):
         :param qos: The QoS Profile to use. If not set, a "best effort"
             attempt is made for subscriber compatibility
         """
+        queue_size: int = qos.depth if qos is not None else queue_length
         client_details = {
             "throttle_rate": throttle_rate,
-            "queue_length": (qos.depth if qos is not None else 100),
+            "queue_length": queue_size,
             "fragment_size": fragment_size,
             "compression": compression,
         }
@@ -247,6 +250,7 @@ class Subscribe(Capability):
         (False, "type", str),
         (False, "throttle_rate", int),
         (False, "fragment_size", int),
+        (False, "queue_length", int),
         (False, "compression", str),
         (False, "qos", QoSProfile),
     )
@@ -306,11 +310,12 @@ class Subscribe(Capability):
         # Register the subscriber
         subscribe_args = {
             "sid": sid,
-            "qos": ExtractQoSProfile(msg.get("qos")),
             "msg_type": msg.get("type"),
             "throttle_rate": msg.get("throttle_rate", 0),
             "fragment_size": msg.get("fragment_size"),
+            "queue_length": msg.get("queue_length", 0),
             "compression": msg.get("compression", "none"),
+            "qos": ExtractQoSProfile(msg.get("qos")),
         }
         self._subscriptions[topic].subscribe(**subscribe_args)
 
