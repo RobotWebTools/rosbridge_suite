@@ -117,6 +117,8 @@ def ExtractQoSProfile(qosobj: dict[str, Any] | int | None) -> QoSProfile | None:
             liveliness_lease_duration=liveliness_lease_duration,
             avoid_ros_namespace_conventions=avoid_ros_namespace_conventions,
         )
-    elif type(qosobj) is not None:
+    elif qosobj is None:
+        qos = None
+    else:
         raise InvalidArgumentException(qosobj)
     return qos
