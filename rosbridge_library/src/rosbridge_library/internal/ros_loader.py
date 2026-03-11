@@ -57,6 +57,7 @@ _loaded_actions: dict[str, type[ROSAction]] = {}
 _msgs_lock = Lock()
 _srvs_lock = Lock()
 _actions_lock = Lock()
+_import_lock = Lock()
 
 
 class InvalidTypeStringException(Exception):
@@ -203,12 +204,21 @@ def _get_class(
     if cls is not None:
         return cls
 
-    # Load the class
-    cls = _load_class(modname, subname, classname)
+    # Serialize imports to prevent deadlocks from concurrent first-time imports
+    with _import_lock:
+        # Check cache again in case it was loaded while waiting for the lock
+        cls = _get_from_cache(cache, lock, typestring)
+        if cls is not None:
+            return cls
+        cls = _get_from_cache(cache, lock, norm_typestring)
+        if cls is not None:
+            return cls
 
-    # Cache the class for both the regular and normalised typestring
-    _add_to_cache(cache, lock, typestring, cls)
-    _add_to_cache(cache, lock, norm_typestring, cls)
+        cls = _load_class(modname, subname, classname)
+
+        # Cache the class for both the regular and normalised typestring
+        _add_to_cache(cache, lock, typestring, cls)
+        _add_to_cache(cache, lock, norm_typestring, cls)
 
     return cls
 
