@@ -632,7 +632,7 @@ Where the string value is the base64-encoded representation of the byte array. B
 
 ### 4.7 QoS Settings
 
-For operations which support the `qos` parameter, the following structure is assumed:
+For operations which support the `qos` parameter, the either an integer or following structure is assumed:
 
 ```json
 {

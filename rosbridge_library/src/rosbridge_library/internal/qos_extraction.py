@@ -9,6 +9,10 @@ from rclpy.qos import (
 )
 from rclpy.time import Duration
 
+from rosbridge_library.internal.exceptions import (
+    InvalidArgumentException,
+)
+
 DurabilityPolicies = [
     "system_default",
     "transient_local",
@@ -40,7 +44,6 @@ ReliabilityPolicies = [
 
 
 def ExtractDuration(json_duration: list | str) -> Duration:
-    print(type(json_duration))
     if type(json_duration) is str:
         _ = json_duration.lower()
         if _ == "unspecified":
@@ -55,9 +58,11 @@ def ExtractDuration(json_duration: list | str) -> Duration:
     return Duration(seconds=0, nanoseconds=0)
 
 
-def ExtractQoSProfile(qosobj: dict[str, Any] | None) -> QoSProfile | None:
-    qos: QoSProfile | None = None
-    if qosobj is not None:
+def ExtractQoSProfile(qosobj: dict[str, Any] | int | None) -> QoSProfile | None:
+    qos: QoSProfile | int | None = None
+    if type(qosobj) is int:
+        qos = QoSProfile(depth=qosobj)
+    elif type(qosobj) is dict:
         _ = qosobj.get("history")
         if type(_) is str:
             _ = _.lower()
@@ -112,4 +117,6 @@ def ExtractQoSProfile(qosobj: dict[str, Any] | None) -> QoSProfile | None:
             liveliness_lease_duration=liveliness_lease_duration,
             avoid_ros_namespace_conventions=avoid_ros_namespace_conventions,
         )
+    elif type(qosobj) is not None:
+        raise InvalidArgumentException(qosobj)
     return qos
