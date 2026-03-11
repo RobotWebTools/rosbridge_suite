@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>rosbridge_library</name>
-  <version>3.0.2</version>
+  <version>4.0.0</version>
   <description>
 The core rosbridge package, responsible for interpreting JSON and performing the appropriate
 ROS action, like subscribe, publish, call service, and interact with params.
@@ -19,13 +19,13 @@ ROS action, like subscribe, publish, call service, and interact with params.
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
   <buildtool_depend>ament_cmake_python</buildtool_depend>
 
-  <exec_depend>python3-bson</exec_depend>
   <exec_depend>python3-cbor2</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-pil</exec_depend>
   <exec_depend>python3-ujson</exec_depend>
   <exec_depend>rcl_interfaces</exec_depend>
   <exec_depend>rclpy</exec_depend>
+  <exec_depend>rosidl_pycommon</exec_depend>
 
   <test_depend>action_msgs</test_depend>
   <test_depend>ament_cmake_mypy</test_depend>

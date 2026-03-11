@@ -32,37 +32,13 @@
 
 from __future__ import annotations
 
-from typing import Protocol, TypeVar, runtime_checkable
+from typing import Any, TypeAlias, TypeVar
 
+from rosidl_pycommon.interface_base_classes import BaseAction, BaseImpl, BaseMessage, BaseService
 
-@runtime_checkable
-class ROSMessage(Protocol):
-    """Protocol for ROS message types."""
-
-    __slots__: list[str]
-    _fields_and_field_types: dict[str, str]
-
-    def get_fields_and_field_types(self) -> dict[str, str]:
-        """Return a dictionary of field names to field types."""
-
-
-@runtime_checkable
-class ROSService(Protocol):
-    """Protocol for ROS service types."""
-
-    Request: type[ROSMessage]
-    Response: type[ROSMessage]
-    Event: type[ROSMessage]
-
-
-@runtime_checkable
-class ROSAction(Protocol):
-    """Protocol for ROS action types."""
-
-    Goal: type[ROSMessage]
-    Result: type[ROSMessage]
-    Feedback: type[ROSMessage]
-
+ROSMessage: TypeAlias = BaseMessage
+ROSService: TypeAlias = BaseService
+ROSAction: TypeAlias = BaseAction
 
 # Type variables for ROS types
 ROSMessageT = TypeVar("ROSMessageT", bound=ROSMessage)
@@ -73,3 +49,4 @@ ROSActionT = TypeVar("ROSActionT", bound=ROSAction)
 ROSActionGoalT = TypeVar("ROSActionGoalT", bound=ROSMessage)
 ROSActionResultT = TypeVar("ROSActionResultT", bound=ROSMessage)
 ROSActionFeedbackT = TypeVar("ROSActionFeedbackT", bound=ROSMessage)
+ROSActionImplT = TypeVar("ROSActionImplT", bound=BaseImpl[Any, Any, Any])

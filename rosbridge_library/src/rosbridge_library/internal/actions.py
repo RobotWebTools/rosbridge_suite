@@ -49,6 +49,7 @@ from rosbridge_library.internal.ros_loader import (
 from rosbridge_library.internal.type_support import (
     ROSActionFeedbackT,
     ROSActionGoalT,
+    ROSActionImplT,
     ROSActionResultT,
 )
 
@@ -69,7 +70,9 @@ class InvalidActionException(Exception):
         Exception.__init__(self, f"Action {action_name} does not exist")
 
 
-class ActionClientHandler(Thread, Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
+class ActionClientHandler(
+    Thread, Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT]
+):
     def __init__(
         self,
         action: str,
@@ -104,9 +107,9 @@ class ActionClientHandler(Thread, Generic[ROSActionGoalT, ROSActionResultT, ROSA
         self.error = error_callback
         self.feedback = feedback_callback
         self.node_handle = node_handle
-        self.send_goal_helper: SendGoal[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT] = (
-            SendGoal()
-        )
+        self.send_goal_helper = SendGoal[
+            ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+        ]()
 
     def run(self) -> None:
         try:
@@ -143,16 +146,17 @@ def args_to_action_goal_instance(inst: ROSMessage, args: list | dict[str, Any] |
     populate_instance(msg, inst)
 
 
-class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
+class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT]):
     """Helper class to send action goals."""
 
-    result: GetResultServiceResponse[ROSActionResultT] | None = None
+    result: GetResultServiceResponse[ROSActionResultT] | Exception | None = None
 
     def __init__(self, server_timeout_time: float = 1.0, sleep_time: float = 0.001) -> None:
         self.server_timeout_time = server_timeout_time
         self.sleep_time = sleep_time
         self.goal_handle: (
-            ClientGoalHandle[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT] | None
+            ClientGoalHandle[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT]
+            | None
         ) = None
         self.goal_canceled = False
 
@@ -160,13 +164,17 @@ class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
         self.result = future.result()
 
     def goal_response_cb(
-        self, future: Future[ClientGoalHandle[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]]
+        self,
+        future: Future[
+            ClientGoalHandle[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT]
+        ],
     ) -> None:
         self.goal_handle = future.result()
         assert self.goal_handle is not None
         if not self.goal_handle.accepted:
             msg = "Action goal was rejected"
-            raise Exception(msg)
+            self.result = Exception(msg)
+            return
         result_future: Future[GetResultServiceResponse[ROSActionResultT]] = (
             self.goal_handle.get_result_async()
         )
@@ -192,10 +200,12 @@ class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
         args_to_action_goal_instance(inst, args)
 
         self.result = None
-        client: ActionClient[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT] = ActionClient(
+        client = ActionClient[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT](
             node_handle, action_class, action_name
         )
-        client.wait_for_server(timeout_sec=self.server_timeout_time)
+        if not client.wait_for_server(timeout_sec=self.server_timeout_time):
+            msg = "No action server available"
+            raise Exception(msg)
         send_goal_future = client.send_goal_async(inst, feedback_callback=feedback_cb)  # type: ignore[arg-type]
         send_goal_future.add_done_callback(self.goal_response_cb)
 
@@ -203,6 +213,10 @@ class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
             time.sleep(self.sleep_time)
 
         client.destroy()
+
+        if isinstance(self.result, Exception):
+            raise self.result
+
         if self.result is not None:
             # Turn the response into JSON and pass to the callback
             json_response = extract_values(self.result)

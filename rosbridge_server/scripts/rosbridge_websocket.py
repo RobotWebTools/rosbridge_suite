@@ -34,16 +34,20 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
+import signal
 import sys
+import threading
 import time
 from typing import TYPE_CHECKING, cast
 
 import rclpy
 from rcl_interfaces.msg import ParameterDescriptor
+from rclpy.executors import SingleThreadedExecutor
+from rclpy.experimental import EventsExecutor
 from rclpy.node import Node
 from rclpy.utilities import remove_ros_args
 from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado.netutil import bind_sockets
 from tornado.web import Application
 
@@ -51,14 +55,6 @@ from rosbridge_server import ClientManager, RosbridgeWebSocket
 
 if TYPE_CHECKING:
     from tornado.routing import _RuleList
-
-
-def start_hook() -> None:
-    IOLoop.instance().start()
-
-
-def shutdown_hook() -> None:
-    IOLoop.instance().stop()
 
 
 SERVER_PARAMETERS = (
@@ -70,10 +66,12 @@ SERVER_PARAMETERS = (
     ("certfile", str, "", "Path to the SSL certificate file."),
     ("keyfile", str, "", "Path to the SSL key file."),
     # Tornado settings
-    ("websocket_ping_interval", float, 0, "Interval in seconds for WebSocket ping messages."),
-    ("websocket_ping_timeout", float, 30, "Timeout in seconds for WebSocket ping responses."),
+    ("websocket_ping_interval", float, 0.0, "Interval in seconds for WebSocket ping messages."),
+    ("websocket_ping_timeout", float, 30.0, "Timeout in seconds for WebSocket ping responses."),
     # Websocket handler parameters
     ("use_compression", bool, False, "Enable compression for WebSocket messages."),
+    # Executor parameters
+    ("use_events_executor", bool, False, "Use EventsExecutor instead of SingleThreadedExecutor."),
 )
 
 PROTOCOL_PARAMETERS = (
@@ -86,14 +84,6 @@ PROTOCOL_PARAMETERS = (
         10.0,
         "How long to wait before unregistering a client from publisher after unadvertising publisher.",
     ),
-    (
-        "binary_encoder_type",
-        str,
-        "default",
-        "Encoder used for encoding binary data in messages. Available: 'default', 'b64', `bson'. "
-        "Ignored if bson_only_mode is True.",
-    ),
-    ("bson_only_mode", bool, False, "Use BSON only mode for messages."),
     ("topics_glob", str, "", "Glob patterns for topics publish/subscribe."),
     ("services_glob", str, "", "Glob patterns for services call/advertise."),
     ("actions_glob", str, "", "Glob patterns for actions send/advertise."),
@@ -132,6 +122,7 @@ class RosbridgeWebsocketNode(Node):
 
         RosbridgeWebSocket.node_handle = self
         RosbridgeWebSocket.client_manager = ClientManager(self)
+        RosbridgeWebSocket.event_loop = asyncio.get_event_loop()
 
         self._handle_parameters()
 
@@ -142,8 +133,6 @@ class RosbridgeWebsocketNode(Node):
 
         RosbridgeWebSocket.protocol_parameters = self.protocol_parameters
         RosbridgeWebSocket.use_compression = self.use_compression
-
-        self._start_server()
 
     def _handle_parameters(self) -> None:
         # Parse command line arguments
@@ -199,6 +188,11 @@ class RosbridgeWebsocketNode(Node):
             self.get_parameter("use_compression").get_parameter_value().bool_value
         )
 
+        # Executor parameters
+        self.use_events_executor = (
+            self.get_parameter("use_events_executor").get_parameter_value().bool_value
+        )
+
     def _start_server(self) -> None:
         handlers = [(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)]
         if self.url_path != "/":
@@ -230,30 +224,49 @@ class RosbridgeWebsocketNode(Node):
                 time.sleep(self.retry_startup_delay)
 
 
-def main() -> None:
-    rclpy.init()
+async def async_main() -> None:
+    rclpy.init(args=sys.argv, signal_handler_options=rclpy.signals.SignalHandlerOptions.NO)
+
     node = RosbridgeWebsocketNode()
 
-    executor = rclpy.executors.SingleThreadedExecutor()
+    if node.use_events_executor:
+        executor = EventsExecutor()
+    else:
+        executor = SingleThreadedExecutor()
+
     executor.add_node(node)
 
-    def spin_ros() -> None:
-        if not rclpy.ok():
-            shutdown_hook()
-            return
-        executor.spin_once(timeout_sec=0.01)
+    spin_thread = threading.Thread(target=executor.spin)
+    spin_thread.start()
 
-    spin_callback = PeriodicCallback(spin_ros, 1)
-    spin_callback.start()
-    try:
-        start_hook()
-        node.destroy_node()
-        rclpy.shutdown()
-    except KeyboardInterrupt:
+    # Start accepting connections once executor is ready
+    node._start_server()
+
+    loop = asyncio.get_running_loop()
+    stop_event = asyncio.Event()
+    signal_handled = False
+
+    def handle_signal() -> None:
+        nonlocal signal_handled
+        if signal_handled:
+            return
         print("Exiting due to SIGINT")
-    finally:
-        spin_callback.stop()
-        shutdown_hook()  # shutdown hook to stop the server
+        stop_event.set()
+        executor.shutdown()
+        signal_handled = True
+
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, handle_signal)
+
+    await stop_event.wait()
+    spin_thread.join()
+
+    node.destroy_node()
+    rclpy.shutdown()
+
+
+def main() -> None:
+    asyncio.run(async_main())
 
 
 if __name__ == "__main__":
