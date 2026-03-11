@@ -36,7 +36,7 @@ class TestStartupRace(unittest.TestCase):
     ) -> None:
         total = NUM_CLIENTS * REQUESTS_PER_CLIENT
 
-        responses_future: Future[list[Any]]
+        responses_future: Future
         handler: Callable[[Any], None]
         responses_future, handler = expect_messages(
             total, "concurrent service calls", node.get_logger()
