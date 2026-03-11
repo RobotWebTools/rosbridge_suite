@@ -122,7 +122,7 @@ class MultiPublisher(Generic[ROSMessageT]):
         if topic_type is not None and topic_type != msg_type_string:
             raise TypeConflictException(topic, topic_type, msg_type_string)
 
-        # Use a "best attempt" to maintain compatability is user doesn't set qos
+        # Use a "best attempt" to maintain compatibility is user doesn't set qos
         if qos is None:
             qos = QoSProfile(
                 depth=100,

@@ -7,6 +7,7 @@ from rclpy.qos import (
     QoSProfile,
     ReliabilityPolicy,
 )
+from rclpy.time import Duration
 
 DurabilityPolicies = [
     "system_default",
@@ -38,6 +39,22 @@ ReliabilityPolicies = [
 ]
 
 
+def ExtractDuration(json_duration: list | str) -> Duration:
+    print(type(json_duration))
+    if type(json_duration) is str:
+        _ = json_duration.lower()
+        if _ == "unspecified":
+            return Duration(seconds=0, nanoseconds=0)
+        if _ == "infinite":
+            return Duration(seconds=9223372036, nanoseconds=854775807)
+    elif type(json_duration) is list:
+        if len(json_duration) == 2:
+            return Duration(seconds=json_duration[0], nanoseconds=json_duration[1])
+        if len(json_duration) == 1:
+            return Duration(seconds=json_duration[0])
+    return Duration(seconds=0, nanoseconds=0)
+
+
 def ExtractQoSProfile(qosobj: dict[str, Any] | None) -> QoSProfile | None:
     qos: QoSProfile | None = None
     if qosobj is not None:
@@ -65,11 +82,11 @@ def ExtractQoSProfile(qosobj: dict[str, Any] | None) -> QoSProfile | None:
         else:
             durability = _ if _ is not None else DurabilityPolicy.SYSTEM_DEFAULT
 
-        _ = qosobj.get("deadline")
-        deadline = _
+        _ = qosobj.get("deadline", [])
+        deadline = ExtractDuration(_)
 
-        _ = qosobj.get("lifespan")
-        lifespan = _
+        _ = qosobj.get("lifespan", [])
+        lifespan = ExtractDuration(_)
 
         _ = qosobj.get("liveliness")
         if type(_) is str:
@@ -78,8 +95,8 @@ def ExtractQoSProfile(qosobj: dict[str, Any] | None) -> QoSProfile | None:
         else:
             liveliness = _ if _ is not None else LivelinessPolicy.SYSTEM_DEFAULT
 
-        _ = qosobj.get("liveliness_lease_duration")
-        liveliness_lease_duration = _
+        _ = qosobj.get("liveliness_lease_duration", [])
+        liveliness_lease_duration = ExtractDuration(_)
 
         _ = qosobj.get("avoid_ros_namespace_conventions", False)
         avoid_ros_namespace_conventions = _

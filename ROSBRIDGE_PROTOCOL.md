@@ -634,28 +634,32 @@ Where the string value is the base64-encoded representation of the byte array. B
 
 For operations which support the `qos` parameter, the following structure is assumed:
 
-```python
-"qos" : {
-    "history" : HistoryPolicy,
-    "depth" : Int,
-    "reliability" : ReliabilityPolicy,
-    "durability" : DurabilityPolicy,
-    "deadline" : Int,
-    "lifespan" : Int,
-    "liveliness" : LivelinessPolicy,
-    "liveliness_lease_duration" : Int,
-    "avoid_ros_namespace_conventions" : Bool,
+```json
+{
+  "history": <HistoryPolicy>,
+  "depth": <int>,
+  "reliability": <ReliabilityPolicy>,
+  "durability": <DurabilityPolicy>,
+  "deadline": <Duration>,
+  "lifespan": <Duration>,
+  "liveliness": <LivelinessPolicy>,
+  "liveliness_lease_duration": <Duration>,
+  "avoid_ros_namespace_conventions": <Bool>,
 }
 ```
+
+For Duration-based policies, a string or an array of integer numbers of length 2 or less is expected. If a string is provided,
+the string will be parsed from either "infinitne" or "unspecified". If an empty array or an array longer than 3 items is
+provided, the duration will default to unspecified.
 
 Policies may be provided as either their enum / integer value, or as string name.
 For example:
 
-```python
-"history" : HistoryPolicy.KEEP_LAST
-"reliability" : "RELIABLE"
-"durability" : "volatile"
-"liveliness" : 2
+```json
+"history": HistoryPolicy.KEEP_LAST
+"reliability": "RELIABLE"
+"durability": "volatile"
+"liveliness": 2
 ```
 
 are all valid QoS parameters.
@@ -693,5 +697,5 @@ qos.reliability = ReliabilityPolicy.RELIABLE
 ```
   - And if any use best_effort reliability:
 ```python
-qos.reliability = ReliabilityPolicy.BEST_EFFORT  
+qos.reliability = ReliabilityPolicy.BEST_EFFORT
 ```
