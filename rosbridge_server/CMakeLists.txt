@@ -31,6 +31,7 @@ if(BUILD_TESTING)
     test/websocket/call_service.test.py
     test/websocket/send_action_goal.test.py
     test/websocket/smoke.test.py
+    test/websocket/startup_race.test.py
     test/websocket/transient_local_publisher.test.py
     test/websocket/best_effort_publisher.test.py
     test/websocket/multiple_subscribers_raw.test.py
