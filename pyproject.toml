@@ -61,7 +61,7 @@ select = [
     "C90",    # mccabe
     "NPY",    # numpy
     "PD",     # pandas-vet
-    # "N",    # pep8-naming, Can't fix without breaking API
+    "N",      # pep8-naming
     "PERF",   # Perflint
     "E",      # pycodestyle errors
     "W",      # pycodestyle warnings
@@ -95,6 +95,8 @@ ignore = [
     "S101", # assert
     "S110", # try-except-pass
     "S311", # suspicious-non-cryptographic-random-usage
+
+    "N818", # error-suffix-on-exception-name, Would break existing exception names
 
     # Pylint "too-many" errors
     "PLR0911",
