@@ -31,16 +31,16 @@ class TestClientProtocol(WebSocketClientProtocol):
         self.message_handler: Callable[[Any], None] = lambda _: None
         super().__init__(*args, **kwargs)
 
-    def onOpen(self) -> None:
+    def onOpen(self) -> None:  # noqa: N802
         self.connected_future.set_result(None)
 
-    def sendJson(self, msg_dict: dict[str, Any], *, times: int = 1) -> None:
+    def sendJson(self, msg_dict: dict[str, Any], *, times: int = 1) -> None:  # noqa: N802
         msg = json.dumps(msg_dict).encode("utf-8")
         for _ in range(times):
             print(f"WebSocket client sent message: {msg!r}")
             self.sendMessage(msg)
 
-    def onMessage(self, payload: str, binary: bool) -> None:
+    def onMessage(self, payload: str, binary: bool) -> None:  # noqa: N802
         print(f"WebSocket client received message: {payload}")
         self.message_handler(payload if binary else json.loads(payload))
 
