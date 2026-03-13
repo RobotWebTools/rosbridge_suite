@@ -77,6 +77,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         node_handle: Node,
         msg_type: str | None = None,
         raw: bool = False,
+        qos_depth: int = 10,
     ) -> None:
         """
         Register a subscriber on the specified topic.
@@ -135,7 +136,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         # - https://github.com/RobotWebTools/rosbridge_suite/issues/551
         # - https://github.com/RobotWebTools/rosbridge_suite/issues/769
         qos = QoSProfile(
-            depth=10,
+            depth=qos_depth,
             durability=DurabilityPolicy.VOLATILE,
             reliability=ReliabilityPolicy.BEST_EFFORT,
         )
@@ -304,6 +305,7 @@ class SubscriberManager:
         node_handle: Node,
         msg_type: str | None = None,
         raw: bool = False,
+        qos_depth: int = 10,
     ) -> None:
         """
         Subscribe to a topic.
@@ -316,7 +318,13 @@ class SubscriberManager:
         with self._lock:
             if topic not in self._subscribers:
                 self._subscribers[topic] = MultiSubscriber(
-                    topic, client_id, callback, node_handle, msg_type=msg_type, raw=raw
+                    topic,
+                    client_id,
+                    callback,
+                    node_handle,
+                    msg_type=msg_type,
+                    raw=raw,
+                    qos_depth=qos_depth,
                 )
             else:
                 self._subscribers[topic].subscribe(client_id, callback)

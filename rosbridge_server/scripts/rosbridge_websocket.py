@@ -90,6 +90,7 @@ PROTOCOL_PARAMETERS = (
     ("call_services_in_new_thread", bool, True, "Call services in a new threads."),
     ("default_call_service_timeout", float, 5.0, "Default timeout for service calls."),
     ("send_action_goals_in_new_thread", bool, True, "Send action goals in a new threads."),
+    ("subscriber_qos_depth", int, 10, "Default QoS queue depth for topic subscriptions."),
 )
 
 
