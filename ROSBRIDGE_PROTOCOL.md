@@ -58,11 +58,6 @@ Message compression / transformation:
   * **fragment** - a part of a fragmented message
   * **png** - a part of a PNG compressed fragmented message
 
-Rosbridge status messages:
-
-  * **set_status_level** - a request to set the reporting level for rosbridge status messages
-  * **status** - a status message
-
 ROS operations:
 
   * Topics:
@@ -89,7 +84,7 @@ subscribing) have opcodes which are verbs (subscribe, call_service, unadvertise
 etc.).
 
 Response messages from the server are things that the client is giving back, so
-they are nouns (fragment, status, service_response etc.)
+they are nouns (fragment, service_response etc.)
 
 (The only slight exception to this naming convention is publish)
 
@@ -204,57 +199,12 @@ message. For this it's useful to use the `/rosapi/get_topics_and_raw_types` serv
 you all topics and their raw message definitions, similar to `gendeps --cat`. This is the same
 format as used by bag files.
 
-### 3.2 Status messages
-
-rosbridge sends status messages to the client relating to the successes and
-failures of rosbridge protocol commands. There are four status levels: info,
-warning, error, none. By default, rosbridge uses a status level of error.
-
-A rough guide for what causes the levels of status message:
-
- * **error** – Whenever a user sends a message that is invalid or requests
-    something that does not exist (ie. Sending an incorrect opcode or publishing
-    to a topic that doesn't exist)
- * **warning** – error, plus, whenever a user does something that may succeed
-    but the user has still done something incorrectly (ie. Providing a
-    partially-complete published message)
- * **info** – warning, plus messages indicating success of various operations
-
-#### 3.2.1 Set Status Level ( _status_level_ ) [experimental]
-
-```json
-{ "op": "set_level",
-  (optional) "id": <string>,
-  "level": <string>
-}
-```
-
- * **level** – one of 'info', 'warning', 'error', or 'none'
-
-Sets the status level to the level specified. If a bad string is specified, the
-message is dropped.
-
-#### 3.2.2 Status message ( _status_ ) [experimental]
-
-```json
-{ "op": "status",
-  (optional) "id": <string>,
-  "level": <string>,
-  "msg": <string>
-}
-```
-
- * **level** – the level of this status message
- * **msg** – the string message being logged
- * **id** – if the status message was the result of some operation that had an
-    id, then that id is included
-
-### 3.3 ROS messages
+### 3.2 ROS messages
 
 These rosbridge messages interact with ROS, and correspond roughly to the
 messages that already exist in the current version of rosbridge.
 
-#### 3.3.1 Advertise ( _advertise_ )
+#### 3.2.1 Advertise ( _advertise_ )
 
 If you wish to advertise that you are or will be publishing a topic, then use the advertise command.
 
@@ -278,7 +228,7 @@ If you wish to advertise that you are or will be publishing a topic, then use th
    * If the topic doesn't already exist but the type cannot be resolved, then
      an error status message is sent and this message is dropped.
 
-#### 3.3.2 Unadvertise ( _unadvertise_ )
+#### 3.2.2 Unadvertise ( _unadvertise_ )
 
 This stops advertising that you are publishing a topic.
 
@@ -298,7 +248,7 @@ This stops advertising that you are publishing a topic.
    * If the topic exists but rosbridge is not advertising it, a warning status
      message is sent and this message is dropped
 
-#### 3.3.3 Publish ( _publish_ )
+#### 3.2.3 Publish ( _publish_ )
 
 The publish message is used to send data on a topic.
 
@@ -328,7 +278,7 @@ automatically populate the header with a frame id of "" and the timestamp as
 the current time. Alternatively, just the timestamp field can be omitted, and
 then the current time will be automatically inserted.
 
-#### 3.3.4 Subscribe
+#### 3.2.4 Subscribe
 
 ```json
 { "op": "subscribe",
@@ -373,7 +323,7 @@ highest queue_length. It is recommended that the client provides IDs for its
 subscriptions, to enable rosbridge to effectively choose the appropriate
 fragmentation size and publishing rate.
 
-#### 3.3.5 Unsubscribe
+#### 3.2.5 Unsubscribe
 
 ```json
 { "op": "unsubscribe",
@@ -388,7 +338,7 @@ fragmentation size and publishing rate.
 If an id is provided, then only the corresponding subscription is unsubscribed.
 If no ID is provided, then all subscriptions are unsubscribed.
 
-#### 3.3.6 Advertise Service
+#### 3.2.6 Advertise Service
 
 ```json
 { "op": "advertise_service",
@@ -402,7 +352,7 @@ Advertises an external ROS service server. Requests come to the client via Call 
  * **service** – the name of the service to advertise
  * **type** – the advertised service message type
 
-#### 3.3.7 Unadvertise Service
+#### 3.2.7 Unadvertise Service
 
 ```json
 { "op": "unadvertise_service",
@@ -410,7 +360,7 @@ Advertises an external ROS service server. Requests come to the client via Call 
 }
 ```
 
-#### 3.3.8 Call Service
+#### 3.2.8 Call Service
 
 Calls a ROS service.
 
@@ -441,7 +391,7 @@ Stops advertising an external ROS service server
 
  * **service** – the name of the service to unadvertise
 
-#### 3.3.9 Service Response
+#### 3.2.9 Service Response
 
 A response to a ROS service call.
 
@@ -461,7 +411,7 @@ A response to a ROS service call.
     response will contain the ID
  * **result** - return value of service callback. true means success, false failure.
 
-#### 3.3.10 Advertise Action
+#### 3.2.10 Advertise Action
 
 Advertises an external ROS action server.
 
@@ -477,7 +427,7 @@ Goals come to the client via the Send Action Goal capability.
  * **action** – the name of the action to advertise
  * **type** – the advertised action message type
 
-#### 3.3.11 Unadvertise Action
+#### 3.2.11 Unadvertise Action
 
 ```json
 { "op": "unadvertise_action",
@@ -485,7 +435,7 @@ Goals come to the client via the Send Action Goal capability.
 }
 ```
 
-#### 3.3.12 Send Action Goal
+#### 3.2.12 Send Action Goal
 
 Sends a goal to a ROS action server.
 
@@ -510,7 +460,7 @@ Sends a goal to a ROS action server.
  * **fragment_size** – the maximum size that the result and feedback messages can take before they are fragmented
  * **compression** – an optional string to specify the compression scheme to be used on messages. Valid values are "none" and "png"
 
-#### 3.3.13 Cancel Action Goal
+#### 3.2.13 Cancel Action Goal
 
 Cancels an action goal.
 
@@ -523,7 +473,7 @@ Cancels an action goal.
 
 The `id` field must match an already in-progress goal.
 
-#### 3.3.14 Action Feedback
+#### 3.2.14 Action Feedback
 
 Used to send action feedback for a specific goal handle.
 
@@ -537,7 +487,7 @@ Used to send action feedback for a specific goal handle.
 
 The `id` field must match an already in-progress goal.
 
-#### 3.3.15 Action Result
+#### 3.2.15 Action Result
 
 A result for a ROS action.
 
