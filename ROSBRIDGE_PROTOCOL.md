@@ -1,30 +1,16 @@
 # rosbridge v2.0 Protocol Specification
 
-This document outlines the rosbridge v2.0 protocol. The v2.0 protocol
-incorporates a number of requirements which have arisen since the first version
-of rosbridge was released, and makes a small number of modifications to
-facilitate greater extensibility to the protocol. At its core, the protocol
-still contains the same operations with the same semantics as the prior
-versions of rosbridge. The main change is to the structure of messages,
-separating control information from message information. The main new additions
-are fragmentation, compression, and logging.
+This document defines the rosbridge protocol and its supported operations. The
+protocol is built around JSON messages with an `op` field that identifies the
+operation being performed.
 
-This document outlines the protocol specification, but also touches upon the
-intended direction for the rosbridge server implementation. The rosbridge v2.0
-server implementation is architected in a way to make it easy to add and modify
-protocol operations. Furthermore, the rosbridge v2.0 server decouples
-JSON-handling from the websockets server, allowing users to arbitrarily change
-the specific websockets server implementation they are using.
+It also describes the intended direction of the rosbridge server
+implementation. The server is designed to make protocol operations easy to add
+or modify, and it separates JSON handling from the WebSocket server
+implementation.
 
-The message transport of rosbridge is JSON objects. The only required field is
-the 'op' field, which specifies the operation of that message. Each 'op' then
-specifies its own message semantics.
-
-The rosbridge protocol is a set of 'op' codes which define a number of
-operations, along with the semantics for each operation.
-
-The rosbridge server is a server which accepts websockets connections and
-implements the rosbridge protocol.
+The rosbridge server accepts WebSocket connections and implements the
+rosbridge protocol.
 
 The full source code of rosbridge is located in the rosbridge_suite package.
 The package is located at https://github.com/robotwebtools/rosbridge_suite, and
