@@ -1,7 +1,5 @@
 # rosbridge v2.0 Protocol Specification
 
-> This document describes the ROS 2 version of rosbridge. For ROS 1, please see the [ros1 branch](https://github.com/RobotWebTools/rosbridge_suite/blob/ros1/ROSBRIDGE_PROTOCOL.md).
-
 This document outlines the rosbridge v2.0 protocol. The v2.0 protocol
 incorporates a number of requirements which have arisen since the first version
 of rosbridge was released, and makes a small number of modifications to
