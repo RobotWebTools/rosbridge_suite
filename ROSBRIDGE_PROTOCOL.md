@@ -1,21 +1,12 @@
-# rosbridge v2.0 Protocol Specification
+# rosbridge v2 Protocol Specification
 
-This document defines the rosbridge protocol and its supported operations. The
-protocol is built around JSON messages with an `op` field that identifies the
-operation being performed.
+This document defines the rosbridge protocol and its supported operations.
+The protocol is built around structured message objects (e.g., JSON or CBOR) with an `op` field that identifies the
+operation being performed. The document also describes the intended direction of the rosbridge server implementation.
 
-It also describes the intended direction of the rosbridge server
-implementation. The server is designed to make protocol operations easy to add
-or modify, and it separates JSON handling from the WebSocket server
-implementation.
-
-The rosbridge server accepts WebSocket connections and implements the
-rosbridge protocol.
-
-The full source code of rosbridge is located in the rosbridge_suite package.
-The package is located at https://github.com/robotwebtools/rosbridge_suite, and
-the full breakdown of the stack and its packages is detailed in section 4.5 of
-this document.
+The rosbridge server implements the rosbridge protocol over a transport layer.
+The default server implementation uses WebSockets, but the protocol itself is transport-agnostic and can be carried over TCP or other suitable transports.
+The implementation separates message parsing from the underlying transport so protocol operations remain easy to extend.
 
 ## 1. The rosbridge transport
 
