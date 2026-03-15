@@ -20,7 +20,7 @@ Messages with different values for `op` may be handled differently.
 
 As long as the message is a valid object containing the `op` field, it is a valid rosbridge message.
 
-Optionally, a message can also provide an arbitrary string or integer ID:
+Optionally, a message can also provide an arbitrary string ID:
 
 ```json
 {
@@ -48,7 +48,7 @@ Some `C <-> S` operations are valid in either direction depending on which side 
 
 Message compression / transformation:
 - **fragment** - C <-> S - part of a fragmented message
-- **png** - S -> C - part of a PNG-compressed fragmented message
+- **png** - S -> C - a message compressed as a PNG image
 
 Topic operations:
 - **advertise** - C -> S - advertise that the client will publish on a topic
@@ -75,17 +75,43 @@ In general, operation opcodes that initiate an action are verb-like, such as `su
 Feedback, result, and status-bearing messages often use noun or noun-phrase opcodes such as `service_response`, `action_feedback` and `action_result`.
 These naming patterns are descriptive only and do not imply that a given opcode is sent exclusively by either the client or the server.
 
-### 3.1 Data Encoding and Transformation
+### 3. Data Encoding and Transformation
 
-The rosbridge protocol provides the ability to fragment messages and to compress messages.
+By default, rosbridge messages are encoded as JSON text.
+The rosbridge protocol also provides alternative encodings and message transformations for cases where binary data, large payloads, or performance requirements make the default JSON encoding less suitable.
 
-#### 3.1.1 Fragmentation ( _fragment_ ) [experimental]
+#### 3.1 Base64 encoding of byte arrays
 
-Messages may be fragmented if they are particularly large, or if the client
-requests fragmentation. A fragmented message has the following format:
+When the rosbridge server sends messages containing `uint8[]` or `char[]` fields, these byte arrays are encoded as base64 strings.
+This reduces message size by up to 60% compared to sending the same data as a list of numbers when encoded in JSON.
+
+For example, a message containing the following fields:
+
+```
+uint8[] data1 = [0, 0, 0, 0]
+uint8[] data2 = [255, 255, 255, 255]
+```
+
+Will be transmitted as:
 
 ```json
-{ "op": "fragment",
+{
+  "data1": "AAAAAA==",
+  "data2": "/////w=="
+}
+```
+
+The string value is the base64-encoded representation of the byte array.
+Byte arrays may be sent to the server as either a base64 string or a list of numbers, but they will be re-encoded as a base64 string before being sent to other clients.
+
+#### 3.2 Fragmentation ( _fragment_ ) [experimental]
+
+Messages may be fragmented if they are particularly large, or if the client requests fragmentation.
+A fragmented message has the following format:
+
+```json
+{
+  "op": "fragment",
   "id": <string>,
   "data": <string>,
   "num": <int>,
@@ -93,99 +119,76 @@ requests fragmentation. A fragmented message has the following format:
 }
 ```
 
-**id** - an id is required for fragmented messages, in order to identify
-corresponding fragments for the fragmented message:
+- **id** - an id is required for fragmented messages, in order to identify corresponding fragments for the fragmented message.
+- **data** - a fragment of data that, when combined with other fragments of data, makes up another message.
+- **num** - the index of the fragment in the message.
+- **total** - the total number of fragments.
 
- * **data** - a fragment of data that, when combined with other fragments of data, makes up another message
- * **num** - the index of the fragment in the message
- * **total** - the total number of fragments
+To fragment a message, its serialized payload is taken and split up into multiple substrings or byte arrays.
+For each chunk, a fragment message is constructed, with the data field of the fragment populated by the chunk.
 
-To fragment a message, its JSON string is taken and split up into multiple
-substrings. For each substring, a fragment message is constructed, with the
-data field of the fragment populated by the substring.
+To reconstruct an original message, the data fields of the fragments are concatenated, resulting in the serialized payload of the original message.
 
-To reconstruct an original message, the data fields of the fragments are
-concatenated, resulting in the JSON string of the original message.
+#### 3.3 PNG compression ( _png_ ) [experimental]
 
-#### 3.1.2 PNG compression ( _png_ ) [experimental]
-
-Some messages (such as images and maps) can be extremely large, and for efficiency
-reasons we may wish to transfer them as PNG-encoded bytes. The PNG opcode
-duplicates the fragmentation logic of the FRG opcode (and it is possible and
-reasonable to only have a single fragment), except that the data field consists
-of ASCII-encoded PNG bytes.
+Some messages (such as images and maps) can be extremely large, and for efficiency reasons we may wish to transfer them as PNG-encoded bytes.
 
 ```json
-{ "op": "png",
-  (optional) "id": <string>,
-  "data": <string>,
-  (optional) "num": <int>,
-  (optional) "total": <int>
+{
+  "op": "png",
+  "data": <string>
 }
 ```
 
- * **id** – only required if the message is fragmented. Identifies the
-    fragments for the fragmented message.
- * **data** – a fragment of a PNG-encoded message or an entire message.
- * **num** – only required if the message is fragmented. The index of the fragment.
- * **total** – only required if the message is fragmented. The total number of fragments.
+- **data** – a PNG-encoded message.
 
-To construct a PNG compressed message, take the JSON string of the original
-message and read the bytes of the string into a PNG image. Then, ASCII-encode
-the image. This string is now used as the data field. If fragmentation is
-necessary, then fragment the data and set the ID, num and total fields to the
-appropriate values in the fragments. Otherwise these fields can be left out.
+To construct a PNG compressed message, the serialized payload of the original message is taken and interpreted as an RGB image.
+The image is then saved as a PNG and the bytes are base64-encoded as a string.
+This string is then used as the `data` field.
 
-#### 3.1.3 CBOR encoding ( _cbor_ )
+Currently, only Server to Client `png` messages are supported.
+The server does not support receiving PNG-compressed messages from clients in the current version of the protocol.
 
-[CBOR](https://tools.ietf.org/html/rfc7049) encoding is the fastest
-compression method for messages containing large blobs of data, such as
-byte arrays and numeric typed arrays.
+#### 3.4 CBOR encoding ( _cbor_ )
 
-When CBOR compression is requested by a subscriber, a binary message will be
-produced instead of a JSON string.  Once decoded, the message will contain
-a normal protocol message.
+[CBOR] encoding is the fastest compression method for messages containing large blobs of data, such as byte arrays and numeric typed arrays.
 
-The implementation uses [draft typed array tags] for efficient packing of
-homogeneous arrays.  At the moment, only little-endian packing is supported.
+When CBOR compression is requested by a subscriber, a binary message will be produced instead of a JSON string.
+Once decoded, the message will contain a normal protocol message.
 
+The implementation uses [draft typed array tags] for efficient packing of homogeneous arrays.
+At the moment, only little-endian packing is supported.
+
+[CBOR]: https://tools.ietf.org/html/rfc7049
 [draft typed array tags]: https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00
 
-#### 3.1.4 CBOR-RAW encoding ( _cbor-raw_ )
+#### 3.5 CBOR-RAW encoding ( _cbor-raw_ )
 
-While CBOR encodes the entire message as CBOR, sometimes it's desirable to get the raw binary message in the
-[ROS serialization format](https://wiki.ros.org/roscpp/Overview/MessagesSerializationAndAdaptingTypes),
-which is the same format as sent between ROS nodes and stored in [Bag files](http://wiki.ros.org/Bags/Format/2.0).
+While CBOR encodes the entire message as CBOR, sometimes it is desirable to get the raw binary message in the
+ROS 2 serialized message format.
 
 This can be useful in several cases:
-- Your application already knows how to parse messages in bag files (e.g. using
-  [rosbag.js](https://github.com/cruise-automation/rosbag.js), which means that now you can use
-  consistent code paths for both bags and live messages.
-- You want to parse messages as late as possible, or in parallel, e.g. only in the thread
-  or WebWorker that cares about the message. Delaying the parsing of the message means that moving
-  or copying the message to the thread is cheaper when its in binary form, since no serialization
-  between threads is necessary.
+- Your application already knows how to parse raw ROS 2 message data or data stored in ROS 2 bag files,
+  which means that you can use consistent code paths for both recorded and live messages.
+- You want to parse messages as late as possible, or in parallel, e.g. only in the thread or WebWorker that cares about  the message.
+  Delaying the parsing of the message means that moving or copying the message to the thread is cheaper when its in binary form, since no serialization between threads is necessary.
 - You only care about part of the message, and don't need to parse the rest of it.
-- You really care about performance; no conversion between the ROS binary format and CBOR is done in
-  the rosbridge_sever.
+- You really care about performance; no conversion between the ROS 2 binary message format and CBOR is done in
+  the rosbridge server.
 
-The format is similar to CBOR above, but instead of the "msg" field containing the message itself
-in CBOR format, instead it contains an object with a "bytes" field which is a byte array containing
-the raw message. The "msg" object also includes "secs" and "nsecs" of the `get_rostime()` upon
-receiving the message, which is especially useful when `use_sim_time` is set, since it will give you
-the simulated time the message was received.
+The format is similar to CBOR above, but instead of the `msg` field containing the message itself in CBOR format,
+it contains an object with a `bytes` field which is a byte array containing the raw serialized ROS 2 message.
+The `msg` object also includes `secs` and `nsecs` for the ROS time at which the message was received, which is especially useful when `use_sim_time` is set.
 
-When using this encoding, a client application will need to know exactly how to parse the raw
-message. For this it's useful to use the `/rosapi/get_topics_and_raw_types` service, which will give
-you all topics and their raw message definitions, similar to `gendeps --cat`. This is the same
-format as used by bag files.
+When using this encoding, a client application will need to know exactly how to parse the raw message.
+For this it is useful to use the `/rosapi/get_topics_and_raw_types` service, which provides topic names together with their raw message definitions.
 
-### 3.2 ROS messages
+### 4. ROS-specific operations
 
 These rosbridge messages interact with ROS, and correspond roughly to the
 messages that already exist in the current version of rosbridge.
 
-#### 3.2.1 Advertise ( _advertise_ )
+#### 4.1 Advertise ( _advertise_ )
 
 If you wish to advertise that you are or will be publishing a topic, then use the advertise command.
 
@@ -209,7 +212,7 @@ If you wish to advertise that you are or will be publishing a topic, then use th
    * If the topic doesn't already exist but the type cannot be resolved, then
      an error status message is sent and this message is dropped.
 
-#### 3.2.2 Unadvertise ( _unadvertise_ )
+#### 4.2 Unadvertise ( _unadvertise_ )
 
 This stops advertising that you are publishing a topic.
 
@@ -229,15 +232,14 @@ This stops advertising that you are publishing a topic.
    * If the topic exists but rosbridge is not advertising it, a warning status
      message is sent and this message is dropped
 
-#### 3.2.3 Publish ( _publish_ )
+#### 4.3 Publish ( _publish_ )
 
 The publish message is used to send data on a topic.
 
 ```json
 { "op": "publish",
   (optional) "id": <string>,
-  "topic": <string>,
-  "msg": <json>
+  "msg": <message_object>
 }
 ```
 
@@ -259,7 +261,7 @@ automatically populate the header with a frame id of "" and the timestamp as
 the current time. Alternatively, just the timestamp field can be omitted, and
 then the current time will be automatically inserted.
 
-#### 3.2.4 Subscribe
+#### 4.4 Subscribe
 
 ```json
 { "op": "subscribe",
@@ -304,7 +306,7 @@ highest queue_length. It is recommended that the client provides IDs for its
 subscriptions, to enable rosbridge to effectively choose the appropriate
 fragmentation size and publishing rate.
 
-#### 3.2.5 Unsubscribe
+#### 4.5 Unsubscribe
 
 ```json
 { "op": "unsubscribe",
@@ -319,7 +321,7 @@ fragmentation size and publishing rate.
 If an id is provided, then only the corresponding subscription is unsubscribed.
 If no ID is provided, then all subscriptions are unsubscribed.
 
-#### 3.2.6 Advertise Service
+#### 4.6 Advertise Service
 
 ```json
 { "op": "advertise_service",
@@ -333,7 +335,7 @@ Advertises an external ROS service server. Requests come to the client via Call 
  * **service** – the name of the service to advertise
  * **type** – the advertised service message type
 
-#### 3.2.7 Unadvertise Service
+#### 4.7 Unadvertise Service
 
 ```json
 { "op": "unadvertise_service",
@@ -341,7 +343,7 @@ Advertises an external ROS service server. Requests come to the client via Call 
 }
 ```
 
-#### 3.2.8 Call Service
+#### 4.8 Call Service
 
 Calls a ROS service.
 
@@ -372,7 +374,7 @@ Stops advertising an external ROS service server
 
  * **service** – the name of the service to unadvertise
 
-#### 3.2.9 Service Response
+#### 4.9 Service Response
 
 A response to a ROS service call.
 
@@ -392,7 +394,7 @@ A response to a ROS service call.
     response will contain the ID
  * **result** - return value of service callback. true means success, false failure.
 
-#### 3.2.10 Advertise Action
+#### 4.10 Advertise Action
 
 Advertises an external ROS action server.
 
@@ -408,7 +410,7 @@ Goals come to the client via the Send Action Goal capability.
  * **action** – the name of the action to advertise
  * **type** – the advertised action message type
 
-#### 3.2.11 Unadvertise Action
+#### 4.11 Unadvertise Action
 
 ```json
 { "op": "unadvertise_action",
@@ -416,7 +418,7 @@ Goals come to the client via the Send Action Goal capability.
 }
 ```
 
-#### 3.2.12 Send Action Goal
+#### 4.12 Send Action Goal
 
 Sends a goal to a ROS action server.
 
@@ -441,7 +443,7 @@ Sends a goal to a ROS action server.
  * **fragment_size** – the maximum size that the result and feedback messages can take before they are fragmented
  * **compression** – an optional string to specify the compression scheme to be used on messages. Valid values are "none" and "png"
 
-#### 3.2.13 Cancel Action Goal
+#### 4.13 Cancel Action Goal
 
 Cancels an action goal.
 
@@ -454,7 +456,7 @@ Cancels an action goal.
 
 The `id` field must match an already in-progress goal.
 
-#### 3.2.14 Action Feedback
+#### 4.14 Action Feedback
 
 Used to send action feedback for a specific goal handle.
 
@@ -468,7 +470,7 @@ Used to send action feedback for a specific goal handle.
 
 The `id` field must match an already in-progress goal.
 
-#### 3.2.15 Action Result
+#### 4.15 Action Result
 
 A result for a ROS action.
 
@@ -491,62 +493,24 @@ A result for a ROS action.
 
 ---
 
-## 4 Further considerations
+## 5 Further considerations
 
 Further considerations for the rosbridge protocol are listed below.
 
-### 4.1 Rosbridge pseudo-services
+### 5.1 Rosbridge pseudo-services
 
 Rosbridge no longer provides the ROS-api introspection pseudo services that it
 previously did. These are, for example rosbridge/topics and rosbridge/services.
 Instead, these services are provided as proper ROS services by the new rosapi
 package.
 
-### 4.2 Sampling
+### 5.2 Sampling
 
 It has been suggested that rosbridge may be extended to provide an operation to
 sample a single message from a topic.
 
-### 4.3 Latching
+### 5.3 Latching
 
 Rosbridge will support messages that were latched to topics internally in ROS.
 It is possible that the publish opcode will be extended so that remote clients
 can latch messages too.
-
-### 4.5 Rosbridge package structure
-
-Rosbridge 2.0 resides in a package named rosbridge_suite, located at
-https://github.com/robotwebtools/rosbridge_suite.
-
-The meta-package will contain the following packages:
-
- * **rosbridge_library** – the core rosbridge JSON-to-ROS implementation. This
-    is be a Python library.
- * **rosbridge_server** – depends on the rosbridge library, and implements the
-    WebSockets server, passing incoming messages to the API and outgoing
-    messages back to the WebSockets connection. The default server uses
-    tornado, a python server implementation.
- * **rosapi** – provides ROS services for various master API calls, such as
-    listing all the topics, services, types currently in ROS
-
-### 4.6 Data Type Encoding
-
-**Base64 Encoding for JSON Byte Arrays**
-
-When rosbridge sends messages containing `uint8[]` or `char[]` fields as JSON, these byte arrays are automatically encoded as base64 strings to reduce message size by approximately 60-65%.
-
-For example, a message field defined as:
-
-```
-uint8[] data = [0, 0, 0, 0]
-```
-
-Will be transmitted as:
-
-```json
-{
-  "data": "AAAAAAAA"
-}
-```
-
-Where the string value is the base64-encoded representation of the byte array. Byte arrays may be sent to the server as either a base64 string or a JSON list of numbers, but will be re-encoded as a base64 string before being sent to other clients.
