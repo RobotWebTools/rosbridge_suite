@@ -40,36 +40,41 @@ Instead, it identifies an interaction, which may consist of multiple back-and-fo
 The rosbridge protocol defines a number of different operations.
 
 Direction legend:
+
 - **C -> S**: client to server
 - **S -> C**: server to client
-- **C <-> S**: either direction
+- **C \<-> S**: either direction
 
 Some `C <-> S` operations are valid in either direction depending on which side has advertised the corresponding topic, service, or action interface.
 
 Message compression / transformation:
-- **fragment** - C <-> S - part of a fragmented message
+
+- **fragment** - C \<-> S - part of a fragmented message
 - **png** - S -> C - a message compressed as a PNG image
 
 Topic operations:
+
 - **advertise** - C -> S - advertise that the client will publish on a topic
 - **unadvertise** - C -> S - stop advertising that the client will publish on a topic
-- **publish** - C <-> S - publish a message on a topic
+- **publish** - C \<-> S - publish a message on a topic
 - **subscribe** - C -> S - request topic updates
 - **unsubscribe** - C -> S - stop topic updates
 
 Service operations:
+
 - **advertise_service** - C -> S - advertise an external service server
 - **unadvertise_service** - C -> S - stop advertising an external service server
-- **call_service** - C <-> S - invoke a service
-- **service_response** - C <-> S - return a service response
+- **call_service** - C \<-> S - invoke a service
+- **service_response** - C \<-> S - return a service response
 
 Action operations:
+
 - **advertise_action** - C -> S - advertise an external action server
 - **unadvertise_action** - C -> S - stop advertising an external action server
-- **send_action_goal** - C <-> S - send an action goal
-- **cancel_action_goal** - C <-> S - cancel an action goal
-- **action_feedback** - C <-> S - report action feedback
-- **action_result** - C <-> S - report an action result
+- **send_action_goal** - C \<-> S - send an action goal
+- **cancel_action_goal** - C \<-> S - cancel an action goal
+- **action_feedback** - C \<-> S - report action feedback
+- **action_result** - C \<-> S - report an action result
 
 In general, operation opcodes that initiate an action are verb-like, such as `subscribe`, `publish`, and `call_service`.
 Feedback, result, and status-bearing messages often use noun or noun-phrase opcodes such as `service_response`, `action_feedback` and `action_result`.
@@ -159,18 +164,16 @@ Once decoded, the message will contain a normal protocol message.
 The implementation uses [draft typed array tags] for efficient packing of homogeneous arrays.
 At the moment, only little-endian packing is supported.
 
-[CBOR]: https://tools.ietf.org/html/rfc7049
-[draft typed array tags]: https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00
-
 #### 3.5 CBOR-RAW encoding ( _cbor-raw_ )
 
 While CBOR encodes the entire message as CBOR, sometimes it is desirable to get the raw binary message in the
 ROS 2 serialized message format.
 
 This can be useful in several cases:
+
 - Your application already knows how to parse raw ROS 2 message data or data stored in ROS 2 bag files,
   which means that you can use consistent code paths for both recorded and live messages.
-- You want to parse messages as late as possible, or in parallel, e.g. only in the thread or WebWorker that cares about  the message.
+- You want to parse messages as late as possible, or in parallel, e.g. only in the thread or WebWorker that cares about the message.
   Delaying the parsing of the message means that moving or copying the message to the thread is cheaper when its in binary form, since no serialization between threads is necessary.
 - You only care about part of the message, and don't need to parse the rest of it.
 - You really care about performance; no conversion between the ROS 2 binary message format and CBOR is done in
@@ -200,17 +203,18 @@ If you wish to advertise that you are or will be publishing a topic, then use th
 }
 ```
 
- * **topic** – the string name of the topic to advertise
- * **type** – the string type to advertise for the topic
+- **topic** – the string name of the topic to advertise
 
-   * If the topic does not already exist, and the type specified is a valid
-     type, then the topic will be established with this type.
-   * If the topic already exists with a different type, an error status message
-     is sent and this message is dropped.
-   * If the topic already exists with the same type, the sender of this message
-     is registered as another publisher.
-   * If the topic doesn't already exist but the type cannot be resolved, then
-     an error status message is sent and this message is dropped.
+- **type** – the string type to advertise for the topic
+
+  - If the topic does not already exist, and the type specified is a valid
+    type, then the topic will be established with this type.
+  - If the topic already exists with a different type, an error status message
+    is sent and this message is dropped.
+  - If the topic already exists with the same type, the sender of this message
+    is registered as another publisher.
+  - If the topic doesn't already exist but the type cannot be resolved, then
+    an error status message is sent and this message is dropped.
 
 #### 4.2 Unadvertise ( _unadvertise_ )
 
@@ -223,14 +227,14 @@ This stops advertising that you are publishing a topic.
 }
 ```
 
- * **topic** – the string name of the topic being unadvertised
+- **topic** – the string name of the topic being unadvertised
 
-   * If the topic does not exist, a warning status message is sent and this
-     message is dropped
-   * If the topic exists and there are still clients left advertising it,
-     rosbridge will continue to advertise it until all of them have unadvertised
-   * If the topic exists but rosbridge is not advertising it, a warning status
-     message is sent and this message is dropped
+  - If the topic does not exist, a warning status message is sent and this
+    message is dropped
+  - If the topic exists and there are still clients left advertising it,
+    rosbridge will continue to advertise it until all of them have unadvertised
+  - If the topic exists but rosbridge is not advertising it, a warning status
+    message is sent and this message is dropped
 
 #### 4.3 Publish ( _publish_ )
 
@@ -245,15 +249,16 @@ The publish message is used to send data on a topic.
 
 The publish command publishes a message on a topic.
 
- * **topic** - the string name of the topic to publish to
- * **msg** - the message to publish on the topic
+- **topic** - the string name of the topic to publish to
 
-   * If the topic does not exist, then an error status message is sent and this
-     message is dropped
-   * If the msg does not conform to the type of the topic, then an error status
-     message is sent and this message is dropped
-   * If the msg is a subset of the type of the topic, then a warning status
-     message is sent and the unspecified fields are filled in with defaults
+- **msg** - the message to publish on the topic
+
+  - If the topic does not exist, then an error status message is sent and this
+    message is dropped
+  - If the msg does not conform to the type of the topic, then an error status
+    message is sent and this message is dropped
+  - If the msg is a subset of the type of the topic, then a warning status
+    message is sent and the unspecified fields are filled in with defaults
 
 Special case: if the type being published has a 'header' field, then the client
 can optionally omit the header from the msg. If this happens, rosbridge will
@@ -281,20 +286,20 @@ each component makes its own subscription request providing an ID. That way,
 each can individually unsubscribe and rosbridge can select the correct rate at
 which to send messages.
 
- * **type** – the (expected) type of the topic to subscribe to. If left off,
-    type will be inferred, and if the topic doesn't exist then the command to
-    subscribe will fail
- * **topic** – the name of the topic to subscribe to
- * **throttle_rate** – the minimum amount of time (in ms) that must elapse
-    between messages being sent. Defaults to 0
- * **queue_length** – the size of the queue to buffer messages. Messages are
-    buffered as a result of the throttle_rate. Defaults to 0 (no queueing).
- * **id** – if specified, then this specific subscription can be unsubscribed
-    by referencing the ID.
- * **fragment_size** – the maximum size that a message can take before it is to
-    be fragmented.
- * **compression** – an optional string to specify the compression scheme to be
-    used on messages. Valid values are "none", "png", "cbor", and "cbor-raw".
+- **type** – the (expected) type of the topic to subscribe to. If left off,
+  type will be inferred, and if the topic doesn't exist then the command to
+  subscribe will fail
+- **topic** – the name of the topic to subscribe to
+- **throttle_rate** – the minimum amount of time (in ms) that must elapse
+  between messages being sent. Defaults to 0
+- **queue_length** – the size of the queue to buffer messages. Messages are
+  buffered as a result of the throttle_rate. Defaults to 0 (no queueing).
+- **id** – if specified, then this specific subscription can be unsubscribed
+  by referencing the ID.
+- **fragment_size** – the maximum size that a message can take before it is to
+  be fragmented.
+- **compression** – an optional string to specify the compression scheme to be
+  used on messages. Valid values are "none", "png", "cbor", and "cbor-raw".
 
 If queue_length is specified, then messages are placed into the queue before
 being sent. Messages are sent from the head of the queue. If the queue gets
@@ -315,8 +320,8 @@ fragmentation size and publishing rate.
 }
 ```
 
- * **topic** – the name of the topic to unsubscribe from
- * **id** – an id of the subscription to unsubscribe
+- **topic** – the name of the topic to unsubscribe from
+- **id** – an id of the subscription to unsubscribe
 
 If an id is provided, then only the corresponding subscription is unsubscribed.
 If no ID is provided, then all subscriptions are unsubscribed.
@@ -332,8 +337,8 @@ If no ID is provided, then all subscriptions are unsubscribed.
 
 Advertises an external ROS service server. Requests come to the client via Call Service.
 
- * **service** – the name of the service to advertise
- * **type** – the advertised service message type
+- **service** – the name of the service to advertise
+- **type** – the advertised service message type
 
 #### 4.7 Unadvertise Service
 
@@ -358,21 +363,20 @@ Calls a ROS service.
 }
 ```
 
- * **service** – the name of the service to call
- * **args** – if the service has no args, then args does not have to be
-    provided, though an empty list is equally acceptable. Args should be a list
-    of json objects representing the arguments to the service
- * **id** – an optional id to distinguish this service call
- * **fragment_size** – the maximum size that the response message can take
-    before it is fragmented
- * **compression** – an optional string to specify the compression scheme to be
-    used on messages. Valid values are "none" and "png"
- * **timeout** – the time, in seconds, to wait for a response from the server
-
+- **service** – the name of the service to call
+- **args** – if the service has no args, then args does not have to be
+  provided, though an empty list is equally acceptable. Args should be a list
+  of json objects representing the arguments to the service
+- **id** – an optional id to distinguish this service call
+- **fragment_size** – the maximum size that the response message can take
+  before it is fragmented
+- **compression** – an optional string to specify the compression scheme to be
+  used on messages. Valid values are "none" and "png"
+- **timeout** – the time, in seconds, to wait for a response from the server
 
 Stops advertising an external ROS service server
 
- * **service** – the name of the service to unadvertise
+- **service** – the name of the service to unadvertise
 
 #### 4.9 Service Response
 
@@ -387,12 +391,12 @@ A response to a ROS service call.
 }
 ```
 
- * **service** – the name of the service that was called
- * **values** – the return values. If the service had no return values, then
-    this field can be omitted (and will be by the rosbridge server)
- * **id** – if an ID was provided to the service request, then the service
-    response will contain the ID
- * **result** - return value of service callback. true means success, false failure.
+- **service** – the name of the service that was called
+- **values** – the return values. If the service had no return values, then
+  this field can be omitted (and will be by the rosbridge server)
+- **id** – if an ID was provided to the service request, then the service
+  response will contain the ID
+- **result** - return value of service callback. true means success, false failure.
 
 #### 4.10 Advertise Action
 
@@ -407,8 +411,8 @@ Advertises an external ROS action server.
 
 Goals come to the client via the Send Action Goal capability.
 
- * **action** – the name of the action to advertise
- * **type** – the advertised action message type
+- **action** – the name of the action to advertise
+- **type** – the advertised action message type
 
 #### 4.11 Unadvertise Action
 
@@ -434,14 +438,14 @@ Sends a goal to a ROS action server.
 }
 ```
 
- * **action** – the name of the action to send a goal to
- * **action_type** – the action message type
- * **args** – if the goal has no args, then args does not have to be
-    provided, though an empty list is equally acceptable. Args should be a list of json objects representing the arguments to the service.
- * **feedback** – if true, sends feedback messages over rosbridge. Defaults to false.
- * **id** – an optional id to distinguish this goal handle
- * **fragment_size** – the maximum size that the result and feedback messages can take before they are fragmented
- * **compression** – an optional string to specify the compression scheme to be used on messages. Valid values are "none" and "png"
+- **action** – the name of the action to send a goal to
+- **action_type** – the action message type
+- **args** – if the goal has no args, then args does not have to be
+  provided, though an empty list is equally acceptable. Args should be a list of json objects representing the arguments to the service.
+- **feedback** – if true, sends feedback messages over rosbridge. Defaults to false.
+- **id** – an optional id to distinguish this goal handle
+- **fragment_size** – the maximum size that the result and feedback messages can take before they are fragmented
+- **compression** – an optional string to specify the compression scheme to be used on messages. Valid values are "none" and "png"
 
 #### 4.13 Cancel Action Goal
 
@@ -484,14 +488,14 @@ A result for a ROS action.
 }
 ```
 
- * **action** – the name of the action that was executed
- * **id** – if an ID was provided to the action goal, then the action result will contain the ID
- * **values** – the result values. If the service had no return values, then
-    this field can be omitted (and will be by the rosbridge server)
- * **status** - return status of the action. This matches the enumeration in the [`action_msgs/msg/GoalStatus`](https://docs.ros2.org/latest/api/action_msgs/msg/GoalStatus.html) ROS message.
- * **result** - return value of action. True means success, false failure.
+- **action** – the name of the action that was executed
+- **id** – if an ID was provided to the action goal, then the action result will contain the ID
+- **values** – the result values. If the service had no return values, then
+  this field can be omitted (and will be by the rosbridge server)
+- **status** - return status of the action. This matches the enumeration in the [`action_msgs/msg/GoalStatus`](https://docs.ros2.org/latest/api/action_msgs/msg/GoalStatus.html) ROS message.
+- **result** - return value of action. True means success, false failure.
 
----
+______________________________________________________________________
 
 ## 5 Further considerations
 
@@ -514,3 +518,6 @@ sample a single message from a topic.
 Rosbridge will support messages that were latched to topics internally in ROS.
 It is possible that the publish opcode will be extended so that remote clients
 can latch messages too.
+
+[cbor]: https://tools.ietf.org/html/rfc7049
+[draft typed array tags]: https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00
