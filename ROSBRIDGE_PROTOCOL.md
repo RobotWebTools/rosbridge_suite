@@ -1,10 +1,44 @@
-# rosbridge v2 Protocol Specification
+# rosbridge v2 Protocol Specification <!-- omit in toc -->
 
 This document defines the rosbridge protocol and its supported operations.
 The protocol is built around structured message objects (e.g., JSON or CBOR) with an `op` field that identifies the
 operation being performed. The protocol is transport-agnostic and can be carried over WebSockets, TCP, or other suitable transports.
 
 This document also describes the intended direction of the rosbridge server implementation. The default server implementation uses WebSockets and separates message parsing from the underlying transport so protocol operations remain easy to extend.
+
+## Table of Contents <!-- omit in toc -->
+- [1. Message envelope](#1-message-envelope)
+- [2. Operation summary](#2-operation-summary)
+- [3. Data Encoding and Transformation](#3-data-encoding-and-transformation)
+  - [3.1 Base64 encoding of byte arrays](#31-base64-encoding-of-byte-arrays)
+  - [3.2 Fragmentation ( _fragment_ ) \[experimental\]](#32-fragmentation--fragment--experimental)
+  - [3.3 PNG compression ( _png_ ) \[experimental\]](#33-png-compression--png--experimental)
+  - [3.4 CBOR encoding ( _cbor_ )](#34-cbor-encoding--cbor-)
+  - [3.5 CBOR-RAW encoding ( _cbor-raw_ )](#35-cbor-raw-encoding--cbor-raw-)
+- [4. Operation specifications](#4-operation-specifications)
+  - [4.1 Topic operations](#41-topic-operations)
+    - [4.1.1 advertise](#411-advertise)
+    - [4.1.2 unadvertise](#412-unadvertise)
+    - [4.1.3 publish](#413-publish)
+    - [4.1.4 subscribe](#414-subscribe)
+    - [4.1.5 unsubscribe](#415-unsubscribe)
+  - [4.2 Service operations](#42-service-operations)
+    - [4.2.1 advertise\_service](#421-advertise_service)
+    - [4.2.2 unadvertise\_service](#422-unadvertise_service)
+    - [4.2.3 call\_service](#423-call_service)
+    - [4.2.4 unadvertise\_service](#424-unadvertise_service)
+    - [4.2.5 service\_response](#425-service_response)
+  - [4.3 Action operations](#43-action-operations)
+    - [4.3.1 advertise\_action](#431-advertise_action)
+    - [4.3.2 unadvertise\_action](#432-unadvertise_action)
+    - [4.3.3 send\_action\_goal](#433-send_action_goal)
+    - [4.3.4 cancel\_action\_goal](#434-cancel_action_goal)
+    - [4.3.5 action\_feedback](#435-action_feedback)
+    - [4.3.6 action\_result](#436-action_result)
+- [5 Further considerations](#5-further-considerations)
+  - [5.1 Rosbridge pseudo-services](#51-rosbridge-pseudo-services)
+  - [5.2 Sampling](#52-sampling)
+  - [5.3 Latching](#53-latching)
 
 ## 1. Message envelope
 
@@ -80,12 +114,12 @@ In general, operation opcodes that initiate an action are verb-like, such as `su
 Feedback, result, and status-bearing messages often use noun or noun-phrase opcodes such as `service_response`, `action_feedback` and `action_result`.
 These naming patterns are descriptive only and do not imply that a given opcode is sent exclusively by either the client or the server.
 
-### 3. Data Encoding and Transformation
+## 3. Data Encoding and Transformation
 
 By default, rosbridge messages are encoded as JSON text.
 The rosbridge protocol also provides alternative encodings and message transformations for cases where binary data, large payloads, or performance requirements make the default JSON encoding less suitable.
 
-#### 3.1 Base64 encoding of byte arrays
+### 3.1 Base64 encoding of byte arrays
 
 When the rosbridge server sends messages containing `uint8[]` or `char[]` fields, these byte arrays are encoded as base64 strings.
 This reduces message size by up to 60% compared to sending the same data as a list of numbers when encoded in JSON.
@@ -109,7 +143,7 @@ Will be transmitted as:
 The string value is the base64-encoded representation of the byte array.
 Byte arrays may be sent to the server as either a base64 string or a list of numbers, but they will be re-encoded as a base64 string before being sent to other clients.
 
-#### 3.2 Fragmentation ( _fragment_ ) [experimental]
+### 3.2 Fragmentation ( _fragment_ ) [experimental]
 
 Messages may be fragmented if they are particularly large, or if the client requests fragmentation.
 A fragmented message has the following format:
@@ -134,7 +168,7 @@ For each chunk, a fragment message is constructed, with the data field of the fr
 
 To reconstruct an original message, the data fields of the fragments are concatenated, resulting in the serialized payload of the original message.
 
-#### 3.3 PNG compression ( _png_ ) [experimental]
+### 3.3 PNG compression ( _png_ ) [experimental]
 
 Some messages (such as images and maps) can be extremely large, and for efficiency reasons we may wish to transfer them as PNG-encoded bytes.
 
@@ -154,7 +188,7 @@ This string is then used as the `data` field.
 Currently, only Server to Client `png` messages are supported.
 The server does not support receiving PNG-compressed messages from clients in the current version of the protocol.
 
-#### 3.4 CBOR encoding ( _cbor_ )
+### 3.4 CBOR encoding ( _cbor_ )
 
 [CBOR] encoding is the fastest compression method for messages containing large blobs of data, such as byte arrays and numeric typed arrays.
 
@@ -164,7 +198,7 @@ Once decoded, the message will contain a normal protocol message.
 The implementation uses [draft typed array tags] for efficient packing of homogeneous arrays.
 At the moment, only little-endian packing is supported.
 
-#### 3.5 CBOR-RAW encoding ( _cbor-raw_ )
+### 3.5 CBOR-RAW encoding ( _cbor-raw_ )
 
 While CBOR encodes the entire message as CBOR, sometimes it is desirable to get the raw binary message in the
 ROS 2 serialized message format.
@@ -186,17 +220,19 @@ The `msg` object also includes `secs` and `nsecs` for the ROS time at which the 
 When using this encoding, a client application will need to know exactly how to parse the raw message.
 For this it is useful to use the `/rosapi/get_topics_and_raw_types` service, which provides topic names together with their raw message definitions.
 
-### 4. ROS-specific operations
+## 4. Operation specifications
 
-These rosbridge messages interact with ROS, and correspond roughly to the
-messages that already exist in the current version of rosbridge.
+These rosbridge messages interact with ROS, and correspond roughly to the messages that already exist in the current version of rosbridge.
 
-#### 4.1 Advertise ( _advertise_ )
+### 4.1 Topic operations
+
+#### 4.1.1 advertise
 
 If you wish to advertise that you are or will be publishing a topic, then use the advertise command.
 
 ```json
-{ "op": "advertise",
+{
+  "op": "advertise",
   (optional) "id": <string>,
   "topic": <string>,
   "type": <string>
@@ -216,7 +252,7 @@ If you wish to advertise that you are or will be publishing a topic, then use th
   - If the topic doesn't already exist but the type cannot be resolved, then
     an error status message is sent and this message is dropped.
 
-#### 4.2 Unadvertise ( _unadvertise_ )
+#### 4.1.2 unadvertise
 
 This stops advertising that you are publishing a topic.
 
@@ -236,7 +272,7 @@ This stops advertising that you are publishing a topic.
   - If the topic exists but rosbridge is not advertising it, a warning status
     message is sent and this message is dropped
 
-#### 4.3 Publish ( _publish_ )
+#### 4.1.3 publish
 
 The publish message is used to send data on a topic.
 
@@ -266,7 +302,7 @@ automatically populate the header with a frame id of "" and the timestamp as
 the current time. Alternatively, just the timestamp field can be omitted, and
 then the current time will be automatically inserted.
 
-#### 4.4 Subscribe
+#### 4.1.4 subscribe
 
 ```json
 { "op": "subscribe",
@@ -311,7 +347,7 @@ highest queue_length. It is recommended that the client provides IDs for its
 subscriptions, to enable rosbridge to effectively choose the appropriate
 fragmentation size and publishing rate.
 
-#### 4.5 Unsubscribe
+#### 4.1.5 unsubscribe
 
 ```json
 { "op": "unsubscribe",
@@ -326,7 +362,9 @@ fragmentation size and publishing rate.
 If an id is provided, then only the corresponding subscription is unsubscribed.
 If no ID is provided, then all subscriptions are unsubscribed.
 
-#### 4.6 Advertise Service
+### 4.2 Service operations
+
+#### 4.2.1 advertise_service
 
 ```json
 { "op": "advertise_service",
@@ -340,7 +378,7 @@ Advertises an external ROS service server. Requests come to the client via Call 
 - **service** – the name of the service to advertise
 - **type** – the advertised service message type
 
-#### 4.7 Unadvertise Service
+#### 4.2.2 unadvertise_service
 
 ```json
 { "op": "unadvertise_service",
@@ -348,7 +386,7 @@ Advertises an external ROS service server. Requests come to the client via Call 
 }
 ```
 
-#### 4.8 Call Service
+#### 4.2.3 call_service
 
 Calls a ROS service.
 
@@ -374,11 +412,19 @@ Calls a ROS service.
   used on messages. Valid values are "none" and "png"
 - **timeout** – the time, in seconds, to wait for a response from the server
 
+#### 4.2.4 unadvertise_service
+
 Stops advertising an external ROS service server
+
+```json
+{ "op": "unadvertise_service",
+  "service": <string>
+}
+```
 
 - **service** – the name of the service to unadvertise
 
-#### 4.9 Service Response
+#### 4.2.5 service_response
 
 A response to a ROS service call.
 
@@ -398,7 +444,9 @@ A response to a ROS service call.
   response will contain the ID
 - **result** - return value of service callback. true means success, false failure.
 
-#### 4.10 Advertise Action
+### 4.3 Action operations
+
+#### 4.3.1 advertise_action
 
 Advertises an external ROS action server.
 
@@ -414,7 +462,7 @@ Goals come to the client via the Send Action Goal capability.
 - **action** – the name of the action to advertise
 - **type** – the advertised action message type
 
-#### 4.11 Unadvertise Action
+#### 4.3.2 unadvertise_action
 
 ```json
 { "op": "unadvertise_action",
@@ -422,7 +470,7 @@ Goals come to the client via the Send Action Goal capability.
 }
 ```
 
-#### 4.12 Send Action Goal
+#### 4.3.3 send_action_goal
 
 Sends a goal to a ROS action server.
 
@@ -447,7 +495,7 @@ Sends a goal to a ROS action server.
 - **fragment_size** – the maximum size that the result and feedback messages can take before they are fragmented
 - **compression** – an optional string to specify the compression scheme to be used on messages. Valid values are "none" and "png"
 
-#### 4.13 Cancel Action Goal
+#### 4.3.4 cancel_action_goal
 
 Cancels an action goal.
 
@@ -460,7 +508,7 @@ Cancels an action goal.
 
 The `id` field must match an already in-progress goal.
 
-#### 4.14 Action Feedback
+#### 4.3.5 action_feedback
 
 Used to send action feedback for a specific goal handle.
 
@@ -474,7 +522,7 @@ Used to send action feedback for a specific goal handle.
 
 The `id` field must match an already in-progress goal.
 
-#### 4.15 Action Result
+#### 4.3.6 action_result
 
 A result for a ROS action.
 
