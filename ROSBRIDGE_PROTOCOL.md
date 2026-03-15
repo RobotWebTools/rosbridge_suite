@@ -2,88 +2,78 @@
 
 This document defines the rosbridge protocol and its supported operations.
 The protocol is built around structured message objects (e.g., JSON or CBOR) with an `op` field that identifies the
-operation being performed. The document also describes the intended direction of the rosbridge server implementation.
+operation being performed. The protocol is transport-agnostic and can be carried over WebSockets, TCP, or other suitable transports.
 
-The rosbridge server implements the rosbridge protocol over a transport layer.
-The default server implementation uses WebSockets, but the protocol itself is transport-agnostic and can be carried over TCP or other suitable transports.
-The implementation separates message parsing from the underlying transport so protocol operations remain easy to extend.
+This document also describes the intended direction of the rosbridge server implementation. The default server implementation uses WebSockets and separates message parsing from the underlying transport so protocol operations remain easy to extend.
 
-## 1. The rosbridge transport
+## 1. Message envelope
 
-A rosbridge message is, in the base case, a JSON object with a string field
-called "op". For example:
+A rosbridge message is, at minimum, a structured message object with a string field called `op`.
+For example:
 
 ```json
 { "op": "Example" }
 ```
 
-The op field indicates the type of message that this is. Messages with
-different values for op may be handled differently.
+The `op` field identifies the operation being performed.
+Messages with different values for `op` may be handled differently.
 
-So long as the message is a JSON object with the op field, it is a valid
-rosbridge message.
+As long as the message is a valid object containing the `op` field, it is a valid rosbridge message.
 
 Optionally, a message can also provide an arbitrary string or integer ID:
 
 ```json
-{ "op": "Example",
+{
+  "op": "Example",
   "id": "fred"
 }
 ```
 
-If an ID is provided with a message to the server, then related response
-messages will typically contain that ID as well. Log messages caused by this
-operation will also contain the ID.
+If an `id` is provided with a message to the server, then related response messages will typically contain that ID as well.
+Log messages caused by this operation will also include the ID, so that clients can easily associate log messages with the operation that caused them.
 
-Semantically, the ID is not an identifier of the specific message that it is
-in, but instead is an identifier for an interaction which may consist of a
-number of operations in back-and-forth messages. Thus, the ID may be used by
-multiple messages referring to the same transaction.
+Semantically, the `id` does not identify a single message.
+Instead, it identifies an interaction, which may consist of multiple back-and-forth operations.
 
-## 2. The rosbridge protocol
+## 2. Operation summary
 
-The rosbridge protocol defines a number of different operations. They are as follows:
+The rosbridge protocol defines a number of different operations.
+
+Direction legend:
+- **C -> S**: client to server
+- **S -> C**: server to client
+- **C <-> S**: either direction
+
+Some `C <-> S` operations are valid in either direction depending on which side has advertised the corresponding topic, service, or action interface.
 
 Message compression / transformation:
+- **fragment** - C <-> S - part of a fragmented message
+- **png** - S -> C - part of a PNG-compressed fragmented message
 
-  * **fragment** - a part of a fragmented message
-  * **png** - a part of a PNG compressed fragmented message
+Topic operations:
+- **advertise** - C -> S - advertise that the client will publish on a topic
+- **unadvertise** - C -> S - stop advertising that the client will publish on a topic
+- **publish** - C <-> S - publish a message on a topic
+- **subscribe** - C -> S - request topic updates
+- **unsubscribe** - C -> S - stop topic updates
 
-ROS operations:
+Service operations:
+- **advertise_service** - C -> S - advertise an external service server
+- **unadvertise_service** - C -> S - stop advertising an external service server
+- **call_service** - C <-> S - invoke a service
+- **service_response** - C <-> S - return a service response
 
-  * Topics:
-    * **advertise** – advertise that you are publishing a topic
-    * **unadvertise** – stop advertising that you are publishing topic
-    * **publish** - a published ROS-message
-    * **subscribe** - a request to subscribe to a topic
-    * **unsubscribe** - a request to unsubscribe from a topic
-  * Services:
-    * **advertise_service** - advertise an external service server
-    * **unadvertise_service** - unadvertise an external service server
-    * **call_service** - a service call
-    * **service_response** - a service response
-  * Actions:
-    * **advertise_action** - advertise an external action server
-    * **unadvertise_action** - unadvertise an external action server
-    * **send_action_goal** - a goal sent to an action server
-    * **cancel_action_goal** - cancel an in-progress action goal
-    * **action_feedback** - feedback messages from an action server
-    * **action_result** - an action result
+Action operations:
+- **advertise_action** - C -> S - advertise an external action server
+- **unadvertise_action** - C -> S - stop advertising an external action server
+- **send_action_goal** - C <-> S - send an action goal
+- **cancel_action_goal** - C <-> S - cancel an action goal
+- **action_feedback** - C <-> S - report action feedback
+- **action_result** - C <-> S - report an action result
 
-In general, actions or operations that the client takes (such as publishing and
-subscribing) have opcodes which are verbs (subscribe, call_service, unadvertise
-etc.).
-
-Response messages from the server are things that the client is giving back, so
-they are nouns (fragment, service_response etc.)
-
-(The only slight exception to this naming convention is publish)
-
-## 3. Details of the rosbridge protocol
-
-Following is the specification of operations in the rosbridge protocol,
-supported by the rosbridge server. Anything marked with [experimental] may be
-subject to change after review.
+In general, operation opcodes that initiate an action are verb-like, such as `subscribe`, `publish`, and `call_service`.
+Feedback, result, and status-bearing messages often use noun or noun-phrase opcodes such as `service_response`, `action_feedback` and `action_result`.
+These naming patterns are descriptive only and do not imply that a given opcode is sent exclusively by either the client or the server.
 
 ### 3.1 Data Encoding and Transformation
 
