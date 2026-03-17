@@ -13,7 +13,7 @@
   <author email="jonathan.c.mace@gmail.com">Jonathan Mace</author>
   <maintainer email="blazej@fictionlab.pl">Błażej Sowa</maintainer>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
   <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <exec_depend>python3-tornado</exec_depend>
