@@ -24,10 +24,24 @@ if(BUILD_TESTING)
   find_package(launch_testing_ament_cmake REQUIRED)
   find_package(ament_cmake_pytest REQUIRED)
 
+<<<<<<< HEAD
   # Unit tests (pytest)
   ament_add_ros_isolated_pytest_test(test_stress_clients
     "test/test_stress_clients.py"
     TIMEOUT 60
+=======
+  # Run each test with both SingleThreadedExecutor and EventsExecutor
+  set(TEST_FILES
+    test/websocket/advertise_action.test.py
+    test/websocket/advertise_action_feedback.test.py
+    test/websocket/advertise_service.test.py
+    test/websocket/call_service.test.py
+    test/websocket/send_action_goal.test.py
+    test/websocket/smoke.test.py
+    test/websocket/transient_local_publisher.test.py
+    test/websocket/best_effort_publisher.test.py
+    test/websocket/multiple_subscribers_raw.test.py
+>>>>>>> 85ff1cd (fix: Race condition in websocket test (#1185))
   )
 
   add_launch_test(test/websocket/advertise_action.test.py)
