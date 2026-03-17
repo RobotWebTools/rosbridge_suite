@@ -24,6 +24,8 @@ if TYPE_CHECKING:
     from rclpy.client import Client
     from rclpy.logging import RcutilsLogger
 
+RETRIES = 3
+
 
 class TestClientProtocol(WebSocketClientProtocol):
     """Set message_handler to handle messages received from the server."""
@@ -42,7 +44,7 @@ class TestClientProtocol(WebSocketClientProtocol):
         msg = json.dumps(msg_dict).encode("utf-8")
         for _ in range(times):
             print(f"WebSocket client sent message: {msg!r}")
-            self.sendMessage(msg)
+            reactor.callFromThread(self.sendMessage, msg)  # type: ignore[attr-defined]
 
     def onMessage(self, payload: str, binary: bool) -> None:  # noqa: N802
         print(f"WebSocket client received message: {payload}")
@@ -82,9 +84,16 @@ async def get_server_port(node: Node) -> int:
         if not client.wait_for_service(5):
             msg = "GetParameters service not available"
             raise RuntimeError(msg)
-        port_param = await client.call_async(GetParameters.Request(names=["actual_port"]))
-        assert port_param is not None
-        return port_param.values[0].integer_value
+        # Service may be available before the server has set actual_port parameter; retry as needed.
+        for _ in range(RETRIES):
+            port_param = await client.call_async(GetParameters.Request(names=["actual_port"]))
+            assert port_param is not None
+            if port_param.values and port_param.values[0].integer_value != 0:
+                return port_param.values[0].integer_value
+            node.get_logger().warning("actual_port parameter not set yet, retrying...")
+            await sleep(node, 0.5)
+        msg = f"actual_port parameter not set after {RETRIES} retries"
+        raise RuntimeError(msg)
     finally:
         node.destroy_client(client)
 
