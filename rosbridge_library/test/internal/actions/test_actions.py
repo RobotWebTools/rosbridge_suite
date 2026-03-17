@@ -177,35 +177,6 @@ class TestActions(unittest.TestCase):
         )
         self.assertEqual(list(json_ret["result"]["sequence"]), [0, 1, 1, 2, 3, 5])
 
-    def test_action_client_handler(self) -> None:
-        """Test service_call via the thread caller."""
-        ActionTester(self.executor)
-
-        received: dict[str, Any] = {"json": None}
-
-        def success(json: dict[str, Any]) -> None:
-            received["json"] = json
-
-        def error(exc: Exception) -> NoReturn:
-            raise exc
-
-        # Now, call using the services
-        order = 5
-        actions.ActionClientHandler(
-            "get_fibonacci_sequence",
-            "example_interfaces/Fibonacci",
-            {"order": order},
-            success,
-            error,
-            None,  # No feedback
-            self.node,
-        ).start()
-
-        time.sleep(1.0)
-
-        self.assertIsNotNone(received["json"])
-        self.assertEqual(list(received["json"]["result"]["sequence"]), [0, 1, 1, 2, 3, 5])
-
 
 if __name__ == "__main__":
     unittest.main()

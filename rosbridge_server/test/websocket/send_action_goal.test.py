@@ -81,7 +81,12 @@ class TestSendActionGoal(unittest.TestCase):
             }
         )
 
+        node.get_logger().info("Sent action goal, waiting for response...")
+
         responses = await responses_future
+
+        node.get_logger().info("Received responses, checking...")
+
         expected_result = [0, 1, 1, 2, 3, 5]
         assert responses is not None and len(responses) == 5
 
@@ -89,10 +94,15 @@ class TestSendActionGoal(unittest.TestCase):
             self.assertEqual(responses[idx]["op"], "action_feedback")
             self.assertEqual(responses[idx]["values"]["sequence"], expected_result[: idx + 3])
 
+        node.get_logger().info("Received all feedback messages, checking result message...")
+        node.get_logger().info(f"Result message: {responses[-1]}")
+
         self.assertEqual(responses[-1]["op"], "action_result")
         self.assertEqual(responses[-1]["action"], "/test_fibonacci_action")
         self.assertEqual(responses[-1]["values"]["sequence"], expected_result)
         self.assertEqual(responses[-1]["status"], GoalStatus.STATUS_SUCCEEDED)
         self.assertEqual(responses[-1]["result"], True)
+
+        node.get_logger().info("Test complete, shutting down action server")
 
         action_server.destroy()
