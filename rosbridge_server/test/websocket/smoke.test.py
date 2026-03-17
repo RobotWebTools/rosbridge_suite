@@ -25,22 +25,23 @@ log.startLogging(sys.stderr)
 generate_test_description = common.generate_test_description
 
 
+# For consistency, the number of messages must not exceed the the protocol
+# Subscriber queue_size.
+NUM_MSGS = 10
+MSG_SIZE = 10
+A_TOPIC = "/a_topic"
+B_TOPIC = "/b_topic"
+A_STRING = "A" * MSG_SIZE
+B_STRING = "B" * MSG_SIZE
+WARMUP_DELAY = 1.0  # seconds
+
+
 class TestWebsocketSmoke(unittest.TestCase):
     @websocket_test
     async def test_smoke(
         self, node: Node, make_client: Callable[[], Awaitable[TestClientProtocol]]
     ) -> None:
         ws_client = await make_client()
-        # For consistency, the number of messages must not exceed the the protocol
-        # Subscriber queue_size.
-        NUM_MSGS = 10
-        MSG_SIZE = 10
-        A_TOPIC = "/a_topic"
-        B_TOPIC = "/b_topic"
-        A_STRING = "A" * MSG_SIZE
-        B_STRING = "B" * MSG_SIZE
-        WARMUP_DELAY = 1.0  # seconds
-
         sub_completed_future: Future[list[String]]
         sub_completed_future, sub_handler = expect_messages(
             NUM_MSGS, "ROS subscriber", node.get_logger()

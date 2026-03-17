@@ -65,10 +65,6 @@ class ActionTester:
 
 
 class TestActions(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        message_conversion.configure()
-
     def setUp(self) -> None:
         rclpy.init()
         self.executor = SingleThreadedExecutor()
