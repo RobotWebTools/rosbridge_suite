@@ -24,18 +24,17 @@ This document also describes the intended direction of the rosbridge server impl
     - [4.1.4 subscribe (C → S)](#414-subscribe-c--s)
     - [4.1.5 unsubscribe (C → S)](#415-unsubscribe-c--s)
   - [4.2 Service operations](#42-service-operations)
-    - [4.2.1 advertise\_service](#421-advertise_service)
-    - [4.2.2 unadvertise\_service](#422-unadvertise_service)
-    - [4.2.3 call\_service](#423-call_service)
-    - [4.2.4 unadvertise\_service](#424-unadvertise_service)
-    - [4.2.5 service\_response](#425-service_response)
+    - [4.2.1 advertise\_service (C → S)](#421-advertise_service-c--s)
+    - [4.2.2 unadvertise\_service (C → S)](#422-unadvertise_service-c--s)
+    - [4.2.3 call\_service (C ↔ S)](#423-call_service-c--s)
+    - [4.2.5 service\_response (C ↔ S)](#425-service_response-c--s)
   - [4.3 Action operations](#43-action-operations)
-    - [4.3.1 advertise\_action](#431-advertise_action)
-    - [4.3.2 unadvertise\_action](#432-unadvertise_action)
-    - [4.3.3 send\_action\_goal](#433-send_action_goal)
-    - [4.3.4 cancel\_action\_goal](#434-cancel_action_goal)
-    - [4.3.5 action\_feedback](#435-action_feedback)
-    - [4.3.6 action\_result](#436-action_result)
+    - [4.3.1 advertise\_action (C → S)](#431-advertise_action-c--s)
+    - [4.3.2 unadvertise\_action (C → S)](#432-unadvertise_action-c--s)
+    - [4.3.3 send\_action\_goal (C ↔ S)](#433-send_action_goal-c--s)
+    - [4.3.4 cancel\_action\_goal (C ↔ S)](#434-cancel_action_goal-c--s)
+    - [4.3.5 action\_feedback (C ↔ S)](#435-action_feedback-c--s)
+    - [4.3.6 action\_result (C ↔ S)](#436-action_result-c--s)
 
 ## 1. Message envelope
 
@@ -145,20 +144,13 @@ Byte arrays may be sent to the server as either a base64 string or a list of num
 Messages may be fragmented if they are particularly large, or if the client requests fragmentation.
 A fragmented message has the following format:
 
-```json
-{
-  "op": "fragment",
-  "id": <string>,
-  "data": <string>,
-  "num": <int>,
-  "total": <int>
-}
-```
-
-- **id** – an id is required for fragmented messages, in order to identify corresponding fragments for the fragmented message.
-- **data** – a fragment of data that, when combined with other fragments of data, makes up another message.
-- **num** – the index of the fragment in the message.
-- **total** – the total number of fragments.
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"fragment"` |
+| `id` | required | string | Identifies which fragments belong to the same original message. |
+| `data` | required | string | A chunk of the original message payload. Concatenating all chunks in order reconstructs the original serialized message. |
+| `num` | required | integer | Zero-based index of this fragment within the sequence. |
+| `total` | required | integer | Total number of fragments that make up the original message. |
 
 To fragment a message, its serialized payload is taken and split up into multiple substrings or byte arrays.
 For each chunk, a fragment message is constructed, with the data field of the fragment populated by the chunk.
@@ -169,14 +161,10 @@ To reconstruct an original message, the data fields of the fragments are concate
 
 Some messages (such as images and maps) can be extremely large, and for efficiency reasons we may wish to transfer them as PNG-encoded bytes.
 
-```json
-{
-  "op": "png",
-  "data": <string>
-}
-```
-
-- **data** – a PNG-encoded message.
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"png"` |
+| `data` | required | string | Base64-encoded PNG image whose pixel data encodes the serialized payload of the original message. |
 
 To construct a PNG compressed message, the serialized payload of the original message is taken and interpreted as an RGB image.
 The image is then saved as a PNG and the bytes are base64-encoded as a string.
@@ -225,25 +213,16 @@ These rosbridge messages interact with ROS, and correspond roughly to the messag
 
 #### 4.1.1 advertise (C → S)
 
-Advertise that the client will publish on a topic. 
+Advertise that the client will publish on a topic.
 
-```json
-{
-  "op": "advertise",
-  (optional) "id": <string>,
-  "topic": <string>,
-  "type": <string>,
-  (optional) "latch": <boolean>,
-  (optional) "queue_size": <int>
-}
-```
-
-- **id** – an optional ID to associate with this advertisement.
-  This is useful if the client has multiple components advertising the same topic, so that each can be unadvertised separately.
-- **topic** – the name of the topic to advertise.
-- **type** – the type of the topic to advertise.
-- **latch** – whether to latch the last messages published on this topic. Defaults to false.
-- **queue_size** – the size of the internal publisher queue (QoS depth policy). Defaults to 100.
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"advertise"` |
+| `id` | optional | string | An ID to associate with this advertisement. Useful when multiple components advertise the same topic so that each can be unadvertised independently. |
+| `topic` | required | string | The name of the topic to advertise. |
+| `type` | required | string | The type of the topic to advertise. |
+| `latch` | optional | boolean | Whether to latch the last message published on this topic. Defaults to `false`. |
+| `queue_size` | optional | integer | Size of the internal publisher queue (QoS depth policy). Defaults to `100`. |
 
 The behavior of this message depends on the state of the topic being advertised:
 
@@ -256,17 +235,11 @@ The behavior of this message depends on the state of the topic being advertised:
 
 Stop advertising that the client will publish on a topic.
 
-```json
-{
-  "op": "unadvertise",
-  (optional) "id": <string>,
-  "topic": <string>
-}
-```
-
-- **id** – an optional ID to disassociate with this advertisement.
-  If provided, then only the corresponding advertisement is removed. If not provided, then all advertisements for the topic by this client are removed.
-- **topic** – the name of the topic to unadvertise.
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"unadvertise"` |
+| `id` | optional | string | An ID to disassociate with this advertisement. If provided, only the matching advertisement is removed. If omitted, all advertisements for the topic by this client are removed. |
+| `topic` | required | string | The name of the topic to unadvertise. |
 
 The behavior of this message depends on the state of the topic being unadvertised:
 
@@ -280,17 +253,12 @@ Publish a message on a topic.
 
 The message format is the same in both directions:
 
-```json
-{
-  "op": "publish",
-  (optional) "id": <string>,
-  "topic": <string>,
-  "msg": <message_object>
-}
-```
-
-- **topic** – the name of the topic to publish on.
-- **msg** – the message being published on the topic.
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"publish"` |
+| `id` | optional | string | An ID to associate with this operation. |
+| `topic` | required | string | The name of the topic to publish on. |
+| `msg` | required | object | The message being published on the topic. |
 
 **Client → Server**
 
@@ -319,31 +287,16 @@ When a client subscribes to a topic, the server will send messages published on 
 It is recommended that if the client has multiple components subscribing to the same topic, that each component makes its own subscription request providing an ID.
 That way, each can individually unsubscribe and rosbridge can select the correct rate at which to send messages.
 
-```json
-{
-  "op": "subscribe",
-  (optional) "id": <string>,
-  "topic": <string>,
-  (optional) "type": <string>,
-  (optional) "throttle_rate": <int>,
-  (optional) "queue_length": <int>,
-  (optional) "fragment_size": <int>,
-  (optional) "compression": <string>
-}
-```
-
-- **id** – an optional ID to associate with this subscription.
-  This is useful if the client has multiple components subscribing to the same topic, so that each can be unsubscribed separately.
-- **topic** – the name of the topic to subscribe to.
-- **type** – the (expected) type of the topic to subscribe to.
-  If left off, type will be inferred, and if the topic doesn't exist then the command to subscribe will fail.
-- **throttle_rate** – the minimum amount of time (in ms) that must elapse between messages being sent.
-  Defaults to 0.
-- **queue_length** – the size of the queue to buffer messages.
-  Messages are buffered as a result of the throttle_rate. Defaults to 0 (no queueing).
-- **fragment_size** – the maximum size that a message can take before it is to be fragmented.
-- **compression** – an optional string to specify the compression scheme to be used on messages.
-  Valid values are: `none`, `png`, `cbor`, and `cbor-raw`.
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"subscribe"` |
+| `id` | optional | string | An ID to associate with this subscription. Useful when multiple components subscribe to the same topic so that each can be unsubscribed independently. |
+| `topic` | required | string | The name of the topic to subscribe to. |
+| `type` | optional | string | The expected type of the topic. If omitted, type will be inferred; if the topic does not exist the subscription will fail. |
+| `throttle_rate` | optional | integer | Minimum time (in ms) that must elapse between messages being sent. Defaults to `0`. |
+| `queue_length` | optional | integer | Size of the queue to buffer messages when throttled. Defaults to `0` (no queueing). When full, the oldest message is dropped in favour of the newest. |
+| `fragment_size` | optional | integer | Maximum size (in bytes) a message can reach before it is fragmented. |
+| `compression` | optional | string | Compression scheme for outgoing messages. Valid values: `none`, `png`, `cbor`, `cbor-raw`. |
 
 If `queue_length` is specified, then messages are placed into the queue before being sent.
 Messages are sent from the head of the queue.
@@ -356,21 +309,17 @@ It is recommended that the client provides IDs for its subscriptions to enable r
 
 Unsubscribe from a topic to stop receiving updates.
 
-```json
-{
-  "op": "unsubscribe",
-  (optional) "id": <string>,
-  "topic": <string>
-}
-```
-
-- **id** – an optional ID to disassociate with this subscription.
-  If provided, then only the corresponding subscription is removed. If not provided, then all subscriptions for the topic by this client are removed.
-- **topic** – the name of the topic to unsubscribe from.
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"unsubscribe"` |
+| `id` | optional | string | An ID to disassociate with this subscription. If provided, only the matching subscription is removed. If omitted, all subscriptions for the topic by this client are removed. |
+| `topic` | required | string | The name of the topic to unsubscribe from. |
 
 ### 4.2 Service operations
 
-#### 4.2.1 advertise_service
+#### 4.2.1 advertise_service (C → S)
+
+Advertise an external service server. Requests come to the client via `call_service`.
 
 ```json
 {
@@ -380,12 +329,12 @@ Unsubscribe from a topic to stop receiving updates.
 }
 ```
 
-Advertises an external ROS service server. Requests come to the client via Call Service.
-
 - **service** – the name of the service to advertise
 - **type** – the advertised service message type
 
-#### 4.2.2 unadvertise_service
+#### 4.2.2 unadvertise_service (C → S)
+
+Stop advertising an external ROS service server
 
 ```json
 {
@@ -394,9 +343,11 @@ Advertises an external ROS service server. Requests come to the client via Call 
 }
 ```
 
-#### 4.2.3 call_service
+- **service** – the name of the service to unadvertise
 
-Calls a ROS service.
+#### 4.2.3 call_service (C ↔ S)
+
+Call a ROS service.
 
 ```json
 {
@@ -421,20 +372,7 @@ Calls a ROS service.
   used on messages. Valid values are "none" and "png"
 - **timeout** – the time, in seconds, to wait for a response from the server
 
-#### 4.2.4 unadvertise_service
-
-Stops advertising an external ROS service server
-
-```json
-{
-  "op": "unadvertise_service",
-  "service": <string>
-}
-```
-
-- **service** – the name of the service to unadvertise
-
-#### 4.2.5 service_response
+#### 4.2.5 service_response (C ↔ S)
 
 A response to a ROS service call.
 
@@ -457,7 +395,7 @@ A response to a ROS service call.
 
 ### 4.3 Action operations
 
-#### 4.3.1 advertise_action
+#### 4.3.1 advertise_action (C → S)
 
 Advertises an external ROS action server.
 
@@ -474,7 +412,7 @@ Goals come to the client via the Send Action Goal capability.
 - **action** – the name of the action to advertise
 - **type** – the advertised action message type
 
-#### 4.3.2 unadvertise_action
+#### 4.3.2 unadvertise_action (C → S)
 
 ```json
 {
@@ -483,7 +421,7 @@ Goals come to the client via the Send Action Goal capability.
 }
 ```
 
-#### 4.3.3 send_action_goal
+#### 4.3.3 send_action_goal (C ↔ S)
 
 Sends a goal to a ROS action server.
 
@@ -509,7 +447,7 @@ Sends a goal to a ROS action server.
 - **fragment_size** – the maximum size that the result and feedback messages can take before they are fragmented
 - **compression** – an optional string to specify the compression scheme to be used on messages. Valid values are "none" and "png"
 
-#### 4.3.4 cancel_action_goal
+#### 4.3.4 cancel_action_goal (C ↔ S)
 
 Cancels an action goal.
 
@@ -523,7 +461,7 @@ Cancels an action goal.
 
 The `id` field must match an already in-progress goal.
 
-#### 4.3.5 action_feedback
+#### 4.3.5 action_feedback (C ↔ S)
 
 Used to send action feedback for a specific goal handle.
 
@@ -538,7 +476,7 @@ Used to send action feedback for a specific goal handle.
 
 The `id` field must match an already in-progress goal.
 
-#### 4.3.6 action_result
+#### 4.3.6 action_result (C ↔ S)
 
 A result for a ROS action.
 
