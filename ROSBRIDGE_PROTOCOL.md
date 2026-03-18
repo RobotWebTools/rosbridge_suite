@@ -321,77 +321,46 @@ Unsubscribe from a topic to stop receiving updates.
 
 Advertise an external service server. Requests come to the client via `call_service`.
 
-```json
-{
-  "op": "advertise_service",
-  "type": <string>,
-  "service": <string>
-}
-```
-
-- **service** – the name of the service to advertise
-- **type** – the advertised service message type
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"advertise_service"` |
+| `service` | required | string | The name of the service to advertise. |
+| `type` | required | string | The advertised service message type. |
 
 #### 4.2.2 unadvertise_service (C → S)
 
-Stop advertising an external ROS service server
+Stop advertising an external ROS service server.
 
-```json
-{
-  "op": "unadvertise_service",
-  "service": <string>
-}
-```
-
-- **service** – the name of the service to unadvertise
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"unadvertise_service"` |
+| `service` | required | string | The name of the service to unadvertise. |
 
 #### 4.2.3 call_service (C ↔ S)
 
-Call a ROS service.
+Invoke a service.
 
-```json
-{
-  "op": "call_service",
-  (optional) "id": <string>,
-  "service": <string>,
-  (optional) "args": <list<json>>,
-  (optional) "fragment_size": <int>,
-  (optional) "compression": <string>,
-  (optional) "timeout": <float>
-}
-```
-
-- **service** – the name of the service to call
-- **args** – if the service has no args, then args does not have to be
-  provided, though an empty list is equally acceptable. Args should be a list
-  of json objects representing the arguments to the service
-- **id** – an optional id to distinguish this service call
-- **fragment_size** – the maximum size that the response message can take
-  before it is fragmented
-- **compression** – an optional string to specify the compression scheme to be
-  used on messages. Valid values are "none" and "png"
-- **timeout** – the time, in seconds, to wait for a response from the server
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"call_service"` |
+| `id` | optional | string | An ID to associate with this service call. Will be included in the response. |
+| `service` | required | string | The name of the service to call. |
+| `args` | optional | object or list | The arguments to pass to the service. Can be an object with message fields or a list of field values in the order they appear in the service definition. |
+| `fragment_size` | optional | integer | (only C → S) The maximum size (in bytes) a message can reach before it is fragmented. |
+| `compression` | optional | string | (only C → S) Compression scheme for outgoing messages. Valid values: `none`, `png`. |
+| `timeout` | optional | float | (only C → S) The time, in seconds, to wait for a response from the server. |
 
 #### 4.2.5 service_response (C ↔ S)
 
-A response to a ROS service call.
+Return a service response.
 
-```json
-{
-  "op": "service_response",
-  (optional) "id": <string>,
-  "service": <string>,
-  (optional) "values": <list<json>>,
-  "result": <boolean>
-}
-```
-
-- **service** – the name of the service that was called
-- **values** – the return values. If the service had no return values, then
-  this field can be omitted (and will be by the rosbridge server)
-- **id** – if an ID was provided to the service request, then the service
-  response will contain the ID
-- **result** - return value of service callback. true means success, false failure.
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"service_response"` |
+| `id` | optional | string | An ID to associate with this service response. Will match the ID of the corresponding service call if it was provided. |
+| `service` | required | string | The name of the service that was called. |
+| `values` | optional | object or string | The return values from the service or an error message if the service call failed. If the service call was successful but had no return values, this field can be omitted. |
+| `result` | required | boolean | The result of the service call. `true` indicates success, `false` indicates failure. |
 
 ### 4.3 Action operations
 
