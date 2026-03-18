@@ -31,12 +31,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 from __future__ import annotations
 
-import time
-from threading import Thread
 from typing import TYPE_CHECKING, Any, Generic, cast
 
 from rclpy.action import ActionClient
-from rclpy.expand_topic_name import expand_topic_name
 
 from rosbridge_library.internal.message_conversion import (
     extract_values,
@@ -57,13 +54,8 @@ if TYPE_CHECKING:
 
     from rclpy.action.client import ClientGoalHandle
     from rclpy.node import Node
-    from rclpy.task import Future
 
-    from rosbridge_library.internal.type_support import (
-        FeedbackMessage,
-        GetResultServiceResponse,
-        ROSMessage,
-    )
+    from rosbridge_library.internal.type_support import FeedbackMessage, ROSMessage
 
 
 class InvalidActionException(Exception):
@@ -71,7 +63,7 @@ class InvalidActionException(Exception):
         Exception.__init__(self, f"Action {action_name} does not exist")
 
 
-class ActionClientHandler(Thread, Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
+class ActionClientHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
     def __init__(
         self,
         action: str,
@@ -81,11 +73,11 @@ class ActionClientHandler(Thread, Generic[ROSActionGoalT, ROSActionResultT, ROSA
         error_callback: Callable[[Exception], None],
         feedback_callback: Callable[[FeedbackMessage[ROSActionFeedbackT]], None] | None,
         node_handle: Node,
+        *,
+        server_timeout_time: float = 1.0,
     ) -> None:
         """
         Create a client handler for the specified action.
-
-        Use start() to start in a separate thread or run() to run in this thread.
 
         :param action: The name of the action to execute.
         :param action_type: The type of the action to execute.
@@ -96,9 +88,8 @@ class ActionClientHandler(Thread, Generic[ROSActionGoalT, ROSActionResultT, ROSA
         :param error_callback: A callback to call if an error occurs. The callback will be passed
             the exception that caused the failure
         :param node_handle: A ROS 2 node handle to call services
+        :param server_timeout_time: Time to wait for the action server to become available
         """
-        Thread.__init__(self)
-        self.daemon = True
         self.action = action
         self.action_type = action_type
         self.args = args
@@ -106,25 +97,45 @@ class ActionClientHandler(Thread, Generic[ROSActionGoalT, ROSActionResultT, ROSA
         self.error = error_callback
         self.feedback = feedback_callback
         self.node_handle = node_handle
-        self.send_goal_helper: SendGoal[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT] = (
-            SendGoal()
-        )
+        self.goal_handle: ClientGoalHandle | None = None
 
-    def run(self) -> None:
-        try:
-            # Call the service and pass the result to the success handler
-            self.success(
-                self.send_goal_helper.send_goal(
-                    self.node_handle,
-                    self.action,
-                    self.action_type,
-                    args=self.args,
-                    feedback_cb=self.feedback,
-                )
-            )
-        except Exception as e:
-            # On error, just pass the exception to the error handler
-            self.error(e)
+        self.action_client = ActionClient(node_handle, get_action_class(action_type), action)
+
+        if not self.action_client.wait_for_server(timeout_sec=server_timeout_time):
+            raise InvalidActionException(action)
+
+    async def send_goal_and_wait_for_result(self) -> None:
+        # Fetch a goal instance
+        inst = cast("ROSActionGoalT", get_action_goal_instance(self.action_type))
+
+        # Populate the instance with the provided args
+        args_to_action_goal_instance(inst, self.args)
+
+        # Send the goal and wait for the goal handle
+        send_goal_future = self.action_client.send_goal_async(inst, feedback_callback=self.feedback)  # type: ignore[arg-type]
+
+        self.goal_handle = await send_goal_future
+        if self.goal_handle is None or not self.goal_handle.accepted:
+            self.error(Exception("Action goal was rejected"))
+            return
+
+        result_future = self.goal_handle.get_result_async()
+        result = await result_future
+        if result is None:
+            self.error(Exception("Failed to get action result"))
+            return
+
+        values = extract_values(result)
+        self.success(values)
+
+    async def cancel_goal(self) -> None:
+        if self.goal_handle is not None:
+            cancel_goal_future = self.goal_handle.cancel_goal_async()
+            _response = await cancel_goal_future
+            # TODO: handle response
+
+    def finish(self) -> None:
+        self.action_client.destroy()
 
 
 def args_to_action_goal_instance(inst: ROSMessage, args: list | dict[str, Any] | None) -> None:
@@ -143,86 +154,3 @@ def args_to_action_goal_instance(inst: ROSMessage, args: list | dict[str, Any] |
 
     # Populate the provided instance, propagating any exceptions
     populate_instance(msg, inst)
-
-
-class SendGoal(Generic[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT]):
-    """Helper class to send action goals."""
-
-    result: GetResultServiceResponse[ROSActionResultT] | Exception | None = None
-
-    def __init__(self, server_timeout_time: float = 1.0, sleep_time: float = 0.001) -> None:
-        self.server_timeout_time = server_timeout_time
-        self.sleep_time = sleep_time
-        self.goal_handle: ClientGoalHandle | None = None
-        self.goal_canceled = False
-
-    def get_result_cb(self, future: Future) -> None:
-        self.result = future.result()
-
-    def goal_response_cb(self, future: Future) -> None:
-        self.goal_handle = future.result()
-        assert self.goal_handle is not None
-        if not self.goal_handle.accepted:
-            msg = "Action goal was rejected"
-            self.result = Exception(msg)
-            return
-        result_future: Future = self.goal_handle.get_result_async()
-        result_future.add_done_callback(self.get_result_cb)
-
-    def goal_cancel_cb(self, _: Future) -> None:
-        self.goal_canceled = True
-
-    def send_goal(
-        self,
-        node_handle: Node,
-        action: str,
-        action_type: str,
-        args: list | dict[str, Any] | None = None,
-        feedback_cb: Callable[[FeedbackMessage[ROSActionFeedbackT]], None] | None = None,
-    ) -> dict[str, Any]:
-        # Given the action name and type, fetch a request instance
-        action_name = expand_topic_name(action, node_handle.get_name(), node_handle.get_namespace())
-        action_class = get_action_class(action_type)
-        inst = cast("ROSActionGoalT", get_action_goal_instance(action_type))
-
-        # Populate the instance with the provided args
-        args_to_action_goal_instance(inst, args)
-
-        self.result = None
-        client = ActionClient(node_handle, action_class, action_name)
-        if not client.wait_for_server(timeout_sec=self.server_timeout_time):
-            msg = "No action server available"
-            raise Exception(msg)
-        send_goal_future = client.send_goal_async(inst, feedback_callback=feedback_cb)  # type: ignore[arg-type]
-        send_goal_future.add_done_callback(self.goal_response_cb)
-
-        while self.result is None:
-            time.sleep(self.sleep_time)
-
-        client.destroy()
-
-        if isinstance(self.result, Exception):
-            raise self.result
-
-        if self.result is not None:
-            # Turn the response into JSON and pass to the callback
-            json_response = extract_values(self.result)
-        else:
-            raise Exception(self.result)
-
-        return json_response
-
-    def cancel_goal(self) -> None:
-        while self.goal_handle is None and self.result is None:
-            time.sleep(self.sleep_time)
-
-        if self.result is not None:
-            # The action has already completed
-            return
-
-        assert self.goal_handle is not None
-
-        cancel_goal_future = self.goal_handle.cancel_goal_async()
-        cancel_goal_future.add_done_callback(self.goal_cancel_cb)
-        while not cancel_goal_future.done():
-            time.sleep(self.sleep_time)

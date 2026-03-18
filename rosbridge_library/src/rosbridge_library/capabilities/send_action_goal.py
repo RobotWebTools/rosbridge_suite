@@ -34,7 +34,6 @@ from __future__ import annotations
 
 import fnmatch
 from functools import partial
-from threading import Thread
 from typing import TYPE_CHECKING, Any
 
 from action_msgs.msg import GoalStatus
@@ -57,9 +56,9 @@ class SendActionGoal(Capability):
     )
     cancel_action_goal_msg_fields = ((True, "action", str),)
 
-    client_handler_list: dict[str, ActionClientHandler]
+    client_handlers: dict[str, ActionClientHandler]
 
-    parameter_names = ("actions_glob", "send_action_goals_in_new_thread")
+    parameter_names = ("actions_glob",)
 
     actions_glob: list[str] | None = None
     send_action_goals_in_new_thread: bool = False
@@ -68,26 +67,10 @@ class SendActionGoal(Capability):
         # Call superclass constructor
         Capability.__init__(self, protocol)
 
-        self.client_handler_list = {}
+        self.client_handlers = {}
 
-        # Register the operations that this capability provides
-        if self.send_action_goals_in_new_thread:
-            # Sends the action goal in a separate thread so multiple actions can be processed simultaneously.
-            protocol.node_handle.get_logger().info("Sending action goals in new thread")
-            protocol.register_operation(
-                "send_action_goal",
-                lambda msg: Thread(target=self.send_action_goal, args=(msg,)).start(),
-            )
-        else:
-            # Sends the actions goal in this thread, so actions block and must be processed sequentially.
-            protocol.node_handle.get_logger().info("Sending action goals in existing thread")
-            protocol.register_operation("send_action_goal", self.send_action_goal)
-
-        # Always register goal canceling in a new thread.
-        protocol.register_operation(
-            "cancel_action_goal",
-            lambda msg: Thread(target=self.cancel_action_goal, args=(msg,)).start(),
-        )
+        protocol.register_operation("send_action_goal", self.send_action_goal)
+        protocol.register_operation("cancel_action_goal", self.cancel_action_goal)
 
     def send_action_goal(self, message: dict) -> None:
         # Pull out the ID
@@ -131,7 +114,6 @@ class SendActionGoal(Capability):
         e_cb = partial(self._failure, cid, action)
         f_cb = partial(self._feedback, cid, action) if message.get("feedback", False) else None
 
-        # Run action client handler in the same thread.
         client_handler: ActionClientHandler[ROSMessage, ROSMessage, ROSMessage] = (
             ActionClientHandler(
                 trim_action_name(action),
@@ -144,13 +126,23 @@ class SendActionGoal(Capability):
             )
         )
 
-        if cid is not None:
-            self.client_handler_list[cid] = client_handler
+        executor = self.protocol.node_handle.executor
+        assert executor is not None
+        executor.create_task(self._send_action_goal_task, cid, client_handler)
 
-        client_handler.run()
+    async def _send_action_goal_task(
+        self,
+        cid: str | None,
+        client_handler: ActionClientHandler[ROSMessage, ROSMessage, ROSMessage],
+    ) -> None:
+        if cid is not None:
+            self.client_handlers[cid] = client_handler
+
+        await client_handler.send_goal_and_wait_for_result()
+        client_handler.finish()
 
         if cid is not None:
-            del self.client_handler_list[cid]
+            del self.client_handlers[cid]
 
     def cancel_action_goal(self, message: dict) -> None:
         # Extract the args
@@ -164,11 +156,18 @@ class SendActionGoal(Capability):
         # Check for deprecated action ID, eg. /rosbridge/topics#33
         cid = extract_id(action, cid)
 
-        # Cancel the action
-        if cid in self.client_handler_list:
-            client_handler = self.client_handler_list[cid]
-            if client_handler.send_goal_helper is not None:
-                client_handler.send_goal_helper.cancel_goal()
+        executor = self.protocol.node_handle.executor
+        assert executor is not None
+        executor.create_task(self._cancel_action_goal_task, cid)
+
+    async def _cancel_action_goal_task(self, cid: str | None) -> None:
+        if cid in self.client_handlers:
+            client_handler = self.client_handlers[cid]
+            await client_handler.cancel_goal()
+        else:
+            self.protocol.log(
+                "warn", f"Received cancel request for non-existent action goal with id: {cid}"
+            )
 
     def _success(
         self,
