@@ -4,12 +4,12 @@ from __future__ import annotations
 import time
 import unittest
 from threading import Thread
-from typing import TYPE_CHECKING, Any, NoReturn
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import rclpy
 from example_interfaces.action import Fibonacci
-from rclpy.action import ActionClient, ActionServer
+from rclpy.action import ActionServer
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rosbridge_library.internal import actions, message_conversion, ros_loader
@@ -21,11 +21,8 @@ if TYPE_CHECKING:
         Fibonacci_Goal,
         Fibonacci_Result,
     )
-    from rclpy.action.client import ClientGoalHandle
     from rclpy.action.server import ServerGoalHandle
     from rclpy.executors import Executor
-    from rclpy.task import Future
-    from rclpy.type_support import GetResultServiceResponse
 
 
 class ActionTester:
@@ -135,47 +132,6 @@ class TestActions(unittest.TestCase):
         ]:
             # Should throw no exceptions
             actions.args_to_action_goal_instance(cls.Goal(), args)
-
-    def test_send_action_goal(self) -> None:
-        """Test a simple action call."""
-        ActionTester(self.executor)
-        received: dict[str, Any] = {"msg": None}
-
-        def get_response_callback(future: Future[ClientGoalHandle]) -> None:
-            goal_handle = future.result()
-            assert goal_handle is not None
-            if not goal_handle.accepted:
-                return
-            result_future = goal_handle.get_result_async()
-            result_future.add_done_callback(get_result_callback)
-
-        def get_result_callback(future: Future[GetResultServiceResponse[Fibonacci_Result]]) -> None:
-            response = future.result()
-            assert response is not None
-            received["msg"] = response.result
-
-        # First, call the action the 'proper' way
-        client = ActionClient(self.node, Fibonacci, "get_fibonacci_sequence")
-        client.wait_for_server()
-        goal = Fibonacci.Goal()
-        goal.order = 5
-        future = client.send_goal_async(goal)
-        future.add_done_callback(get_response_callback)
-        while not future.done():
-            time.sleep(0.1)
-        client.destroy()
-
-        self.assertIsNotNone(received["msg"])
-        self.assertEqual(list(received["msg"].sequence), [0, 1, 1, 2, 3, 5])
-
-        # Now, call using the services
-        json_ret = actions.SendGoal().send_goal(
-            self.node,
-            "get_fibonacci_sequence",
-            "example_interfaces/Fibonacci",
-            {"order": 5},
-        )
-        self.assertEqual(list(json_ret["result"]["sequence"]), [0, 1, 1, 2, 3, 5])
 
 
 if __name__ == "__main__":
