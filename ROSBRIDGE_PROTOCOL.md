@@ -325,7 +325,7 @@ Advertise an external service server. Requests come to the client via `call_serv
 |-------|----------|------|-------------|
 | `op` | required | string | Must be `"advertise_service"` |
 | `service` | required | string | The name of the service to advertise. |
-| `type` | required | string | The advertised service message type. |
+| `type` | required | string | The advertised service type. |
 
 #### 4.2.2 unadvertise_service (C → S)
 
@@ -345,9 +345,8 @@ Invoke a service.
 | `op` | required | string | Must be `"call_service"` |
 | `id` | optional | string | An ID to associate with this service call. Will be included in the response. |
 | `service` | required | string | The name of the service to call. |
-| `args` | optional | object or list | The arguments to pass to the service. Can be an object with message fields or a list of field values in the order they appear in the service definition. |
+| `args` | optional | object or list | The arguments to pass to the service. Can be an object with message fields or a list of field values in the order they appear in the service request definition. |
 | `fragment_size` | optional | integer | (only C → S) The maximum size (in bytes) a message can reach before it is fragmented. |
-| `compression` | optional | string | (only C → S) Compression scheme for outgoing messages. Valid values: `none`, `png`. |
 | `timeout` | optional | float | (only C → S) The time, in seconds, to wait for a response from the server. |
 
 #### 4.2.5 service_response (C ↔ S)
@@ -359,113 +358,77 @@ Return a service response.
 | `op` | required | string | Must be `"service_response"` |
 | `id` | optional | string | An ID to associate with this service response. Will match the ID of the corresponding service call if it was provided. |
 | `service` | required | string | The name of the service that was called. |
-| `values` | optional | object or string | The return values from the service or an error message if the service call failed. If the service call was successful but had no return values, this field can be omitted. |
+| `values` | required | object or string | The return values from the service or an error message if the service call failed. |
 | `result` | required | boolean | The result of the service call. `true` indicates success, `false` indicates failure. |
 
 ### 4.3 Action operations
 
 #### 4.3.1 advertise_action (C → S)
 
-Advertises an external ROS action server.
+Advertise an external ROS action server.
 
-```json
-{
-  "op": "advertise_action",
-  "type": <string>,
-  "action": <string>
-}
-```
-
-Goals come to the client via the Send Action Goal capability.
-
-- **action** – the name of the action to advertise
-- **type** – the advertised action message type
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"advertise_action"` |
+| `action` | required | string | The name of the action to advertise. |
+| `type` | required | string | The advertised action type. |
 
 #### 4.3.2 unadvertise_action (C → S)
 
-```json
-{
-  "op": "unadvertise_action",
-  "action": <string>
-}
-```
+Stop advertising an external ROS action server.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"unadvertise_action"` |
+| `action` | required | string | The name of the action to unadvertise. |
 
 #### 4.3.3 send_action_goal (C ↔ S)
 
-Sends a goal to a ROS action server.
+Send an action goal.
 
-```json
-{
-  "op": "send_action_goal",
-  (optional) "id": <string>,
-  "action": <string>,
-  "action_type": <string>,
-  (optional) "args": <list<json>>,
-  (optional) "feedback": <boolean>,
-  (optional) "fragment_size": <int>,
-  (optional) "compression": <string>
-}
-```
-
-- **action** – the name of the action to send a goal to
-- **action_type** – the action message type
-- **args** – if the goal has no args, then args does not have to be
-  provided, though an empty list is equally acceptable. Args should be a list of json objects representing the arguments to the service.
-- **feedback** – if true, sends feedback messages over rosbridge. Defaults to false.
-- **id** – an optional id to distinguish this goal handle
-- **fragment_size** – the maximum size that the result and feedback messages can take before they are fragmented
-- **compression** – an optional string to specify the compression scheme to be used on messages. Valid values are "none" and "png"
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"send_action_goal"` |
+| `id` | optional | string | An ID to associate with this goal. Will be included in feedback and result messages related to this goal. |
+| `action` | required | string | The name of the action to send a goal to. |
+| `action_type` | required | string | The action type. |
+| `args` | optional | object or list | The arguments to pass to the action goal. Can be an object with message fields or a list of field values in the order they appear in the action goal definition. |
+| `feedback` | optional | boolean | Whether to send feedback messages for this goal. Defaults to `false`. |
+| `fragment_size` | optional | integer | (only C → S) The maximum size (in bytes) a message can reach before it is fragmented. |
 
 #### 4.3.4 cancel_action_goal (C ↔ S)
 
-Cancels an action goal.
+Cancel an action goal.
 
-```json
-{
-  "op": "cancel_action_goal",
-  "id": <string>,
-  "action": <string>
-}
-```
-
-The `id` field must match an already in-progress goal.
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"cancel_action_goal"` |
+| `id` | required | string | An ID to identify which goal to cancel. Must match the ID of an already in-progress goal. |
+| `action` | required | string | The name of the action to cancel a goal for. |
 
 #### 4.3.5 action_feedback (C ↔ S)
 
-Used to send action feedback for a specific goal handle.
+Report action feedback.
 
-```json
-{
-  "op": "action_feedback",
-  "id": <string>,
-  "action": <string>,
-  "values": <json>
-}
-```
-
-The `id` field must match an already in-progress goal.
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"action_feedback"` |
+| `id` | required | string | An ID to identify which goal this feedback is for. Must match the ID of an already in-progress goal. |
+| `action` | required | string | The name of the action this feedback is for. |
+| `values` | required | object | The feedback values. Must conform to the feedback message definition of the action. |
 
 #### 4.3.6 action_result (C ↔ S)
 
-A result for a ROS action.
+Report an action result.
 
-```json
-{
-  "op": "action_result",
-  "id": <string>,
-  "action": <string>,
-  "values": <json>,
-  "status": <int>,
-  "result": <boolean>
-}
-```
-
-- **action** – the name of the action that was executed
-- **id** – if an ID was provided to the action goal, then the action result will contain the ID
-- **values** – the result values. If the service had no return values, then
-  this field can be omitted (and will be by the rosbridge server)
-- **status** - return status of the action. This matches the enumeration in the [`action_msgs/msg/GoalStatus`](https://docs.ros2.org/latest/api/action_msgs/msg/GoalStatus.html) ROS message.
-- **result** - return value of action. True means success, false failure.
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"action_result"` |
+| `id` | required | string | An ID to identify which goal this result is for. Must match the ID of an already in-progress goal. |
+| `action` | required | string | The name of the action this result is for. |
+| `values` | required | object or string | The result values from the action or an error message if the action failed. |
+| `status` | required | integer | The status of the action. This matches the enumeration in the [`action_msgs/msg/GoalStatus`](https://docs.ros2.org/latest/api/action_msgs/msg/GoalStatus.html) ROS message. |
+| `result` | required | boolean | The result of the action. `true` indicates success, `false` indicates failure. |
 
 [cbor]: https://tools.ietf.org/html/rfc7049
 [draft typed array tags]: https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00
