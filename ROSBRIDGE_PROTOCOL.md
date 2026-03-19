@@ -27,7 +27,7 @@ This document also describes the intended direction of the rosbridge server impl
     - [4.2.1 advertise\_service (C → S)](#421-advertise_service-c--s)
     - [4.2.2 unadvertise\_service (C → S)](#422-unadvertise_service-c--s)
     - [4.2.3 call\_service (C ↔ S)](#423-call_service-c--s)
-    - [4.2.5 service\_response (C ↔ S)](#425-service_response-c--s)
+    - [4.2.4 service\_response (C ↔ S)](#424-service_response-c--s)
   - [4.3 Action operations](#43-action-operations)
     - [4.3.1 advertise\_action (C → S)](#431-advertise_action-c--s)
     - [4.3.2 unadvertise\_action (C → S)](#432-unadvertise_action-c--s)
@@ -349,7 +349,7 @@ Invoke a service.
 | `fragment_size` | optional | integer | (only C → S) The maximum size (in bytes) a message can reach before it is fragmented. |
 | `timeout` | optional | float | (only C → S) The time, in seconds, to wait for a response from the server. |
 
-#### 4.2.5 service_response (C ↔ S)
+#### 4.2.4 service_response (C ↔ S)
 
 Return a service response.
 
