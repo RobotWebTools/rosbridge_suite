@@ -14,17 +14,11 @@
   <arg name="unregister_timeout" default="10.0" />
 
   <arg name="use_compression" default="false" />
-<<<<<<< HEAD
+  <arg name="websocket_ping_interval" default="0.0" />
+  <arg name="websocket_ping_timeout" default="30.0" />
   <arg name="call_services_in_new_thread" default="false" />
   <arg name="default_call_service_timeout" default="0.0" />
   <arg name="send_action_goals_in_new_thread" default="false" />
-=======
-  <arg name="websocket_ping_interval" default="0.0" />
-  <arg name="websocket_ping_timeout" default="30.0" />
-  <arg name="call_services_in_new_thread" default="true" />
-  <arg name="default_call_service_timeout" default="5.0" />
-  <arg name="send_action_goals_in_new_thread" default="true" />
->>>>>>> 4479ca4 (feat: Add timeout parameters to launch (#1174))
 
   <arg name="topics_glob" default="" />
   <arg name="services_glob" default="" />
