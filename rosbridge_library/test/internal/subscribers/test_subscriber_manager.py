@@ -114,7 +114,6 @@ class TestSubscriberManager(unittest.TestCase):
             msg_type_bad,
         )
 
-    @unittest.skip("This test fails on Humble due to middleware errors, but not in later distros.")
     def test_register_multiple_publishers(self) -> None:
         topic1 = "/test_register_multiple_publishers1"
         topic2 = "/test_register_multiple_publishers2"
@@ -183,7 +182,6 @@ class TestSubscriberManager(unittest.TestCase):
         self.assertFalse(topic in manager._subscribers)
         self.assert_topic_subscribed(topic)
 
-    @unittest.skip("This test fails on Humble due to middleware errors, but not in later distros.")
     def test_register_multiple_notopictype(self) -> None:
         topic = "/test_register_multiple_notopictype"
         msg_type = "std_msgs/String"
