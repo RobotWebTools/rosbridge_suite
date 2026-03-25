@@ -120,7 +120,13 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
-        self.buffer = self.buffer + str(message_string)
+        if isinstance(message_string, bytes):
+            try:
+                message_string = message_string.decode('utf-8')
+            except UnicodeDecodeError:
+                self.log("error", "Received binary message with invalid UTF-8 encoding")
+                return
+        self.buffer = self.buffer + message_string
         msg = None
 
         # take care of having multiple JSON-objects in receiving buffer
