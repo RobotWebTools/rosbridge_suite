@@ -128,7 +128,11 @@ class Protocol:
             self.buffer.extend(message_string)
         else:
             if isinstance(message_string, bytes):
-                message_string = message_string.decode('utf-8')
+                try:
+                    message_string = message_string.decode('utf-8')
+                except UnicodeDecodeError:
+                    self.log("error", "Received binary message with invalid UTF-8 encoding")
+                    return
             self.buffer = self.buffer + message_string
         msg = None
 
