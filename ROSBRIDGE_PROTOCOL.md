@@ -213,7 +213,7 @@ These rosbridge messages interact with ROS, and correspond roughly to the messag
 
 #### 4.1.1 advertise (C → S)
 
-Advertise that the client will publish on a topic.
+Register the client as a publisher on a topic. This allows the server to track which clients are publishing on which topics, and to establish the topic with the correct type if it does not already exist.
 
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
@@ -224,16 +224,19 @@ Advertise that the client will publish on a topic.
 | `latch` | optional | boolean | Whether to latch the last message published on this topic. Defaults to `false`. |
 | `queue_size` | optional | integer | Size of the internal publisher queue (QoS depth policy). Defaults to `100`. |
 
-The behavior of this message depends on the state of the topic being advertised:
+The operation fails if either of the following is true:
 
-- If the topic does not already exist, and the type specified is a valid type, then the topic will be established with this type.
-- If the topic already exists with a different type, an error is logged and this message is dropped.
-- If the topic already exists with the same type, the sender of this message is registered as another publisher.
-- If the topic doesn't already exist but the type cannot be resolved, then an error is logged and this message is dropped.
+- The topic already exists with a different type.
+- The type specified cannot be resolved.
+
+Current limitations:
+
+- The protocol spawns only one publisher per topic, so if multiple clients advertise the same topic, they will share the same publisher and its associated QoS settings.
+  Only the first advertisement will determine the QoS settings for that topic.
 
 #### 4.1.2 unadvertise (C → S)
 
-Stop advertising that the client will publish on a topic.
+Unregister advertisement of a topic for the client.
 
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
@@ -241,11 +244,11 @@ Stop advertising that the client will publish on a topic.
 | `id` | optional | string | An ID to disassociate with this advertisement. If provided, only the matching advertisement is removed. If omitted, all advertisements for the topic by this client are removed. |
 | `topic` | required | string | The name of the topic to unadvertise. |
 
-The behavior of this message depends on the state of the topic being unadvertised:
+This operation fails if either of the following is true:
 
-- If the topic does not exist, a warning status message is sent and this message is dropped.
-- If the topic exists and there are still clients left advertising it, rosbridge will continue to advertise it until all of them have unadvertised.
-- If the topic exists but rosbridge is not advertising it, a warning is logged and this message is dropped.
+- The client has not previously advertised the topic.
+- The client has already unregistered all advertisements for the topic.
+- The `id` provided does not match any existing advertisement by this client for the topic.
 
 #### 4.1.3 publish (C ↔ S)
 
@@ -265,13 +268,16 @@ The message format is the same in both directions:
 The client sends a `publish` message to push a message onto a ROS topic.
 The client must have previously advertised the topic using the `advertise` operation before publishing.
 
-- If the topic does not exist, then an error status message is sent and this message is dropped.
-- If the `msg` does not conform to the type of the topic, then an error is logged and this message is dropped.
-- If the `msg` is a subset of the type of the topic, then a warning is logged and the unspecified fields are filled in with defaults.
+The operation fails if either of the following is true:
 
-Special case: if the topic type has a `header` field, the client may omit it from `msg`.
-If omitted entirely, rosbridge will automatically populate the header with a frame id of `""` and the current timestamp.
-If only the timestamp is omitted, the current time will be inserted while leaving other header fields intact.
+- The client has not previously advertised the topic.
+- The client has already unregistered all advertisements for the topic.
+- The `msg` provided does not conform to the type of the topic.
+
+Special cases for how the server handles the `msg` field:
+
+- If the `msg` does not contain all fields for the topic type, then the unspecified fields are filled in with defaults.
+- If the topic type has a `header` field of type `std_msgs/Header` and the client omits the `header.stamp` field, then the server will automatically populate it with the current ROS time.
 
 **Server → Client**
 
@@ -280,9 +286,7 @@ This happens when a message is received on a topic that the client has previousl
 
 #### 4.1.4 subscribe (C → S)
 
-Subscribe to a topic to receive updates.
-
-When a client subscribes to a topic, the server will send messages published on that topic to the client.
+Register a subscription to a topic to receive messages published on that topic.
 
 It is recommended that if the client has multiple components subscribing to the same topic, that each component makes its own subscription request providing an ID.
 That way, each can individually unsubscribe and rosbridge can select the correct rate at which to send messages.
@@ -298,11 +302,16 @@ That way, each can individually unsubscribe and rosbridge can select the correct
 | `fragment_size` | optional | integer | Maximum size (in bytes) a message can reach before it is fragmented. |
 | `compression` | optional | string | Compression scheme for outgoing messages. Valid values: `none`, `png`, `cbor`, `cbor-raw`. |
 
+The operation fails if either of the following is true:
+
+- The subscription for the topic already exists with a different type.
+- The type specified cannot be resolved.
+
 If `queue_length` is specified, then messages are placed into the queue before being sent.
 Messages are sent from the head of the queue.
 If the queue gets full, the oldest message is removed and replaced by the newest message.
 
-If a client has multiple subscriptions to the same topic, then messages are sent at the lowest throttle_rate, with the lowest fragmentation size, and highest queue_length.
+If a client has multiple subscriptions to the same topic, then messages are sent at the lowest `throttle_rate`, with the lowest `fragment_size`, and highest `queue_length`.
 It is recommended that the client provides IDs for its subscriptions to enable rosbridge to effectively choose the appropriate fragmentation size and publishing rate.
 
 #### 4.1.5 unsubscribe (C → S)
@@ -314,6 +323,12 @@ Unsubscribe from a topic to stop receiving updates.
 | `op` | required | string | Must be `"unsubscribe"` |
 | `id` | optional | string | An ID to disassociate with this subscription. If provided, only the matching subscription is removed. If omitted, all subscriptions for the topic by this client are removed. |
 | `topic` | required | string | The name of the topic to unsubscribe from. |
+
+The operation fails if either of the following is true:
+
+- The client has not previously subscribed to the topic.
+- The client has already unregistered all subscriptions for the topic.
+- The `id` provided does not match any existing subscription by this client for the topic.
 
 ### 4.2 Service operations
 
