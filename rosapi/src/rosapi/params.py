@@ -139,7 +139,7 @@ def _get_client(service_name: str, service_type: type[GetParameters | SetParamet
     _node.get_logger().get_child("params").debug(f"Creating new client for service {service_name}")
 
     client = _node.create_client(
-        service_type,
+        service_type,  # type: ignore[misc]
         service_name,
         callback_group=MutuallyExclusiveCallbackGroup(),
         qos_profile=qos_profile_parameters,
