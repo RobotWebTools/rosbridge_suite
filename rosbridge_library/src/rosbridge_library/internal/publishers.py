@@ -334,7 +334,8 @@ class PublisherManager:
             a problem setting up or getting the publisher, or if the provided msg does not map to
             the msg class of the publisher.
         """
-        self.register(client_id, topic, node_handle, latch=latch, queue_size=queue_size)
+        if topic not in self._publishers:
+            self.register(client_id, topic, node_handle, latch=latch, queue_size=queue_size)
 
         self._publishers[topic].publish(msg)
 
