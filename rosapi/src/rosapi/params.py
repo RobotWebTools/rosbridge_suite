@@ -235,7 +235,7 @@ async def _set_param(
 
     future = client.call_async(request)
 
-    # Mark the client as in use so it's not clened up while we're awaiting the response.
+    # Mark the client as in use so it's not cleaned up while we're awaiting the response.
     _cached_clients[service_name].in_use = True
 
     await futures_wait_for(_node, [future], _timeout_sec)
@@ -298,7 +298,7 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
 
     future = client.call_async(request)
 
-    # Mark the client as in use so it's not clened up while we're awaiting the response.
+    # Mark the client as in use so it's not cleaned up while we're awaiting the response.
     _cached_clients[service_name].in_use = True
 
     await futures_wait_for(_node, [future], _timeout_sec)
