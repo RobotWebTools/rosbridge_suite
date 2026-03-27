@@ -143,6 +143,10 @@ def run_websocket_test(
     reactor.callInThread(executor.spin_until_future_complete, future)  # type: ignore[attr-defined]
     reactor.run(installSignalHandlers=False)  # type: ignore[attr-defined]
 
+    # Re-raise any exception from the test coroutine so unittest sees a failure
+    # rather than a silent pass.
+    future.result()
+
     executor.remove_node(node)
     node.destroy_node()
     rclpy.shutdown(context=context)
