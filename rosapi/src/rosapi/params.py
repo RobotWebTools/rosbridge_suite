@@ -177,7 +177,7 @@ def _cleanup_timer_callback() -> None:
         if not cached_client.in_use and (now - cached_client.last_used_time).nanoseconds > int(
             _client_persistence_sec * 1e9
         ):
-            cached_client.client.destroy()
+            _node.destroy_client(cached_client.client)
             to_remove.append(service_name)
 
     for service_name in to_remove:
