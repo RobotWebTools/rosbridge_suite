@@ -211,10 +211,6 @@ class TestAdvertisePublishPublishers(unittest.TestCase):
         # ------------------------------------------------------------------
         # Test 6 - publish can register an advertisement with an ID, which
         # can later be destroyed by unadvertise with the same ID.
-        #
-        # This requires publish.py to forward the "id" field to the Advertise
-        # capability's registration tracking. The test will fail until that
-        # implementation is in place.
         # ------------------------------------------------------------------
         ws6 = await make_client()
         ws6.sendJson(
