@@ -133,8 +133,10 @@ def run_websocket_test(
     executor.add_node(node)
 
     async def task() -> None:
-        await test_fn(node, lambda: connect_to_server(node))
-        reactor.callFromThread(reactor.stop)  # type: ignore[attr-defined]
+        try:
+            await test_fn(node, lambda: connect_to_server(node))
+        finally:
+            reactor.callFromThread(reactor.stop)  # type: ignore[attr-defined]
 
     future = executor.create_task(task)
 
