@@ -127,7 +127,7 @@ def init(
         raise ValueError(msg)
     _client_persistence_sec = client_persistence_sec
 
-    _node.create_timer(0.1, _cleanup_timer_callback)
+    _node.create_timer(0.5, _cleanup_timer_callback)
 
 
 def _get_client(
