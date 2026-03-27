@@ -88,7 +88,7 @@ _parameter_type_mapping = [
 
 @dataclass
 class _CachedClient:
-    in_use: bool
+    use_count: int = 0
     last_used_time: Time
     client: Client
 
@@ -158,7 +158,7 @@ def _get_client(
         qos_profile=qos_profile_parameters,
     )
     _cached_clients[service_name] = _CachedClient(
-        in_use=False, last_used_time=Time(), client=client
+        use_count=0, last_used_time=Time(), client=client
     )
     return client
 
@@ -174,7 +174,7 @@ def _cleanup_timer_callback() -> None:
     now = _node.get_clock().now()
     to_remove = []
     for service_name, cached_client in _cached_clients.items():
-        if not cached_client.in_use and (now - cached_client.last_used_time).nanoseconds > int(
+        if cached_client.use_count == 0 and (now - cached_client.last_used_time).nanoseconds > int(
             _client_persistence_sec * 1e9
         ):
             _node.destroy_client(cached_client.client)
@@ -251,13 +251,14 @@ async def _set_param(
 
     future = client.call_async(request)
 
-    # Mark the client as in use so it's not cleaned up while we're awaiting the response.
-    _cached_clients[service_name].in_use = True
+    # Increase the client's use count so it's not cleaned up while we're awaiting the response.
+    _cached_clients[service_name].use_count += 1
 
-    await futures_wait_for(_node, [future], _timeout_sec)
-
-    _cached_clients[service_name].in_use = False
-    _cached_clients[service_name].last_used_time = _node.get_clock().now()
+    try:
+        await futures_wait_for(_node, [future], _timeout_sec)
+    finally:
+        _cached_clients[service_name].use_count -= 1
+        _cached_clients[service_name].last_used_time = _node.get_clock().now()
 
     if not future.done():
         future.cancel()
@@ -317,13 +318,14 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
 
     future = client.call_async(request)
 
-    # Mark the client as in use so it's not cleaned up while we're awaiting the response.
-    _cached_clients[service_name].in_use = True
+    # Increase the client's use count so it's not cleaned up while we're awaiting the response.
+    _cached_clients[service_name].use_count += 1
 
-    await futures_wait_for(_node, [future], _timeout_sec)
-
-    _cached_clients[service_name].in_use = False
-    _cached_clients[service_name].last_used_time = _node.get_clock().now()
+    try:
+        await futures_wait_for(_node, [future], _timeout_sec)
+    finally:
+        _cached_clients[service_name].use_count -= 1
+        _cached_clients[service_name].last_used_time = _node.get_clock().now()
 
     if not future.done():
         future.cancel()
