@@ -157,9 +157,7 @@ def _get_client(
         callback_group=MutuallyExclusiveCallbackGroup(),
         qos_profile=qos_profile_parameters,
     )
-    _cached_clients[service_name] = _CachedClient(
-        use_count=0, last_used_time=Time(), client=client
-    )
+    _cached_clients[service_name] = _CachedClient(use_count=0, last_used_time=Time(), client=client)
     return client
 
 
