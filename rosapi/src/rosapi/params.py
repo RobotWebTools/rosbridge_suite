@@ -88,7 +88,7 @@ _parameter_type_mapping = [
 
 @dataclass
 class _CachedClient:
-    use_count: int = 0
+    use_count: int
     last_used_time: Time
     client: Client
 
