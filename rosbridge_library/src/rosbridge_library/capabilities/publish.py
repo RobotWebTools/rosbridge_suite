@@ -96,7 +96,7 @@ class Publish(Capability):
 
         if topic not in self.protocol.topic_registrations:
             self.protocol.log(
-                "warn",
+                "info",
                 "Trying to publish to unregistered topic: " + topic + ", creating registration...",
             )
             registration = Registration(client_id, topic, self.protocol.node_handle)
