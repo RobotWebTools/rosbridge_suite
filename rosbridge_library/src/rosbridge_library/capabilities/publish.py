@@ -108,11 +108,4 @@ class Publish(Capability):
         msg: dict[str, Any] = message.get("msg", {})
 
         # Publish the message
-        manager.publish(
-            client_id,
-            topic,
-            msg,
-            self.protocol.node_handle,
-            latch=latch,
-            queue_size=queue_size,
-        )
+        manager.publish(topic, msg)
