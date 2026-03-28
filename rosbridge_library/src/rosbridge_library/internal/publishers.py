@@ -317,7 +317,7 @@ class PublisherManager:
         :param topic: The topic to publish the message on
         :param msg: A JSON-like dict of fields and values
         :raises TopicNotRegisteredException: If there is no publisher registered for the given topic
-        :raises TypeError: If the provided msg does not conform to the message type of the publisher
+        :raises Exception: If the provided msg does not conform to the message type of the publisher
             for the given topic
         """
         if topic not in self._publishers:
