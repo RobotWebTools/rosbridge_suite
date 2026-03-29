@@ -34,6 +34,7 @@ if(BUILD_TESTING)
   set(TEST_FILES
     test/websocket/advertise_action.test.py
     test/websocket/advertise_action_feedback.test.py
+    test/websocket/advertise_publish.test.py
     test/websocket/advertise_service.test.py
     test/websocket/call_service.test.py
     test/websocket/send_action_goal.test.py
