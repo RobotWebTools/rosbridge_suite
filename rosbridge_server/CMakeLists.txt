@@ -32,6 +32,7 @@ if(BUILD_TESTING)
 
   add_launch_test(test/websocket/advertise_action.test.py)
   add_launch_test(test/websocket/advertise_action_feedback.test.py)
+  add_launch_test(test/websocket/advertise_publish.test.py)
   add_launch_test(test/websocket/advertise_service.test.py)
   add_launch_test(test/websocket/call_service.test.py)
   add_launch_test(test/websocket/send_action_goal.test.py)
