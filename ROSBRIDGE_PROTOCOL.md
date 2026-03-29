@@ -259,20 +259,24 @@ The message format is the same in both directions:
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
 | `op` | required | string | Must be `"publish"` |
-| `id` | optional | string | An ID to associate with this operation. |
 | `topic` | required | string | The name of the topic to publish on. |
 | `msg` | required | object | The message being published on the topic. |
 
 **Client → Server**
 
 The client sends a `publish` message to push a message onto a ROS topic.
-The client must have previously advertised the topic using the `advertise` operation before publishing.
 
-The operation fails if either of the following is true:
+If the topic has not been advertised, the server will automatically advertise it with the provided type.
+In this case, the following additional fields are also supported in the message to specify the topic type and QoS settings:
 
-- The client has not previously advertised the topic.
-- The client has already unregistered all advertisements for the topic.
-- The `msg` provided does not conform to the type of the topic.
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `id` | optional | string | An ID to associate with this advertisement. |
+| `type` | optional | string | The type of the topic to advertise. If omitted, the type will be inferred from the current ROS graph. |
+| `latch` | optional | boolean | Whether to latch the last message published on this topic. Defaults to `false`. |
+| `queue_size` | optional | integer | Size of the internal publisher queue (QoS depth policy). Defaults to `100`. |
+
+The operation fails if the `msg` does not conform to the type of the topic.
 
 Special cases for how the server handles the `msg` field:
 
