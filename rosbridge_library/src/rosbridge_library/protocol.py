@@ -44,6 +44,7 @@ if TYPE_CHECKING:
 
     from rclpy.node import Node
 
+    from rosbridge_library.capabilities.advertise import Registration
     from rosbridge_library.capabilities.advertise_action import AdvertisedActionHandler
     from rosbridge_library.capabilities.advertise_service import AdvertisedServiceHandler
     from rosbridge_library.capability import Capability
@@ -88,6 +89,9 @@ class Protocol:
     buffer = ""
     old_buffer = ""
     busy = False
+
+    # tracks topics advertised by the client
+    topic_registrations: dict[str, Registration]
     # global list of non-ros advertised services
     external_service_list: dict[str, AdvertisedServiceHandler]
     # global list of non-ros advertised actions
@@ -119,6 +123,7 @@ class Protocol:
 
         self.capabilities: list[Capability] = []
         self.operations: dict[str, Callable[[dict[str, Any]], None]] = {}
+        self.topic_registrations = {}
         self.external_service_list = {}
         self.external_action_list = {}
 
