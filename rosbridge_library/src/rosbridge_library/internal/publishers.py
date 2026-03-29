@@ -43,6 +43,7 @@ from rosbridge_library.internal import message_conversion, ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.topics import (
     TopicNotEstablishedException,
+    TopicNotRegisteredException,
     TypeConflictException,
 )
 from rosbridge_library.internal.type_support import ROSMessage, ROSMessageT
@@ -306,32 +307,18 @@ class PublisherManager:
         for topic in self._publishers:
             self.unregister(client_id, topic)
 
-    def publish(
-        self,
-        client_id: str,
-        topic: str,
-        msg: dict,
-        node_handle: Node,
-        latch: bool = False,
-        queue_size: int = 100,
-    ) -> None:
+    def publish(self, topic: str, msg: dict) -> None:
         """
         Publish a message on the given topic.
 
-        Tries to create a publisher on the topic if one does not already exist.
-
-        :param client_id: The ID of the client making this request
         :param topic: The topic to publish the message on
         :param msg: A JSON-like dict of fields and values
-        :param node_handle: Handle to a rclpy node to create the publisher
-        :param latch: (optional) Whether to make this publisher latched
-        :param queue_size: (optional) Publisher queue_size to use
-
-        :raises Exception: A variety of exceptions are propagated. They can be thrown if there is
-            a problem setting up or getting the publisher, or if the provided msg does not map to
-            the msg class of the publisher.
+        :raises TopicNotRegisteredException: If there is no publisher registered for the given topic
+        :raises Exception: If the provided msg does not conform to the message type of the publisher
+            for the given topic
         """
-        self.register(client_id, topic, node_handle, latch=latch, queue_size=queue_size)
+        if topic not in self._publishers:
+            raise TopicNotRegisteredException(topic)
 
         self._publishers[topic].publish(msg)
 
