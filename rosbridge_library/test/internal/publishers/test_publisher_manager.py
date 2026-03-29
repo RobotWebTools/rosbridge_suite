@@ -14,6 +14,7 @@ from rosbridge_library.internal.message_conversion import FieldTypeMismatchExcep
 from rosbridge_library.internal.publishers import manager
 from rosbridge_library.internal.topics import (
     TopicNotEstablishedException,
+    TopicNotRegisteredException,
     TypeConflictException,
 )
 from rosbridge_library.util.ros import is_topic_published
@@ -217,13 +218,10 @@ class TestPublisherManager(unittest.TestCase):
     def test_publish_not_registered(self) -> None:
         topic = "/test_publish_not_registered"
         msg = {"data": "test publish not registered"}
-        client = "client_test_publish_not_registered"
 
         self.assertFalse(topic in manager._publishers)
         self.assertFalse(is_topic_published(self.node, topic))
-        self.assertRaises(
-            TopicNotEstablishedException, manager.publish, client, topic, msg, self.node
-        )
+        self.assertRaises(TopicNotRegisteredException, manager.publish, topic, msg)
 
     def test_publisher_manager_publish(self) -> None:
         """Make sure that publishing works."""
@@ -242,7 +240,8 @@ class TestPublisherManager(unittest.TestCase):
         )
         self.node.create_subscription(String, topic, cb, subscriber_qos)
 
-        manager.publish(client, topic, msg, self.node)
+        manager.register(client, topic, self.node)
+        manager.publish(topic, msg)
         time.sleep(0.5)
         self.assertEqual(received["msg"].data, msg["data"])
 
@@ -254,9 +253,7 @@ class TestPublisherManager(unittest.TestCase):
         msg = {"data": 3}
 
         manager.register(client, topic, self.node, msg_type)
-        self.assertRaises(
-            FieldTypeMismatchException, manager.publish, client, topic, msg, self.node
-        )
+        self.assertRaises(FieldTypeMismatchException, manager.publish, topic, msg)
 
 
 if __name__ == "__main__":
