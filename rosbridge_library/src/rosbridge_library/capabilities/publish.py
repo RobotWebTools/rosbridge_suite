@@ -67,7 +67,10 @@ class Publish(Capability):
     def publish(self, message: dict[str, Any]) -> None:
         # Do basic type checking
         self.basic_type_check(message, self.publish_msg_fields)
-        aid: str | None = message.get("id")
+
+        # Pull out the ID of the advertisement, if it exists
+        adv_id: str | None = message.get("id")
+
         topic: str = message["topic"]
         msg_type: str | None = message.get("type")
         latch: bool = message.get("latch", False)
@@ -101,7 +104,7 @@ class Publish(Capability):
             )
             registration = Registration(client_id, topic, self.protocol.node_handle)
             # Register as a publishing client, propagating any exceptions
-            registration.register_advertisement(msg_type, aid, latch, queue_size)
+            registration.register_advertisement(msg_type, adv_id, latch, queue_size)
             self.protocol.topic_registrations[topic] = registration
 
         # Get the message if one was provided

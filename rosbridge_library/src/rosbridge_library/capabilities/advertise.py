@@ -116,8 +116,8 @@ class Advertise(Capability):
         protocol.register_operation("unadvertise", self.unadvertise)
 
     def advertise(self, message: dict[str, Any]) -> None:
-        # Pull out the ID
-        aid = message.get("id")
+        # Pull out the ID of the advertisement, if it exists
+        adv_id = message.get("id")
 
         self.basic_type_check(message, self.advertise_msg_fields)
         topic: str = message["topic"]
@@ -149,12 +149,12 @@ class Advertise(Capability):
         if topic not in self.protocol.topic_registrations:
             client_id = self.protocol.client_id
             registration = Registration(client_id, topic, self.protocol.node_handle)
-            registration.register_advertisement(msg_type, aid, latch, queue_size)
+            registration.register_advertisement(msg_type, adv_id, latch, queue_size)
             self.protocol.topic_registrations[topic] = registration
         else:
             # Register, propagating any exceptions
             self.protocol.topic_registrations[topic].register_advertisement(
-                msg_type, aid, latch, queue_size
+                msg_type, adv_id, latch, queue_size
             )
 
     def unadvertise(self, message: dict[str, Any]) -> None:
