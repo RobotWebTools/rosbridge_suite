@@ -47,7 +47,7 @@ class TopicNotRegisteredException(Exception):
     def __init__(self, topic: str) -> None:
         Exception.__init__(
             self,
-            f"Cannot publish to topic {topic} as it is not registered",
+            f"Cannot publish to topic '{topic}' as it is not registered",
         )
 
 
