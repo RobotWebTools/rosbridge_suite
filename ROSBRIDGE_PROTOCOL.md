@@ -59,8 +59,8 @@ Optionally, a message can also provide an arbitrary string ID:
 }
 ```
 
-If an `id` is provided with a message to the server, then related response messages will typically contain that ID as well.
-Log messages caused by this operation will also include the ID, so that clients can easily associate log messages with the operation that caused them.
+If an `id` is provided with a message to the server, then related response messages will typically contain that ID as well, allowing protocol messages on the wire to be correlated with the initiating request.
+Server-side log messages may also include the `id` for correlation purposes; these logs are implementation-specific and are not delivered to clients as part of the rosbridge protocol itself.
 
 Semantically, the `id` does not identify a single message.
 Instead, it identifies an interaction, which may consist of multiple back-and-forth operations.
