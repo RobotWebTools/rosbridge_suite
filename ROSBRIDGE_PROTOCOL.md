@@ -1,10 +1,11 @@
 # rosbridge v2 Protocol Specification <!-- omit in toc -->
 
 This document defines the rosbridge protocol and its supported operations.
-The protocol is built around structured message objects (e.g., JSON or CBOR) with an `op` field that identifies the
-operation being performed. The protocol is transport-agnostic and can be carried over WebSockets, TCP, or other suitable transports.
+The protocol is built around structured message objects (e.g., JSON or CBOR) with an `op` field that identifies the operation being performed.
+The protocol is transport-agnostic and can be carried over WebSockets, TCP, or other suitable transports.
 
-This document also describes the intended direction of the rosbridge server implementation. The default server implementation uses WebSockets and separates message parsing from the underlying transport so protocol operations remain easy to extend.
+This document also describes the intended direction of the rosbridge server implementation.
+The default server implementation uses WebSockets and separates message parsing from the underlying transport so protocol operations remain easy to extend.
 
 ## Table of Contents <!-- omit in toc -->
 
@@ -75,7 +76,7 @@ Direction legend:
 - **S → C**: server to client
 - **C ↔ S**: either direction
 
-Some `C ↔ S` operations are valid in either direction depending on which side has advertised the corresponding topic, service, or action interface.
+The `C ↔ S` operations are valid in either direction depending on which side has advertised the corresponding topic, service, or action interface.
 
 Message compression / transformation:
 
@@ -185,8 +186,7 @@ At the moment, only little-endian packing is supported.
 
 ### 3.5 CBOR-RAW encoding ( _cbor-raw_ )
 
-While CBOR encodes the entire message as CBOR, sometimes it is desirable to get the raw binary message in the
-ROS 2 serialized message format.
+While CBOR encodes the entire message as CBOR, sometimes it is desirable to get the raw binary message in the ROS 2 serialized message format.
 
 This can be useful in several cases:
 
@@ -195,19 +195,15 @@ This can be useful in several cases:
 - You want to parse messages as late as possible, or in parallel, e.g. only in the thread or WebWorker that cares about the message.
   Delaying the parsing of the message means that moving or copying the message to the thread is cheaper when its in binary form, since no serialization between threads is necessary.
 - You only care about part of the message, and don't need to parse the rest of it.
-- You really care about performance; no conversion between the ROS 2 binary message format and CBOR is done in
-  the rosbridge server.
+- You really care about performance; no conversion between the ROS 2 binary message format and CBOR is done in the rosbridge server.
 
-The format is similar to CBOR above, but instead of the `msg` field containing the message itself in CBOR format,
-it contains an object with a `bytes` field which is a byte array containing the raw serialized ROS 2 message.
+The format is similar to CBOR above, but instead of the `msg` field containing the message itself in CBOR format, it contains an object with a `bytes` field which is a byte array containing the raw serialized ROS 2 message.
 The `msg` object also includes `secs` and `nsecs` for the ROS time at which the message was received, which is especially useful when `use_sim_time` is set.
 
 When using this encoding, a client application will need to know exactly how to parse the raw message.
 For this it is useful to use the `/rosapi/get_topics_and_raw_types` service, which provides topic names together with their raw message definitions.
 
 ## 4. Operation specifications
-
-These rosbridge messages interact with ROS, and correspond roughly to the messages that already exist in the current version of rosbridge.
 
 ### 4.1 Topic operations
 
@@ -241,7 +237,7 @@ Unregister advertisement of a topic for the client.
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
 | `op` | required | string | Must be `"unadvertise"` |
-| `id` | optional | string | An ID to disassociate with this advertisement. If provided, only the matching advertisement is removed. If omitted, all advertisements for the topic by this client are removed. |
+| `id` | optional | string | An ID of the advertisement to unregister. If provided, only the matching advertisement is removed. If omitted, all advertisements for the topic by this client are removed. |
 | `topic` | required | string | The name of the topic to unadvertise. |
 
 This operation fails if either of the following is true:
