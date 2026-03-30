@@ -445,9 +445,9 @@ Report an action result.
 | `op` | required | string | Must be `"action_result"` |
 | `id` | required | string | An ID to identify which goal this result is for. Must match the ID of an already in-progress goal. |
 | `action` | required | string | The name of the action this result is for. |
-| `values` | required | object or string | The result values from the action or an error message if the action failed. |
+| `values` | conditional | object or string | When `result` is `true`, this field is **required** and must be an object containing the action's result values (conforming to the action's result message definition). When `result` is `false`, this field is **optional** and, if present, is typically a string error message; structured result objects MAY be ignored by some implementations. |
 | `status` | required | integer | The status of the action. This matches the enumeration in the [`action_msgs/msg/GoalStatus`](https://docs.ros2.org/latest/api/action_msgs/msg/GoalStatus.html) ROS message. |
-| `result` | required | boolean | The result of the action. `true` indicates success, `false` indicates failure. |
+| `result` | required | boolean | Indicates whether the action completed successfully. `true` indicates success (a structured `values` object is required), `false` indicates failure (an error may instead be conveyed via `values` or other means, and structured result values might not be consumed). |
 
 [cbor]: https://tools.ietf.org/html/rfc7049
 [draft typed array tags]: https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00
