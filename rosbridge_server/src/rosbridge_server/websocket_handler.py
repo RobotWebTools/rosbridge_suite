@@ -119,8 +119,11 @@ class IncomingQueue(threading.Thread):
                 msg = self.queue.popleft()
 
             self.protocol.incoming(msg)
-
-        self.protocol.finish()
+        executor = self.protocol.node_handle.executor
+        if executor is not None:
+            executor.create_task(self.protocol.finish)
+        else:
+            self.protocol.finish()
 
 
 class RosbridgeWebSocket(WebSocketHandler):
