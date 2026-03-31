@@ -311,7 +311,7 @@ If `queue_length` is specified, then messages are placed into the queue before b
 Messages are sent from the head of the queue.
 If the queue gets full, the oldest message is removed and replaced by the newest message.
 
-If a client has multiple subscriptions to the same topic, then messages are sent at the lowest `throttle_rate`, with the lowest `fragment_size`, and highest `queue_length`.
+If a client has multiple subscriptions to the same topic, then messages are sent at the lowest `throttle_rate`, with the lowest `fragment_size`, and lowest `queue_length`.
 It is recommended that the client provides IDs for its subscriptions to enable rosbridge to effectively choose the appropriate fragmentation size and publishing rate.
 
 #### 4.1.5 unsubscribe (C → S)
