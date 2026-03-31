@@ -111,6 +111,9 @@ In general, operation opcodes that initiate an action are verb-like, such as `su
 Feedback, result, and status-bearing messages often use noun or noun-phrase opcodes such as `service_response`, `action_feedback` and `action_result`.
 These naming patterns are descriptive only and do not imply that a given opcode is sent exclusively by either the client or the server.
 
+To keep the protocol simple and focused, the rosbridge protocol **does not** handle ROS parameter operations (getting, setting, listing parameters, etc.) or querying the ROS graph (listing nodes, topics, services, and their types).
+Instead, it delegates such operations to dedicated ROS services, such as those provided by the [rosapi] package.
+
 ## 3. Data Encoding and Transformation
 
 By default, rosbridge messages are encoded as JSON text.
@@ -496,3 +499,4 @@ When a client sends an `action_result` message, the operation fails if any of th
 
 [cbor]: https://tools.ietf.org/html/rfc7049
 [draft typed array tags]: https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00
+[rosapi]: https://docs.ros.org/en/rolling/p/rosapi/
