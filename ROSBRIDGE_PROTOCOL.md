@@ -1,4 +1,4 @@
-# rosbridge v2 Protocol Specification <!-- omit in toc -->
+# rosbridge v2.0 Protocol Specification <!-- omit in toc -->
 
 This document defines the rosbridge protocol and its supported operations.
 The protocol is built around structured message objects (e.g., JSON or CBOR) with an `op` field that identifies the operation being performed.
@@ -6,6 +6,12 @@ The protocol is transport-agnostic and can be carried over WebSockets, TCP, or o
 
 This document also describes the intended direction of the rosbridge server implementation.
 The default server implementation uses WebSockets and separates message parsing from the underlying transport so protocol operations remain easy to extend.
+
+## Changelog <!-- omit in toc -->
+
+| Version | Summary |
+|---------|---------|
+| 2.0 | Initial versioned release. Covers topic, service, and action operations; Base64, PNG, CBOR and CBOR-RAW encodings; fragmentation; interface type notation; and default QoS settings for publishers and subscribers. |
 
 ## Table of Contents <!-- omit in toc -->
 
