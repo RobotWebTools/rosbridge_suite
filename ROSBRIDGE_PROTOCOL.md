@@ -18,24 +18,26 @@ The default server implementation uses WebSockets and separates message parsing 
   - [3.4 CBOR encoding ( _cbor_ )](#34-cbor-encoding--cbor-)
   - [3.5 CBOR-RAW encoding ( _cbor-raw_ )](#35-cbor-raw-encoding--cbor-raw-)
 - [4. Operation specifications](#4-operation-specifications)
-  - [4.1 Topic operations](#41-topic-operations)
-    - [4.1.1 advertise (C → S)](#411-advertise-c--s)
-    - [4.1.2 unadvertise (C → S)](#412-unadvertise-c--s)
-    - [4.1.3 publish (C ↔ S)](#413-publish-c--s)
-    - [4.1.4 subscribe (C → S)](#414-subscribe-c--s)
-    - [4.1.5 unsubscribe (C → S)](#415-unsubscribe-c--s)
-  - [4.2 Service operations](#42-service-operations)
-    - [4.2.1 advertise\_service (C → S)](#421-advertise_service-c--s)
-    - [4.2.2 unadvertise\_service (C → S)](#422-unadvertise_service-c--s)
-    - [4.2.3 call\_service (C ↔ S)](#423-call_service-c--s)
-    - [4.2.4 service\_response (C ↔ S)](#424-service_response-c--s)
-  - [4.3 Action operations](#43-action-operations)
-    - [4.3.1 advertise\_action (C → S)](#431-advertise_action-c--s)
-    - [4.3.2 unadvertise\_action (C → S)](#432-unadvertise_action-c--s)
-    - [4.3.3 send\_action\_goal (C ↔ S)](#433-send_action_goal-c--s)
-    - [4.3.4 cancel\_action\_goal (C ↔ S)](#434-cancel_action_goal-c--s)
-    - [4.3.5 action\_feedback (C ↔ S)](#435-action_feedback-c--s)
-    - [4.3.6 action\_result (C ↔ S)](#436-action_result-c--s)
+  - [4.1 Interface type notation](#41-interface-type-notation)
+  - [4.2 Default QoS settings](#42-default-qos-settings)
+  - [4.3 Topic operations](#43-topic-operations)
+    - [4.3.1 advertise (C → S)](#431-advertise-c--s)
+    - [4.3.2 unadvertise (C → S)](#432-unadvertise-c--s)
+    - [4.3.3 publish (C ↔ S)](#433-publish-c--s)
+    - [4.3.4 subscribe (C → S)](#434-subscribe-c--s)
+    - [4.3.5 unsubscribe (C → S)](#435-unsubscribe-c--s)
+  - [4.4 Service operations](#44-service-operations)
+    - [4.4.1 advertise\_service (C → S)](#441-advertise_service-c--s)
+    - [4.4.2 unadvertise\_service (C → S)](#442-unadvertise_service-c--s)
+    - [4.4.3 call\_service (C ↔ S)](#443-call_service-c--s)
+    - [4.4.4 service\_response (C ↔ S)](#444-service_response-c--s)
+  - [4.5 Action operations](#45-action-operations)
+    - [4.5.1 advertise\_action (C → S)](#451-advertise_action-c--s)
+    - [4.5.2 unadvertise\_action (C → S)](#452-unadvertise_action-c--s)
+    - [4.5.3 send\_action\_goal (C ↔ S)](#453-send_action_goal-c--s)
+    - [4.5.4 cancel\_action\_goal (C ↔ S)](#454-cancel_action_goal-c--s)
+    - [4.5.5 action\_feedback (C ↔ S)](#455-action_feedback-c--s)
+    - [4.5.6 action\_result (C ↔ S)](#456-action_result-c--s)
 
 ## 1. Message envelope
 
@@ -208,15 +210,26 @@ For this it is useful to use the `/rosapi/get_topics_and_raw_types` service, whi
 
 ## 4. Operation specifications
 
+### 4.1 Interface type notation
+
 Several operations accept a `type` field that identifies a ROS interface type.
 The full form is `package_name/category/TypeName`, where `category` is `msg`, `srv`, or `action` depending on the interface kind.
 For example: `std_msgs/msg/String`, `std_srvs/srv/SetBool`, `nav2_msgs/action/NavigateToPose`.
 
 The `category` component may be omitted, in which case rosbridge will infer it from context (e.g. `std_msgs/String`, `std_srvs/SetBool`).
 
-### 4.1 Topic operations
+### 4.2 Default QoS settings
 
-#### 4.1.1 advertise (C → S)
+Publishers created by rosbridge use reliable reliability and transient local durability, with a queue depth equal to the `queue_size` parameter (default `100`).
+
+Subscribers created by rosbridge attempt to match the QoS of existing publishers on the topic.
+When no publishers are present, the subscriber defaults to best-effort reliability and volatile durability, with a queue depth of `10`.
+If all existing publishers use transient local durability, the subscriber switches to transient local durability and reliable reliability.
+If any existing publisher uses best-effort reliability, the subscriber uses best-effort reliability.
+
+### 4.3 Topic operations
+
+#### 4.3.1 advertise (C → S)
 
 Register the client as a publisher on a topic. This allows the server to track which clients are publishing on which topics, and to establish the topic with the correct type if it does not already exist.
 
@@ -239,7 +252,7 @@ Current limitations:
 - The protocol spawns only one publisher per topic, so if multiple clients advertise the same topic, they will share the same publisher and its associated QoS settings.
   Only the first advertisement will determine the QoS settings for that topic.
 
-#### 4.1.2 unadvertise (C → S)
+#### 4.3.2 unadvertise (C → S)
 
 Unregister advertisement of a topic for the client.
 
@@ -255,7 +268,7 @@ This operation fails if either of the following is true:
 - The client has already unregistered all advertisements for the topic.
 - The `id` provided does not match any existing advertisement by this client for the topic.
 
-#### 4.1.3 publish (C ↔ S)
+#### 4.3.3 publish (C ↔ S)
 
 Publish a message on a topic.
 
@@ -293,7 +306,7 @@ Special cases for how the server handles the `msg` field:
 The server sends a `publish` message to forward an incoming ROS topic message to a subscribed client.
 This happens when a message is received on a topic that the client has previously subscribed to via the `subscribe` operation.
 
-#### 4.1.4 subscribe (C → S)
+#### 4.3.4 subscribe (C → S)
 
 Register a subscription to a topic to receive messages published on that topic.
 
@@ -323,7 +336,7 @@ If the queue gets full, the oldest message is removed and replaced by the newest
 If a client has multiple subscriptions to the same topic, then messages are sent at the lowest `throttle_rate`, with the lowest `fragment_size`, and lowest `queue_length`.
 It is recommended that the client provides IDs for its subscriptions to enable rosbridge to effectively choose the appropriate fragmentation size and publishing rate.
 
-#### 4.1.5 unsubscribe (C → S)
+#### 4.3.5 unsubscribe (C → S)
 
 Unsubscribe from a topic to stop receiving updates.
 
@@ -339,9 +352,9 @@ The operation fails if either of the following is true:
 - The client has already unregistered all subscriptions for the topic.
 - The `id` provided does not match any existing subscription by this client for the topic.
 
-### 4.2 Service operations
+### 4.4 Service operations
 
-#### 4.2.1 advertise_service (C → S)
+#### 4.4.1 advertise_service (C → S)
 
 Advertise an external service server. Requests come to the client via `call_service`.
 
@@ -355,7 +368,7 @@ The operation fails if the type specified cannot be resolved.
 
 When a client advertises the same service a second time, the previous advertisement is replaced with the new one.
 
-#### 4.2.2 unadvertise_service (C → S)
+#### 4.4.2 unadvertise_service (C → S)
 
 Stop advertising an external ROS service server.
 
@@ -366,7 +379,7 @@ Stop advertising an external ROS service server.
 
 The operation fails if the client has not previously advertised the service, or has already unadvertised the service.
 
-#### 4.2.3 call_service (C ↔ S)
+#### 4.4.3 call_service (C ↔ S)
 
 Invoke a service.
 
@@ -386,7 +399,7 @@ When a client sends a `call_service` message, the operation fails if either of t
 
 When a server sends a `call_service` message to the client, it always contains a unique `id` field, which the client must include in the corresponding `service_response` message.
 
-#### 4.2.4 service_response (C ↔ S)
+#### 4.4.4 service_response (C ↔ S)
 
 Return a service response.
 
@@ -404,9 +417,9 @@ When a client sends a `service_response` message, the operation fails if any of 
 - The `id` field is missing or does not match any existing service call for this client.
 - The `values` do not conform to the service response message definition when `result` is `true`.
 
-### 4.3 Action operations
+### 4.5 Action operations
 
-#### 4.3.1 advertise_action (C → S)
+#### 4.5.1 advertise_action (C → S)
 
 Advertise an external ROS action server.
 
@@ -420,7 +433,7 @@ The operation fails if the type specified cannot be resolved.
 
 When a client advertises the same action a second time, the previous advertisement is replaced with the new one.
 
-#### 4.3.2 unadvertise_action (C → S)
+#### 4.5.2 unadvertise_action (C → S)
 
 Stop advertising an external ROS action server.
 
@@ -431,7 +444,7 @@ Stop advertising an external ROS action server.
 
 The operation fails if the client has not previously advertised the action, or has already unadvertised the action.
 
-#### 4.3.3 send_action_goal (C ↔ S)
+#### 4.5.3 send_action_goal (C ↔ S)
 
 Send an action goal.
 
@@ -450,7 +463,7 @@ When a client sends a `send_action_goal` message, the operation fails if either 
 - No action servers have been advertised for the specified action.
 - The `args` do not conform to the action goal type.
 
-#### 4.3.4 cancel_action_goal (C ↔ S)
+#### 4.5.4 cancel_action_goal (C ↔ S)
 
 Cancel an action goal.
 
@@ -467,7 +480,7 @@ When a client sends the `cancel_action_goal` message, the operation fails if eit
 - The `id` provided does not match any existing goal by this client for the action.
 - The goal has already completed.
 
-#### 4.3.5 action_feedback (C ↔ S)
+#### 4.5.5 action_feedback (C ↔ S)
 
 Report action feedback.
 
@@ -483,7 +496,7 @@ When a client sends an `action_feedback` message, the operation fails if any of 
 - The `id` field is missing or does not match any existing goal by this client.
 - The `values` do not conform to the feedback message definition of the action.
 
-#### 4.3.6 action_result (C ↔ S)
+#### 4.5.6 action_result (C ↔ S)
 
 Report an action result.
 
