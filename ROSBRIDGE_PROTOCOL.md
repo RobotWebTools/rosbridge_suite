@@ -9,6 +9,9 @@ The default server implementation uses WebSockets and separates message parsing 
 
 ## Changelog <!-- omit in toc -->
 
+The version number advances only when there is a client-facing change to the protocol – a new operation, a change in message semantics, a new required or optional field, or a change in server behavior observable by clients.
+Editorial improvements, clarifications, and corrections to the document text do not increment the version; those changes are tracked in the repository history.
+
 | Version | Summary |
 |---------|---------|
 | 2.0 | Initial versioned release. Covers topic, service, and action operations; Base64, PNG, CBOR and CBOR-RAW encodings; fragmentation; interface type notation; and default QoS settings for publishers and subscribers. |
