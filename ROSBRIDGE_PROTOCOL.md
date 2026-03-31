@@ -193,7 +193,7 @@ This can be useful in several cases:
 - Your application already knows how to parse raw ROS 2 message data or data stored in ROS 2 bag files,
   which means that you can use consistent code paths for both recorded and live messages.
 - You want to parse messages as late as possible, or in parallel, e.g. only in the thread or WebWorker that cares about the message.
-  Delaying the parsing of the message means that moving or copying the message to the thread is cheaper when its in binary form, since no serialization between threads is necessary.
+  Delaying the parsing of the message means that moving or copying the message to the thread is cheaper when it's in binary form, since no serialization between threads is necessary.
 - You only care about part of the message, and don't need to parse the rest of it.
 - You really care about performance; no conversion between the ROS 2 binary message format and CBOR is done in the rosbridge server.
 
@@ -469,7 +469,7 @@ Report action feedback.
 | `action` | required | string | The name of the action this feedback is for. |
 | `values` | required | object | The feedback values. Must conform to the feedback message definition of the action. |
 
-When a client sends a `action_feedback` message, the operation fails if any of the following is true:
+When a client sends an `action_feedback` message, the operation fails if any of the following is true:
 
 - The `id` field is missing or does not match any existing goal by this client.
 - The `values` do not conform to the feedback message definition of the action.
