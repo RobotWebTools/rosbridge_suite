@@ -342,6 +342,10 @@ Advertise an external service server. Requests come to the client via `call_serv
 | `service` | required | string | The name of the service to advertise. |
 | `type` | required | string | The advertised service type. |
 
+The operation fails if the type specified cannot be resolved.
+
+When a client advertises the same service a second time, the previous advertisement is replaced with the new one.
+
 #### 4.2.2 unadvertise_service (C → S)
 
 Stop advertising an external ROS service server.
@@ -351,6 +355,8 @@ Stop advertising an external ROS service server.
 | `op` | required | string | Must be `"unadvertise_service"` |
 | `service` | required | string | The name of the service to unadvertise. |
 
+The operation fails if the client has not previously advertised the service, or has already unadvertised the service.
+
 #### 4.2.3 call_service (C ↔ S)
 
 Invoke a service.
@@ -358,11 +364,17 @@ Invoke a service.
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
 | `op` | required | string | Must be `"call_service"` |
-| `id` | optional | string | An ID to associate with this service call. Will be included in the response. |
+| `id` | required if S → C | string | An ID to associate with this service call. Will be included in the response. |
 | `service` | required | string | The name of the service to call. |
 | `args` | optional | object or list | The arguments to pass to the service. Can be an object with message fields or a list of field values in the order they appear in the service request definition. |
 | `fragment_size` | optional | integer | (only C → S) The maximum size (in bytes) a message can reach before it is fragmented. |
 | `timeout` | optional | float | (only C → S) The time, in seconds, to wait for a response from the server. |
+
+When a client sends a `call_service` message, the operation fails if either of the following is true:
+- No service servers have been advertised for the specified service.
+- The `args` do not conform to the service request type.
+
+When a server sends a `call_service` message to the client, it always contains a unique `id` field, which the client must include in the corresponding `service_response` message.
 
 #### 4.2.4 service_response (C ↔ S)
 
@@ -371,10 +383,15 @@ Return a service response.
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
 | `op` | required | string | Must be `"service_response"` |
-| `id` | optional | string | An ID to associate with this service response. Will match the ID of the corresponding service call if it was provided. |
+| `id` | required if C → S | string | An ID to associate with this service response. Will match the ID of the corresponding service call if it was provided. |
 | `service` | required | string | The name of the service that was called. |
-| `values` | required | object or string | The return values from the service or an error message if the service call failed. |
-| `result` | required | boolean | The result of the service call. `true` indicates success, `false` indicates failure. |
+| `values` | conditional | object or string | When `result` is `true`, this field is **required** and must be an object containing the service's result values (conforming to the service's result message definition). When `result` is `false`, this field is **optional** and, if present, is typically a string error message. |
+| `result` | required | boolean | The result of the service call. `true` indicates success (a structured `values` object is required), `false` indicates failure (an error may be conveyed via `values` or other means) |
+
+When a client sends a `service_response` message, the operation fails if any of the following is true:
+- The service has not been advertised by the client.
+- The `id` field is missing or does not match any existing service call for this client.
+- The `values` do not conform to the service response message definition when `result` is `true`.
 
 ### 4.3 Action operations
 
@@ -388,6 +405,10 @@ Advertise an external ROS action server.
 | `action` | required | string | The name of the action to advertise. |
 | `type` | required | string | The advertised action type. |
 
+The operation fails if the type specified cannot be resolved.
+
+When a client advertises the same action a second time, the previous advertisement is replaced with the new one.
+
 #### 4.3.2 unadvertise_action (C → S)
 
 Stop advertising an external ROS action server.
@@ -397,6 +418,8 @@ Stop advertising an external ROS action server.
 | `op` | required | string | Must be `"unadvertise_action"` |
 | `action` | required | string | The name of the action to unadvertise. |
 
+The operation fails if the client has not previously advertised the action, or has already unadvertised the action.
+
 #### 4.3.3 send_action_goal (C ↔ S)
 
 Send an action goal.
@@ -404,12 +427,16 @@ Send an action goal.
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
 | `op` | required | string | Must be `"send_action_goal"` |
-| `id` | optional | string | An ID to associate with this goal. Will be included in feedback and result messages related to this goal. |
+| `id` | required if S → C | string | An ID to associate with this goal. Will be included in feedback and result messages related to this goal. |
 | `action` | required | string | The name of the action to send a goal to. |
 | `action_type` | required | string | The action type. |
 | `args` | optional | object or list | The arguments to pass to the action goal. Can be an object with message fields or a list of field values in the order they appear in the action goal definition. |
 | `feedback` | optional | boolean | Whether to send feedback messages for this goal. Defaults to `false`. |
 | `fragment_size` | optional | integer | (only C → S) The maximum size (in bytes) a message can reach before it is fragmented. |
+
+When a client sends a `send_action_goal` message, the operation fails if either of the following is true:
+- No action servers have been advertised for the specified action.
+- The `args` do not conform to the action goal type.
 
 #### 4.3.4 cancel_action_goal (C ↔ S)
 
@@ -421,6 +448,12 @@ Cancel an action goal.
 | `id` | required | string | An ID to identify which goal to cancel. Must match the ID of an already in-progress goal. |
 | `action` | required | string | The name of the action to cancel a goal for. |
 
+When a client sends the `cancel_action_goal` message, the operation fails if either of the following is true:
+- The client has not previously sent a goal for the action.
+- The client has already cancelled the goal.
+- The `id` provided does not match any existing goal by this client for the action.
+- The goal has already completed.
+
 #### 4.3.5 action_feedback (C ↔ S)
 
 Report action feedback.
@@ -428,9 +461,13 @@ Report action feedback.
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
 | `op` | required | string | Must be `"action_feedback"` |
-| `id` | required | string | An ID to identify which goal this feedback is for. Must match the ID of an already in-progress goal. |
+| `id` | required if C → S | string | An ID to identify which goal this feedback is for. Must match the ID of an already in-progress goal. |
 | `action` | required | string | The name of the action this feedback is for. |
 | `values` | required | object | The feedback values. Must conform to the feedback message definition of the action. |
+
+When a client sends a `action_feedback` message, the operation fails if any of the following is true:
+- The `id` field is missing or does not match any existing goal by this client.
+- The `values` do not conform to the feedback message definition of the action.
 
 #### 4.3.6 action_result (C ↔ S)
 
@@ -439,11 +476,17 @@ Report an action result.
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
 | `op` | required | string | Must be `"action_result"` |
-| `id` | required | string | An ID to identify which goal this result is for. Must match the ID of an already in-progress goal. |
+| `id` | required if C → S | string | An ID to identify which goal this result is for. Must match the ID of an already in-progress goal. |
 | `action` | required | string | The name of the action this result is for. |
-| `values` | conditional | object or string | When `result` is `true`, this field is **required** and must be an object containing the action's result values (conforming to the action's result message definition). When `result` is `false`, this field is **optional** and, if present, is typically a string error message; structured result objects MAY be ignored by some implementations. |
+| `values` | conditional | object or string | When `result` is `true`, this field is **required** and must be an object containing the action's result values (conforming to the action's result message definition). When `result` is `false`, this field is **optional** and, if present, is typically a string error message. |
 | `status` | required | integer | The status of the action. This matches the enumeration in the [`action_msgs/msg/GoalStatus`](https://docs.ros2.org/latest/api/action_msgs/msg/GoalStatus.html) ROS message. |
-| `result` | required | boolean | Indicates whether the action completed successfully. `true` indicates success (a structured `values` object is required), `false` indicates failure (an error may instead be conveyed via `values` or other means, and structured result values might not be consumed). |
+| `result` | required | boolean | Indicates whether the action completed successfully. `true` indicates success (a structured `values` object is required), `false` indicates failure (an error may be conveyed via `values` or other means). |
+
+When a client sends an `action_result` message, the operation fails if any of the following is true:
+- The client has not previously sent a goal for the action.
+- The client has already sent a result for the goal.
+- The `id` provided does not match any existing goal by this client for the action.
+- The `values` field is missing or does not conform to the action result message definition when `result` is `true`.
 
 [cbor]: https://tools.ietf.org/html/rfc7049
 [draft typed array tags]: https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00
