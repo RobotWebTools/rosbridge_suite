@@ -176,7 +176,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         """
         Schedule subscription destruction on the executor thread.
 
-        Used to avoids race conditions between executor and non-executor threads.
+        Used to avoid race conditions between executor and non-executor threads.
 
         Args:
             subscription (Subscription[ROSMessageT]): Subscription to destroy
