@@ -127,12 +127,8 @@ class Advertise(Capability):
         topic: str = message["topic"]
         msg_type: str = message["type"]
         latch: bool = message.get("latch", False)
-<<<<<<< HEAD
-        qos: QoSProfile | None = ExtractQoSProfile(message.get("qos"))
-=======
         queue_size: int | None = message.get("queue_size")
         qos: QoSProfile | None = extract_qos_profile(message.get("qos"))
->>>>>>> ros2
 
         if self.topics_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
@@ -157,14 +153,6 @@ class Advertise(Capability):
         # Create the Registration if one doesn't yet exist
         if topic not in self.protocol.topic_registrations:
             client_id = self.protocol.client_id
-<<<<<<< HEAD
-            self._registrations[topic] = Registration(client_id, topic, self.protocol.node_handle)
-
-        # Register, propagating any exceptions
-        self._registrations[topic].register_advertisement(
-            msg_type=msg_type, adv_id=aid, latch=latch, qos=qos
-        )
-=======
             registration = Registration(client_id, topic, self.protocol.node_handle)
             registration.register_advertisement(msg_type, adv_id, latch, queue_size, qos)
             self.protocol.topic_registrations[topic] = registration
@@ -173,7 +161,6 @@ class Advertise(Capability):
             self.protocol.topic_registrations[topic].register_advertisement(
                 msg_type, adv_id, latch, queue_size, qos
             )
->>>>>>> ros2
 
     def unadvertise(self, message: dict[str, Any]) -> None:
         # Pull out the ID

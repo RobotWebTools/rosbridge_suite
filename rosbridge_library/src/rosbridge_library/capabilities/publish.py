@@ -54,6 +54,7 @@ class Publish(Capability):
         (False, "latch", bool),
         (False, "queue_size", int),
         (False, "msg", dict),
+        (False, "qos", QoSProfile),
     )
 
     parameter_names = ("topics_glob",)
