@@ -41,7 +41,7 @@ from rclpy.qos import QoSProfile
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.pngcompression import encode as encode_png
-from rosbridge_library.internal.qos_extraction import ExtractQoSProfile
+from rosbridge_library.internal.qos_extraction import extract_qos_profile
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
 from rosbridge_library.internal.type_support import ROSMessageT
@@ -132,7 +132,7 @@ class Subscription(Generic[ROSMessageT]):
         :param msg_type: The type of the message to subscribe to
         :param throttle_rate: The minimum time (in ms) allowed between messages
             being sent. If multiple subscriptions, the lower of these is used
-        :param queue_length: For backward compatability. Used only if qos is unset.
+        :param queue_length: For backward compatibility. Used only if qos is unset.
         :param fragment_size: None if no fragmentation, or the maximum length of
             allowed outgoing messages
         :param compression: "none" if no compression, or some other value if
@@ -315,7 +315,7 @@ class Subscribe(Capability):
             "fragment_size": msg.get("fragment_size"),
             "queue_length": msg.get("queue_length", 0),
             "compression": msg.get("compression", "none"),
-            "qos": ExtractQoSProfile(msg.get("qos")),
+            "qos": extract_qos_profile(msg.get("qos")),
         }
         self._subscriptions[topic].subscribe(**subscribe_args)
 

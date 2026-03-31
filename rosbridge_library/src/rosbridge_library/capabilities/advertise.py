@@ -38,7 +38,7 @@ from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
-from rosbridge_library.internal.qos_extraction import ExtractQoSProfile
+from rosbridge_library.internal.qos_extraction import extract_qos_profile
 
 if TYPE_CHECKING:
     from rclpy.node import Node
@@ -70,9 +70,10 @@ class Registration:
 
     def register_advertisement(
         self,
-        msg_type: str,
+        msg_type: str | None,
         adv_id: str | None = None,
         latch: bool = False,
+        queue_size: int | None = None,
         qos: QoSProfile | None = None,
     ) -> None:
         # Register with the publisher manager, propagating any exception
@@ -82,6 +83,7 @@ class Registration:
             self.node_handle,
             msg_type=msg_type,
             latch=latch,
+            queue_size=queue_size,
             qos=qos,
         )
 
@@ -117,17 +119,20 @@ class Advertise(Capability):
         protocol.register_operation("advertise", self.advertise)
         protocol.register_operation("unadvertise", self.unadvertise)
 
-        self._registrations: dict[str, Registration] = {}
-
     def advertise(self, message: dict[str, Any]) -> None:
-        # Pull out the ID
-        aid = message.get("id")
+        # Pull out the ID of the advertisement, if it exists
+        adv_id = message.get("id")
 
         self.basic_type_check(message, self.advertise_msg_fields)
         topic: str = message["topic"]
         msg_type: str = message["type"]
         latch: bool = message.get("latch", False)
+<<<<<<< HEAD
         qos: QoSProfile | None = ExtractQoSProfile(message.get("qos"))
+=======
+        queue_size: int | None = message.get("queue_size")
+        qos: QoSProfile | None = extract_qos_profile(message.get("qos"))
+>>>>>>> ros2
 
         if self.topics_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
@@ -150,14 +155,25 @@ class Advertise(Capability):
             self.protocol.log("debug", "No topic security glob, not checking advertisement.")
 
         # Create the Registration if one doesn't yet exist
-        if topic not in self._registrations:
+        if topic not in self.protocol.topic_registrations:
             client_id = self.protocol.client_id
+<<<<<<< HEAD
             self._registrations[topic] = Registration(client_id, topic, self.protocol.node_handle)
 
         # Register, propagating any exceptions
         self._registrations[topic].register_advertisement(
             msg_type=msg_type, adv_id=aid, latch=latch, qos=qos
         )
+=======
+            registration = Registration(client_id, topic, self.protocol.node_handle)
+            registration.register_advertisement(msg_type, adv_id, latch, queue_size, qos)
+            self.protocol.topic_registrations[topic] = registration
+        else:
+            # Register, propagating any exceptions
+            self.protocol.topic_registrations[topic].register_advertisement(
+                msg_type, adv_id, latch, queue_size, qos
+            )
+>>>>>>> ros2
 
     def unadvertise(self, message: dict[str, Any]) -> None:
         # Pull out the ID
@@ -187,18 +203,18 @@ class Advertise(Capability):
             self.protocol.log("debug", "No topic security glob, not checking unadvertisement.")
 
         # Now unadvertise the topic
-        if topic not in self._registrations:
+        if topic not in self.protocol.topic_registrations:
             return
-        self._registrations[topic].unregister_advertisement(aid)
+        self.protocol.topic_registrations[topic].unregister_advertisement(aid)
 
         # Check if the registration is now finished with
-        if self._registrations[topic].is_empty():
-            self._registrations[topic].unregister()
-            del self._registrations[topic]
+        if self.protocol.topic_registrations[topic].is_empty():
+            self.protocol.topic_registrations[topic].unregister()
+            del self.protocol.topic_registrations[topic]
 
     def finish(self) -> None:
-        for registration in self._registrations.values():
+        for registration in self.protocol.topic_registrations.values():
             registration.unregister()
-        self._registrations.clear()
+        self.protocol.topic_registrations.clear()
         self.protocol.unregister_operation("advertise")
         self.protocol.unregister_operation("unadvertise")

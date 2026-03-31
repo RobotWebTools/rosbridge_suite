@@ -17,7 +17,7 @@ from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
 )
-from rosbridge_library.internal.qos_extraction import ExtractQoSProfile
+from rosbridge_library.internal.qos_extraction import extract_qos_profile
 from rosbridge_library.protocol import Protocol
 
 Qos_compatible_pub = {
@@ -89,10 +89,10 @@ class TestQoS(unittest.TestCase):
         topic = "/test_publish_incompatible_qos"
 
         pub_qos_obj = Qos_incompatible_pub
-        _ = ExtractQoSProfile(pub_qos_obj)
+        _ = extract_qos_profile(pub_qos_obj)
         pub_qos: QoSProfile = _ if _ is not None else QoSProfile(depth=10)
         sub_qos_obj = Qos_incompatible_sub
-        _ = ExtractQoSProfile(sub_qos_obj)
+        _ = extract_qos_profile(sub_qos_obj)
         sub_qos: QoSProfile = _ if _ is not None else QoSProfile(depth=10)
 
         self.assertIsNotNone(pub_qos)
@@ -107,8 +107,36 @@ class TestQoS(unittest.TestCase):
 
         msg = {"op": "publish", "msg_type": String, "topic": topic, "qos": pub_qos_obj}
         pub.publish(msg)
+
         time.sleep(0.1)
         self.assertIsNone(received["msg"])
+
+    def test_backward_compatibility(self) -> None:
+        proto = Protocol("hello", self.node)
+        pub = Publish(proto)
+        topic = "/test_backward_compatibility"
+        msg = {"data": "test if old publish works"}
+
+        received: dict[str, Any] = {"msg": None}
+
+        def cb(msg: String) -> None:
+            received["msg"] = msg
+
+        self.node.create_subscription(String, topic, cb, 100)
+
+        pub_msg = loads(
+            dumps(
+                {
+                    "op": "publish",
+                    "topic": topic,
+                    "msg": msg,
+                    "queue_size": 50,
+                }
+            )
+        )
+        pub.publish(pub_msg)
+        time.sleep(0.1)
+        self.assertEqual(received["msg"].data, msg["data"])
 
     def test_publish_qos_works(self) -> None:
         proto = Protocol("hello", self.node)
@@ -116,10 +144,10 @@ class TestQoS(unittest.TestCase):
         topic = "/test_publish_qos_works"
         msg = {"data": "test publish qos works"}
         pub_qos_obj = Qos_compatible_pub
-        _ = ExtractQoSProfile(pub_qos_obj)
+        _ = extract_qos_profile(pub_qos_obj)
         pub_qos: QoSProfile = _ if _ is not None else QoSProfile(depth=10)
         sub_qos_obj = Qos_compatible_sub
-        _ = ExtractQoSProfile(sub_qos_obj)
+        _ = extract_qos_profile(sub_qos_obj)
         sub_qos: QoSProfile = _ if _ is not None else QoSProfile(depth=10)
 
         self.assertIsNotNone(pub_qos)

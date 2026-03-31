@@ -1,5 +1,6 @@
 from typing import Any
 
+from rclpy.duration import Duration
 from rclpy.qos import (
     DurabilityPolicy,
     HistoryPolicy,
@@ -7,7 +8,6 @@ from rclpy.qos import (
     QoSProfile,
     ReliabilityPolicy,
 )
-from rclpy.time import Duration
 
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
@@ -43,7 +43,7 @@ ReliabilityPolicies = [
 ]
 
 
-def ExtractDuration(json_duration: list | str) -> Duration:
+def extract_duration(json_duration: list | str) -> Duration:
     if type(json_duration) is str:
         _ = json_duration.lower()
         if _ == "unspecified":
@@ -58,12 +58,13 @@ def ExtractDuration(json_duration: list | str) -> Duration:
     return Duration(seconds=0, nanoseconds=0)
 
 
-def ExtractQoSProfile(qosobj: dict[str, Any] | int | None) -> QoSProfile | None:
+def extract_qos_profile(qosobj: dict[str, Any] | int | None) -> QoSProfile | None:
     qos: QoSProfile | int | None = None
     if type(qosobj) is int:
         qos = QoSProfile(depth=qosobj)
     elif type(qosobj) is dict:
         _ = qosobj.get("history")
+        history: int | HistoryPolicy = -1
         if type(_) is str:
             _ = _.lower()
             history = HistoryPolicies.index(_)
@@ -74,6 +75,7 @@ def ExtractQoSProfile(qosobj: dict[str, Any] | int | None) -> QoSProfile | None:
         depth = _
 
         _ = qosobj.get("reliability")
+        reliability: int | ReliabilityPolicy = -1
         if type(_) is str:
             _ = _.lower()
             reliability = ReliabilityPolicies.index(_)
@@ -81,6 +83,7 @@ def ExtractQoSProfile(qosobj: dict[str, Any] | int | None) -> QoSProfile | None:
             reliability = _ if _ is not None else ReliabilityPolicy.SYSTEM_DEFAULT
 
         _ = qosobj.get("durability")
+        durability: int | DurabilityPolicy = -1
         if type(_) is str:
             _ = _.lower()
             durability = DurabilityPolicies.index(_)
@@ -88,12 +91,13 @@ def ExtractQoSProfile(qosobj: dict[str, Any] | int | None) -> QoSProfile | None:
             durability = _ if _ is not None else DurabilityPolicy.SYSTEM_DEFAULT
 
         _ = qosobj.get("deadline", [])
-        deadline = ExtractDuration(_)
+        deadline = extract_duration(_)
 
         _ = qosobj.get("lifespan", [])
-        lifespan = ExtractDuration(_)
+        lifespan = extract_duration(_)
 
         _ = qosobj.get("liveliness")
+        liveliness: int | LivelinessPolicy = -1
         if type(_) is str:
             _ = _.lower()
             liveliness = LivelinessPolicies.index(_)
@@ -101,7 +105,7 @@ def ExtractQoSProfile(qosobj: dict[str, Any] | int | None) -> QoSProfile | None:
             liveliness = _ if _ is not None else LivelinessPolicy.SYSTEM_DEFAULT
 
         _ = qosobj.get("liveliness_lease_duration", [])
-        liveliness_lease_duration = ExtractDuration(_)
+        liveliness_lease_duration = extract_duration(_)
 
         _ = qosobj.get("avoid_ros_namespace_conventions", False)
         avoid_ros_namespace_conventions = _

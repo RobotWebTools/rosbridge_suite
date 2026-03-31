@@ -66,8 +66,8 @@ SERVER_PARAMETERS = (
     ("certfile", str, "", "Path to the SSL certificate file."),
     ("keyfile", str, "", "Path to the SSL key file."),
     # Tornado settings
-    ("websocket_ping_interval", float, 0, "Interval in seconds for WebSocket ping messages."),
-    ("websocket_ping_timeout", float, 30, "Timeout in seconds for WebSocket ping responses."),
+    ("websocket_ping_interval", float, 0.0, "Interval in seconds for WebSocket ping messages."),
+    ("websocket_ping_timeout", float, 30.0, "Timeout in seconds for WebSocket ping responses."),
     # Websocket handler parameters
     ("use_compression", bool, False, "Enable compression for WebSocket messages."),
     # Executor parameters
@@ -84,14 +84,6 @@ PROTOCOL_PARAMETERS = (
         10.0,
         "How long to wait before unregistering a client from publisher after unadvertising publisher.",
     ),
-    (
-        "binary_encoder_type",
-        str,
-        "default",
-        "Encoder used for encoding binary data in messages. Available: 'default', 'b64', `bson'. "
-        "Ignored if bson_only_mode is True.",
-    ),
-    ("bson_only_mode", bool, False, "Use BSON only mode for messages."),
     ("topics_glob", str, "", "Glob patterns for topics publish/subscribe."),
     ("services_glob", str, "", "Glob patterns for services call/advertise."),
     ("actions_glob", str, "", "Glob patterns for actions send/advertise."),

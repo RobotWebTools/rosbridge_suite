@@ -17,6 +17,8 @@
   <arg name="unregister_timeout" default="10.0" />
 
   <arg name="use_compression" default="false" />
+  <arg name="websocket_ping_interval" default="0.0" />
+  <arg name="websocket_ping_timeout" default="30.0" />
   <arg name="call_services_in_new_thread" default="true" />
   <arg name="default_call_service_timeout" default="5.0" />
   <arg name="send_action_goals_in_new_thread" default="true" />
@@ -25,11 +27,8 @@
   <arg name="services_glob" default="" />
   <arg name="params_glob" default="" />
   <arg name="params_timeout" default="5.0" />
-  <arg name="bson_only_mode" default="false" />
 
   <arg name="respawn" default="false"/>
-
-  <arg unless="$(var bson_only_mode)" name="binary_encoder" default="default"/>
 
   <group if="$(var ssl)">
     <node name="rosbridge_websocket" namespace="$(var namespace)" pkg="rosbridge_server" exec="rosbridge_websocket" output="screen" respawn="$(var respawn)" >
@@ -40,6 +39,8 @@
       <param name="url_path" value="$(var url_path)"/>
       <param name="use_events_executor" value="$(var use_events_executor)"/>
       <param name="retry_startup_delay" value="$(var retry_startup_delay)"/>
+      <param name="websocket_ping_interval" value="$(var websocket_ping_interval)"/>
+      <param name="websocket_ping_timeout" value="$(var websocket_ping_timeout)"/>
       <param name="fragment_timeout" value="$(var fragment_timeout)"/>
       <param name="delay_between_messages" value="$(var delay_between_messages)"/>
       <param name="max_message_size" value="$(var max_message_size)"/>
@@ -62,6 +63,8 @@
       <param name="url_path" value="$(var url_path)"/>
       <param name="use_events_executor" value="$(var use_events_executor)"/>
       <param name="retry_startup_delay" value="$(var retry_startup_delay)"/>
+      <param name="websocket_ping_interval" value="$(var websocket_ping_interval)"/>
+      <param name="websocket_ping_timeout" value="$(var websocket_ping_timeout)"/>
       <param name="fragment_timeout" value="$(var fragment_timeout)"/>
       <param name="delay_between_messages" value="$(var delay_between_messages)"/>
       <param name="max_message_size" value="$(var max_message_size)"/>
@@ -74,8 +77,6 @@
       <param name="topics_glob" value="$(var topics_glob)"/>
       <param name="services_glob" value="$(var services_glob)"/>
       <param name="params_glob" value="$(var params_glob)"/>
-
-      <param name="bson_only_mode" value="$(var bson_only_mode)"/>
     </node>
   </group>
 

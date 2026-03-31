@@ -279,12 +279,14 @@ If you wish to advertise that you are or will be publishing a topic, then use th
   (optional) "id": <string>,
   "topic": <string>,
   "type": <string>,
+  (optional) "queue_size": <int>, 
   (optional) "qos": <[string, any]>
 }
 ```
 
  * **topic** – the string name of the topic to advertise
  * **type** – the string type to advertise for the topic
+ * **queue_size** - exists for backwards compatibility. Is used as qos.depth if qos is not provided, otherwise ignored.
  * **qos** - the qos profile to use, as a nested object. Defaults to a "best attempt" solution.
     (See section 4.7)
 
@@ -374,6 +376,8 @@ which to send messages.
  * **topic** – the name of the topic to subscribe to
  * **throttle_rate** – the minimum amount of time (in ms) that must elapse
     between messages being sent. Defaults to 0
+ * **queue_length** – outaded. Is used only if qos is unset, where it replaces
+    the default depth policy.
  * **id** – if specified, then this specific subscription can be unsubscribed
     by referencing the ID.
  * **fragment_size** – the maximum size that a message can take before it is to

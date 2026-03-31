@@ -36,14 +36,15 @@ import time
 from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capabilities.fragmentation import Fragmentation
-from rosbridge_library.internal import message_conversion, publishers
-from rosbridge_library.util import bson, json
+from rosbridge_library.internal import publishers
+from rosbridge_library.util import json
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from rclpy.node import Node
 
+    from rosbridge_library.capabilities.advertise import Registration
     from rosbridge_library.capabilities.advertise_action import AdvertisedActionHandler
     from rosbridge_library.capabilities.advertise_service import AdvertisedServiceHandler
     from rosbridge_library.capability import Capability
@@ -55,17 +56,6 @@ def is_number(s: object) -> bool | None:
         return True
     except ValueError:
         return False
-
-
-def has_binary(obj: object) -> bool:
-    """Return True if obj is a binary or contains a binary attribute."""
-    if isinstance(obj, list):
-        return any(has_binary(item) for item in obj)
-
-    if isinstance(obj, dict):
-        return any(has_binary(obj[item]) for item in obj)
-
-    return isinstance(obj, bson.binary.Binary)
 
 
 class Protocol:
@@ -88,6 +78,9 @@ class Protocol:
     buffer = ""
     old_buffer = ""
     busy = False
+
+    # tracks topics advertised by the client
+    topic_registrations: dict[str, Registration]
     # global list of non-ros advertised services
     external_service_list: dict[str, AdvertisedServiceHandler]
     # global list of non-ros advertised actions
@@ -98,8 +91,6 @@ class Protocol:
     # .. depends on message_size/bandwidth/performance/client_limits/...
     # !! this might be related to (or even be avoided by using) throttle_rate !!
     delay_between_messages: float = 0.0
-    # Use only BSON for the whole communication if the server has been started with bson_only_mode:=True
-    bson_only_mode: bool = False
 
     parameters: dict[str, Any] | None = None
 
@@ -119,16 +110,16 @@ class Protocol:
 
         self.capabilities: list[Capability] = []
         self.operations: dict[str, Callable[[dict[str, Any]], None]] = {}
+        self.topic_registrations = {}
         self.external_service_list = {}
         self.external_action_list = {}
 
         if self.parameters:
-            for param_name in ("max_message_size", "delay_between_messages", "bson_only_mode"):
+            for param_name in ("max_message_size", "delay_between_messages"):
                 if param_name in self.parameters:
                     setattr(self, param_name, self.parameters[param_name])
 
         # Configure internal modules
-        message_conversion.configure(self.parameters)
         publishers.configure(self.parameters)
 
         self.fragment_size = self.max_message_size
@@ -157,47 +148,40 @@ class Protocol:
         # (from first opening bracket "{" to next closing bracket "}")
         # .. this causes Exceptions on "inner" closing brackets --> so I suppressed logging of deserialization errors
         except Exception:
-            if self.bson_only_mode:
-                # Since BSON should be used in conjunction with a network handler that receives exactly one full BSON
-                # message. This will then be passed to self.deserialize and shouldn't cause any exceptions because of
-                # fragmented messages (broken or invalid messages might still be sent tough)
-                self.log("error", "Exception in deserialization of BSON")
+            # TODO: handling of partial/multiple/broken json data in incoming buffer
+            # This way is problematic when json contains nested json-objects
+            # ( e.g. { ... { "config": [0,1,2,3] } ...  } )
+            # If outer json is not fully received, stepping through opening brackets will find { "config" : ... }
+            # as a valid json object and pass this "inner" object to rosbridge and throw away the leading part of
+            # the "outer" object. Solution for now: check for "op"-field. I can still imagine cases where a nested
+            # message (e.g. complete service_response fits into the data field of a fragment..) would cause trouble,
+            # but if a response fits as a whole into a fragment, simply do not pack it into a fragment.
+            #
+            # --> from that follows current limitation:
+            #     fragment data must NOT (!) contain a complete json-object that has an "op-field"
+            #
+            # An alternative solution would be to only check from first opening bracket and have a time out on data
+            # in input buffer (to handle broken data)
+            opening_brackets = [i for i, letter in enumerate(self.buffer) if letter == "{"]
+            closing_brackets = [i for i, letter in enumerate(self.buffer) if letter == "}"]
 
-            else:
-                # TODO: handling of partial/multiple/broken json data in incoming buffer
-                # This way is problematic when json contains nested json-objects
-                # ( e.g. { ... { "config": [0,1,2,3] } ...  } )
-                # If outer json is not fully received, stepping through opening brackets will find { "config" : ... }
-                # as a valid json object and pass this "inner" object to rosbridge and throw away the leading part of
-                # the "outer" object. Solution for now: check for "op"-field. I can still imagine cases where a nested
-                # message (e.g. complete service_response fits into the data field of a fragment..) would cause trouble,
-                # but if a response fits as a whole into a fragment, simply do not pack it into a fragment.
-                #
-                # --> from that follows current limitation:
-                #     fragment data must NOT (!) contain a complete json-object that has an "op-field"
-                #
-                # An alternative solution would be to only check from first opening bracket and have a time out on data
-                # in input buffer (to handle broken data)
-                opening_brackets = [i for i, letter in enumerate(self.buffer) if letter == "{"]
-                closing_brackets = [i for i, letter in enumerate(self.buffer) if letter == "}"]
-
-                for start in opening_brackets:
-                    for end in closing_brackets:
-                        try:
-                            msg = self.deserialize(self.buffer[start : end + 1])
-                            if msg.get("op", None) is not None:
-                                # TODO: check if throwing away leading data like this is okay.. loops look okay..
-                                self.buffer = self.buffer[end + 1 : len(self.buffer)]
-                                # jump out of inner loop if json-decode succeeded
-                                break
-                        except Exception:
-                            # debug json-decode errors with this line
-                            # print e
-                            pass
-                    # if load was successful break outer loop, too.
-                    # No need to check if json begins at a "later" opening bracket.
-                    if msg is not None:
-                        break
+            for start in opening_brackets:
+                for end in closing_brackets:
+                    try:
+                        msg = self.deserialize(self.buffer[start : end + 1])
+                        if msg.get("op", None) is not None:
+                            # TODO: check if throwing away leading data like this is okay.. loops look okay..
+                            self.buffer = self.buffer[end + 1 : len(self.buffer)]
+                            # jump out of inner loop if json-decode succeeded
+                            break
+                    except Exception:
+                        # debug json-decode errors with this line
+                        # print e
+                        pass
+                # if load was successful break outer loop, too.
+                # No need to check if json begins at a "later" opening bracket.
+                if msg is not None:
+                    break
 
         # if decoding of buffer failed .. simply return
         if msg is None:
@@ -255,7 +239,7 @@ class Protocol:
             self.old_buffer = self.buffer
             self.incoming()
 
-    def outgoing(self, message: bson.BSON | bytearray | str, compression: str = "none") -> None:
+    def outgoing(self, message: bytes | str, compression: str = "none") -> None:
         """
         Pass an outgoing message to the client.
 
@@ -278,9 +262,12 @@ class Protocol:
         :param message: A dict of message values to be marshalled and sent
         :param cid: (optional) An associated id
         """
-        serialized = (
-            message if compression in ["cbor", "cbor-raw"] else self.serialize(message, cid)
-        )
+        serialized: bytes | str | None
+        if isinstance(message, bytes):
+            serialized = message
+        else:
+            serialized = self.serialize(message, cid)
+
         if serialized is not None:
             if self.png == "png":
                 # TODO: png compression on outgoing messages
@@ -301,10 +288,7 @@ class Protocol:
             # fragment list not empty -> send fragments
             if fragment_list is not None:
                 for fragment in fragment_list:
-                    if self.bson_only_mode:
-                        self.outgoing(bson.BSON.encode(fragment), compression)
-                    else:
-                        self.outgoing(json.dumps(fragment), compression)
+                    self.outgoing(json.dumps(fragment), compression)
                     # okay to use delay here (sender's send()-function) because rosbridge is sending next request only
                     # to service provider when last one had finished. If this was not the case, this delay would need to
                     # be implemented in service-provider's (meaning message receiver's) send_message()-function in
@@ -326,9 +310,9 @@ class Protocol:
 
     def serialize(
         self,
-        msg: bytearray | bson.BSON | dict[str, Any],
+        msg: dict[str, Any],
         cid: str | None = None,  # noqa: ARG002
-    ) -> bson.BSON | bytearray | str | None:
+    ) -> str | None:
         """
         Turn a dictionary of values into the appropriate wire-level representation.
 
@@ -340,16 +324,12 @@ class Protocol:
         :return: a JSON string representing the dictionary
         """
         try:
-            if isinstance(msg, bytearray):
-                return msg
-            if has_binary(msg) or self.bson_only_mode:
-                return bson.BSON.encode(msg)
             return json.dumps(msg)
         except Exception as e:
             self.log("error", f"Unable to serialize message '{msg}': {e}")
             return None
 
-    def deserialize(self, msg: str | bytes | bytearray, cid: str | None = None) -> dict[str, Any]:  # noqa: ARG002
+    def deserialize(self, msg: str, cid: str | None = None) -> dict[str, Any]:  # noqa: ARG002
         """
         Turn the wire-level representation into a dictionary of values.
 
@@ -361,9 +341,6 @@ class Protocol:
         :return: a dictionary of values
         """
         try:
-            if self.bson_only_mode:
-                bson_message = bson.BSON(msg)
-                return bson_message.decode()
             return json.loads(msg)
         except Exception:
             # if we did try to deserialize the whole buffer, first try to let self.incoming check for multiple/partial

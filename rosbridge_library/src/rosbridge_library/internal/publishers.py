@@ -48,6 +48,7 @@ from rosbridge_library.internal import message_conversion, ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.topics import (
     TopicNotEstablishedException,
+    TopicNotRegisteredException,
     TypeConflictException,
 )
 from rosbridge_library.internal.type_support import (
@@ -74,6 +75,7 @@ class MultiPublisher(Generic[ROSMessageT]):
         node_handle: Node,
         msg_type: str | None = None,
         latched_client_id: str | None = None,
+        queue_size: int | None = None,
         qos: QoSProfile | None = None,
     ) -> None:
         """
@@ -126,18 +128,21 @@ class MultiPublisher(Generic[ROSMessageT]):
 
         # Use a "best attempt" to maintain compatibility is user doesn't set qos
         if qos is None:
-            qos = QoSProfile(
-                depth=100,
-                durability=DurabilityPolicy.TRANSIENT_LOCAL,
-            )
-
-            # For latched clients, no lifespan has to be specified (i.e. latch forever).
-            # Otherwise we want to keep the messages for a second to prevent late-joining subscribers from
-            # missing messages.
-            if latched_client_id is None:
-                qos.lifespan = Duration(seconds=1)
+            if queue_size is not None:
+                qos = QoSProfile(depth=queue_size)
             else:
-                qos.depth = 1
+                qos = QoSProfile(
+                    depth=100,
+                    durability=DurabilityPolicy.TRANSIENT_LOCAL,
+                )
+
+                # For latched clients, no lifespan has to be specified (i.e. latch forever).
+                # Otherwise we want to keep the messages for a second to prevent late-joining subscribers from
+                # missing messages.
+                if latched_client_id is None:
+                    qos.lifespan = Duration(seconds=1)
+                else:
+                    qos.depth = 1
 
         # Create the publisher and associated member variables
         self.clients: dict[str, bool] = {}
@@ -234,6 +239,7 @@ class PublisherManager:
         node_handle: Node,
         msg_type: str | None = None,
         latch: bool = False,
+        queue_size: int | None = None,
         qos: QoSProfile | None = None,
     ) -> None:
         """
@@ -247,6 +253,7 @@ class PublisherManager:
         :param node_handle: Handle to a rclpy node to create the publisher
         :param msg_type: (optional) The type to publish
         :param latch: (optional) Whether to make this publisher latched
+        :param queue_size: (optional) Outdated - use qos parameter instead
         :param qos: (optional) Publisher QoSProfile to use
 
         :raises Exception: exceptions are propagated from the MultiPublisher if there is a problem
@@ -259,6 +266,7 @@ class PublisherManager:
                 node_handle,
                 msg_type=msg_type,
                 latched_client_id=latched_client_id,
+                queue_size=queue_size,
                 qos=qos,
             )
         elif latch and self._publishers[topic].latched_client_id != client_id:
@@ -282,7 +290,8 @@ class PublisherManager:
             self._publishers[topic].verify_type(msg_type)
 
         if qos is not None and not qos_check_compatible(self._publishers[topic].qos_profile, qos):
-            raise InvalidQoSProfileException
+            mess = "Publisher QoS profile is incompatible with existing publishers QoS profiles"
+            raise InvalidQoSProfileException(mess)
 
         self._publishers[topic].register_client(client_id)
 
@@ -325,32 +334,18 @@ class PublisherManager:
         for topic in self._publishers:
             self.unregister(client_id, topic)
 
-    def publish(
-        self,
-        client_id: str,
-        topic: str,
-        msg: dict,
-        node_handle: Node,
-        latch: bool = False,
-        qos: QoSProfile | None = None,
-    ) -> None:
+    def publish(self, topic: str, msg: dict) -> None:
         """
         Publish a message on the given topic.
 
-        Tries to create a publisher on the topic if one does not already exist.
-
-        :param client_id: The ID of the client making this request
         :param topic: The topic to publish the message on
         :param msg: A JSON-like dict of fields and values
-        :param node_handle: Handle to a rclpy node to create the publisher
-        :param latch: (optional) Whether to make this publisher latched
-        :param qos: (optional) QoSProfile to use for this publisher
-
-        :raises Exception: A variety of exceptions are propagated. They can be thrown if there is
-            a problem setting up or getting the publisher, or if the provided msg does not map to
-            the msg class of the publisher.
+        :raises TopicNotRegisteredException: If there is no publisher registered for the given topic
+        :raises Exception: If the provided msg does not conform to the message type of the publisher
+            for the given topic
         """
-        self.register(client_id, topic, node_handle, latch=latch, qos=qos)
+        if topic not in self._publishers:
+            raise TopicNotRegisteredException(topic)
 
         self._publishers[topic].publish(msg)
 
