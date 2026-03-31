@@ -58,6 +58,8 @@ if TYPE_CHECKING:
 class RosbridgeProtocol(Protocol):
     """Adds the handlers for the rosbridge opcodes."""
 
+    PROTOCOL_VERSION: tuple[int, int, int] = (2, 0, 0)
+
     rosbridge_capabilities: tuple[type[Capability], ...] = (
         Advertise,
         Publish,
