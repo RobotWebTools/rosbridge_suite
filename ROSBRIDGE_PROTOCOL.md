@@ -279,7 +279,7 @@ If you wish to advertise that you are or will be publishing a topic, then use th
   (optional) "id": <string>,
   "topic": <string>,
   "type": <string>,
-  (optional) "queue_size": <int>, 
+  (optional) "queue_size": <int>,
   (optional) "qos": <[string, any]>
 }
 ```

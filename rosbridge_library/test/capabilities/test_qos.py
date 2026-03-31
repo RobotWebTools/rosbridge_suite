@@ -131,8 +131,8 @@ class TestQoS(unittest.TestCase):
                     "topic": topic,
                     "msg": msg,
                     "queue_size": 50,
-                }
-            )
+                },
+            ),
         )
         pub.publish(pub_msg)
         time.sleep(0.1)
@@ -167,8 +167,8 @@ class TestQoS(unittest.TestCase):
                     "topic": topic,
                     "msg": msg,
                     "qos": pub_qos_obj,
-                }
-            )
+                },
+            ),
         )
         pub.publish(pub_msg)
         time.sleep(0.1)
