@@ -208,6 +208,12 @@ For this it is useful to use the `/rosapi/get_topics_and_raw_types` service, whi
 
 ## 4. Operation specifications
 
+Several operations accept a `type` field that identifies a ROS interface type.
+The full form is `package_name/category/TypeName`, where `category` is `msg`, `srv`, or `action` depending on the interface kind.
+For example: `std_msgs/msg/String`, `std_srvs/srv/SetBool`, `nav2_msgs/action/NavigateToPose`.
+
+The `category` component may be omitted, in which case rosbridge will infer it from context (e.g. `std_msgs/String`, `std_srvs/SetBool`).
+
 ### 4.1 Topic operations
 
 #### 4.1.1 advertise (C → S)
