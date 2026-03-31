@@ -386,7 +386,7 @@ Return a service response.
 | `op` | required | string | Must be `"service_response"` |
 | `id` | required if C → S | string | An ID to associate with this service response. Will match the ID of the corresponding service call if it was provided. |
 | `service` | required | string | The name of the service that was called. |
-| `values` | conditional | object or string | When `result` is `true`, this field is **required** and must be an object containing the service's result values (conforming to the service's result message definition). When `result` is `false`, this field is **optional** and, if present, is typically a string error message. |
+| `values` | conditional | object or string | When `result` is `true`, this field is **required** and must be an object containing the service's response values (conforming to the service's response message definition). When `result` is `false`, this field is **optional** and, if present, is typically a string error message. |
 | `result` | required | boolean | The result of the service call. `true` indicates success (a structured `values` object is required), `false` indicates failure (an error may be conveyed via `values` or other means) |
 
 When a client sends a `service_response` message, the operation fails if any of the following is true:
