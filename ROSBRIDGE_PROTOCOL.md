@@ -1,4 +1,4 @@
-# rosbridge v2.0 Protocol Specification <!-- omit in toc -->
+# rosbridge v2.0.0 Protocol Specification <!-- omit in toc -->
 
 This document defines the rosbridge protocol and its supported operations.
 The protocol is built around structured message objects (e.g., JSON or CBOR) with an `op` field that identifies the operation being performed.
@@ -7,14 +7,18 @@ The protocol is transport-agnostic and can be carried over WebSockets, TCP, or o
 This document also describes the intended direction of the rosbridge server implementation.
 The default server implementation uses WebSockets and separates message parsing from the underlying transport so protocol operations remain easy to extend.
 
-## Changelog <!-- omit in toc -->
+## Version history <!-- omit in toc -->
 
-The version number advances only when there is a client-facing change to the protocol – a new operation, a change in message semantics, a new required or optional field, or a change in server behavior observable by clients.
-Editorial improvements, clarifications, and corrections to the document text do not increment the version; those changes are tracked in the repository history.
+The protocol version is specified as a semantic version number in the format `MAJOR.MINOR.PATCH`, where:
+
+- The major version number (the first number) is incremented for breaking changes, such as changing the encoding or format of an existing operation in a way that would cause existing clients to fail without modification.
+- The minor version number (the second number) is incremented for non-breaking additions, such as adding a new operation or adding new optional fields to an existing operation.
+- The patch version number (the third number) is incremented for non-breaking changes that don't add or modify any operation fields, such as changing the default QoS settings, modifying the behavior of existing fields or marking existing fields as deprecated.
+- Editorial improvements, clarifications, and corrections to the document text do not increment the version; those changes are tracked in the repository history.
 
 | Version | Summary |
 |---------|---------|
-| 2.0 | Initial versioned release. Covers topic, service, and action operations; Base64, PNG, CBOR and CBOR-RAW encodings; fragmentation; interface type notation; and default QoS settings for publishers and subscribers. |
+| 2.0.0 | Initial versioned release. Covers topic, service, and action operations; Base64, PNG, CBOR and CBOR-RAW encodings; fragmentation; interface type notation; and default QoS settings for publishers and subscribers. |
 
 ## Table of Contents <!-- omit in toc -->
 
