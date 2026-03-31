@@ -371,6 +371,7 @@ Invoke a service.
 | `timeout` | optional | float | (only C → S) The time, in seconds, to wait for a response from the server. |
 
 When a client sends a `call_service` message, the operation fails if either of the following is true:
+
 - No service servers have been advertised for the specified service.
 - The `args` do not conform to the service request type.
 
@@ -389,6 +390,7 @@ Return a service response.
 | `result` | required | boolean | The result of the service call. `true` indicates success (a structured `values` object is required), `false` indicates failure (an error may be conveyed via `values` or other means) |
 
 When a client sends a `service_response` message, the operation fails if any of the following is true:
+
 - The service has not been advertised by the client.
 - The `id` field is missing or does not match any existing service call for this client.
 - The `values` do not conform to the service response message definition when `result` is `true`.
@@ -435,6 +437,7 @@ Send an action goal.
 | `fragment_size` | optional | integer | (only C → S) The maximum size (in bytes) a message can reach before it is fragmented. |
 
 When a client sends a `send_action_goal` message, the operation fails if either of the following is true:
+
 - No action servers have been advertised for the specified action.
 - The `args` do not conform to the action goal type.
 
@@ -449,6 +452,7 @@ Cancel an action goal.
 | `action` | required | string | The name of the action to cancel a goal for. |
 
 When a client sends the `cancel_action_goal` message, the operation fails if either of the following is true:
+
 - The client has not previously sent a goal for the action.
 - The client has already cancelled the goal.
 - The `id` provided does not match any existing goal by this client for the action.
@@ -466,6 +470,7 @@ Report action feedback.
 | `values` | required | object | The feedback values. Must conform to the feedback message definition of the action. |
 
 When a client sends a `action_feedback` message, the operation fails if any of the following is true:
+
 - The `id` field is missing or does not match any existing goal by this client.
 - The `values` do not conform to the feedback message definition of the action.
 
@@ -483,6 +488,7 @@ Report an action result.
 | `result` | required | boolean | Indicates whether the action completed successfully. `true` indicates success (a structured `values` object is required), `false` indicates failure (an error may be conveyed via `values` or other means). |
 
 When a client sends an `action_result` message, the operation fails if any of the following is true:
+
 - The client has not previously sent a goal for the action.
 - The client has already sent a result for the goal.
 - The `id` provided does not match any existing goal by this client for the action.
