@@ -172,12 +172,28 @@ class MultiSubscriber(Generic[ROSMessageT]):
         self.new_subscriber: Subscription | None = None
         self.new_subscriptions: dict[str, Callable[[OutgoingMessage[ROSMessageT]], None]] = {}
 
+    def _schedule_destroy_subscription(self, subscription: Subscription) -> None:
+        """
+        Schedule subscription destruction on the executor thread.
+
+        Used to avoid race conditions between executor and non-executor threads.
+
+        Args:
+            subscription (Subscription): Subscription to destroy
+
+        """
+        executor = self.node_handle.executor
+        if executor is not None:
+            executor.create_task(self.node_handle.destroy_subscription, subscription)
+        else:
+            self.node_handle.destroy_subscription(subscription)
+
     def unregister(self) -> None:
-        self.node_handle.destroy_subscription(self.subscriber)
+        self._schedule_destroy_subscription(self.subscriber)
         with self.rlock:
             self.subscriptions.clear()
             if self.new_subscriber:
-                self.node_handle.destroy_subscription(self.new_subscriber)
+                self._schedule_destroy_subscription(self.new_subscriber)
                 self.new_subscriber = None
 
     def verify_type(self, msg_type: str) -> None:
@@ -281,11 +297,18 @@ class MultiSubscriber(Generic[ROSMessageT]):
         subscriptors.
         """
         with self.rlock:
-            self.callback(msg, self.new_subscriptions.values())
+            # return if work has already been done by another callback invocation
+            if self.new_subscriber is None:
+                if self.new_subscriptions:
+                    self.node_handle.get_logger().error(
+                        "new_subscriber is None but new_subscriptions is not empty; "
+                        "this should never happen"
+                    )
+                return
+            self.callback(msg, list(self.new_subscriptions.values()))
             self.subscriptions.update(self.new_subscriptions)
             self.new_subscriptions = {}
-            assert self.new_subscriber is not None
-            self.node_handle.destroy_subscription(self.new_subscriber)
+            self._schedule_destroy_subscription(self.new_subscriber)
             self.new_subscriber = None
 
 
