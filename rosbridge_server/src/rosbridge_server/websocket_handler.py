@@ -185,13 +185,17 @@ class RosbridgeWebSocket(WebSocketHandler):
     def on_close(self) -> None:
         cls = self.__class__
         assert isinstance(cls.node_handle, Node), "Node handle was not set"
+        # Discard outgoing messages to reduce number of failed writes to closed websocket
+        # ROS subscriptions have an inherent race condition with protocol.finish()
+        self.protocol.outgoing = lambda *_args, **_kwargs: None
+        self.incoming_queue.finish()
+
         cls.clients_connected -= 1
         if cls.client_manager:
             cls.client_manager.remove_client(self.client_id, self.request.remote_ip)
         cls.node_handle.get_logger().info(
             f"Client disconnected. {cls.clients_connected} clients total."
         )
-        self.incoming_queue.finish()
 
     def send_message(self, message: bson.BSON | bytearray | str, compression: str = "none") -> None:
         cls = self.__class__
