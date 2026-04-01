@@ -88,6 +88,17 @@ _parameter_type_mapping = [
 
 @dataclass
 class _CachedClient:
+    """
+    Class to hold cached clients along with metadata for cleanup.
+
+    :param use_count: The number of ongoing calls using this client.
+    :type use_count: int
+    :param last_used_time: The last time this client was used for a call.
+    :type last_used_time: Time
+    :param client: The cached client instance.
+    :type client: Client
+    """
+
     use_count: int
     last_used_time: Time
     client: Client
