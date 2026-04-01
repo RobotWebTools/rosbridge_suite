@@ -163,7 +163,10 @@ def _get_client(
 
     _node.get_logger().get_child("params").debug(f"Creating new client for service {service_name}")
 
-    client = _node.create_client(
+    client: (
+        Client[SetParameters_Request, SetParameters_Response]
+        | Client[GetParameters_Request, GetParameters_Response]
+    ) = _node.create_client(
         service_type,  # type: ignore[misc]
         service_name,
         callback_group=MutuallyExclusiveCallbackGroup(),
