@@ -155,8 +155,9 @@ def _get_client(
     :return: A client for the given service.
     :rtype: Client
     """
-    if service_name in _cached_clients:
-        return _cached_clients[service_name].client
+    cached_client = _cached_clients.get(service_name)
+    if cached_client is not None:
+        return cached_client.client
 
     assert _node is not None
 
