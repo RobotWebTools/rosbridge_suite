@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.2.0 (2026-04-02)
+------------------
 * fix: Race condition in subscription destruction (backport `#1194 <https://github.com/RobotWebTools/rosbridge_suite/issues/1194>`_) (`#1207 <https://github.com/RobotWebTools/rosbridge_suite/issues/1207>`_)
 * feat: Create topic registrations in publish when topic not previously advertised (`#1203 <https://github.com/RobotWebTools/rosbridge_suite/issues/1203>`_) (`#1204 <https://github.com/RobotWebTools/rosbridge_suite/issues/1204>`_)
 * fix: Prevent client destruction race condition (`#1183 <https://github.com/RobotWebTools/rosbridge_suite/issues/1183>`_) (`#1188 <https://github.com/RobotWebTools/rosbridge_suite/issues/1188>`_)
