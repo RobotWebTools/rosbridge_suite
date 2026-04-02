@@ -2,6 +2,15 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.1.0 (2026-04-02)
+------------------
+* fix: Race condition in subscription destruction (`#1194 <https://github.com/RobotWebTools/rosbridge_suite/issues/1194>`_)
+* feat: Create topic registrations in publish when topic not previously advertised (`#1203 <https://github.com/RobotWebTools/rosbridge_suite/issues/1203>`_)
+* feat: Add pep8-naming checks (`#1177 <https://github.com/RobotWebTools/rosbridge_suite/issues/1177>`_)
+* fix: Deadlock in concurrent module import in ros_loader (`#1173 <https://github.com/RobotWebTools/rosbridge_suite/issues/1173>`_)
+* feat: Drop support for BSON (`#1172 <https://github.com/RobotWebTools/rosbridge_suite/issues/1172>`_)
+* Contributors: Błażej Sowa, FieldSwan
+
 4.0.0 (2026-03-02)
 ------------------
 * fix: Use new interface base classes for type checking, drop Kilted support (`#1164 <https://github.com/RobotWebTools/rosbridge_suite/issues/1164>`_)
