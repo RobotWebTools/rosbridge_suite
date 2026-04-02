@@ -1,637 +1,534 @@
-# rosbridge v2.0 Protocol Specification
+# rosbridge v2.0.0 Protocol Specification <!-- omit in toc -->
 
-> This document describes the ROS 2 version of rosbridge. For ROS 1, please see the [ros1 branch](https://github.com/RobotWebTools/rosbridge_suite/blob/ros1/ROSBRIDGE_PROTOCOL.md).
+This document defines the rosbridge protocol and its supported operations.
+The protocol is built around structured message objects (e.g., JSON or CBOR) with an `op` field that identifies the operation being performed.
+The protocol is transport-agnostic and can be carried over WebSockets, TCP, or other suitable transports.
 
-This document outlines the rosbridge v2.0 protocol. The v2.0 protocol
-incorporates a number of requirements which have arisen since the first version
-of rosbridge was released, and makes a small number of modifications to
-facilitate greater extensibility to the protocol. At its core, the protocol
-still contains the same operations with the same semantics as the prior
-versions of rosbridge. The main change is to the structure of messages,
-separating control information from message information. The main new additions
-are fragmentation, compression, and logging.
+This document also describes the intended direction of the rosbridge server implementation.
+The default server implementation uses WebSockets and separates message parsing from the underlying transport so protocol operations remain easy to extend.
 
-This document outlines the protocol specification, but also touches upon the
-intended direction for the rosbridge server implementation. The rosbridge v2.0
-server implementation is architected in a way to make it easy to add and modify
-protocol operations. Furthermore, the rosbridge v2.0 server decouples
-JSON-handling from the websockets server, allowing users to arbitrarily change
-the specific websockets server implementation they are using.
+## Version history <!-- omit in toc -->
 
-The message transport of rosbridge is JSON objects. The only required field is
-the 'op' field, which specifies the operation of that message. Each 'op' then
-specifies its own message semantics.
+The protocol version is specified as a semantic version number in the format `MAJOR.MINOR.PATCH`, where:
 
-The rosbridge protocol is a set of 'op' codes which define a number of
-operations, along with the semantics for each operation.
+- The major version number (the first number) is incremented for breaking changes, such as changing the encoding or format of an existing operation in a way that would cause existing clients to fail without modification.
+- The minor version number (the second number) is incremented for non-breaking additions, such as adding a new operation or adding new optional fields to an existing operation.
+- The patch version number (the third number) is incremented for non-breaking changes that don't add or modify any operation fields, such as changing the default QoS settings, modifying the behavior of existing fields or marking existing fields as deprecated.
+- Editorial improvements, clarifications, and corrections to the document text do not increment the version; those changes are tracked in the repository history.
 
-The rosbridge server is a server which accepts websockets connections and
-implements the rosbridge protocol.
+| Version | Summary |
+|---------|---------|
+| 2.0.0 | Initial versioned release. Covers topic, service, and action operations; Base64, PNG, CBOR and CBOR-RAW encodings; fragmentation; interface type notation; and default QoS settings for publishers and subscribers. |
 
-The full source code of rosbridge is located in the rosbridge_suite package.
-The package is located at https://github.com/robotwebtools/rosbridge_suite, and
-the full breakdown of the stack and its packages is detailed in section 4.5 of
-this document.
+## Table of Contents <!-- omit in toc -->
 
-## 1. The rosbridge transport
+- [1. Message envelope](#1-message-envelope)
+- [2. Operation summary](#2-operation-summary)
+- [3. Data Encoding and Transformation](#3-data-encoding-and-transformation)
+  - [3.1 Base64 encoding of byte arrays](#31-base64-encoding-of-byte-arrays)
+  - [3.2 Fragmentation ( _fragment_ ) \[experimental\]](#32-fragmentation--fragment--experimental)
+  - [3.3 PNG compression ( _png_ ) \[experimental\]](#33-png-compression--png--experimental)
+  - [3.4 CBOR encoding ( _cbor_ )](#34-cbor-encoding--cbor-)
+  - [3.5 CBOR-RAW encoding ( _cbor-raw_ )](#35-cbor-raw-encoding--cbor-raw-)
+- [4. Operation specifications](#4-operation-specifications)
+  - [4.1 Interface type notation](#41-interface-type-notation)
+  - [4.2 Default QoS settings](#42-default-qos-settings)
+  - [4.3 Topic operations](#43-topic-operations)
+    - [4.3.1 advertise (C → S)](#431-advertise-c--s)
+    - [4.3.2 unadvertise (C → S)](#432-unadvertise-c--s)
+    - [4.3.3 publish (C ↔ S)](#433-publish-c--s)
+    - [4.3.4 subscribe (C → S)](#434-subscribe-c--s)
+    - [4.3.5 unsubscribe (C → S)](#435-unsubscribe-c--s)
+  - [4.4 Service operations](#44-service-operations)
+    - [4.4.1 advertise\_service (C → S)](#441-advertise_service-c--s)
+    - [4.4.2 unadvertise\_service (C → S)](#442-unadvertise_service-c--s)
+    - [4.4.3 call\_service (C ↔ S)](#443-call_service-c--s)
+    - [4.4.4 service\_response (C ↔ S)](#444-service_response-c--s)
+  - [4.5 Action operations](#45-action-operations)
+    - [4.5.1 advertise\_action (C → S)](#451-advertise_action-c--s)
+    - [4.5.2 unadvertise\_action (C → S)](#452-unadvertise_action-c--s)
+    - [4.5.3 send\_action\_goal (C ↔ S)](#453-send_action_goal-c--s)
+    - [4.5.4 cancel\_action\_goal (C ↔ S)](#454-cancel_action_goal-c--s)
+    - [4.5.5 action\_feedback (C ↔ S)](#455-action_feedback-c--s)
+    - [4.5.6 action\_result (C ↔ S)](#456-action_result-c--s)
 
-A rosbridge message is, in the base case, a JSON object with a string field
-called "op". For example:
+## 1. Message envelope
+
+A rosbridge message is, at minimum, a structured message object with a string field called `op`.
+For example:
 
 ```json
 { "op": "Example" }
 ```
 
-The op field indicates the type of message that this is. Messages with
-different values for op may be handled differently.
+The `op` field identifies the operation being performed.
+Messages with different values for `op` may be handled differently.
 
-So long as the message is a JSON object with the op field, it is a valid
-rosbridge message.
+As long as the message is a valid object containing the `op` field, it is a valid rosbridge message.
 
-Optionally, a message can also provide an arbitrary string or integer ID:
+Optionally, a message can also provide an arbitrary string ID:
 
 ```json
-{ "op": "Example",
+{
+  "op": "Example",
   "id": "fred"
 }
 ```
 
-If an ID is provided with a message to the server, then related response
-messages will typically contain that ID as well. Log messages caused by this
-operation will also contain the ID.
+If an `id` is provided with a message to the server, then related response messages will typically contain that ID as well, allowing protocol messages on the wire to be correlated with the initiating request.
+Server-side log messages may also include the `id` for correlation purposes; these logs are implementation-specific and are not delivered to clients as part of the rosbridge protocol itself.
 
-Semantically, the ID is not an identifier of the specific message that it is
-in, but instead is an identifier for an interaction which may consist of a
-number of operations in back-and-forth messages. Thus, the ID may be used by
-multiple messages referring to the same transaction.
+Semantically, the `id` does not identify a single message.
+Instead, it identifies an interaction, which may consist of multiple back-and-forth operations.
 
-## 2. The rosbridge protocol
+## 2. Operation summary
 
-The rosbridge protocol defines a number of different operations. They are as follows:
+The rosbridge protocol defines a number of different operations.
+
+Direction legend:
+
+- **C → S**: client to server
+- **S → C**: server to client
+- **C ↔ S**: either direction
+
+The `C ↔ S` operations are valid in either direction depending on which side has advertised the corresponding topic, service, or action interface.
 
 Message compression / transformation:
 
-  * **fragment** - a part of a fragmented message
-  * **png** - a part of a PNG compressed fragmented message
+- **fragment** – C ↔ S – part of a fragmented message
+- **png** – S → C – a message compressed as a PNG image
 
-Rosbridge status messages:
+Topic operations:
 
-  * **set_status_level** - a request to set the reporting level for rosbridge status messages
-  * **status** - a status message
+- **advertise** – C → S – advertise that the client will publish on a topic
+- **unadvertise** – C → S – stop advertising that the client will publish on a topic
+- **publish** – C ↔ S – publish a message on a topic
+- **subscribe** – C → S – subscribe to a topic to receive updates
+- **unsubscribe** – C → S – unsubscribe from a topic to stop receiving updates
 
-ROS operations:
+Service operations:
 
-  * Topics:
-    * **advertise** – advertise that you are publishing a topic
-    * **unadvertise** – stop advertising that you are publishing topic
-    * **publish** - a published ROS-message
-    * **subscribe** - a request to subscribe to a topic
-    * **unsubscribe** - a request to unsubscribe from a topic
-  * Services:
-    * **advertise_service** - advertise an external service server
-    * **unadvertise_service** - unadvertise an external service server
-    * **call_service** - a service call
-    * **service_response** - a service response
-  * Actions:
-    * **advertise_action** - advertise an external action server
-    * **unadvertise_action** - unadvertise an external action server
-    * **send_action_goal** - a goal sent to an action server
-    * **cancel_action_goal** - cancel an in-progress action goal
-    * **action_feedback** - feedback messages from an action server
-    * **action_result** - an action result
+- **advertise_service** – C → S – advertise an external service server
+- **unadvertise_service** – C → S – stop advertising an external service server
+- **call_service** – C ↔ S – invoke a service
+- **service_response** – C ↔ S – return a service response
 
-In general, actions or operations that the client takes (such as publishing and
-subscribing) have opcodes which are verbs (subscribe, call_service, unadvertise
-etc.).
+Action operations:
 
-Response messages from the server are things that the client is giving back, so
-they are nouns (fragment, status, service_response etc.)
+- **advertise_action** – C → S – advertise an external action server
+- **unadvertise_action** – C → S – stop advertising an external action server
+- **send_action_goal** – C ↔ S – send an action goal
+- **cancel_action_goal** – C ↔ S – cancel an action goal
+- **action_feedback** – C ↔ S – report action feedback
+- **action_result** – C ↔ S – report an action result
 
-(The only slight exception to this naming convention is publish)
+In general, operation opcodes that initiate an action are verb-like, such as `subscribe`, `publish`, and `call_service`.
+Feedback, result, and status-bearing messages often use noun or noun-phrase opcodes such as `service_response`, `action_feedback` and `action_result`.
+These naming patterns are descriptive only and do not imply that a given opcode is sent exclusively by either the client or the server.
 
-## 3. Details of the rosbridge protocol
+To keep the protocol simple and focused, the rosbridge protocol **does not** handle ROS parameter operations (getting, setting, listing parameters, etc.) or querying the ROS graph (listing nodes, topics, services, and their types).
+Instead, it delegates such operations to dedicated ROS services, such as those provided by the [rosapi] package.
 
-Following is the specification of operations in the rosbridge protocol,
-supported by the rosbridge server. Anything marked with [experimental] may be
-subject to change after review.
+## 3. Data Encoding and Transformation
 
-### 3.1 Data Encoding and Transformation
+By default, rosbridge messages are encoded as JSON text.
+The rosbridge protocol also provides alternative encodings and message transformations for cases where binary data, large payloads, or performance requirements make the default JSON encoding less suitable.
 
-The rosbridge protocol provides the ability to fragment messages and to compress messages.
+### 3.1 Base64 encoding of byte arrays
 
-#### 3.1.1 Fragmentation ( _fragment_ ) [experimental]
+When the rosbridge server sends messages containing `uint8[]` or `char[]` fields, these byte arrays are encoded as base64 strings.
+This reduces message size by up to 60% compared to sending the same data as a list of numbers when encoded in JSON.
 
-Messages may be fragmented if they are particularly large, or if the client
-requests fragmentation. A fragmented message has the following format:
-
-```json
-{ "op": "fragment",
-  "id": <string>,
-  "data": <string>,
-  "num": <int>,
-  "total": <int>
-}
-```
-
-**id** - an id is required for fragmented messages, in order to identify
-corresponding fragments for the fragmented message:
-
- * **data** - a fragment of data that, when combined with other fragments of data, makes up another message
- * **num** - the index of the fragment in the message
- * **total** - the total number of fragments
-
-To fragment a message, its JSON string is taken and split up into multiple
-substrings. For each substring, a fragment message is constructed, with the
-data field of the fragment populated by the substring.
-
-To reconstruct an original message, the data fields of the fragments are
-concatenated, resulting in the JSON string of the original message.
-
-#### 3.1.2 PNG compression ( _png_ ) [experimental]
-
-Some messages (such as images and maps) can be extremely large, and for efficiency
-reasons we may wish to transfer them as PNG-encoded bytes. The PNG opcode
-duplicates the fragmentation logic of the FRG opcode (and it is possible and
-reasonable to only have a single fragment), except that the data field consists
-of ASCII-encoded PNG bytes.
-
-```json
-{ "op": "png",
-  (optional) "id": <string>,
-  "data": <string>,
-  (optional) "num": <int>,
-  (optional) "total": <int>
-}
-```
-
- * **id** – only required if the message is fragmented. Identifies the
-    fragments for the fragmented message.
- * **data** – a fragment of a PNG-encoded message or an entire message.
- * **num** – only required if the message is fragmented. The index of the fragment.
- * **total** – only required if the message is fragmented. The total number of fragments.
-
-To construct a PNG compressed message, take the JSON string of the original
-message and read the bytes of the string into a PNG image. Then, ASCII-encode
-the image. This string is now used as the data field. If fragmentation is
-necessary, then fragment the data and set the ID, num and total fields to the
-appropriate values in the fragments. Otherwise these fields can be left out.
-
-#### 3.1.3 CBOR encoding ( _cbor_ )
-
-[CBOR](https://tools.ietf.org/html/rfc7049) encoding is the fastest
-compression method for messages containing large blobs of data, such as
-byte arrays and numeric typed arrays.
-
-When CBOR compression is requested by a subscriber, a binary message will be
-produced instead of a JSON string.  Once decoded, the message will contain
-a normal protocol message.
-
-The implementation uses [draft typed array tags] for efficient packing of
-homogeneous arrays.  At the moment, only little-endian packing is supported.
-
-[draft typed array tags]: https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00
-
-#### 3.1.4 CBOR-RAW encoding ( _cbor-raw_ )
-
-While CBOR encodes the entire message as CBOR, sometimes it's desirable to get the raw binary message in the
-[ROS serialization format](https://wiki.ros.org/roscpp/Overview/MessagesSerializationAndAdaptingTypes),
-which is the same format as sent between ROS nodes and stored in [Bag files](http://wiki.ros.org/Bags/Format/2.0).
-
-This can be useful in several cases:
-- Your application already knows how to parse messages in bag files (e.g. using
-  [rosbag.js](https://github.com/cruise-automation/rosbag.js), which means that now you can use
-  consistent code paths for both bags and live messages.
-- You want to parse messages as late as possible, or in parallel, e.g. only in the thread
-  or WebWorker that cares about the message. Delaying the parsing of the message means that moving
-  or copying the message to the thread is cheaper when its in binary form, since no serialization
-  between threads is necessary.
-- You only care about part of the message, and don't need to parse the rest of it.
-- You really care about performance; no conversion between the ROS binary format and CBOR is done in
-  the rosbridge_sever.
-
-The format is similar to CBOR above, but instead of the "msg" field containing the message itself
-in CBOR format, instead it contains an object with a "bytes" field which is a byte array containing
-the raw message. The "msg" object also includes "secs" and "nsecs" of the `get_rostime()` upon
-receiving the message, which is especially useful when `use_sim_time` is set, since it will give you
-the simulated time the message was received.
-
-When using this encoding, a client application will need to know exactly how to parse the raw
-message. For this it's useful to use the `/rosapi/get_topics_and_raw_types` service, which will give
-you all topics and their raw message definitions, similar to `gendeps --cat`. This is the same
-format as used by bag files.
-
-### 3.2 Status messages
-
-rosbridge sends status messages to the client relating to the successes and
-failures of rosbridge protocol commands. There are four status levels: info,
-warning, error, none. By default, rosbridge uses a status level of error.
-
-A rough guide for what causes the levels of status message:
-
- * **error** – Whenever a user sends a message that is invalid or requests
-    something that does not exist (ie. Sending an incorrect opcode or publishing
-    to a topic that doesn't exist)
- * **warning** – error, plus, whenever a user does something that may succeed
-    but the user has still done something incorrectly (ie. Providing a
-    partially-complete published message)
- * **info** – warning, plus messages indicating success of various operations
-
-#### 3.2.1 Set Status Level ( _status_level_ ) [experimental]
-
-```json
-{ "op": "set_level",
-  (optional) "id": <string>,
-  "level": <string>
-}
-```
-
- * **level** – one of 'info', 'warning', 'error', or 'none'
-
-Sets the status level to the level specified. If a bad string is specified, the
-message is dropped.
-
-#### 3.2.2 Status message ( _status_ ) [experimental]
-
-```json
-{ "op": "status",
-  (optional) "id": <string>,
-  "level": <string>,
-  "msg": <string>
-}
-```
-
- * **level** – the level of this status message
- * **msg** – the string message being logged
- * **id** – if the status message was the result of some operation that had an
-    id, then that id is included
-
-### 3.3 ROS messages
-
-These rosbridge messages interact with ROS, and correspond roughly to the
-messages that already exist in the current version of rosbridge.
-
-#### 3.3.1 Advertise ( _advertise_ )
-
-If you wish to advertise that you are or will be publishing a topic, then use the advertise command.
-
-```json
-{ "op": "advertise",
-  (optional) "id": <string>,
-  "topic": <string>,
-  "type": <string>
-}
-```
-
- * **topic** – the string name of the topic to advertise
- * **type** – the string type to advertise for the topic
-
-   * If the topic does not already exist, and the type specified is a valid
-     type, then the topic will be established with this type.
-   * If the topic already exists with a different type, an error status message
-     is sent and this message is dropped.
-   * If the topic already exists with the same type, the sender of this message
-     is registered as another publisher.
-   * If the topic doesn't already exist but the type cannot be resolved, then
-     an error status message is sent and this message is dropped.
-
-#### 3.3.2 Unadvertise ( _unadvertise_ )
-
-This stops advertising that you are publishing a topic.
-
-```json
-{ "op": "unadvertise",
-  (optional) "id": <string>,
-  "topic": <string>
-}
-```
-
- * **topic** – the string name of the topic being unadvertised
-
-   * If the topic does not exist, a warning status message is sent and this
-     message is dropped
-   * If the topic exists and there are still clients left advertising it,
-     rosbridge will continue to advertise it until all of them have unadvertised
-   * If the topic exists but rosbridge is not advertising it, a warning status
-     message is sent and this message is dropped
-
-#### 3.3.3 Publish ( _publish_ )
-
-The publish message is used to send data on a topic.
-
-```json
-{ "op": "publish",
-  (optional) "id": <string>,
-  "topic": <string>,
-  "msg": <json>
-}
-```
-
-The publish command publishes a message on a topic.
-
- * **topic** - the string name of the topic to publish to
- * **msg** - the message to publish on the topic
-
-   * If the topic does not exist, then an error status message is sent and this
-     message is dropped
-   * If the msg does not conform to the type of the topic, then an error status
-     message is sent and this message is dropped
-   * If the msg is a subset of the type of the topic, then a warning status
-     message is sent and the unspecified fields are filled in with defaults
-
-Special case: if the type being published has a 'header' field, then the client
-can optionally omit the header from the msg. If this happens, rosbridge will
-automatically populate the header with a frame id of "" and the timestamp as
-the current time. Alternatively, just the timestamp field can be omitted, and
-then the current time will be automatically inserted.
-
-#### 3.3.4 Subscribe
-
-```json
-{ "op": "subscribe",
-  (optional) "id": <string>,
-  "topic": <string>,
-  (optional) "type": <string>,
-  (optional) "throttle_rate": <int>,
-  (optional) "queue_length": <int>,
-  (optional) "fragment_size": <int>,
-  (optional) "compression": <string>
-}
-```
-
-This command subscribes the client to the specified topic. It is recommended
-that if the client has multiple components subscribing to the same topic, that
-each component makes its own subscription request providing an ID. That way,
-each can individually unsubscribe and rosbridge can select the correct rate at
-which to send messages.
-
- * **type** – the (expected) type of the topic to subscribe to. If left off,
-    type will be inferred, and if the topic doesn't exist then the command to
-    subscribe will fail
- * **topic** – the name of the topic to subscribe to
- * **throttle_rate** – the minimum amount of time (in ms) that must elapse
-    between messages being sent. Defaults to 0
- * **queue_length** – the size of the queue to buffer messages. Messages are
-    buffered as a result of the throttle_rate. Defaults to 0 (no queueing).
- * **id** – if specified, then this specific subscription can be unsubscribed
-    by referencing the ID.
- * **fragment_size** – the maximum size that a message can take before it is to
-    be fragmented.
- * **compression** – an optional string to specify the compression scheme to be
-    used on messages. Valid values are "none", "png", "cbor", and "cbor-raw".
-
-If queue_length is specified, then messages are placed into the queue before
-being sent. Messages are sent from the head of the queue. If the queue gets
-full, the oldest message is removed and replaced by the newest message.
-
-If a client has multiple subscriptions to the same topic, then messages are
-sent at the lowest throttle_rate, with the lowest fragmentation size, and
-highest queue_length. It is recommended that the client provides IDs for its
-subscriptions, to enable rosbridge to effectively choose the appropriate
-fragmentation size and publishing rate.
-
-#### 3.3.5 Unsubscribe
-
-```json
-{ "op": "unsubscribe",
-  (optional) "id": <string>,
-  "topic": <string>
-}
-```
-
- * **topic** – the name of the topic to unsubscribe from
- * **id** – an id of the subscription to unsubscribe
-
-If an id is provided, then only the corresponding subscription is unsubscribed.
-If no ID is provided, then all subscriptions are unsubscribed.
-
-#### 3.3.6 Advertise Service
-
-```json
-{ "op": "advertise_service",
-  "type": <string>,
-  "service": <string>
-}
-```
-
-Advertises an external ROS service server. Requests come to the client via Call Service.
-
- * **service** – the name of the service to advertise
- * **type** – the advertised service message type
-
-#### 3.3.7 Unadvertise Service
-
-```json
-{ "op": "unadvertise_service",
-  "service": <string>
-}
-```
-
-#### 3.3.8 Call Service
-
-Calls a ROS service.
-
-```json
-{ "op": "call_service",
-  (optional) "id": <string>,
-  "service": <string>,
-  (optional) "args": <list<json>>,
-  (optional) "fragment_size": <int>,
-  (optional) "compression": <string>,
-  (optional) "timeout": <float>
-}
-```
-
- * **service** – the name of the service to call
- * **args** – if the service has no args, then args does not have to be
-    provided, though an empty list is equally acceptable. Args should be a list
-    of json objects representing the arguments to the service
- * **id** – an optional id to distinguish this service call
- * **fragment_size** – the maximum size that the response message can take
-    before it is fragmented
- * **compression** – an optional string to specify the compression scheme to be
-    used on messages. Valid values are "none" and "png"
- * **timeout** – the time, in seconds, to wait for a response from the server
-
-
-Stops advertising an external ROS service server
-
- * **service** – the name of the service to unadvertise
-
-#### 3.3.9 Service Response
-
-A response to a ROS service call.
-
-```json
-{ "op": "service_response",
-  (optional) "id": <string>,
-  "service": <string>,
-  (optional) "values": <list<json>>,
-  "result": <boolean>
-}
-```
-
- * **service** – the name of the service that was called
- * **values** – the return values. If the service had no return values, then
-    this field can be omitted (and will be by the rosbridge server)
- * **id** – if an ID was provided to the service request, then the service
-    response will contain the ID
- * **result** - return value of service callback. true means success, false failure.
-
-#### 3.3.10 Advertise Action
-
-Advertises an external ROS action server.
-
-```json
-{ "op": "advertise_action",
-  "type": <string>,
-  "action": <string>
-}
-```
-
-Goals come to the client via the Send Action Goal capability.
-
- * **action** – the name of the action to advertise
- * **type** – the advertised action message type
-
-#### 3.3.11 Unadvertise Action
-
-```json
-{ "op": "unadvertise_action",
-  "action": <string>
-}
-```
-
-#### 3.3.12 Send Action Goal
-
-Sends a goal to a ROS action server.
-
-```json
-{ "op": "send_action_goal",
-  (optional) "id": <string>,
-  "action": <string>,
-  "action_type": <string>,
-  (optional) "args": <list<json>>,
-  (optional) "feedback": <boolean>,
-  (optional) "fragment_size": <int>,
-  (optional) "compression": <string>
-}
-```
-
- * **action** – the name of the action to send a goal to
- * **action_type** – the action message type
- * **args** – if the goal has no args, then args does not have to be
-    provided, though an empty list is equally acceptable. Args should be a list of json objects representing the arguments to the service.
- * **feedback** – if true, sends feedback messages over rosbridge. Defaults to false.
- * **id** – an optional id to distinguish this goal handle
- * **fragment_size** – the maximum size that the result and feedback messages can take before they are fragmented
- * **compression** – an optional string to specify the compression scheme to be used on messages. Valid values are "none" and "png"
-
-#### 3.3.13 Cancel Action Goal
-
-Cancels an action goal.
-
-```json
-{ "op": "cancel_action_goal",
-  "id": <string>,
-  "action": <string>
-}
-```
-
-The `id` field must match an already in-progress goal.
-
-#### 3.3.14 Action Feedback
-
-Used to send action feedback for a specific goal handle.
-
-```json
-{ "op": "action_feedback",
-  "id": <string>,
-  "action": <string>,
-  "values": <json>
-}
-```
-
-The `id` field must match an already in-progress goal.
-
-#### 3.3.15 Action Result
-
-A result for a ROS action.
-
-```json
-{ "op": "action_result",
-  "id": <string>,
-  "action": <string>,
-  "values": <json>,
-  "status": <int>,
-  "result": <boolean>
-}
-```
-
- * **action** – the name of the action that was executed
- * **id** – if an ID was provided to the action goal, then the action result will contain the ID
- * **values** – the result values. If the service had no return values, then
-    this field can be omitted (and will be by the rosbridge server)
- * **status** - return status of the action. This matches the enumeration in the [`action_msgs/msg/GoalStatus`](https://docs.ros2.org/latest/api/action_msgs/msg/GoalStatus.html) ROS message.
- * **result** - return value of action. True means success, false failure.
-
----
-
-## 4 Further considerations
-
-Further considerations for the rosbridge protocol are listed below.
-
-### 4.1 Rosbridge pseudo-services
-
-Rosbridge no longer provides the ROS-api introspection pseudo services that it
-previously did. These are, for example rosbridge/topics and rosbridge/services.
-Instead, these services are provided as proper ROS services by the new rosapi
-package.
-
-### 4.2 Sampling
-
-It has been suggested that rosbridge may be extended to provide an operation to
-sample a single message from a topic.
-
-### 4.3 Latching
-
-Rosbridge will support messages that were latched to topics internally in ROS.
-It is possible that the publish opcode will be extended so that remote clients
-can latch messages too.
-
-### 4.5 Rosbridge package structure
-
-Rosbridge 2.0 resides in a package named rosbridge_suite, located at
-https://github.com/robotwebtools/rosbridge_suite.
-
-The meta-package will contain the following packages:
-
- * **rosbridge_library** – the core rosbridge JSON-to-ROS implementation. This
-    is be a Python library.
- * **rosbridge_server** – depends on the rosbridge library, and implements the
-    WebSockets server, passing incoming messages to the API and outgoing
-    messages back to the WebSockets connection. The default server uses
-    tornado, a python server implementation.
- * **rosapi** – provides ROS services for various master API calls, such as
-    listing all the topics, services, types currently in ROS
-
-### 4.6 Data Type Encoding
-
-**Base64 Encoding for JSON Byte Arrays**
-
-When rosbridge sends messages containing `uint8[]` or `char[]` fields as JSON, these byte arrays are automatically encoded as base64 strings to reduce message size by approximately 60-65%.
-
-For example, a message field defined as:
+For example, a message containing the following fields:
 
 ```
-uint8[] data = [0, 0, 0, 0]
+uint8[] data1 = [0, 0, 0, 0]
+uint8[] data2 = [255, 255, 255, 255]
 ```
 
 Will be transmitted as:
 
 ```json
 {
-  "data": "AAAAAAAA"
+  "data1": "AAAAAA==",
+  "data2": "/////w=="
 }
 ```
 
-Where the string value is the base64-encoded representation of the byte array. Byte arrays may be sent to the server as either a base64 string or a JSON list of numbers, but will be re-encoded as a base64 string before being sent to other clients.
+The string value is the base64-encoded representation of the byte array.
+Byte arrays may be sent to the server as either a base64 string or a list of numbers, but they will be re-encoded as a base64 string before being sent to other clients.
+
+### 3.2 Fragmentation ( _fragment_ ) [experimental]
+
+Messages may be fragmented if they are particularly large, or if the client requests fragmentation.
+A fragmented message has the following format:
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"fragment"` |
+| `id` | required | string | Identifies which fragments belong to the same original message. |
+| `data` | required | string | A chunk of the original message payload. Concatenating all chunks in order reconstructs the original serialized message. |
+| `num` | required | integer | Zero-based index of this fragment within the sequence. |
+| `total` | required | integer | Total number of fragments that make up the original message. |
+
+To fragment a message, its serialized payload is taken and split up into multiple substrings or byte arrays.
+For each chunk, a fragment message is constructed, with the data field of the fragment populated by the chunk.
+
+To reconstruct an original message, the data fields of the fragments are concatenated, resulting in the serialized payload of the original message.
+
+### 3.3 PNG compression ( _png_ ) [experimental]
+
+Some messages (such as images and maps) can be extremely large, and for efficiency reasons we may wish to transfer them as PNG-encoded bytes.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"png"` |
+| `data` | required | string | Base64-encoded PNG image whose pixel data encodes the serialized payload of the original message. |
+
+To construct a PNG compressed message, the serialized payload of the original message is taken and interpreted as an RGB image.
+The image is then saved as a PNG and the bytes are base64-encoded as a string.
+This string is then used as the `data` field.
+
+Currently, only Server to Client `png` messages are supported.
+The server does not support receiving PNG-compressed messages from clients in the current version of the protocol.
+
+### 3.4 CBOR encoding ( _cbor_ )
+
+[CBOR] encoding is the fastest compression method for messages containing large blobs of data, such as byte arrays and numeric typed arrays.
+
+When CBOR compression is requested by a subscriber, a binary message will be produced instead of a JSON string.
+Once decoded, the message will contain a normal protocol message.
+
+The implementation uses [draft typed array tags] for efficient packing of homogeneous arrays.
+At the moment, only little-endian packing is supported.
+
+### 3.5 CBOR-RAW encoding ( _cbor-raw_ )
+
+While CBOR encodes the entire message as CBOR, sometimes it is desirable to get the raw binary message in the ROS 2 serialized message format.
+
+This can be useful in several cases:
+
+- Your application already knows how to parse raw ROS 2 message data or data stored in ROS 2 bag files,
+  which means that you can use consistent code paths for both recorded and live messages.
+- You want to parse messages as late as possible, or in parallel, e.g. only in the thread or WebWorker that cares about the message.
+  Delaying the parsing of the message means that moving or copying the message to the thread is cheaper when it's in binary form, since no serialization between threads is necessary.
+- You only care about part of the message, and don't need to parse the rest of it.
+- You really care about performance; no conversion between the ROS 2 binary message format and CBOR is done in the rosbridge server.
+
+The format is similar to CBOR above, but instead of the `msg` field containing the message itself in CBOR format, it contains an object with a `bytes` field which is a byte array containing the raw serialized ROS 2 message.
+The `msg` object also includes `secs` and `nsecs` for the ROS time at which the message was received, which is especially useful when `use_sim_time` is set.
+
+When using this encoding, a client application will need to know exactly how to parse the raw message.
+For this it is useful to use the `/rosapi/get_topics_and_raw_types` service, which provides topic names together with their raw message definitions.
+
+## 4. Operation specifications
+
+### 4.1 Interface type notation
+
+Several operations accept a `type` field that identifies a ROS interface type.
+The full form is `package_name/category/TypeName`, where `category` is `msg`, `srv`, or `action` depending on the interface kind.
+For example: `std_msgs/msg/String`, `std_srvs/srv/SetBool`, `nav2_msgs/action/NavigateToPose`.
+
+The `category` component may be omitted, in which case rosbridge will infer it from context (e.g. `std_msgs/String`, `std_srvs/SetBool`).
+
+### 4.2 Default QoS settings
+
+Publishers created by rosbridge use reliable reliability and transient local durability, with a queue depth equal to the `queue_size` parameter (default `100`).
+
+Subscribers created by rosbridge attempt to match the QoS of existing publishers on the topic.
+When no publishers are present, the subscriber defaults to best-effort reliability and volatile durability, with a queue depth of `10`.
+If all existing publishers use transient local durability, the subscriber switches to transient local durability and reliable reliability.
+If any existing publisher uses best-effort reliability, the subscriber uses best-effort reliability.
+
+### 4.3 Topic operations
+
+#### 4.3.1 advertise (C → S)
+
+Register the client as a publisher on a topic. This allows the server to track which clients are publishing on which topics, and to establish the topic with the correct type if it does not already exist.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"advertise"` |
+| `id` | optional | string | An ID to associate with this advertisement. Useful when multiple components advertise the same topic so that each can be unadvertised independently. |
+| `topic` | required | string | The name of the topic to advertise. |
+| `type` | required | string | The type of the topic to advertise. |
+| `latch` | optional | boolean | Whether to latch the last message published on this topic. Defaults to `false`. |
+| `queue_size` | optional | integer | Size of the internal publisher queue (QoS depth policy). Defaults to `100`. |
+
+The operation fails if either of the following is true:
+
+- The topic already exists with a different type.
+- The type specified cannot be resolved.
+
+Current limitations:
+
+- The protocol spawns only one publisher per topic, so if multiple clients advertise the same topic, they will share the same publisher and its associated QoS settings.
+  Only the first advertisement will determine the QoS settings for that topic.
+
+#### 4.3.2 unadvertise (C → S)
+
+Unregister advertisement of a topic for the client.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"unadvertise"` |
+| `id` | optional | string | An ID of the advertisement to unregister. If provided, only the matching advertisement is removed. If omitted, all advertisements for the topic by this client are removed. |
+| `topic` | required | string | The name of the topic to unadvertise. |
+
+This operation fails if either of the following is true:
+
+- The client has not previously advertised the topic.
+- The client has already unregistered all advertisements for the topic.
+- The `id` provided does not match any existing advertisement by this client for the topic.
+
+#### 4.3.3 publish (C ↔ S)
+
+Publish a message on a topic.
+
+The message format is the same in both directions:
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"publish"` |
+| `topic` | required | string | The name of the topic to publish on. |
+| `msg` | required | object | The message being published on the topic. |
+
+**Client → Server**
+
+The client sends a `publish` message to push a message onto a ROS topic.
+
+If the topic has not been advertised, the server will automatically advertise it with the provided type.
+In this case, the following additional fields are also supported in the message to specify the topic type and QoS settings:
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `id` | optional | string | An ID to associate with this advertisement. |
+| `type` | optional | string | The type of the topic to advertise. If omitted, the type will be inferred from the current ROS graph. |
+| `latch` | optional | boolean | Whether to latch the last message published on this topic. Defaults to `false`. |
+| `queue_size` | optional | integer | Size of the internal publisher queue (QoS depth policy). Defaults to `100`. |
+
+The operation fails if the `msg` does not conform to the type of the topic.
+
+Special cases for how the server handles the `msg` field:
+
+- If the `msg` does not contain all fields for the topic type, then the unspecified fields are filled in with defaults.
+- If the topic type has a `header` field of type `std_msgs/Header` and the client omits the `header.stamp` field, then the server will automatically populate it with the current ROS time.
+
+**Server → Client**
+
+The server sends a `publish` message to forward an incoming ROS topic message to a subscribed client.
+This happens when a message is received on a topic that the client has previously subscribed to via the `subscribe` operation.
+
+#### 4.3.4 subscribe (C → S)
+
+Register a subscription to a topic to receive messages published on that topic.
+
+It is recommended that if the client has multiple components subscribing to the same topic, that each component makes its own subscription request providing an ID.
+That way, each can individually unsubscribe and rosbridge can select the correct rate at which to send messages.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"subscribe"` |
+| `id` | optional | string | An ID to associate with this subscription. Useful when multiple components subscribe to the same topic so that each can be unsubscribed independently. |
+| `topic` | required | string | The name of the topic to subscribe to. |
+| `type` | optional | string | The expected type of the topic. If omitted, type will be inferred; if the topic does not exist the subscription will fail. |
+| `throttle_rate` | optional | integer | Minimum time (in ms) that must elapse between messages being sent. Defaults to `0`. |
+| `queue_length` | optional | integer | Size of the queue to buffer messages when throttled. Defaults to `0` (no queueing). When full, the oldest message is dropped in favour of the newest. |
+| `fragment_size` | optional | integer | Maximum size (in bytes) a message can reach before it is fragmented. |
+| `compression` | optional | string | Compression scheme for outgoing messages. Valid values: `none`, `png`, `cbor`, `cbor-raw`. |
+
+The operation fails if either of the following is true:
+
+- The subscription for the topic already exists with a different type.
+- The type specified cannot be resolved.
+
+If `queue_length` is specified, then messages are placed into the queue before being sent.
+Messages are sent from the head of the queue.
+If the queue gets full, the oldest message is removed and replaced by the newest message.
+
+If a client has multiple subscriptions to the same topic, then messages are sent at the lowest `throttle_rate`, with the lowest `fragment_size`, and lowest `queue_length`.
+It is recommended that the client provides IDs for its subscriptions to enable rosbridge to effectively choose the appropriate fragmentation size and publishing rate.
+
+#### 4.3.5 unsubscribe (C → S)
+
+Unsubscribe from a topic to stop receiving updates.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"unsubscribe"` |
+| `id` | optional | string | An ID to disassociate with this subscription. If provided, only the matching subscription is removed. If omitted, all subscriptions for the topic by this client are removed. |
+| `topic` | required | string | The name of the topic to unsubscribe from. |
+
+The operation fails if either of the following is true:
+
+- The client has not previously subscribed to the topic.
+- The client has already unregistered all subscriptions for the topic.
+- The `id` provided does not match any existing subscription by this client for the topic.
+
+### 4.4 Service operations
+
+#### 4.4.1 advertise_service (C → S)
+
+Advertise an external service server. Requests come to the client via `call_service`.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"advertise_service"` |
+| `service` | required | string | The name of the service to advertise. |
+| `type` | required | string | The advertised service type. |
+
+The operation fails if the type specified cannot be resolved.
+
+When a client advertises the same service a second time, the previous advertisement is replaced with the new one.
+
+#### 4.4.2 unadvertise_service (C → S)
+
+Stop advertising an external ROS service server.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"unadvertise_service"` |
+| `service` | required | string | The name of the service to unadvertise. |
+
+The operation fails if the client has not previously advertised the service, or has already unadvertised the service.
+
+#### 4.4.3 call_service (C ↔ S)
+
+Invoke a service.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"call_service"` |
+| `id` | required if S → C | string | An ID to associate with this service call. Will be included in the response. |
+| `service` | required | string | The name of the service to call. |
+| `args` | optional | object or list | The arguments to pass to the service. Can be an object with message fields or a list of field values in the order they appear in the service request definition. |
+| `fragment_size` | optional | integer | (only C → S) The maximum size (in bytes) a message can reach before it is fragmented. |
+| `timeout` | optional | float | (only C → S) The time, in seconds, to wait for a response from the server. |
+
+When a client sends a `call_service` message, the operation fails if either of the following is true:
+
+- No service servers have been advertised for the specified service.
+- The `args` do not conform to the service request type.
+
+When a server sends a `call_service` message to the client, it always contains a unique `id` field, which the client must include in the corresponding `service_response` message.
+
+#### 4.4.4 service_response (C ↔ S)
+
+Return a service response.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"service_response"` |
+| `id` | required if C → S | string | An ID to associate with this service response. Will match the ID of the corresponding service call if it was provided. |
+| `service` | required | string | The name of the service that was called. |
+| `values` | conditional | object or string | When `result` is `true`, this field is **required** and must be an object containing the service's response values (conforming to the service's response message definition). When `result` is `false`, this field is **optional** and, if present, is typically a string error message. |
+| `result` | required | boolean | The result of the service call. `true` indicates success (a structured `values` object is required), `false` indicates failure (an error may be conveyed via `values` or other means) |
+
+When a client sends a `service_response` message, the operation fails if any of the following is true:
+
+- The service has not been advertised by the client.
+- The `id` field is missing or does not match any existing service call for this client.
+- The `values` do not conform to the service response message definition when `result` is `true`.
+
+### 4.5 Action operations
+
+#### 4.5.1 advertise_action (C → S)
+
+Advertise an external ROS action server.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"advertise_action"` |
+| `action` | required | string | The name of the action to advertise. |
+| `type` | required | string | The advertised action type. |
+
+The operation fails if the type specified cannot be resolved.
+
+When a client advertises the same action a second time, the previous advertisement is replaced with the new one.
+
+#### 4.5.2 unadvertise_action (C → S)
+
+Stop advertising an external ROS action server.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"unadvertise_action"` |
+| `action` | required | string | The name of the action to unadvertise. |
+
+The operation fails if the client has not previously advertised the action, or has already unadvertised the action.
+
+#### 4.5.3 send_action_goal (C ↔ S)
+
+Send an action goal.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"send_action_goal"` |
+| `id` | required if S → C | string | An ID to associate with this goal. Will be included in feedback and result messages related to this goal. |
+| `action` | required | string | The name of the action to send a goal to. |
+| `action_type` | required | string | The action type. |
+| `args` | optional | object or list | The arguments to pass to the action goal. Can be an object with message fields or a list of field values in the order they appear in the action goal definition. |
+| `feedback` | optional | boolean | Whether to send feedback messages for this goal. Defaults to `false`. |
+| `fragment_size` | optional | integer | (only C → S) The maximum size (in bytes) a message can reach before it is fragmented. |
+
+When a client sends a `send_action_goal` message, the operation fails if either of the following is true:
+
+- No action servers have been advertised for the specified action.
+- The `args` do not conform to the action goal type.
+
+#### 4.5.4 cancel_action_goal (C ↔ S)
+
+Cancel an action goal.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"cancel_action_goal"` |
+| `id` | required | string | An ID to identify which goal to cancel. Must match the ID of an already in-progress goal. |
+| `action` | required | string | The name of the action to cancel a goal for. |
+
+When a client sends the `cancel_action_goal` message, the operation fails if either of the following is true:
+
+- The client has not previously sent a goal for the action.
+- The client has already cancelled the goal.
+- The `id` provided does not match any existing goal by this client for the action.
+- The goal has already completed.
+
+#### 4.5.5 action_feedback (C ↔ S)
+
+Report action feedback.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"action_feedback"` |
+| `id` | required if C → S | string | An ID to identify which goal this feedback is for. Must match the ID of an already in-progress goal. |
+| `action` | required | string | The name of the action this feedback is for. |
+| `values` | required | object | The feedback values. Must conform to the feedback message definition of the action. |
+
+When a client sends an `action_feedback` message, the operation fails if any of the following is true:
+
+- The `id` field is missing or does not match any existing goal by this client.
+- The `values` do not conform to the feedback message definition of the action.
+
+#### 4.5.6 action_result (C ↔ S)
+
+Report an action result.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `op` | required | string | Must be `"action_result"` |
+| `id` | required if C → S | string | An ID to identify which goal this result is for. Must match the ID of an already in-progress goal. |
+| `action` | required | string | The name of the action this result is for. |
+| `values` | conditional | object or string | When `result` is `true`, this field is **required** and must be an object containing the action's result values (conforming to the action's result message definition). When `result` is `false`, this field is **optional** and, if present, is typically a string error message. |
+| `status` | required | integer | The status of the action. This matches the enumeration in the [`action_msgs/msg/GoalStatus`](https://docs.ros2.org/latest/api/action_msgs/msg/GoalStatus.html) ROS message. |
+| `result` | required | boolean | Indicates whether the action completed successfully. `true` indicates success (a structured `values` object is required), `false` indicates failure (an error may be conveyed via `values` or other means). |
+
+When a client sends an `action_result` message, the operation fails if any of the following is true:
+
+- The client has not previously sent a goal for the action.
+- The client has already sent a result for the goal.
+- The `id` provided does not match any existing goal by this client for the action.
+- The `values` field is missing or does not conform to the action result message definition when `result` is `true`.
+
+[cbor]: https://tools.ietf.org/html/rfc7049
+[draft typed array tags]: https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00
+[rosapi]: https://docs.ros.org/en/rolling/p/rosapi/
