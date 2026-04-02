@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.6.0 (2026-04-02)
+------------------
 * feat: Cache rosapi get/set parameter clients (backport `#1201 <https://github.com/RobotWebTools/rosbridge_suite/issues/1201>`_) (`#1212 <https://github.com/RobotWebTools/rosbridge_suite/issues/1212>`_)
 * Contributors: Błażej Sowa
 
