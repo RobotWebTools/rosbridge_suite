@@ -2,6 +2,17 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.6.0 (2026-04-02)
+------------------
+* fix: Race condition in subscription destruction (backport `#1194 <https://github.com/RobotWebTools/rosbridge_suite/issues/1194>`_) (`#1208 <https://github.com/RobotWebTools/rosbridge_suite/issues/1208>`_)
+* feat: Create topic registrations in publish when topic not previously advertised (backport `#1203 <https://github.com/RobotWebTools/rosbridge_suite/issues/1203>`_) (`#1205 <https://github.com/RobotWebTools/rosbridge_suite/issues/1205>`_)
+* fix: Prevent client destruction race condition (backport `#1183 <https://github.com/RobotWebTools/rosbridge_suite/issues/1183>`_) (`#1189 <https://github.com/RobotWebTools/rosbridge_suite/issues/1189>`_)
+* fix: Race condition in websocket test (backport `#1185 <https://github.com/RobotWebTools/rosbridge_suite/issues/1185>`_) (`#1187 <https://github.com/RobotWebTools/rosbridge_suite/issues/1187>`_)
+* feat: Add pep8-naming checks (backport `#1177 <https://github.com/RobotWebTools/rosbridge_suite/issues/1177>`_) (`#1181 <https://github.com/RobotWebTools/rosbridge_suite/issues/1181>`_)
+* fix: Deadlock in concurrent module import in ros_loader (backport `#1173 <https://github.com/RobotWebTools/rosbridge_suite/issues/1173>`_) (`#1179 <https://github.com/RobotWebTools/rosbridge_suite/issues/1179>`_)
+* feat: Add timeout parameters to launch (backport `#1174 <https://github.com/RobotWebTools/rosbridge_suite/issues/1174>`_) (`#1176 <https://github.com/RobotWebTools/rosbridge_suite/issues/1176>`_)
+* Contributors: Błażej Sowa, FieldSwan
+
 2.5.0 (2026-03-02)
 ------------------
 * fix: Reduce idle CPU consumption of websocket server (backport `#1040 <https://github.com/RobotWebTools/rosbridge_suite/issues/1040>`_) (`#1153 <https://github.com/RobotWebTools/rosbridge_suite/issues/1153>`_)

@@ -2,6 +2,14 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.6.0 (2026-04-02)
+------------------
+* fix: Race condition in subscription destruction (backport `#1194 <https://github.com/RobotWebTools/rosbridge_suite/issues/1194>`_) (`#1208 <https://github.com/RobotWebTools/rosbridge_suite/issues/1208>`_)
+* feat: Create topic registrations in publish when topic not previously advertised (backport `#1203 <https://github.com/RobotWebTools/rosbridge_suite/issues/1203>`_) (`#1205 <https://github.com/RobotWebTools/rosbridge_suite/issues/1205>`_)
+* feat: Add pep8-naming checks (backport `#1177 <https://github.com/RobotWebTools/rosbridge_suite/issues/1177>`_) (`#1181 <https://github.com/RobotWebTools/rosbridge_suite/issues/1181>`_)
+* fix: Deadlock in concurrent module import in ros_loader (backport `#1173 <https://github.com/RobotWebTools/rosbridge_suite/issues/1173>`_) (`#1179 <https://github.com/RobotWebTools/rosbridge_suite/issues/1179>`_)
+* Contributors: Błażej Sowa, FieldSwan
+
 2.5.0 (2026-03-02)
 ------------------
 * fix: numpy.ndarray not handled in CBOR serialization (backport `#1161 <https://github.com/RobotWebTools/rosbridge_suite/issues/1161>`_) (`#1162 <https://github.com/RobotWebTools/rosbridge_suite/issues/1162>`_)
