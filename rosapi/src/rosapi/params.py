@@ -33,13 +33,16 @@
 from __future__ import annotations
 
 import fnmatch
+from dataclasses import dataclass
 from json import dumps, loads
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
 from rcl_interfaces.srv import GetParameters, ListParameters, SetParameters
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.parameter import get_parameter_value
+from rclpy.qos import qos_profile_parameters
+from rclpy.time import Time
 from ros2node.api import get_absolute_node_name
 
 from rosapi.async_helper import futures_wait_for
@@ -63,9 +66,11 @@ as JSON in order to facilitate dynamically typed SRV messages """
 
 # Constants
 DEFAULT_PARAM_TIMEOUT_SEC = 5.0
+DEFAULT_CLIENT_PERSISTENCE_SEC = 5.0
 
 _node = None
 _timeout_sec = DEFAULT_PARAM_TIMEOUT_SEC
+_client_persistence_sec = DEFAULT_CLIENT_PERSISTENCE_SEC
 
 _parameter_type_mapping = [
     "",
@@ -81,7 +86,32 @@ _parameter_type_mapping = [
 ]
 
 
-def init(node: Node, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC) -> None:
+@dataclass
+class _CachedClient:
+    """
+    Class to hold cached clients along with metadata for cleanup.
+
+    :param use_count: The number of ongoing calls using this client.
+    :type use_count: int
+    :param last_used_time: The last time this client was used for a call.
+    :type last_used_time: Time
+    :param client: The cached client instance.
+    :type client: Client
+    """
+
+    use_count: int
+    last_used_time: Time
+    client: Client
+
+
+_cached_clients: dict[str, _CachedClient] = {}
+
+
+def init(
+    node: Node,
+    timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC,
+    client_persistence_sec: float = DEFAULT_CLIENT_PERSISTENCE_SEC,
+) -> None:
     """
     Initialize params module with a rclpy.node.Node for further use.
 
@@ -91,15 +121,80 @@ def init(node: Node, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC) -> None:
     :type node: Node
     :param timeout_sec: The timeout in seconds for service calls.
     :type timeout_sec: float | int, optional
-    :raises ValueError: If the timeout is not a positive number.
+    :param client_persistence_sec: The time in seconds to keep unused clients in the cache.
+    :type client_persistence_sec: float | int, optional
+    :raises ValueError: If timeout_sec or client_persistence_sec are not positive numbers.
     """
-    global _node, _timeout_sec
+    global _node, _timeout_sec, _client_persistence_sec
     _node = node
 
     if not isinstance(timeout_sec, int | float) or timeout_sec <= 0:
         msg = "Parameter timeout must be a positive number"
         raise ValueError(msg)
     _timeout_sec = timeout_sec
+
+    if not isinstance(client_persistence_sec, int | float) or client_persistence_sec <= 0:
+        msg = "Client persistence time must be a positive number"
+        raise ValueError(msg)
+    _client_persistence_sec = client_persistence_sec
+
+    _node.create_timer(0.5, _cleanup_timer_callback)
+
+
+def _get_client(
+    service_name: str, service_type: type[GetParameters | SetParameters]
+) -> (
+    Client[SetParameters_Request, SetParameters_Response]
+    | Client[GetParameters_Request, GetParameters_Response]
+):
+    """
+    Get a cached client for the given service, or create a new one if it doesn't exist.
+
+    :param service_name: The name of the service to get a client for.
+    :param service_type: The type of the service to get a client for.
+    :return: A client for the given service.
+    :rtype: Client
+    """
+    cached_client = _cached_clients.get(service_name)
+    if cached_client is not None:
+        return cached_client.client
+
+    assert _node is not None
+
+    _node.get_logger().get_child("params").debug(f"Creating new client for service {service_name}")
+
+    client = _node.create_client(
+        service_type,  # type: ignore[misc]
+        service_name,
+        callback_group=MutuallyExclusiveCallbackGroup(),
+        qos_profile=qos_profile_parameters,
+    )
+    _cached_clients[service_name] = _CachedClient(use_count=0, last_used_time=Time(), client=client)
+    return client
+
+
+def _cleanup_timer_callback() -> None:
+    """
+    Timer callback to clean up cached clients that haven't been used for a while.
+
+    This is necessary to prevent the cache from growing indefinitely if there are many
+    different nodes being interacted with.
+    """
+    assert _node is not None
+    now = _node.get_clock().now()
+    to_remove = []
+    for service_name, cached_client in _cached_clients.items():
+        if cached_client.use_count == 0 and (now - cached_client.last_used_time).nanoseconds > int(
+            _client_persistence_sec * 1e9
+        ):
+            _node.destroy_client(cached_client.client)
+            to_remove.append(service_name)
+
+    for service_name in to_remove:
+        _node.get_logger().get_child("params").debug(
+            f"Cleaning up cached client for service {service_name}"
+        )
+        del _cached_clients[service_name]
 
 
 async def set_param(node_name: str, name: str, value: str, params_glob: list[str]) -> None:
@@ -136,6 +231,8 @@ async def _set_param(
     deducing the parameter type if it's not specified.
     parameter_type allows forcing a type for the given value; this is useful to delete parameters.
     """
+    assert _node is not None
+
     parameter = Parameter()
     parameter.name = name
     if parameter_type is None:
@@ -148,11 +245,10 @@ async def _set_param(
             assert value is not None
             setattr(parameter.value, _parameter_type_mapping[parameter_type], loads(value))
 
-    assert _node is not None
-    client: Client[SetParameters_Request, SetParameters_Response] = _node.create_client(
-        SetParameters,
-        f"{node_name}/set_parameters",
-        callback_group=MutuallyExclusiveCallbackGroup(),
+    service_name = f"{node_name}/set_parameters"
+    client = cast(
+        "Client[SetParameters_Request, SetParameters_Response]",
+        _get_client(service_name, SetParameters),
     )
 
     if not client.service_is_ready():
@@ -165,9 +261,14 @@ async def _set_param(
 
     future = client.call_async(request)
 
-    await futures_wait_for(_node, [future], _timeout_sec)
+    # Increase the client's use count so it's not cleaned up while we're awaiting the response.
+    _cached_clients[service_name].use_count += 1
 
-    _node.destroy_client(client)
+    try:
+        await futures_wait_for(_node, [future], _timeout_sec)
+    finally:
+        _cached_clients[service_name].use_count -= 1
+        _cached_clients[service_name].last_used_time = _node.get_clock().now()
 
     if not future.done():
         future.cancel()
@@ -210,10 +311,11 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     Internal helper function for get_param.
     """
     assert _node is not None
-    client: Client[GetParameters_Request, GetParameters_Response] = _node.create_client(
-        GetParameters,
-        f"{node_name}/get_parameters",
-        callback_group=MutuallyExclusiveCallbackGroup(),
+
+    service_name = f"{node_name}/get_parameters"
+    client = cast(
+        "Client[GetParameters_Request, GetParameters_Response]",
+        _get_client(service_name, GetParameters),
     )
 
     if not client.service_is_ready():
@@ -226,9 +328,14 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
 
     future = client.call_async(request)
 
-    await futures_wait_for(_node, [future], _timeout_sec)
+    # Increase the client's use count so it's not cleaned up while we're awaiting the response.
+    _cached_clients[service_name].use_count += 1
 
-    _node.destroy_client(client)
+    try:
+        await futures_wait_for(_node, [future], _timeout_sec)
+    finally:
+        _cached_clients[service_name].use_count -= 1
+        _cached_clients[service_name].last_used_time = _node.get_clock().now()
 
     if not future.done():
         future.cancel()
@@ -281,7 +388,7 @@ async def get_param_names(params_glob: str | None) -> list[str]:
     nodes = [get_absolute_node_name(node) for node in get_nodes()]
 
     futures: list[tuple[str, Future[ListParameters_Response]]] = []
-    clients = []
+    clients: list[Client[ListParameters_Request, ListParameters_Response]] = []
     for node_name in nodes:
         if node_name == _node.get_fully_qualified_name():
             continue
