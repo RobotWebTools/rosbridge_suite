@@ -166,6 +166,8 @@ def populate_instance(
     inst_fields = inst.get_fields_and_field_types()
     if inst_fields.get("header") == "std_msgs/Header":
         header_msg = msg.get("header")
+        if header_msg is not None and not isinstance(header_msg, dict):
+            raise FieldTypeMismatchException(inst_type, ["header"], "dict", type(header_msg))
         if header_msg is None or "stamp" not in header_msg:
             assert hasattr(inst, "header")
             header_inst = inst.header
