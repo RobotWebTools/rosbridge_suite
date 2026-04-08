@@ -36,14 +36,14 @@ from __future__ import annotations
 import fnmatch
 from typing import TYPE_CHECKING, Any
 
-from rclpy.qos import QoSProfile
-
 from rosbridge_library.capabilities.advertise import Registration
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
 from rosbridge_library.internal.qos_extraction import extract_qos_profile
 
 if TYPE_CHECKING:
+    from rclpy.qos import QoSProfile
+
     from rosbridge_library.protocol import Protocol
 
 
