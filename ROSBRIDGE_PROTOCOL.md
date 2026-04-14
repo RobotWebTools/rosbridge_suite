@@ -1,4 +1,4 @@
-# rosbridge v2.0.0 Protocol Specification <!-- omit in toc -->
+# rosbridge v2.1.0 Protocol Specification <!-- omit in toc -->
 
 This document defines the rosbridge protocol and its supported operations.
 The protocol is built around structured message objects (e.g., JSON or CBOR) with an `op` field that identifies the operation being performed.
