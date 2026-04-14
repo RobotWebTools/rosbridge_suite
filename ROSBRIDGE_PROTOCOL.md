@@ -315,7 +315,8 @@ The operation fails if the `msg` does not conform to the type of the topic.
 Special cases for how the server handles the `msg` field:
 
 - If the `msg` does not contain all fields for the topic type, then the unspecified fields are filled in with defaults.
-- If the topic type has a `header` field of type `std_msgs/Header` and the client omits the `header.stamp` field, then the server will automatically populate it with the current ROS time.
+- If the topic type has a root `header` field of type `std_msgs/Header` and the client omits the `header.stamp` field, then the server will automatically populate it with the current ROS time.
+- If the topic type has any field of type `builtin_interfaces/Time` and the client sets that field to `"now"` string, then the server will automatically populate it with the current ROS time.
 
 **Server → Client**
 
