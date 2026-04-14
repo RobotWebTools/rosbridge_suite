@@ -51,7 +51,6 @@ The protocol version is specified as a semantic version number in the format `MA
     - [4.5.4 cancel\_action\_goal (C ↔ S)](#454-cancel_action_goal-c--s)
     - [4.5.5 action\_feedback (C ↔ S)](#455-action_feedback-c--s)
     - [4.5.6 action\_result (C ↔ S)](#456-action_result-c--s)
-- [5. QoS Object Specification](#5-qos-object-specification)
 
 ## 1. Message envelope
 
@@ -255,7 +254,6 @@ Register the client as a publisher on a topic. This allows the server to track w
 | `type` | required | string | The type of the topic to advertise. |
 | `latch` | optional | boolean | Whether to latch the last message published on this topic. Defaults to `false`. |
 | `queue_size` | optional | integer | Size of the internal publisher queue (QoS depth policy). Defaults to `100`. |
-| `qos` | optional | string dictionary | QoS Profile to use for this advertisement. See section `4.2` for defaults, `5` for dictionary definition. | 
 
 The operation fails if either of the following is true:
 
@@ -308,7 +306,6 @@ In this case, the following additional fields are also supported in the message 
 | `type` | optional | string | The type of the topic to advertise. If omitted, the type will be inferred from the current ROS graph. |
 | `latch` | optional | boolean | Whether to latch the last message published on this topic. Defaults to `false`. |
 | `queue_size` | optional | integer | Size of the internal publisher queue (QoS depth policy). Defaults to `100`. |
-| `qos` | optional | string dictionary | QoS Profile to use for this advertisement. See section `4.2` for defaults, `5` for dictionary definition. |
 
 The operation fails if the `msg` does not conform to the type of the topic.
 
@@ -340,7 +337,6 @@ That way, each can individually unsubscribe and rosbridge can select the correct
 | `queue_length` | optional | integer | Size of the queue to buffer messages when throttled. Defaults to `0` (no queueing). When full, the oldest message is dropped in favour of the newest. |
 | `fragment_size` | optional | integer | Maximum size (in bytes) a message can reach before it is fragmented. |
 | `compression` | optional | string | Compression scheme for outgoing messages. Valid values: `none`, `png`, `cbor`, `cbor-raw`. |
-| `qos` | optional | string dictionary | QoS Profile to use with this subscription. See section `4.2` for defaults, `5` for dictionary definition. |
 
 The operation fails if either of the following is true:
 
@@ -537,24 +533,3 @@ When a client sends an `action_result` message, the operation fails if any of th
 [cbor]: https://tools.ietf.org/html/rfc7049
 [draft typed array tags]: https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00
 [rosapi]: https://docs.ros.org/en/rolling/p/rosapi/
-
-## 5. QoS Object Specification
-
-The operation QoS field is a nested JSON object in the form:
-```json
-  qos: {
-    fields
-  }
-```
-
-Possible fields are described in the [ROS docs](https://docs.ros.org/en/humble/Concepts/Intermediate/About-Quality-of-Service-Settings.html). Fields that are not part of the docs-defined QOS interface are ignored, with the exception of `avoid_ros_namespace_conventions`, which is a boolean value.
-
-An example qos field may be:
-```json
-  qos: {
-    "depth": 12,
-    "reliability": "reliable",
-    "liveliness_leave_duration": [12, 0],
-    "deadline": "infinite",
-    "history": 1,
-  }
