@@ -76,6 +76,7 @@ class Subscription(Generic[ROSMessageT]):
         topic: str,
         publish: Callable[[OutgoingMessage[ROSMessageT], int | None, str], None] | None,
         node_handle: Node,
+        qos_depth: int = 10,
     ) -> None:
         """
         Create a subscription.
@@ -92,6 +93,7 @@ class Subscription(Generic[ROSMessageT]):
         self.topic = topic
         self.publish = publish
         self.node_handle = node_handle
+        self.subscriber_qos_depth = qos_depth
 
         self.clients = {}
 
@@ -156,6 +158,7 @@ class Subscription(Generic[ROSMessageT]):
             self.node_handle,
             msg_type=msg_type,
             raw=raw,
+            qos_depth=self.subscriber_qos_depth,
         )
 
     def unsubscribe(self, sid: str | None = None) -> None:
@@ -248,9 +251,10 @@ class Subscribe(Capability):
     )
     unsubscribe_msg_fields = ((True, "topic", str),)
 
-    parameter_names = ("topics_glob",)
+    parameter_names = ("topics_glob", "subscriber_qos_depth")
 
     topics_glob: list[str] | None = None
+    subscriber_qos_depth: int = 10
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
@@ -296,7 +300,7 @@ class Subscribe(Capability):
             client_id = self.protocol.client_id
             cb = partial(self.publish, topic)
             self._subscriptions[topic] = Subscription(
-                client_id, topic, cb, self.protocol.node_handle
+                client_id, topic, cb, self.protocol.node_handle, qos_depth=self.subscriber_qos_depth
             )
 
         # Register the subscriber
