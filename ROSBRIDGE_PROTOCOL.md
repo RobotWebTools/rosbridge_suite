@@ -238,7 +238,7 @@ The `category` component may be omitted, in which case rosbridge will infer it f
 
 #### 4.2.1 QoS profile object
 
-Operations that support QoS configuration accept an optional `qos` field containing a JSON object with the following fields:
+Operations that support QoS configuration accept an optional `qos` field containing a structured object with the following fields:
 
 | Field | Type | Description |
 |-------|------|-------------|
