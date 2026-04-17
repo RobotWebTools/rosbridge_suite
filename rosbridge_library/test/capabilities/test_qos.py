@@ -63,6 +63,7 @@ class TestQoS(unittest.TestCase):
         proto = Protocol("hello", self.node)
         pub = Publish(proto)
         topic = "/test_publish_invalid_qos_args"
+        topic_type = "std_msgs/msg/String"
 
         invalid_qos_profiles: list[Any] = [
             # qos must be a dict
@@ -90,7 +91,7 @@ class TestQoS(unittest.TestCase):
                 msg = {
                     "op": "advertise",
                     "topic": topic,
-                    "type": "std_msgs/String",
+                    "type": topic_type,
                     "qos": qos,
                 }
                 self.node.get_logger().info(f"Testing invalid QoS profile: {qos}")
@@ -100,6 +101,7 @@ class TestQoS(unittest.TestCase):
         proto = Protocol("hello", self.node)
         pub = Publish(proto)
         topic = "/test_publish_incompatible_qos"
+        topic_type = "std_msgs/msg/String"
 
         received: dict[str, Any] = {"msg": None}
 
@@ -110,7 +112,7 @@ class TestQoS(unittest.TestCase):
             String, topic, cb, qos_profile=extract_qos_profile(QOS_INCOMPATIBLE_SUB)
         )
 
-        msg = {"op": "publish", "msg_type": String, "topic": topic, "qos": QOS_INCOMPATIBLE_PUB}
+        msg = {"op": "publish", "topic": topic, "type": topic_type, "qos": QOS_INCOMPATIBLE_PUB}
         pub.publish(msg)
 
         time.sleep(0.1)
@@ -120,6 +122,7 @@ class TestQoS(unittest.TestCase):
         proto = Protocol("hello", self.node)
         pub = Publish(proto)
         topic = "/test_backward_compatibility_queue_size"
+        topic_type = "std_msgs/msg/String"
         msg = {"data": "test queue_size"}
 
         received: dict[str, Any] = {"msg": None}
@@ -133,6 +136,7 @@ class TestQoS(unittest.TestCase):
             {
                 "op": "publish",
                 "topic": topic,
+                "type": topic_type,
                 "msg": msg,
                 "queue_size": 42,
             }
@@ -177,6 +181,7 @@ class TestQoS(unittest.TestCase):
         proto = Protocol("hello", self.node)
         pub = Publish(proto)
         topic = "/test_publish_qos_works"
+        topic_type = "std_msgs/msg/String"
         msg = {"data": "test publish qos works"}
 
         received: dict[str, Any] = {"msg": None}
@@ -190,6 +195,7 @@ class TestQoS(unittest.TestCase):
             {
                 "op": "publish",
                 "topic": topic,
+                "type": topic_type,
                 "msg": msg,
                 "qos": QOS_COMPATIBLE_PUB,
             }
