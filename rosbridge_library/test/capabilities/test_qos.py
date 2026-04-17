@@ -3,17 +3,18 @@ from __future__ import annotations
 
 import time
 import unittest
-from json import dumps, loads
 from threading import Thread
 from typing import Any
 
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy
 from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
 )
+from rosbridge_library.internal.publishers import manager
 from rosbridge_library.internal.qos_extraction import extract_qos_profile
 from rosbridge_library.protocol import Protocol
 from std_msgs.msg import String
@@ -115,11 +116,11 @@ class TestQoS(unittest.TestCase):
         time.sleep(0.1)
         self.assertIsNone(received["msg"])
 
-    def test_backward_compatibility(self) -> None:
+    def test_backward_compatibility_queue_size(self) -> None:
         proto = Protocol("hello", self.node)
         pub = Publish(proto)
-        topic = "/test_backward_compatibility"
-        msg = {"data": "test if old publish works"}
+        topic = "/test_backward_compatibility_queue_size"
+        msg = {"data": "test queue_size"}
 
         received: dict[str, Any] = {"msg": None}
 
@@ -128,17 +129,47 @@ class TestQoS(unittest.TestCase):
 
         self.node.create_subscription(String, topic, cb, 100)
 
-        pub_msg = loads(
-            dumps(
-                {
-                    "op": "publish",
-                    "topic": topic,
-                    "msg": msg,
-                    "queue_size": 50,
-                },
-            ),
+        pub.publish(
+            {
+                "op": "publish",
+                "topic": topic,
+                "msg": msg,
+                "queue_size": 42,
+            }
         )
-        pub.publish(pub_msg)
+
+        self.assertEqual(manager._publishers[topic].qos_profile.depth, 42)
+        time.sleep(0.1)
+        self.assertEqual(received["msg"].data, msg["data"])
+
+    def test_backward_compatibility_latch(self) -> None:
+        proto = Protocol("hello", self.node)
+        pub = Publish(proto)
+        topic = "/test_backward_compatibility_latch"
+        topic_type = "std_msgs/msg/String"
+        msg = {"data": "test latch"}
+
+        pub.publish(
+            {
+                "op": "publish",
+                "topic": topic,
+                "type": topic_type,
+                "msg": msg,
+                "latch": True,
+            }
+        )
+
+        qos_profile = manager._publishers[topic].qos_profile
+        self.assertEqual(qos_profile.durability, DurabilityPolicy.TRANSIENT_LOCAL)
+        self.assertEqual(qos_profile.depth, 1)
+
+        # Late-joining subscriber should receive the latched message
+        received: dict[str, Any] = {"msg": None}
+
+        def cb(msg: String) -> None:
+            received["msg"] = msg
+
+        self.node.create_subscription(String, topic, cb, qos_profile)
         time.sleep(0.1)
         self.assertEqual(received["msg"].data, msg["data"])
 
@@ -155,17 +186,14 @@ class TestQoS(unittest.TestCase):
 
         self.node.create_subscription(String, topic, cb, extract_qos_profile(Qos_compatible_sub))
 
-        pub_msg = loads(
-            dumps(
-                {
-                    "op": "publish",
-                    "topic": topic,
-                    "msg": msg,
-                    "qos": Qos_compatible_pub,
-                },
-            ),
+        pub.publish(
+            {
+                "op": "publish",
+                "topic": topic,
+                "msg": msg,
+                "qos": Qos_compatible_pub,
+            }
         )
-        pub.publish(pub_msg)
         time.sleep(0.1)
         self.assertEqual(received["msg"].data, msg["data"])
 
