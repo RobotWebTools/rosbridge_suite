@@ -89,7 +89,7 @@ class TestQoS(unittest.TestCase):
         for qos in invalid_qos_profiles:
             with self.subTest(qos=qos):
                 msg = {
-                    "op": "advertise",
+                    "op": "publish",
                     "topic": topic,
                     "type": topic_type,
                     "qos": qos,
