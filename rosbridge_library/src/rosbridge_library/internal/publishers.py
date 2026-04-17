@@ -46,10 +46,7 @@ from rosbridge_library.internal.topics import (
     TopicNotRegisteredException,
     TypeConflictException,
 )
-from rosbridge_library.internal.type_support import (
-    ROSMessage,
-    ROSMessageT,
-)
+from rosbridge_library.internal.type_support import ROSMessage, ROSMessageT
 
 if TYPE_CHECKING:
     from rclpy.node import Node
@@ -123,8 +120,9 @@ class MultiPublisher(Generic[ROSMessageT]):
             raise TypeConflictException(topic, topic_type, msg_type_string)
 
         if qos is None:
-            # Fall back to old rosbridge behavior if no qos provided, using latch and queue_size parameters
-            qos = self.default_qos_profile(
+            # Fall back to default rosbridge QoS settings which try to provide a "best effort"
+            # compatibility with ROS subscriptions.
+            qos = self._get_default_qos_profile(
                 latch=latched_client_id is not None, queue_size=queue_size
             )
 
@@ -140,7 +138,9 @@ class MultiPublisher(Generic[ROSMessageT]):
             msg_class, topic, qos_profile=self.qos_profile
         )
 
-    def default_qos_profile(self, latch: bool = False, queue_size: int | None = None) -> QoSProfile:
+    def _get_default_qos_profile(
+        self, latch: bool = False, queue_size: int | None = None
+    ) -> QoSProfile:
         """Get the default QoS profile to use for a publisher."""
         # Adding a lifespan solves the problem of late-joining subscribers
         # without the need of a custom message publisher implementation.
