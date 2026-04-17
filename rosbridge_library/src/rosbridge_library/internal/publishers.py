@@ -67,7 +67,7 @@ class MultiPublisher(Generic[ROSMessageT]):
         node_handle: Node,
         msg_type: str | None = None,
         qos: QoSProfile | None = None,
-        latched_client_id: str | None = None,
+        latch: bool = False,
         queue_size: int | None = None,
     ) -> None:
         """
@@ -80,8 +80,8 @@ class MultiPublisher(Generic[ROSMessageT]):
         :param qos: (optional) If a QoSProfile is provided, topic will be created with supplied
             profile, else rosbridge falls back to default QoS settings that try to provide a
             "best effort" compatibility with the current ROS graph.
-        :param latched_client_id: (optional, deprecated) If a client requested this publisher to be
-            latched, provide the client_id of that client here. Ignored if qos is provided.
+        :param latch: (optional, deprecated) Whether to make this publisher latched.
+            Ignored if qos is provided.
         :param queue_size: (optional, deprecated) The QoS depth to use for this publisher.
             Ignored if qos is provided.
         :raises TopicNotEstablishedException: If no msg_type was specified by the caller and the
@@ -122,13 +122,10 @@ class MultiPublisher(Generic[ROSMessageT]):
         if qos is None:
             # Fall back to default rosbridge QoS settings which try to provide a "best effort"
             # compatibility with ROS subscriptions.
-            qos = self._get_default_qos_profile(
-                latch=latched_client_id is not None, queue_size=queue_size
-            )
+            qos = self._get_default_qos_profile(latch, queue_size)
 
         # Create the publisher and associated member variables
         self.clients: dict[str, bool] = {}
-        self.latched_client_id = latched_client_id
         self.topic = topic
         self.node_handle = node_handle
         self.msg_class = msg_class
@@ -263,31 +260,14 @@ class PublisherManager:
         :raises Exception: exceptions are propagated from the MultiPublisher if there is a problem
             loading the specified msg class or establishing the publisher
         """
-        latched_client_id = client_id if latch else None
         if topic not in self._publishers:
             self._publishers[topic] = MultiPublisher(
                 topic,
                 node_handle,
                 msg_type=msg_type,
-                latched_client_id=latched_client_id,
-                queue_size=queue_size,
                 qos=qos,
-            )
-        elif latch and self._publishers[topic].latched_client_id != client_id:
-            node_handle.get_logger().warning(
-                f"Client ID {client_id} attempted to register topic [{topic}] as "
-                "latched but this topic was previously registered."
-            )
-            node_handle.get_logger().warning(
-                "Only a single registered latched publisher is supported at the time"
-            )
-        elif not latch and self._publishers[topic].latched_client_id:
-            node_handle.get_logger().warning(
-                f"New non-latched publisher registration for topic [{topic}] which is "
-                "already registered as latched. but this topic was previously registered."
-            )
-            node_handle.get_logger().warning(
-                "Only a single registered latched publisher is supported at the time"
+                latch=latch,
+                queue_size=queue_size,
             )
 
         if msg_type is not None:
