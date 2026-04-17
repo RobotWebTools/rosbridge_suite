@@ -10,7 +10,6 @@ from typing import Any
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
-from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
@@ -64,19 +63,37 @@ class TestQoS(unittest.TestCase):
         pub = Publish(proto)
         topic = "/test_publish_invalid_qos_args"
 
-        received: dict[str, Any] = {"msg": None}
+        invalid_qos_profiles: list[Any] = [
+            # qos must be a dict
+            "abcd",
+            42,
+            ["depth", 10],
+            # invalid policy names
+            {"depth": 10, "reliability": "fast"},
+            {"depth": 10, "durability": "sticky"},
+            {"history": "last_one", "depth": 10},
+            # invalid depth
+            {"depth": -1},
+            {"depth": 1.5},
+            {"depth": "ten"},
+            # invalid duration strings
+            {"depth": 10, "deadline": "soon"},
+            {"depth": 10, "lifespan": "best_available"},  # only valid for deadline
+            # invalid duration types
+            {"depth": 10, "deadline": [1, 0]},
+            {"depth": 10, "lifespan": False},
+        ]
 
-        def cb(msg: String) -> None:
-            received["msg"] = msg
-
-        subscriber_qos = QoSProfile(
-            depth=10,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
-        )
-        self.node.create_subscription(String, topic, cb, subscriber_qos)
-
-        msg = {"op": "publish", "msg_type": String, "topic": topic, "qos": "abcd"}
-        self.assertRaises(InvalidArgumentException, pub.publish, msg)
+        for qos in invalid_qos_profiles:
+            with self.subTest(qos=qos):
+                msg = {
+                    "op": "advertise",
+                    "topic": topic,
+                    "type": "std_msgs/String",
+                    "qos": qos,
+                }
+                self.node.get_logger().info(f"Testing invalid QoS profile: {qos}")
+                self.assertRaises(InvalidArgumentException, pub.publish, msg)
 
     def test_incompatible_qos(self) -> None:
         proto = Protocol("hello", self.node)

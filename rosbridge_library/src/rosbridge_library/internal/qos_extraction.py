@@ -46,12 +46,14 @@ def extract_enum_policy(policy_name: str, mapping: dict[str, _PolicyT]) -> _Poli
 
 
 def extract_duration(duration_raw: float | dict | str) -> Duration:
-    if isinstance(duration_raw, (int, float)):
+    if isinstance(duration_raw, bool):
+        pass  # fall through to the type error below; bool must be checked before int/float
+    elif isinstance(duration_raw, (int, float)):
         if duration_raw < 0:
             err_msg = f"Duration cannot be negative, got {duration_raw}"
             raise InvalidArgumentException(err_msg)
         return Duration(seconds=duration_raw)
-    if isinstance(duration_raw, dict):
+    elif isinstance(duration_raw, dict):
         if "secs" not in duration_raw or "nsecs" not in duration_raw:
             err_msg = f"Duration dict must have 'secs' and 'nsecs' fields, got {duration_raw}"
             raise InvalidArgumentException(err_msg)
@@ -61,7 +63,7 @@ def extract_duration(duration_raw: float | dict | str) -> Duration:
             err_msg = f"Duration cannot have negative values, got secs={secs}, nsecs={nsecs}"
             raise InvalidArgumentException(err_msg)
         return Duration(seconds=secs, nanoseconds=nsecs)
-    if isinstance(duration_raw, str):
+    elif isinstance(duration_raw, str):
         if duration_raw.lower() == "infinite":
             return Infinite
         err_msg = f"'{duration_raw}' is not a valid duration string. Valid values are: 'infinite'"
