@@ -78,7 +78,9 @@ def extract_qos_profile(qosobj: dict[str, Any]) -> QoSProfile:
         err_msg = f"QoS profile must be a dict, got {type(qosobj).__name__}"
         raise InvalidArgumentException(err_msg)
 
-    qos = qos_profile_system_default
+    qos = QoSProfile(
+        **qos_profile_system_default.get_c_qos_profile().to_dict()
+    )  # Start with system default settings
 
     if "history" in qosobj:
         qos.history = extract_enum_policy(qosobj["history"], HistoryPoliciesMapping)
