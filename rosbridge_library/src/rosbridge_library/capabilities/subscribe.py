@@ -307,6 +307,10 @@ class Subscribe(Capability):
                 client_id, topic, cb, self.protocol.node_handle
             )
 
+        qos: QoSProfile | None = None
+        if "qos" in msg:
+            qos = extract_qos_profile(msg["qos"])
+
         # Register the subscriber
         subscribe_args = {
             "sid": sid,
@@ -315,7 +319,7 @@ class Subscribe(Capability):
             "fragment_size": msg.get("fragment_size"),
             "queue_length": msg.get("queue_length", 0),
             "compression": msg.get("compression", "none"),
-            "qos": extract_qos_profile(msg.get("qos")),
+            "qos": qos,
         }
         self._subscriptions[topic].subscribe(**subscribe_args)
 

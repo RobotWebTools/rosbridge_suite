@@ -78,7 +78,10 @@ class Publish(Capability):
         msg_type: str | None = message.get("type")
         latch: bool = message.get("latch", False)
         queue_size: int | None = message.get("queue_size")
-        qos: QoSProfile | None = extract_qos_profile(message.get("qos"))
+
+        qos: QoSProfile | None = None
+        if "qos" in message:
+            qos = extract_qos_profile(message["qos"])
 
         if self.topics_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)

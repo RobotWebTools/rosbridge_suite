@@ -22,28 +22,24 @@ from std_msgs.msg import String
 Qos_compatible_pub = {
     "durability": "volatile",
     "depth": 2,
-    "deadline": [2],
-    "lifespan": [1, 8888],
-    "liveliness_lease_duration": "infinite",
+    "deadline": 2,
+    "lifespan": {"secs": 1, "nsecs": 8888},
 }
 Qos_compatible_sub = {
     "durability": "volatile",
     "depth": 2,
-    "deadline": [2],
-    "lifespan": [1, 0],
-    "liveliness_lease_duration": "infinite",
+    "deadline": 2,
+    "lifespan": {"secs": 1, "nsecs": 0},
 }
 Qos_incompatible_pub = {
     "durability": "volatile",
     "depth": 200,
-    "deadline": [5],
-    "liveliness": "automatic",
+    "deadline": 5,
 }
 Qos_incompatible_sub = {
     "durability": "transient_local",
     "depth": 150,
-    "deadline": [4],
-    "liveliness": "manual_by_topic",
+    "deadline": 4,
 }
 
 
@@ -87,24 +83,16 @@ class TestQoS(unittest.TestCase):
         pub = Publish(proto)
         topic = "/test_publish_incompatible_qos"
 
-        pub_qos_obj = Qos_incompatible_pub
-        _ = extract_qos_profile(pub_qos_obj)
-        pub_qos: QoSProfile = _ if _ is not None else QoSProfile(depth=10)
-        sub_qos_obj = Qos_incompatible_sub
-        _ = extract_qos_profile(sub_qos_obj)
-        sub_qos: QoSProfile = _ if _ is not None else QoSProfile(depth=10)
-
-        self.assertIsNotNone(pub_qos)
-        self.assertIsNotNone(sub_qos)
-
         received: dict[str, Any] = {"msg": None}
 
         def cb(msg: String) -> None:
             received["msg"] = msg
 
-        self.node.create_subscription(String, topic, cb, qos_profile=sub_qos)
+        self.node.create_subscription(
+            String, topic, cb, qos_profile=extract_qos_profile(Qos_incompatible_sub)
+        )
 
-        msg = {"op": "publish", "msg_type": String, "topic": topic, "qos": pub_qos_obj}
+        msg = {"op": "publish", "msg_type": String, "topic": topic, "qos": Qos_incompatible_pub}
         pub.publish(msg)
 
         time.sleep(0.1)
@@ -142,22 +130,13 @@ class TestQoS(unittest.TestCase):
         pub = Publish(proto)
         topic = "/test_publish_qos_works"
         msg = {"data": "test publish qos works"}
-        pub_qos_obj = Qos_compatible_pub
-        _ = extract_qos_profile(pub_qos_obj)
-        pub_qos: QoSProfile = _ if _ is not None else QoSProfile(depth=10)
-        sub_qos_obj = Qos_compatible_sub
-        _ = extract_qos_profile(sub_qos_obj)
-        sub_qos: QoSProfile = _ if _ is not None else QoSProfile(depth=10)
-
-        self.assertIsNotNone(pub_qos)
-        self.assertIsNotNone(sub_qos)
 
         received: dict[str, Any] = {"msg": None}
 
         def cb(msg: String) -> None:
             received["msg"] = msg
 
-        self.node.create_subscription(String, topic, cb, sub_qos)
+        self.node.create_subscription(String, topic, cb, extract_qos_profile(Qos_compatible_sub))
 
         pub_msg = loads(
             dumps(
@@ -165,7 +144,7 @@ class TestQoS(unittest.TestCase):
                     "op": "publish",
                     "topic": topic,
                     "msg": msg,
-                    "qos": pub_qos_obj,
+                    "qos": Qos_compatible_pub,
                 },
             ),
         )
