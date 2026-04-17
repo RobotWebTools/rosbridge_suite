@@ -400,6 +400,11 @@ The operation fails if either of the following is true:
 - The subscription for the topic already exists with a different type.
 - The type specified cannot be resolved.
 
+Current limitations:
+
+- The protocol spawns only one subscription per topic, so if multiple clients subscribe to the same topic, they will share the same subscription and its associated QoS settings.
+  Only the first subscription will determine the QoS settings for that topic.
+
 If `queue_length` is specified, then messages are placed into the queue before being sent.
 Messages are sent from the head of the queue.
 If the queue gets full, the oldest message is removed and replaced by the newest message.
