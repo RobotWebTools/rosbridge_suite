@@ -104,7 +104,13 @@ class Registration:
 
 
 class Advertise(Capability):
-    advertise_msg_fields = ((True, "topic", str), (True, "type", str))
+    advertise_msg_fields = (
+        (True, "topic", str),
+        (True, "type", str),
+        (False, "latch", bool),
+        (False, "queue_size", int),
+        (False, "qos", dict),
+    )
     unadvertise_msg_fields = ((True, "topic", str),)
 
     parameter_names = ("topics_glob",)

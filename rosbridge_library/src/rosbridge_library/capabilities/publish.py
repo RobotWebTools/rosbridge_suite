@@ -53,6 +53,7 @@ class Publish(Capability):
         (False, "type", str),
         (False, "latch", bool),
         (False, "queue_size", int),
+        (False, "qos", dict),
         (False, "msg", dict),
     )
 
