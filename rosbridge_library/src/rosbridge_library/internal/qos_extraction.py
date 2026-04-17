@@ -7,6 +7,7 @@ from rclpy.qos import (
     HistoryPolicy,
     QoSProfile,
     ReliabilityPolicy,
+    qos_profile_system_default,
 )
 
 from rosbridge_library.internal.exceptions import (
@@ -76,42 +77,33 @@ def extract_qos_profile(qosobj: dict[str, Any]) -> QoSProfile:
     if not isinstance(qosobj, dict):
         err_msg = f"QoS profile must be a dict, got {type(qosobj).__name__}"
         raise InvalidArgumentException(err_msg)
-    history: HistoryPolicy | None = None
-    if "history" in qosobj:
-        history = extract_enum_policy(qosobj["history"], HistoryPoliciesMapping)
 
-    depth: int | None = None
+    qos = qos_profile_system_default
+
+    if "history" in qosobj:
+        qos.history = extract_enum_policy(qosobj["history"], HistoryPoliciesMapping)
+
     if "depth" in qosobj:
         depth = qosobj["depth"]
         if type(depth) is not int or depth < 0:
             err_msg = f"Depth must be a non-negative integer, got {depth}"
             raise InvalidArgumentException(err_msg)
+        qos.depth = depth
 
-    reliability: ReliabilityPolicy | None = None
     if "reliability" in qosobj:
-        reliability = extract_enum_policy(qosobj["reliability"], ReliabilityPoliciesMapping)
+        qos.reliability = extract_enum_policy(qosobj["reliability"], ReliabilityPoliciesMapping)
 
-    durability: DurabilityPolicy | None = None
     if "durability" in qosobj:
-        durability = extract_enum_policy(qosobj["durability"], DurabilityPoliciesMapping)
+        qos.durability = extract_enum_policy(qosobj["durability"], DurabilityPoliciesMapping)
 
-    deadline: Duration | None = None
     if "deadline" in qosobj:
         deadline_raw = qosobj["deadline"]
         if isinstance(deadline_raw, str) and deadline_raw.lower() == "best_available":
-            deadline = DeadlineBestAvailable
+            qos.deadline = DeadlineBestAvailable
         else:
-            deadline = extract_duration(deadline_raw)
+            qos.deadline = extract_duration(deadline_raw)
 
-    lifespan: Duration | None = None
     if "lifespan" in qosobj:
-        lifespan = extract_duration(qosobj["lifespan"])
+        qos.lifespan = extract_duration(qosobj["lifespan"])
 
-    return QoSProfile(
-        history=history,
-        depth=depth,
-        reliability=reliability,
-        durability=durability,
-        deadline=deadline,
-        lifespan=lifespan,
-    )
+    return qos

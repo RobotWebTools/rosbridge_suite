@@ -9,7 +9,7 @@ from typing import Any
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
-from rclpy.qos import DurabilityPolicy
+from rclpy.qos import DurabilityPolicy, qos_profile_system_default
 from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
@@ -58,6 +58,9 @@ class TestQoS(unittest.TestCase):
         self.node.destroy_node()
         self.executor.shutdown()
         rclpy.shutdown()
+
+    def test_empty_qos_dict_uses_system_default(self) -> None:
+        self.assertEqual(extract_qos_profile({}), qos_profile_system_default)
 
     def test_invalid_arguments(self) -> None:
         proto = Protocol("hello", self.node)
