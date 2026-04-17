@@ -80,10 +80,6 @@ class Publish(Capability):
         latch: bool = message.get("latch", False)
         queue_size: int | None = message.get("queue_size")
 
-        qos: QoSProfile | None = None
-        if "qos" in message:
-            qos = extract_qos_profile(message["qos"])
-
         if self.topics_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
@@ -110,6 +106,11 @@ class Publish(Capability):
                 "info",
                 "Trying to publish to unregistered topic: " + topic + ", creating registration...",
             )
+
+            qos: QoSProfile | None = None
+            if "qos" in message:
+                qos = extract_qos_profile(message["qos"])
+
             registration = Registration(client_id, topic, self.protocol.node_handle)
             # Register as a publishing client, propagating any exceptions
             registration.register_advertisement(msg_type, adv_id, latch, queue_size, qos)
