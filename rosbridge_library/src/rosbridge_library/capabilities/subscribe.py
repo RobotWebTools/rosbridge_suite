@@ -37,8 +37,6 @@ from functools import partial
 from threading import Lock
 from typing import TYPE_CHECKING, Any, Generic
 
-from rclpy.qos import QoSProfile
-
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.pngcompression import encode as encode_png
 from rosbridge_library.internal.qos_extraction import extract_qos_profile
@@ -50,6 +48,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from rclpy.node import Node
+    from rclpy.qos import QoSProfile
 
     from rosbridge_library.internal.outgoing_message import OutgoingMessage
     from rosbridge_library.protocol import Protocol
