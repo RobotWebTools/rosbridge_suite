@@ -37,12 +37,7 @@ from threading import Timer
 from typing import TYPE_CHECKING, Any, Generic, cast
 
 from rclpy.duration import Duration
-from rclpy.qos import (
-    DurabilityPolicy,
-    InvalidQoSProfileException,
-    QoSProfile,
-    qos_check_compatible,
-)
+from rclpy.qos import DurabilityPolicy, QoSProfile
 
 from rosbridge_library.internal import message_conversion, ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
@@ -297,10 +292,6 @@ class PublisherManager:
 
         if msg_type is not None:
             self._publishers[topic].verify_type(msg_type)
-
-        if qos is not None and not qos_check_compatible(self._publishers[topic].qos_profile, qos):
-            mess = "Publisher QoS profile is incompatible with existing publishers QoS profiles"
-            raise InvalidQoSProfileException(mess)
 
         self._publishers[topic].register_client(client_id)
 
