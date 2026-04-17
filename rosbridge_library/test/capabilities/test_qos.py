@@ -19,24 +19,24 @@ from rosbridge_library.internal.qos_extraction import extract_qos_profile
 from rosbridge_library.protocol import Protocol
 from std_msgs.msg import String
 
-Qos_compatible_pub = {
+QOS_COMPATIBLE_PUB = {
     "durability": "volatile",
     "depth": 2,
     "deadline": 2,
     "lifespan": {"secs": 1, "nsecs": 8888},
 }
-Qos_compatible_sub = {
+QOS_COMPATIBLE_SUB = {
     "durability": "volatile",
     "depth": 2,
     "deadline": 2,
     "lifespan": {"secs": 1, "nsecs": 0},
 }
-Qos_incompatible_pub = {
+QOS_INCOMPATIBLE_PUB = {
     "durability": "volatile",
     "depth": 200,
     "deadline": 5,
 }
-Qos_incompatible_sub = {
+QOS_INCOMPATIBLE_SUB = {
     "durability": "transient_local",
     "depth": 150,
     "deadline": 4,
@@ -107,10 +107,10 @@ class TestQoS(unittest.TestCase):
             received["msg"] = msg
 
         self.node.create_subscription(
-            String, topic, cb, qos_profile=extract_qos_profile(Qos_incompatible_sub)
+            String, topic, cb, qos_profile=extract_qos_profile(QOS_INCOMPATIBLE_SUB)
         )
 
-        msg = {"op": "publish", "msg_type": String, "topic": topic, "qos": Qos_incompatible_pub}
+        msg = {"op": "publish", "msg_type": String, "topic": topic, "qos": QOS_INCOMPATIBLE_PUB}
         pub.publish(msg)
 
         time.sleep(0.1)
@@ -184,14 +184,14 @@ class TestQoS(unittest.TestCase):
         def cb(msg: String) -> None:
             received["msg"] = msg
 
-        self.node.create_subscription(String, topic, cb, extract_qos_profile(Qos_compatible_sub))
+        self.node.create_subscription(String, topic, cb, extract_qos_profile(QOS_COMPATIBLE_SUB))
 
         pub.publish(
             {
                 "op": "publish",
                 "topic": topic,
                 "msg": msg,
-                "qos": Qos_compatible_pub,
+                "qos": QOS_COMPATIBLE_PUB,
             }
         )
         time.sleep(0.1)
