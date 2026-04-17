@@ -38,11 +38,7 @@ from threading import Lock, RLock
 from typing import TYPE_CHECKING, Generic, cast
 
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
-from rclpy.qos import (
-    DurabilityPolicy,
-    QoSProfile,
-    ReliabilityPolicy,
-)
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
@@ -131,21 +127,9 @@ class MultiSubscriber(Generic[ROSMessageT]):
             raise TypeConflictException(topic, topic_type, msg_type_string)
 
         if qos is None:
-            qos = QoSProfile(
-                depth=10,
-                durability=DurabilityPolicy.VOLATILE,
-                reliability=ReliabilityPolicy.BEST_EFFORT,
-            )
-
-            infos = node_handle.get_publishers_info_by_topic(topic)
-
-            if len(infos) > 0 and all(
-                pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
-            ):
-                qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
-                qos.reliability = ReliabilityPolicy.RELIABLE
-            if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
-                qos.reliability = ReliabilityPolicy.BEST_EFFORT
+            # Fall back to default rosbridge QoS settings which try to provide a "best effort"
+            # compatibility with existing publishers on the topic.
+            qos = self._get_default_qos_profile(node_handle, topic)
 
         # Create the subscriber and associated member variables
         # Subscriptions is initialized with the current client to start with.
@@ -168,6 +152,38 @@ class MultiSubscriber(Generic[ROSMessageT]):
         )
         self.new_subscriber: Subscription[ROSMessageT] | None = None
         self.new_subscriptions: dict[str, Callable[[OutgoingMessage[ROSMessageT]], None]] = {}
+
+    def _get_default_qos_profile(self, node_handle: Node, topic: str) -> QoSProfile:
+        """
+        Infer a default QoS profile for best effort compatibility with existing publishers on the topic.
+
+        Certain combinations of publisher and subscriber QoS parameters are incompatible. Here we
+        make a "best effort" attempt to match existing publishers for the requested topic. This is
+        not perfect because more publishers may come online after our subscriber is set up, but we
+        try to provide sane defaults.
+        For this reason we use volatile durability and best effort reliability to prioritize topic
+        compatibility when the publisher policy is not known. For more information, see:
+        - https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html
+        - https://github.com/RobotWebTools/rosbridge_suite/issues/551
+        - https://github.com/RobotWebTools/rosbridge_suite/issues/769
+        """
+        qos = QoSProfile(
+            depth=10,
+            durability=DurabilityPolicy.VOLATILE,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+        )
+
+        infos = node_handle.get_publishers_info_by_topic(topic)
+
+        if len(infos) > 0 and all(
+            pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
+        ):
+            qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
+            qos.reliability = ReliabilityPolicy.RELIABLE
+        if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
+            qos.reliability = ReliabilityPolicy.BEST_EFFORT
+
+        return qos
 
     def _schedule_destroy_subscription(self, subscription: Subscription[ROSMessageT]) -> None:
         """
@@ -320,6 +336,10 @@ class SubscriberManager:
     ) -> None:
         """
         Subscribe to a topic.
+
+        Subscribers are shared between clients, so a single MultiSubscriber
+        instance is created per topic, even if multiple clients subscribe to the same topic.
+        The QoS profile is determined at the first registration of a subscriber.
 
         :param client_id: The ID of the client making this subscribe request
         :param topic: The name of the topic to subscribe to
