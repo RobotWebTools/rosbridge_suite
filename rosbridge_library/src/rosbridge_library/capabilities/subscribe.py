@@ -37,8 +37,6 @@ from functools import partial
 from threading import Lock
 from typing import TYPE_CHECKING, Any, Generic
 
-from rclpy.qos import QoSProfile
-
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.pngcompression import encode as encode_png
 from rosbridge_library.internal.qos_extraction import extract_qos_profile
@@ -50,6 +48,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from rclpy.node import Node
+    from rclpy.qos import QoSProfile
 
     from rosbridge_library.internal.outgoing_message import OutgoingMessage
     from rosbridge_library.protocol import Protocol
@@ -125,14 +124,15 @@ class Subscription(Generic[ROSMessageT]):
         Add another client's subscription request.
 
         If there are multiple calls to subscribe, the values actually used for
-        fragment_size, compression and throttle_rate are chosen to
-        encompass all subscriptions' requirements
+        queue_length, fragment_size, compression and throttle_rate are
+        chosen to encompass all subscriptions' requirements
 
         :param sid: The subscription id from the client
         :param msg_type: The type of the message to subscribe to
         :param throttle_rate: The minimum time (in ms) allowed between messages
             being sent. If multiple subscriptions, the lower of these is used
-        :param queue_length: For backward compatibility. Used only if qos is unset.
+        :param queue_length: The number of messages that can be buffered.  If
+            multiple subscriptions, the lower of these is used
         :param fragment_size: None if no fragmentation, or the maximum length of
             allowed outgoing messages
         :param compression: "none" if no compression, or some other value if
@@ -140,10 +140,9 @@ class Subscription(Generic[ROSMessageT]):
         :param qos: The QoS Profile to use. If not set, a "best effort"
             attempt is made for subscriber compatibility
         """
-        queue_size: int = qos.depth if qos is not None else queue_length
         client_details = {
             "throttle_rate": throttle_rate,
-            "queue_length": queue_size,
+            "queue_length": queue_length,
             "fragment_size": fragment_size,
             "compression": compression,
         }
@@ -252,7 +251,7 @@ class Subscribe(Capability):
         (False, "fragment_size", int),
         (False, "queue_length", int),
         (False, "compression", str),
-        (False, "qos", QoSProfile),
+        (False, "qos", dict),
     )
     unsubscribe_msg_fields = ((True, "topic", str),)
 
@@ -307,6 +306,10 @@ class Subscribe(Capability):
                 client_id, topic, cb, self.protocol.node_handle
             )
 
+        qos: QoSProfile | None = None
+        if "qos" in msg:
+            qos = extract_qos_profile(msg["qos"])
+
         # Register the subscriber
         subscribe_args = {
             "sid": sid,
@@ -315,7 +318,7 @@ class Subscribe(Capability):
             "fragment_size": msg.get("fragment_size"),
             "queue_length": msg.get("queue_length", 0),
             "compression": msg.get("compression", "none"),
-            "qos": extract_qos_profile(msg.get("qos")),
+            "qos": qos,
         }
         self._subscriptions[topic].subscribe(**subscribe_args)
 

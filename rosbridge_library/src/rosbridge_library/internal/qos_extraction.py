@@ -1,128 +1,111 @@
-from typing import Any
+from typing import Any, TypeVar
 
-from rclpy.duration import Duration
+from rclpy.duration import Duration, Infinite
 from rclpy.qos import (
+    DeadlineBestAvailable,
     DurabilityPolicy,
     HistoryPolicy,
-    LivelinessPolicy,
     QoSProfile,
     ReliabilityPolicy,
+    qos_profile_system_default,
 )
 
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
 )
 
-DurabilityPolicies = [
-    "system_default",
-    "transient_local",
-    "volatile",
-    "unknown",
-]
+HistoryPoliciesMapping = {
+    "keep_last": HistoryPolicy.KEEP_LAST,
+    "keep_all": HistoryPolicy.KEEP_ALL,
+}
 
-HistoryPolicies = [
-    "system_default",
-    "keep_last",
-    "keep_all",
-    "unknown",
-]
+ReliabilityPoliciesMapping = {
+    "reliable": ReliabilityPolicy.RELIABLE,
+    "best_effort": ReliabilityPolicy.BEST_EFFORT,
+    "best_available": ReliabilityPolicy.BEST_AVAILABLE,
+}
 
-LivelinessPolicies = [
-    "system_default",
-    "automatic",
-    "",  # enum 2 is empty in rmw
-    "manual_by_topic",
-    "unknown",
-]
-
-ReliabilityPolicies = [
-    "system_default",
-    "reliable",
-    "best_effort",
-    "unknown",
-]
+DurabilityPoliciesMapping = {
+    "transient_local": DurabilityPolicy.TRANSIENT_LOCAL,
+    "volatile": DurabilityPolicy.VOLATILE,
+    "best_available": DurabilityPolicy.BEST_AVAILABLE,
+}
 
 
-def extract_duration(json_duration: list | str) -> Duration:
-    if type(json_duration) is str:
-        _ = json_duration.lower()
-        if _ == "unspecified":
-            return Duration(seconds=0, nanoseconds=0)
-        if _ == "infinite":
-            return Duration(seconds=9223372036, nanoseconds=854775807)
-    elif type(json_duration) is list:
-        if len(json_duration) == 2:
-            return Duration(seconds=json_duration[0], nanoseconds=json_duration[1])
-        if len(json_duration) == 1:
-            return Duration(seconds=json_duration[0])
-    return Duration(seconds=0, nanoseconds=0)
+_PolicyT = TypeVar("_PolicyT")
 
 
-def extract_qos_profile(qosobj: dict[str, Any] | int | None) -> QoSProfile | None:
-    qos: QoSProfile | int | None = None
-    if type(qosobj) is int:
-        qos = QoSProfile(depth=qosobj)
-    elif type(qosobj) is dict:
-        _ = qosobj.get("history")
-        history: int | HistoryPolicy = -1
-        if type(_) is str:
-            _ = _.lower()
-            history = HistoryPolicies.index(_)
+def extract_enum_policy(policy_name: str, mapping: dict[str, _PolicyT]) -> _PolicyT:
+    if not isinstance(policy_name, str):
+        err_msg = f"Policy name must be a string, got {type(policy_name).__name__}"
+        raise InvalidArgumentException(err_msg)
+    policy_name = policy_name.lower()
+    if policy_name in mapping:
+        return mapping[policy_name]
+    err_msg = f"'{policy_name}' is not a valid policy name. Valid options are: {', '.join(mapping.keys())}"
+    raise InvalidArgumentException(err_msg)
+
+
+def extract_duration(duration_raw: float | dict | str) -> Duration:
+    if isinstance(duration_raw, bool):
+        pass  # fall through to the type error below; bool must be checked before int/float
+    elif isinstance(duration_raw, (int, float)):
+        if duration_raw < 0:
+            err_msg = f"Duration cannot be negative, got {duration_raw}"
+            raise InvalidArgumentException(err_msg)
+        return Duration(seconds=duration_raw)
+    elif isinstance(duration_raw, dict):
+        if "secs" not in duration_raw or "nsecs" not in duration_raw:
+            err_msg = f"Duration dict must have 'secs' and 'nsecs' fields, got {duration_raw}"
+            raise InvalidArgumentException(err_msg)
+        secs = duration_raw["secs"]
+        nsecs = duration_raw["nsecs"]
+        if secs < 0 or nsecs < 0:
+            err_msg = f"Duration cannot have negative values, got secs={secs}, nsecs={nsecs}"
+            raise InvalidArgumentException(err_msg)
+        return Duration(seconds=secs, nanoseconds=nsecs)
+    elif isinstance(duration_raw, str):
+        if duration_raw.lower() == "infinite":
+            return Infinite
+        err_msg = f"'{duration_raw}' is not a valid duration string. Valid values are: 'infinite'"
+        raise InvalidArgumentException(err_msg)
+    err_msg = f"Duration must be a number, dict, or string, got {type(duration_raw).__name__}"
+    raise InvalidArgumentException(err_msg)
+
+
+def extract_qos_profile(qosobj: dict[str, Any]) -> QoSProfile:
+    if not isinstance(qosobj, dict):
+        err_msg = f"QoS profile must be a dict, got {type(qosobj).__name__}"
+        raise InvalidArgumentException(err_msg)
+
+    qos = QoSProfile(
+        **qos_profile_system_default.get_c_qos_profile().to_dict()
+    )  # Start with system default settings
+
+    if "history" in qosobj:
+        qos.history = extract_enum_policy(qosobj["history"], HistoryPoliciesMapping)
+
+    if "depth" in qosobj:
+        depth = qosobj["depth"]
+        if type(depth) is not int or depth < 0:
+            err_msg = f"Depth must be a non-negative integer, got {depth}"
+            raise InvalidArgumentException(err_msg)
+        qos.depth = depth
+
+    if "reliability" in qosobj:
+        qos.reliability = extract_enum_policy(qosobj["reliability"], ReliabilityPoliciesMapping)
+
+    if "durability" in qosobj:
+        qos.durability = extract_enum_policy(qosobj["durability"], DurabilityPoliciesMapping)
+
+    if "deadline" in qosobj:
+        deadline_raw = qosobj["deadline"]
+        if isinstance(deadline_raw, str) and deadline_raw.lower() == "best_available":
+            qos.deadline = DeadlineBestAvailable
         else:
-            history = _ if _ is not None else HistoryPolicy.SYSTEM_DEFAULT
+            qos.deadline = extract_duration(deadline_raw)
 
-        _ = qosobj.get("depth", 100)
-        depth = _
+    if "lifespan" in qosobj:
+        qos.lifespan = extract_duration(qosobj["lifespan"])
 
-        _ = qosobj.get("reliability")
-        reliability: int | ReliabilityPolicy = -1
-        if type(_) is str:
-            _ = _.lower()
-            reliability = ReliabilityPolicies.index(_)
-        else:
-            reliability = _ if _ is not None else ReliabilityPolicy.SYSTEM_DEFAULT
-
-        _ = qosobj.get("durability")
-        durability: int | DurabilityPolicy = -1
-        if type(_) is str:
-            _ = _.lower()
-            durability = DurabilityPolicies.index(_)
-        else:
-            durability = _ if _ is not None else DurabilityPolicy.SYSTEM_DEFAULT
-
-        _ = qosobj.get("deadline", [])
-        deadline = extract_duration(_)
-
-        _ = qosobj.get("lifespan", [])
-        lifespan = extract_duration(_)
-
-        _ = qosobj.get("liveliness")
-        liveliness: int | LivelinessPolicy = -1
-        if type(_) is str:
-            _ = _.lower()
-            liveliness = LivelinessPolicies.index(_)
-        else:
-            liveliness = _ if _ is not None else LivelinessPolicy.SYSTEM_DEFAULT
-
-        _ = qosobj.get("liveliness_lease_duration", [])
-        liveliness_lease_duration = extract_duration(_)
-
-        _ = qosobj.get("avoid_ros_namespace_conventions", False)
-        avoid_ros_namespace_conventions = _
-
-        qos = QoSProfile(
-            history=history,
-            depth=depth,
-            reliability=reliability,
-            durability=durability,
-            deadline=deadline,
-            lifespan=lifespan,
-            liveliness=liveliness,
-            liveliness_lease_duration=liveliness_lease_duration,
-            avoid_ros_namespace_conventions=avoid_ros_namespace_conventions,
-        )
-    elif qosobj is None:
-        qos = None
-    else:
-        raise InvalidArgumentException(qosobj)
     return qos

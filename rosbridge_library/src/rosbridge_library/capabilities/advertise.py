@@ -104,7 +104,13 @@ class Registration:
 
 
 class Advertise(Capability):
-    advertise_msg_fields = ((True, "topic", str), (True, "type", str))
+    advertise_msg_fields = (
+        (True, "topic", str),
+        (True, "type", str),
+        (False, "latch", bool),
+        (False, "queue_size", int),
+        (False, "qos", dict),
+    )
     unadvertise_msg_fields = ((True, "topic", str),)
 
     parameter_names = ("topics_glob",)
@@ -128,7 +134,10 @@ class Advertise(Capability):
         msg_type: str = message["type"]
         latch: bool = message.get("latch", False)
         queue_size: int | None = message.get("queue_size")
-        qos: QoSProfile | None = extract_qos_profile(message.get("qos"))
+
+        qos: QoSProfile | None = None
+        if "qos" in message:
+            qos = extract_qos_profile(message["qos"])
 
         if self.topics_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)

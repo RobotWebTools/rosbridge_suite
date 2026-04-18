@@ -256,7 +256,7 @@ These policies are rarely relevant for rosbridge use cases and are omitted to ke
 
 Duration fields (`deadline`, `lifespan`) accept one of the following:
 
-- A positive `float` representing seconds (e.g. `1.5` means 1.5 s).
+- A positive `float` or `integer` representing seconds (e.g. `1.5` means 1.5 s).
 - An object with integer fields: `{"secs": <integer>, "nsecs": <integer>}` (e.g. `{"secs": 1, "nsecs": 500000000}` for 1.5 s).
 - The string `"infinite"`, which maps to `RMW_DURATION_INFINITE`.
 - (only for `deadline`) The string `"best_available"`, which maps to `RMW_QOS_DEADLINE_BEST_AVAILABLE`.
@@ -399,6 +399,11 @@ The operation fails if either of the following is true:
 
 - The subscription for the topic already exists with a different type.
 - The type specified cannot be resolved.
+
+Current limitations:
+
+- The protocol spawns only one subscription per topic, so if multiple clients subscribe to the same topic, they will share the same subscription and its associated QoS settings.
+  Only the first subscription will determine the QoS settings for that topic.
 
 If `queue_length` is specified, then messages are placed into the queue before being sent.
 Messages are sent from the head of the queue.

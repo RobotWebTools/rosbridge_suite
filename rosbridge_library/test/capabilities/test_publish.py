@@ -11,9 +11,7 @@ import rclpy
 from geometry_msgs.msg import PoseStamped
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
-from rclpy.qos import QoSProfile
-from std_msgs.msg import String
-
+from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.internal.exceptions import (
     InvalidArgumentException,
@@ -69,6 +67,7 @@ class TestAdvertise(unittest.TestCase):
 
         subscriber_qos = QoSProfile(
             depth=10,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
         )
         self.node.create_subscription(String, topic, cb, subscriber_qos)
 
