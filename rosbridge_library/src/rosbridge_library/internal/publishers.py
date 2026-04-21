@@ -130,7 +130,7 @@ class MultiPublisher(Generic[ROSMessageT]):
         self.msg_class = msg_class
         self.qos_profile: QoSProfile = qos
 
-        self.publisher: Publisher[ROSMessageT] = node_handle.create_publisher(
+        self.publisher = node_handle.create_publisher(
             msg_class, topic, qos_profile=self.qos_profile
         )
 
@@ -153,11 +153,7 @@ class MultiPublisher(Generic[ROSMessageT]):
         else:
             publisher_qos.depth = 1
 
-<<<<<<< HEAD
-        self.publisher = node_handle.create_publisher(msg_class, topic, qos_profile=publisher_qos)
-=======
         return publisher_qos
->>>>>>> 8461d3d (feat: Add QoS Profile support for advertise, publish and subscribe operations (#1150))
 
     def unregister(self) -> None:
         """Unregister the publisher and clear the clients."""

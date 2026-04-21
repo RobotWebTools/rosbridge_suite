@@ -150,7 +150,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
             raw=raw,
             callback_group=self.callback_group,
         )
-        self.new_subscriber: Subscription[ROSMessageT] | None = None
+        self.new_subscriber: Subscription | None = None
         self.new_subscriptions: dict[str, Callable[[OutgoingMessage[ROSMessageT]], None]] = {}
 
     def _get_default_qos_profile(self, node_handle: Node, topic: str) -> QoSProfile:
@@ -183,31 +183,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
             qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
-<<<<<<< HEAD
-        # Create the subscriber and associated member variables
-        # Subscriptions is initialized with the current client to start with.
-        self.subscriptions = {client_id: callback}
-        self.rlock = RLock()
-        self.msg_class = msg_class
-        self.node_handle = node_handle
-        self.topic = topic
-        self.qos = qos
-        self.raw = raw
-        self.callback_group = MutuallyExclusiveCallbackGroup()
-
-        self.subscriber = node_handle.create_subscription(
-            msg_class,
-            topic,
-            partial(self.callback, callbacks=None),
-            qos,
-            raw=raw,
-            callback_group=self.callback_group,
-        )
-        self.new_subscriber: Subscription | None = None
-        self.new_subscriptions: dict[str, Callable[[OutgoingMessage[ROSMessageT]], None]] = {}
-=======
         return qos
->>>>>>> 8461d3d (feat: Add QoS Profile support for advertise, publish and subscribe operations (#1150))
 
     def _schedule_destroy_subscription(self, subscription: Subscription) -> None:
         """
