@@ -39,6 +39,7 @@ from typing import TYPE_CHECKING, Any, Generic
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.pngcompression import encode as encode_png
+from rosbridge_library.internal.qos_extraction import extract_qos_profile
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
 from rosbridge_library.internal.type_support import ROSMessageT
@@ -47,6 +48,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from rclpy.node import Node
+    from rclpy.qos import QoSProfile
 
     from rosbridge_library.internal.outgoing_message import OutgoingMessage
     from rosbridge_library.protocol import Protocol
@@ -116,6 +118,7 @@ class Subscription(Generic[ROSMessageT]):
         queue_length: int = 0,
         fragment_size: int | None = None,
         compression: str = "none",
+        qos: QoSProfile | None = None,
     ) -> None:
         """
         Add another client's subscription request.
@@ -134,6 +137,8 @@ class Subscription(Generic[ROSMessageT]):
             allowed outgoing messages
         :param compression: "none" if no compression, or some other value if
             compression is to be used (current valid values are 'png')
+        :param qos: The QoS Profile to use. If not set, a "best effort"
+            attempt is made for subscriber compatibility
         """
         client_details = {
             "throttle_rate": throttle_rate,
@@ -156,6 +161,7 @@ class Subscription(Generic[ROSMessageT]):
             self.node_handle,
             msg_type=msg_type,
             raw=raw,
+            qos=qos,
         )
 
     def unsubscribe(self, sid: str | None = None) -> None:
@@ -245,6 +251,7 @@ class Subscribe(Capability):
         (False, "fragment_size", int),
         (False, "queue_length", int),
         (False, "compression", str),
+        (False, "qos", dict),
     )
     unsubscribe_msg_fields = ((True, "topic", str),)
 
@@ -299,6 +306,10 @@ class Subscribe(Capability):
                 client_id, topic, cb, self.protocol.node_handle
             )
 
+        qos: QoSProfile | None = None
+        if "qos" in msg:
+            qos = extract_qos_profile(msg["qos"])
+
         # Register the subscriber
         subscribe_args = {
             "sid": sid,
@@ -307,6 +318,7 @@ class Subscribe(Capability):
             "fragment_size": msg.get("fragment_size"),
             "queue_length": msg.get("queue_length", 0),
             "compression": msg.get("compression", "none"),
+            "qos": qos,
         }
         self._subscriptions[topic].subscribe(**subscribe_args)
 
