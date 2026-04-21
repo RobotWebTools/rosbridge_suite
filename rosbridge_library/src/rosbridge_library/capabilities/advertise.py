@@ -38,9 +38,11 @@ from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.publishers import manager
+from rosbridge_library.internal.qos_extraction import extract_qos_profile
 
 if TYPE_CHECKING:
     from rclpy.node import Node
+    from rclpy.qos import QoSProfile
 
     from rosbridge_library.protocol import Protocol
 
@@ -71,7 +73,8 @@ class Registration:
         msg_type: str | None,
         adv_id: str | None = None,
         latch: bool = False,
-        queue_size: int = 100,
+        queue_size: int | None = None,
+        qos: QoSProfile | None = None,
     ) -> None:
         # Register with the publisher manager, propagating any exception
         manager.register(
@@ -81,6 +84,7 @@ class Registration:
             msg_type=msg_type,
             latch=latch,
             queue_size=queue_size,
+            qos=qos,
         )
 
         if adv_id is not None:
@@ -100,7 +104,13 @@ class Registration:
 
 
 class Advertise(Capability):
-    advertise_msg_fields = ((True, "topic", str), (True, "type", str))
+    advertise_msg_fields = (
+        (True, "topic", str),
+        (True, "type", str),
+        (False, "latch", bool),
+        (False, "queue_size", int),
+        (False, "qos", dict),
+    )
     unadvertise_msg_fields = ((True, "topic", str),)
 
     parameter_names = ("topics_glob",)
@@ -123,7 +133,11 @@ class Advertise(Capability):
         topic: str = message["topic"]
         msg_type: str = message["type"]
         latch: bool = message.get("latch", False)
-        queue_size: int = message.get("queue_size", 100)
+        queue_size: int | None = message.get("queue_size")
+
+        qos: QoSProfile | None = None
+        if "qos" in message:
+            qos = extract_qos_profile(message["qos"])
 
         if self.topics_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
@@ -149,12 +163,12 @@ class Advertise(Capability):
         if topic not in self.protocol.topic_registrations:
             client_id = self.protocol.client_id
             registration = Registration(client_id, topic, self.protocol.node_handle)
-            registration.register_advertisement(msg_type, adv_id, latch, queue_size)
+            registration.register_advertisement(msg_type, adv_id, latch, queue_size, qos)
             self.protocol.topic_registrations[topic] = registration
         else:
             # Register, propagating any exceptions
             self.protocol.topic_registrations[topic].register_advertisement(
-                msg_type, adv_id, latch, queue_size
+                msg_type, adv_id, latch, queue_size, qos
             )
 
     def unadvertise(self, message: dict[str, Any]) -> None:
