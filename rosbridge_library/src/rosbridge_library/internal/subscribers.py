@@ -77,6 +77,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         node_handle: Node,
         msg_type: str | None = None,
         raw: bool = False,
+        qos: QoSProfile | None = None,
     ) -> None:
         """
         Register a subscriber on the specified topic.
@@ -87,6 +88,8 @@ class MultiSubscriber(Generic[ROSMessageT]):
         :param node_handle: Handle to a rclpy node to create the publisher
         :param msg_type: (optional) The type to register the subscriber as.  If not provided, an
             attempt will be made to infer the topic type
+        :param qos: (optional) The QoS profile to register the subscriber with. If not provided,
+            a "best effort" will be made to make the subscription work
 
         :raises TopicNotEstablishedException: If no msg_type was specified by the caller and the
             topic is not yet established, so a topic type cannot be inferred
@@ -123,17 +126,47 @@ class MultiSubscriber(Generic[ROSMessageT]):
         if topic_type is not None and topic_type != msg_type_string:
             raise TypeConflictException(topic, topic_type, msg_type_string)
 
-        # Certain combinations of publisher and subscriber QoS parameters are
-        # incompatible. Here we make a "best effort" attempt to match existing
-        # publishers for the requested topic. This is not perfect because more
-        # publishers may come online after our subscriber is set up, but we try
-        # to provide sane defaults.
-        # For this reason we use volatile durability and best effort reliability
-        # to prioritize topic compatibility when the publisher policy is not known.
-        # For more information, see:
-        # - https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html
-        # - https://github.com/RobotWebTools/rosbridge_suite/issues/551
-        # - https://github.com/RobotWebTools/rosbridge_suite/issues/769
+        if qos is None:
+            # Fall back to default rosbridge QoS settings which try to provide a "best effort"
+            # compatibility with existing publishers on the topic.
+            qos = self._get_default_qos_profile(node_handle, topic)
+
+        # Create the subscriber and associated member variables
+        # Subscriptions is initialized with the current client to start with.
+        self.subscriptions = {client_id: callback}
+        self.rlock = RLock()
+        self.msg_class = msg_class
+        self.node_handle = node_handle
+        self.topic = topic
+        self.qos_profile: QoSProfile = qos
+        self.raw = raw
+        self.callback_group = MutuallyExclusiveCallbackGroup()
+
+        self.subscriber = node_handle.create_subscription(
+            msg_class,
+            topic,
+            partial(self.callback, callbacks=None),
+            qos_profile=self.qos_profile,
+            raw=raw,
+            callback_group=self.callback_group,
+        )
+        self.new_subscriber: Subscription | None = None
+        self.new_subscriptions: dict[str, Callable[[OutgoingMessage[ROSMessageT]], None]] = {}
+
+    def _get_default_qos_profile(self, node_handle: Node, topic: str) -> QoSProfile:
+        """
+        Infer a default QoS profile for best effort compatibility with existing publishers on the topic.
+
+        Certain combinations of publisher and subscriber QoS parameters are incompatible. Here we
+        make a "best effort" attempt to match existing publishers for the requested topic. This is
+        not perfect because more publishers may come online after our subscriber is set up, but we
+        try to provide sane defaults.
+        For this reason we use volatile durability and best effort reliability to prioritize topic
+        compatibility when the publisher policy is not known. For more information, see:
+        - https://docs.ros.org/en/rolling/Concepts/About-Quality-of-Service-Settings.html
+        - https://github.com/RobotWebTools/rosbridge_suite/issues/551
+        - https://github.com/RobotWebTools/rosbridge_suite/issues/769
+        """
         qos = QoSProfile(
             depth=10,
             durability=DurabilityPolicy.VOLATILE,
@@ -150,27 +183,7 @@ class MultiSubscriber(Generic[ROSMessageT]):
         if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
             qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
-        # Create the subscriber and associated member variables
-        # Subscriptions is initialized with the current client to start with.
-        self.subscriptions = {client_id: callback}
-        self.rlock = RLock()
-        self.msg_class = msg_class
-        self.node_handle = node_handle
-        self.topic = topic
-        self.qos = qos
-        self.raw = raw
-        self.callback_group = MutuallyExclusiveCallbackGroup()
-
-        self.subscriber = node_handle.create_subscription(
-            msg_class,
-            topic,
-            partial(self.callback, callbacks=None),
-            qos,
-            raw=raw,
-            callback_group=self.callback_group,
-        )
-        self.new_subscriber: Subscription | None = None
-        self.new_subscriptions: dict[str, Callable[[OutgoingMessage[ROSMessageT]], None]] = {}
+        return qos
 
     def _schedule_destroy_subscription(self, subscription: Subscription) -> None:
         """
@@ -223,21 +236,13 @@ class MultiSubscriber(Generic[ROSMessageT]):
             # In any case, the first message is handled using new_sub_callback,
             # which adds the new callback to the subscriptions dictionary.
             self.new_subscriptions.update({client_id: callback})
-            infos = self.node_handle.get_publishers_info_by_topic(self.topic)
-
-            if len(infos) > 0 and all(
-                pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL for pub in infos
-            ):
-                self.qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
-            if any(pub.qos_profile.reliability == ReliabilityPolicy.BEST_EFFORT for pub in infos):
-                self.qos.reliability = ReliabilityPolicy.BEST_EFFORT
 
             if self.new_subscriber is None:
                 self.new_subscriber = self.node_handle.create_subscription(
                     self.msg_class,
                     self.topic,
                     self._new_sub_callback,
-                    self.qos,
+                    qos_profile=self.qos_profile,
                     raw=self.raw,
                     callback_group=self.callback_group,
                 )
@@ -327,19 +332,25 @@ class SubscriberManager:
         node_handle: Node,
         msg_type: str | None = None,
         raw: bool = False,
+        qos: QoSProfile | None = None,
     ) -> None:
         """
         Subscribe to a topic.
+
+        Subscribers are shared between clients, so a single MultiSubscriber
+        instance is created per topic, even if multiple clients subscribe to the same topic.
+        The QoS profile is determined at the first registration of a subscriber.
 
         :param client_id: The ID of the client making this subscribe request
         :param topic: The name of the topic to subscribe to
         :param callback: The callback to call for incoming messages on the topic
         :param msg_type: (optional) The type of the topic
+        :param qos: (optional) The QoSProfile of the topic
         """
         with self._lock:
             if topic not in self._subscribers:
                 self._subscribers[topic] = MultiSubscriber(
-                    topic, client_id, callback, node_handle, msg_type=msg_type, raw=raw
+                    topic, client_id, callback, node_handle, msg_type=msg_type, raw=raw, qos=qos
                 )
             else:
                 self._subscribers[topic].subscribe(client_id, callback)
