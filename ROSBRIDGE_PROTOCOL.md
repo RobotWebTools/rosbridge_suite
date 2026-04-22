@@ -1,4 +1,4 @@
-# rosbridge v2.0.0 Protocol Specification <!-- omit in toc -->
+# rosbridge v2.1.0 Protocol Specification <!-- omit in toc -->
 
 This document defines the rosbridge protocol and its supported operations.
 The protocol is built around structured message objects (e.g., JSON or CBOR) with an `op` field that identifies the operation being performed.
@@ -18,6 +18,7 @@ The protocol version is specified as a semantic version number in the format `MA
 
 | Version | Summary |
 |---------|---------|
+| 2.1.0 | Added `qos` field to `advertise`, `publish`, and `subscribe` operations for explicit QoS profile configuration. The `queue_size` and `latch` fields in `advertise`/`publish` are now deprecated. |
 | 2.0.0 | Initial versioned release. Covers topic, service, and action operations; Base64, PNG, CBOR and CBOR-RAW encodings; fragmentation; interface type notation; and default QoS settings for publishers and subscribers. |
 
 ## Table of Contents <!-- omit in toc -->
@@ -32,7 +33,9 @@ The protocol version is specified as a semantic version number in the format `MA
   - [3.5 CBOR-RAW encoding ( _cbor-raw_ )](#35-cbor-raw-encoding--cbor-raw-)
 - [4. Operation specifications](#4-operation-specifications)
   - [4.1 Interface type notation](#41-interface-type-notation)
-  - [4.2 Default QoS settings](#42-default-qos-settings)
+  - [4.2 QoS settings](#42-qos-settings)
+    - [4.2.1 QoS profile object](#421-qos-profile-object)
+    - [4.2.2 Default QoS settings](#422-default-qos-settings)
   - [4.3 Topic operations](#43-topic-operations)
     - [4.3.1 advertise (C → S)](#431-advertise-c--s)
     - [4.3.2 unadvertise (C → S)](#432-unadvertise-c--s)
@@ -231,12 +234,63 @@ For example: `std_msgs/msg/String`, `std_srvs/srv/SetBool`, `nav2_msgs/action/Na
 
 The `category` component may be omitted, in which case rosbridge will infer it from context (e.g. `std_msgs/String`, `std_srvs/SetBool`).
 
-### 4.2 Default QoS settings
+### 4.2 QoS settings
 
-Publishers created by rosbridge use reliable reliability and transient local durability, with a queue depth equal to the `queue_size` parameter (default `100`).
+#### 4.2.1 QoS profile object
+
+Operations that support QoS configuration accept an optional `qos` field containing a structured object with the following fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `history` | string | History policy. Valid values: `"keep_last"`, `"keep_all"`. |
+| `depth` | integer | Queue depth. Only meaningful when `history` is `"keep_last"`. |
+| `reliability` | string | Reliability policy. Valid values: `"reliable"`, `"best_effort"`, `"best_available"`. |
+| `durability` | string | Durability policy. Valid values: `"transient_local"`, `"volatile"`, `"best_available"`. |
+| `deadline` | duration | Maximum time between subsequent messages being published to a topic. |
+| `lifespan` | duration | Maximum time a message remains valid after being published. |
+
+The following ROS 2 QoS policies are intentionally omitted: `liveliness`, `liveliness_lease_duration`, and `avoid_ros_namespace_conventions`.
+These policies are rarely relevant for rosbridge use cases and are omitted to keep the protocol surface minimal.
+
+**Duration format**
+
+Duration fields (`deadline`, `lifespan`) accept one of the following:
+
+- A positive `float` or `integer` representing seconds (e.g. `1.5` means 1.5 s).
+- An object with integer fields: `{"secs": <integer>, "nsecs": <integer>}` (e.g. `{"secs": 1, "nsecs": 500000000}` for 1.5 s).
+- The string `"infinite"`, which maps to `RMW_DURATION_INFINITE`.
+- (only for `deadline`) The string `"best_available"`, which maps to `RMW_QOS_DEADLINE_BEST_AVAILABLE`.
+
+Omitting a duration field maps to `RMW_DURATION_UNSPECIFIED`, delegating the behaviour to the RMW implementation.
+
+Example of a fully specified QoS profile:
+
+```json
+{
+  "op": "advertise",
+  "topic": "/foo",
+  "type": "std_msgs/msg/String",
+  "qos": {
+    "history": "keep_last",
+    "depth": 10,
+    "reliability": "reliable",
+    "durability": "volatile",
+    "deadline": "infinite",
+    "lifespan": 1.5
+  }
+}
+```
+
+If the `qos` field is omitted entirely, the operation falls back to the current rosbridge default QoS behaviour (see [section 4.2.2](#422-default-qos-settings)).
+If `qos` is present but individual fields are omitted, those fields default to the system default for that policy.
+Setting `qos` to an empty object (`{}`) results in full system-default QoS.
+
+#### 4.2.2 Default QoS settings
+
+Publishers created by rosbridge use reliable reliability and transient local durability, with a history policy of keep last and QoS depth policy set to `100` by default.
 
 Subscribers created by rosbridge attempt to match the QoS of existing publishers on the topic.
-When no publishers are present, the subscriber defaults to best-effort reliability and volatile durability, with a queue depth of `10`.
+When no publishers are present, the subscriber defaults to best-effort reliability and volatile durability, with a history policy of keep last and QoS depth policy set to `10`.
 If all existing publishers use transient local durability, the subscriber switches to transient local durability and reliable reliability.
 If any existing publisher uses best-effort reliability, the subscriber uses best-effort reliability.
 
@@ -252,8 +306,9 @@ Register the client as a publisher on a topic. This allows the server to track w
 | `id` | optional | string | An ID to associate with this advertisement. Useful when multiple components advertise the same topic so that each can be unadvertised independently. |
 | `topic` | required | string | The name of the topic to advertise. |
 | `type` | required | string | The type of the topic to advertise. |
-| `latch` | optional | boolean | Whether to latch the last message published on this topic. Defaults to `false`. |
-| `queue_size` | optional | integer | Size of the internal publisher queue (QoS depth policy). Defaults to `100`. |
+| `qos` | optional | object | QoS profile for the publisher. See [section 4.2.1](#421-qos-profile-object) for the object format and available fields. If omitted, the default rosbridge QoS is used (see [section 4.2.2](#422-default-qos-settings)). If present, `latch` and `queue_size` are ignored. |
+| `latch` | optional | boolean | **Deprecated. Use `qos.durability` instead.** Whether to latch the last message published on this topic. |
+| `queue_size` | optional | integer | **Deprecated. Use `qos.depth` instead.** The QoS depth policy. |
 
 The operation fails if either of the following is true:
 
@@ -304,15 +359,17 @@ In this case, the following additional fields are also supported in the message 
 |-------|----------|------|-------------|
 | `id` | optional | string | An ID to associate with this advertisement. |
 | `type` | optional | string | The type of the topic to advertise. If omitted, the type will be inferred from the current ROS graph. |
-| `latch` | optional | boolean | Whether to latch the last message published on this topic. Defaults to `false`. |
-| `queue_size` | optional | integer | Size of the internal publisher queue (QoS depth policy). Defaults to `100`. |
+| `qos` | optional | object | QoS profile for the publisher. See [section 4.2.1](#421-qos-profile-object) for the object format and available fields. If omitted, the default rosbridge QoS is used (see [section 4.2.2](#422-default-qos-settings)). If present, `latch` and `queue_size` are ignored. |
+| `latch` | optional | boolean | **Deprecated. Use `qos.durability` instead.** Whether to latch the last message published on this topic. |
+| `queue_size` | optional | integer | **Deprecated. Use `qos.depth` instead.** The QoS depth policy. |
 
 The operation fails if the `msg` does not conform to the type of the topic.
 
 Special cases for how the server handles the `msg` field:
 
 - If the `msg` does not contain all fields for the topic type, then the unspecified fields are filled in with defaults.
-- If the topic type has a `header` field of type `std_msgs/Header` and the client omits the `header.stamp` field, then the server will automatically populate it with the current ROS time.
+- If the topic type has a root `header` field of type `std_msgs/Header` and the client omits the `header.stamp` field, then the server will automatically populate it with the current ROS time.
+- If the topic type has any field of type `builtin_interfaces/Time` and the client sets that field to `"now"` string, then the server will automatically populate it with the current ROS time.
 
 **Server → Client**
 
@@ -336,11 +393,17 @@ That way, each can individually unsubscribe and rosbridge can select the correct
 | `queue_length` | optional | integer | Size of the queue to buffer messages when throttled. Defaults to `0` (no queueing). When full, the oldest message is dropped in favour of the newest. |
 | `fragment_size` | optional | integer | Maximum size (in bytes) a message can reach before it is fragmented. |
 | `compression` | optional | string | Compression scheme for outgoing messages. Valid values: `none`, `png`, `cbor`, `cbor-raw`. |
+| `qos` | optional | object | QoS profile for the subscriber. See [section 4.2.1](#421-qos-profile-object) for the object format and available fields. If omitted, the default rosbridge QoS is used (see [section 4.2.2](#422-default-qos-settings)). |
 
 The operation fails if either of the following is true:
 
 - The subscription for the topic already exists with a different type.
 - The type specified cannot be resolved.
+
+Current limitations:
+
+- The protocol spawns only one subscription per topic, so if multiple clients subscribe to the same topic, they will share the same subscription and its associated QoS settings.
+  Only the first subscription will determine the QoS settings for that topic.
 
 If `queue_length` is specified, then messages are placed into the queue before being sent.
 Messages are sent from the head of the queue.
