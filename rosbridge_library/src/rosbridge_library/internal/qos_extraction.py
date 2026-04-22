@@ -2,7 +2,6 @@ from typing import Any, TypeVar
 
 from rclpy.duration import Duration, Infinite
 from rclpy.qos import (
-    DeadlineBestAvailable,
     DurabilityPolicy,
     HistoryPolicy,
     QoSProfile,
@@ -22,13 +21,11 @@ HistoryPoliciesMapping = {
 ReliabilityPoliciesMapping = {
     "reliable": ReliabilityPolicy.RELIABLE,
     "best_effort": ReliabilityPolicy.BEST_EFFORT,
-    "best_available": ReliabilityPolicy.BEST_AVAILABLE,
 }
 
 DurabilityPoliciesMapping = {
     "transient_local": DurabilityPolicy.TRANSIENT_LOCAL,
     "volatile": DurabilityPolicy.VOLATILE,
-    "best_available": DurabilityPolicy.BEST_AVAILABLE,
 }
 
 
@@ -38,6 +35,11 @@ _PolicyT = TypeVar("_PolicyT")
 def extract_enum_policy(policy_name: str, mapping: dict[str, _PolicyT]) -> _PolicyT:
     if not isinstance(policy_name, str):
         err_msg = f"Policy name must be a string, got {type(policy_name).__name__}"
+        raise InvalidArgumentException(err_msg)
+    if policy_name.lower() == "best_available":
+        err_msg = (
+            "'best_available' policy is only supported for Jazzy and later ROS 2 distributions"
+        )
         raise InvalidArgumentException(err_msg)
     policy_name = policy_name.lower()
     if policy_name in mapping:
@@ -101,9 +103,9 @@ def extract_qos_profile(qosobj: dict[str, Any]) -> QoSProfile:
     if "deadline" in qosobj:
         deadline_raw = qosobj["deadline"]
         if isinstance(deadline_raw, str) and deadline_raw.lower() == "best_available":
-            qos.deadline = DeadlineBestAvailable
-        else:
-            qos.deadline = extract_duration(deadline_raw)
+            err_msg = "'best_available' deadline is only supported for Jazzy and later ROS 2 distributions"
+            raise InvalidArgumentException(err_msg)
+        qos.deadline = extract_duration(deadline_raw)
 
     if "lifespan" in qosobj:
         qos.lifespan = extract_duration(qosobj["lifespan"])
