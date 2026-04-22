@@ -65,8 +65,9 @@ class MultiPublisher(Generic[ROSMessageT]):
         topic: str,
         node_handle: Node,
         msg_type: str | None = None,
-        latched_client_id: str | None = None,
-        queue_size: int = 100,
+        qos: QoSProfile | None = None,
+        latch: bool = False,
+        queue_size: int | None = None,
     ) -> None:
         """
         Register a publisher on the specified topic.
@@ -75,9 +76,13 @@ class MultiPublisher(Generic[ROSMessageT]):
         :param node_handle: Handle to a rclpy node to create the publisher.
         :param msg_type: (optional) The type to register the publisher as. If not provided, an
             attempt will be made to infer the topic type
-        :param latch: (optional) If a client requested this publisher to be latched,
-            provide the client_id of that client here
-
+        :param qos: (optional) If a QoSProfile is provided, topic will be created with supplied
+            profile, else rosbridge falls back to default QoS settings that try to provide a
+            "best effort" compatibility with the current ROS graph.
+        :param latch: (optional, deprecated) Whether to make this publisher latched.
+            Ignored if qos is provided.
+        :param queue_size: (optional, deprecated) The QoS depth to use for this publisher.
+            Ignored if qos is provided.
         :raises TopicNotEstablishedException: If no msg_type was specified by the caller and the
             topic is not yet established, so a topic type cannot be inferred
         :raises TypeConflictException: If the msg_type was specified by the caller and the topic
@@ -113,28 +118,42 @@ class MultiPublisher(Generic[ROSMessageT]):
         if topic_type is not None and topic_type != msg_type_string:
             raise TypeConflictException(topic, topic_type, msg_type_string)
 
+        if qos is None:
+            # Fall back to default rosbridge QoS settings which try to provide a "best effort"
+            # compatibility with ROS subscriptions.
+            qos = self._get_default_qos_profile(latch, queue_size)
+
         # Create the publisher and associated member variables
         self.clients: dict[str, bool] = {}
-        self.latched_client_id = latched_client_id
         self.topic = topic
         self.node_handle = node_handle
         self.msg_class = msg_class
+        self.qos_profile: QoSProfile = qos
+
+        self.publisher = node_handle.create_publisher(
+            msg_class, topic, qos_profile=self.qos_profile
+        )
+
+    def _get_default_qos_profile(
+        self, latch: bool = False, queue_size: int | None = None
+    ) -> QoSProfile:
+        """Get the default QoS profile to use for a publisher."""
         # Adding a lifespan solves the problem of late-joining subscribers
         # without the need of a custom message publisher implementation.
         publisher_qos = QoSProfile(
-            depth=queue_size,
+            depth=queue_size if queue_size is not None else 100,
             durability=DurabilityPolicy.TRANSIENT_LOCAL,
         )
 
         # For latched clients, no lifespan has to be specified (i.e. latch forever).
         # Otherwise we want to keep the messages for a second to prevent late-joining subscribers from
         # missing messages.
-        if latched_client_id is None:
+        if not latch:
             publisher_qos.lifespan = Duration(seconds=1)
         else:
             publisher_qos.depth = 1
 
-        self.publisher = node_handle.create_publisher(msg_class, topic, qos_profile=publisher_qos)
+        return publisher_qos
 
     def unregister(self) -> None:
         """Unregister the publisher and clear the clients."""
@@ -218,49 +237,36 @@ class PublisherManager:
         topic: str,
         node_handle: Node,
         msg_type: str | None = None,
+        qos: QoSProfile | None = None,
         latch: bool = False,
-        queue_size: int = 100,
+        queue_size: int | None = None,
     ) -> None:
         """
         Register a publisher on the specified topic.
 
         Publishers are shared between clients, so a single MultiPublisher
         instance is created per topic, even if multiple clients register.
+        The QoS profile is determined at the first registration of a publisher.
 
         :param client_id: The ID of the client making this request
         :param topic: The name of the topic to publish on
         :param node_handle: Handle to a rclpy node to create the publisher
         :param msg_type: (optional) The type to publish
-        :param latch: (optional) Whether to make this publisher latched
-        :param queue_size: (optional) Publisher queue_size to use
+        :param qos: (optional) Publisher QoSProfile to use
+        :param latch: (optional, deprecated) Whether to make this publisher latched
+        :param queue_size: (optional, deprecated) The QoS depth to use for this publisher
 
         :raises Exception: exceptions are propagated from the MultiPublisher if there is a problem
             loading the specified msg class or establishing the publisher
         """
-        latched_client_id = client_id if latch else None
         if topic not in self._publishers:
             self._publishers[topic] = MultiPublisher(
                 topic,
                 node_handle,
                 msg_type=msg_type,
-                latched_client_id=latched_client_id,
+                qos=qos,
+                latch=latch,
                 queue_size=queue_size,
-            )
-        elif latch and self._publishers[topic].latched_client_id != client_id:
-            node_handle.get_logger().warning(
-                f"Client ID {client_id} attempted to register topic [{topic}] as "
-                "latched but this topic was previously registered."
-            )
-            node_handle.get_logger().warning(
-                "Only a single registered latched publisher is supported at the time"
-            )
-        elif not latch and self._publishers[topic].latched_client_id:
-            node_handle.get_logger().warning(
-                f"New non-latched publisher registration for topic [{topic}] which is "
-                "already registered as latched. but this topic was previously registered."
-            )
-            node_handle.get_logger().warning(
-                "Only a single registered latched publisher is supported at the time"
             )
 
         if msg_type is not None:
