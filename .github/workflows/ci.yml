@@ -43,7 +43,7 @@ jobs:
         with:
           path: ros_ws/src
 
-      - uses: ros-tooling/setup-ros@v0.7
+      - uses: ros-tooling/setup-ros@e828240b0cb6e75501cb42c01b38170aad769299
         with:
           use-ros2-testing: true
 
