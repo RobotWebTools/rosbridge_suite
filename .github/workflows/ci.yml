@@ -47,7 +47,7 @@ jobs:
         with:
           use-ros2-testing: true
 
-      - uses: ros-tooling/action-ros-ci@v0.4
+      - uses: ros-tooling/action-ros-ci@christophebedard/lyrical
         id: action_ros_ci_step
         with:
           target-ros2-distro: ${{ matrix.ros }}
