@@ -30,19 +30,24 @@ jobs:
           # https://docs.ros.org/en/rolling/Releases.html
           # NOTE: Humble, Jazzy and Kilted do not work on the `ros2` branch, so they are tested in their own branches.
           - ros: rolling
-            os: ubuntu-24.04
+            container: ubuntu:resolute
+          - ros: lyrical
+            container: ubuntu:resolute
 
-    name: ROS 2 ${{ matrix.ros }} (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    name: ROS 2 ${{ matrix.ros }} (${{ matrix.container }})
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
 
     steps:
       - uses: actions/checkout@v6
         with:
           path: ros_ws/src
 
-      - uses: ros-tooling/setup-ros@v0.7
+      - uses: ros-tooling/setup-ros@e828240b0cb6e75501cb42c01b38170aad769299
+        with:
+          use-ros2-testing: true
 
-      - uses: ros-tooling/action-ros-ci@v0.4
+      - uses: ros-tooling/action-ros-ci@christophebedard/lyrical
         id: action_ros_ci_step
         with:
           target-ros2-distro: ${{ matrix.ros }}
