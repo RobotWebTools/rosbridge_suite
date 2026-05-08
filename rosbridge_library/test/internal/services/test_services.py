@@ -76,7 +76,7 @@ class ServiceTester:
         assert isinstance(gen, dict)
         try:
             res = message_conversion.populate_instance(gen, res)
-        except:  # Will print() and raise
+        except Exception:  # Will print() and raise
             print("populating instance")
             print(res)
             print("populating with")
