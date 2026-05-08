@@ -223,7 +223,7 @@ class RosbridgeWebSocket(WebSocketHandler):
                 "StreamClosedError: Tried to write to a closed stream",
                 throttle_duration_sec=1.0,
             )
-        except:  # noqa: E722  # Will log and raise
+        except Exception:  # noqa: E722  # Will log and raise
             _log_exception()
 
     @log_exceptions

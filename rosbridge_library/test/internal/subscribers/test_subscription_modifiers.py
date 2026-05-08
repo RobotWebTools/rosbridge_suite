@@ -120,7 +120,7 @@ class TestMessageHandlers(unittest.TestCase):
 
         try:
             self.assertEqual([msgs[0], *list(msgs[-queue_length:])], received["msgs"])
-        except:  # Will finish and raise
+        except Exception:  # Will finish and raise
             handler.finish()
             raise
 
@@ -260,7 +260,7 @@ class TestMessageHandlers(unittest.TestCase):
             for x in range(10):
                 self.assertEqual(x, received["msg"])
                 time.sleep(throttle_rate_sec)
-        except:  # Will finish and raise
+        except Exception:  # Will finish and raise
             handler.finish()
             raise
 
