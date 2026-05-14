@@ -193,7 +193,11 @@ class SendActionGoal(Capability):
         self.protocol.send(outgoing_message)
 
     def _failure(self, cid: str | None, action: str, exc: Exception) -> None:
-        self.protocol.log("error", f"send_action_goal {type(exc).__name__}: {cid}")
+        self.protocol.log(
+            "error",
+            f"send_action_goal to '{action}' failed: {exc}"
+            + (f" [id: {cid}]" if cid is not None else ""),
+        )
         # send response with result: false
         outgoing_message = {
             "op": "action_result",
