@@ -37,11 +37,7 @@ from typing import TYPE_CHECKING, Generic, cast
 
 from action_msgs.msg import GoalStatus
 from rclpy.action import ActionServer
-<<<<<<< HEAD
-from rclpy.action.server import CancelResponse, ServerGoalHandle
-=======
-from rclpy.action.server import CancelResponse, GoalResponse
->>>>>>> cfd0646 (feat: Improve action unadvertising (#1248))
+from rclpy.action.server import CancelResponse, GoalResponse, ServerGoalHandle
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.task import Future
 
@@ -74,28 +70,16 @@ class AdvertisedActionHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActio
         self.protocol = protocol
         self._shutting_down = False
         # setup the action
-<<<<<<< HEAD
         self.action_server: ActionServer[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT] = (
             ActionServer(
                 protocol.node_handle,
                 get_action_class(action_type),
                 action_name,
-                self.execute_callback,  # type: ignore[arg-type]  # rclpy type hint does not support coroutines
-                cancel_callback=self.cancel_callback,  # type: ignore[arg-type]  # rclpy type hint is incorrect
+                self.execute_callback,
+                goal_callback=self.goal_callback,
+                cancel_callback=self.cancel_callback,
                 callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
             )
-=======
-        self.action_server = ActionServer[
-            ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
-        ](
-            protocol.node_handle,
-            get_action_class(action_type),
-            action_name,
-            self.execute_callback,
-            goal_callback=self.goal_callback,
-            cancel_callback=self.cancel_callback,
-            callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
->>>>>>> cfd0646 (feat: Improve action unadvertising (#1248))
         )
 
     def next_id(self) -> int:
