@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import fnmatch
-from typing import TYPE_CHECKING, Any, Generic
+from typing import TYPE_CHECKING, Any, Generic, cast
 
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.task import Future
@@ -71,7 +71,9 @@ class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT])
                 "error",
                 f"Error while waiting for response to service request with id {request_id}: {e}",
             )
-            raise
+            # re-raising here crashes the executor, see: https://github.com/ros2/rclpy/issues/1098
+            # instead, we log the error and return an empty response
+            return cast("ROSServiceResponseT", get_service_class(self.service_type).Response())
         finally:
             del self.request_futures[request_id]
 
@@ -82,7 +84,8 @@ class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT])
         Called by the ServiceResponse capability to handle a service response from the external client.
         """
         if request_id in self.request_futures:
-            self.request_futures[request_id].set_result(res)
+            if not self.request_futures[request_id].done():
+                self.request_futures[request_id].set_result(res)
         else:
             self.protocol.log(
                 "warning", f"Received service response for unrecognized id: {request_id}"
@@ -103,6 +106,9 @@ class AdvertisedServiceHandler(Generic[ROSServiceRequestT, ROSServiceResponseT])
                 f"Service {self.service_name} was unadvertised with a service call in progress, "
                 f"aborting service calls with request IDs {incomplete_ids}",
             )
+            # Patch send_response to a no-op so the executor doesn't crash
+            # when it tries to send the response after the service is destroyed.
+            self.service_handle.send_response = lambda *_args, **_kwargs: None  # type: ignore[method-assign]
             for future_id in self.request_futures:
                 future = self.request_futures[future_id]
                 future.set_exception(RuntimeError(f"Service {self.service_name} was unadvertised"))
