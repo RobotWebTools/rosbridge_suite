@@ -37,7 +37,7 @@ from typing import TYPE_CHECKING, Any, Generic, cast
 
 from action_msgs.msg import GoalStatus
 from rclpy.action import ActionServer
-from rclpy.action.server import CancelResponse
+from rclpy.action.server import CancelResponse, GoalResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.task import Future
 
@@ -63,9 +63,7 @@ class AdvertisedActionHandler(
 ):
     id_counter = 1
 
-    def __init__(
-        self, action_name: str, action_type: str, protocol: Protocol, sleep_time: float = 0.001
-    ) -> None:
+    def __init__(self, action_name: str, action_type: str, protocol: Protocol) -> None:
         self.goal_futures: dict[str, Future[ROSActionResultT]] = {}
         self.goal_handles: dict[
             str,
@@ -174,6 +172,11 @@ class AdvertisedActionHandler(
             del self.goal_futures[goal_id]
             del self.goal_handles[goal_id]
 
+            if self._shutting_down and not self.goal_futures:
+                # Action is shutting down and no more goal futures are pending,
+                # schedule destruction of the action server
+                self._schedule_action_server_destruction()
+
     def cancel_callback(
         self,
         goal: ServerGoalHandle[
@@ -246,10 +249,23 @@ class AdvertisedActionHandler(
             for future_id in self.goal_futures:
                 future = self.goal_futures[future_id]
                 future.set_exception(RuntimeError(f"Action {self.action_name} was unadvertised"))
+        else:
+            self._schedule_action_server_destruction()
 
-        # Uncommenting this, you may get a segfault.
-        # See https://github.com/ros2/rclcpp/issues/2163#issuecomment-1850925883
-        # self.action_server.destroy()
+    def _schedule_action_server_destruction(self) -> None:
+        executor = self.action_server._node.executor
+        assert executor is not None
+
+        async def destroy_action_server() -> None:
+            # Sleep briefly to allow any in-flight callbacks to complete before destroying the action server
+            future = executor.create_future()
+            timer = self.protocol.node_handle.create_timer(1.0, lambda: future.set_result(None))
+            await future
+            timer.destroy()
+
+            self.action_server.destroy()
+
+        executor.create_task(destroy_action_server)
 
 
 class AdvertiseAction(Capability):
