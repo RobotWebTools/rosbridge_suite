@@ -125,7 +125,7 @@ class AdvertisedActionHandler(
         goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
         def done_callback(fut: Future[ROSActionResultT]) -> None:
-            if fut.cancelled():
+            if fut.cancelled() or fut.exception() is not None:
                 goal.abort()
                 self.protocol.log("info", f"Aborted goal {goal_id}")
             else:
@@ -163,6 +163,13 @@ class AdvertisedActionHandler(
                 # Return empty result when cancelled/aborted
                 return cast("ROSActionResultT", get_action_class(self.action_type).Result())
             return result
+        except Exception as e:
+            self.protocol.log(
+                "error", f"Error while waiting for result of action goal with id {goal_id}: {e}"
+            )
+            # Goal should be aborted by the done_callback when the future exception is set
+            # Return empty result
+            return cast("ROSActionResultT", get_action_class(self.action_type).Result())
         finally:
             del self.goal_futures[goal_id]
             del self.goal_handles[goal_id]
