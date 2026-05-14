@@ -76,7 +76,7 @@ class AdvertisedActionHandler(
         self.action_name = action_name
         self.action_type = action_type
         self.protocol = protocol
-        self.sleep_time = sleep_time
+        self._shutting_down = False
         # setup the action
         self.action_server = ActionServer[
             ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
@@ -84,8 +84,9 @@ class AdvertisedActionHandler(
             protocol.node_handle,
             get_action_class(action_type),
             action_name,
-            self.execute_callback,  # type: ignore[arg-type]  # rclpy type hint does not support coroutines
-            cancel_callback=self.cancel_callback,  # type: ignore[arg-type]  # rclpy type hint is incorrect
+            self.execute_callback,
+            goal_callback=self.goal_callback,
+            cancel_callback=self.cancel_callback,
             callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
         )
 
@@ -93,6 +94,21 @@ class AdvertisedActionHandler(
         next_id_value = self.id_counter
         self.id_counter += 1
         return next_id_value
+
+    def goal_callback(self, _goal_request: ROSActionGoalT) -> GoalResponse:
+        """
+        Handle new action goal request.
+
+        ActionServer callback for receiving a new action goal request.
+        """
+        if self._shutting_down:
+            self.protocol.log(
+                "warning",
+                f"Received new goal request for action {self.action_name} while shutting down, rejecting.",
+            )
+            return GoalResponse.REJECT
+
+        return GoalResponse.ACCEPT
 
     async def execute_callback(
         self,
@@ -211,6 +227,8 @@ class AdvertisedActionHandler(
 
     def graceful_shutdown(self) -> None:
         """Signal the AdvertisedActionHandler to shutdown."""
+        self._shutting_down = True
+
         if self.goal_futures:
             incomplete_ids = ", ".join(self.goal_futures.keys())
             self.protocol.log(
