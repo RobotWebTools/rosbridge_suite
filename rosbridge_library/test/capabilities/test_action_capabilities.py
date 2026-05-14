@@ -357,7 +357,70 @@ class TestActionCapabilities(unittest.TestCase):
         while self.received_message is None:
             time.sleep(0.1)
             if time.monotonic() - start_time > 1.0:
-                self.fail("Timed out waiting for unadvertise action message.")
+                self.fail("Timed out waiting for action result.")
+
+        # After unadvertising the action, the goal should be aborted and an action result with
+        # status ABORTED should be sent.
+        self.assertIsNotNone(self.received_message)
+        self.assertEqual(self.received_message["op"], "action_result")
+        self.assertEqual(self.received_message["status"], GoalStatus.STATUS_ABORTED)
+
+        # Sleep briefly to allow the action server to be fully destroyed before proceeding with the test
+        time.sleep(1.0)
+
+        # Now try sending another goal after unadvertising — it should be rejected
+        self.received_message = None
+        goal_msg_after = loads(
+            dumps(
+                {
+                    "op": "send_action_goal",
+                    "id": "foo4_after_unadvertise",
+                    "action": action_path,
+                    "action_type": "example_interfaces/Fibonacci",
+                    "args": {"order": 3},
+                }
+            )
+        )
+        Thread(target=self.send_goal.send_action_goal, args=(goal_msg_after,)).start()
+
+        start_time = time.monotonic()
+        while self.received_message is None:
+            time.sleep(0.1)
+            if time.monotonic() - start_time > 2.0:
+                self.fail("Timed out waiting for rejected action goal response.")
+
+        self.assertIsNotNone(self.received_message)
+        self.assertEqual(self.received_message["op"], "action_result")
+        self.assertFalse(self.received_message["result"])
+
+        # Now advertise the same action again, and verify we can send goals to it successfully
+        self.received_message = None
+        self.advertise.advertise_action(advertise_msg)
+        time.sleep(0.1)
+
+        goal_msg_after_readvertise = loads(
+            dumps(
+                {
+                    "op": "send_action_goal",
+                    "id": "foo4_after_readvertise",
+                    "action": action_path,
+                    "action_type": "example_interfaces/Fibonacci",
+                    "args": {"order": 4},
+                }
+            )
+        )
+
+        Thread(target=self.send_goal.send_action_goal, args=(goal_msg_after_readvertise,)).start()
+
+        start_time = time.monotonic()
+        while self.received_message is None:
+            time.sleep(0.1)
+            if time.monotonic() - start_time > 2.0:
+                self.fail("Timed out waiting for action goal message after readvertise.")
+
+        self.assertIsNotNone(self.received_message)
+        self.assertEqual(self.received_message["op"], "send_action_goal")
+        self.assertTrue("id" in self.received_message)
 
 
 if __name__ == "__main__":
