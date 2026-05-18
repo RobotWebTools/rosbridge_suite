@@ -32,7 +32,7 @@
 from __future__ import annotations
 
 from threading import Event, Thread
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from rclpy.callback_groups import ReentrantCallbackGroup
 
@@ -128,6 +128,62 @@ def args_to_service_request_instance(inst: ROSMessage, args: list | dict[str, An
     populate_instance(msg, inst)
 
 
+_T = TypeVar("_T")
+
+
+def _run_on_executor(node_handle: Node, fn: Callable[[], _T]) -> _T:
+    """
+    Run ``fn()`` on the node's executor thread synchronously and return its result.
+
+    Creating and destroying clients (and other node-owned ROS resources) is not
+    thread-safe with respect to a rclpy executor that is spinning the same node:
+    rebuilding the wait set while a worker thread tears down a client can leave
+    the executor referencing a freed handle, surfacing later as
+    ``TypeError: Object of type 'NoneType' is not an instance of 'capsule'``.
+
+    Routing the lifecycle call through ``executor.create_task`` serializes it
+    with the executor's own work, mirroring the IncomingQueue fix in #1183.
+
+    If the node has no attached executor (rare; mostly unit tests), the
+    callable is invoked inline. Exceptions raised by ``fn`` are re-raised in
+    the calling thread.
+    """
+    executor = node_handle.executor
+    if executor is None:
+        return fn()
+
+    done = Event()
+    box: dict[str, Any] = {}
+
+    def _wrapper() -> None:
+        try:
+            box["result"] = fn()
+        except BaseException as exc:
+            box["exc"] = exc
+        finally:
+            done.set()
+
+    executor.create_task(_wrapper)
+    done.wait()
+    if "exc" in box:
+        raise box["exc"]
+    return box["result"]
+
+
+def _destroy_client_async(node_handle: Node, client: Client) -> None:
+    """
+    Schedule destruction of ``client`` on the node's executor thread.
+
+    Fire-and-forget; the caller does not need to await completion. See
+    ``_run_on_executor`` for the underlying rationale.
+    """
+    executor = node_handle.executor
+    if executor is not None:
+        executor.create_task(lambda: node_handle.destroy_client(client))
+    else:
+        node_handle.destroy_client(client)
+
+
 def call_service(
     node_handle: Node,
     service: str,
@@ -155,12 +211,18 @@ def call_service(
     # Populate the instance with the provided args
     args_to_service_request_instance(inst, args)
 
-    client: Client = node_handle.create_client(
-        service_class, service, callback_group=ReentrantCallbackGroup()
+    # Create the client on the executor thread; concurrent client creation /
+    # destruction from worker threads races with the executor's wait-set
+    # rebuild and can leave handles in an inconsistent state.
+    client: Client = _run_on_executor(
+        node_handle,
+        lambda: node_handle.create_client(
+            service_class, service, callback_group=ReentrantCallbackGroup()
+        ),
     )
 
     if not client.wait_for_service(server_ready_timeout):
-        node_handle.destroy_client(client)
+        _destroy_client_async(node_handle, client)
         raise InvalidServiceException(service)
 
     future = client.call_async(inst)
@@ -173,11 +235,11 @@ def call_service(
 
     if not event.wait(timeout=(server_response_timeout if server_response_timeout > 0 else None)):
         future.cancel()
-        node_handle.destroy_client(client)
+        _destroy_client_async(node_handle, client)
         msg = "Timeout exceeded while waiting for service response"
         raise Exception(msg)
 
-    node_handle.destroy_client(client)
+    _destroy_client_async(node_handle, client)
 
     result = future.result()
 
