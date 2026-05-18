@@ -43,6 +43,7 @@ from rclpy.task import Future
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
+from rosbridge_library.internal.executor_helpers import run_on_executor
 from rosbridge_library.internal.ros_loader import get_action_class
 from rosbridge_library.internal.type_support import (
     ROSActionFeedbackT,
@@ -75,17 +76,22 @@ class AdvertisedActionHandler(
         self.action_type = action_type
         self.protocol = protocol
         self._shutting_down = False
-        # setup the action
-        self.action_server = ActionServer[
-            ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
-        ](
+        # Create the ActionServer on the executor thread; concurrent entity
+        # registration from a worker thread races with the executor's wait-set
+        # rebuild and can SIGSEGV inside rclpy/action/server.py:__init__.
+        self.action_server = run_on_executor(
             protocol.node_handle,
-            get_action_class(action_type),
-            action_name,
-            self.execute_callback,
-            goal_callback=self.goal_callback,
-            cancel_callback=self.cancel_callback,
-            callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
+            lambda: ActionServer[
+                ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+            ](
+                protocol.node_handle,
+                get_action_class(action_type),
+                action_name,
+                self.execute_callback,
+                goal_callback=self.goal_callback,
+                cancel_callback=self.cancel_callback,
+                callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
+            ),
         )
 
     def next_id(self) -> int:
