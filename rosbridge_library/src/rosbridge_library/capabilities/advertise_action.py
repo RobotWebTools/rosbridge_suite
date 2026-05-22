@@ -239,7 +239,7 @@ class AdvertisedActionHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActio
         async def destroy_action_server() -> None:
             assert executor is not None
             # Sleep briefly to allow any in-flight callbacks to complete before destroying the action server
-            future = executor.create_future()
+            future = Future()
             timer = self.protocol.node_handle.create_timer(1.0, lambda: future.set_result(None))
             await future
             timer.destroy()
