@@ -15,7 +15,7 @@ from rosbridge_library.internal.topics import (
     TopicNotEstablishedException,
     TypeConflictException,
 )
-from rosbridge_library.util.ros import is_topic_subscribed
+from rosbridge_library.util.ros import is_topic_subscribed, wait_for_executor_idle
 from std_msgs.msg import String
 
 if TYPE_CHECKING:
@@ -38,20 +38,6 @@ class TestSubscriberManager(unittest.TestCase):
         self.executor.shutdown()
         rclpy.shutdown()
 
-    def assert_topic_subscribed(self, topic: str, timeout: float = 1.0) -> None:
-        start_time = time.monotonic()
-        while not is_topic_subscribed(self.node, topic):
-            time.sleep(0.05)
-            if time.monotonic() - start_time > timeout:
-                self.fail(f"Timed out waiting for topic '{topic}' to be subscribed.")
-
-    def assert_topic_not_subscribed(self, topic: str, timeout: float = 1.0) -> None:
-        start_time = time.monotonic()
-        while is_topic_subscribed(self.node, topic):
-            time.sleep(0.05)
-            if time.monotonic() - start_time > timeout:
-                self.fail(f"Timed out waiting for topic '{topic}' to be unsubscribed.")
-
     def test_subscribe(self) -> None:
         """Register a publisher on a clean topic with a good msg type."""
         topic = "/test_subscribe"
@@ -59,14 +45,17 @@ class TestSubscriberManager(unittest.TestCase):
         client = "client_test_subscribe"
 
         self.assertFalse(topic in manager._subscribers)
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
         manager.subscribe(client, topic, lambda _: None, self.node, msg_type)
         self.assertTrue(topic in manager._subscribers)
-        self.assert_topic_subscribed(topic)
+        self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.unsubscribe(client, topic)
+        # manager.unsubscribe schedules destroy_subscription on the executor;
+        # drain the executor before asserting the entity is gone.
+        wait_for_executor_idle(self.executor)
         self.assertFalse(topic in manager._subscribers)
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
 
     def test_register_subscriber_multiclient(self) -> None:
         topic = "/test_register_subscriber_multiclient"
@@ -75,22 +64,23 @@ class TestSubscriberManager(unittest.TestCase):
         client2 = "client_test_register_subscriber_multiclient_2"
 
         self.assertFalse(topic in manager._subscribers)
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
         manager.subscribe(client1, topic, lambda _: None, self.node, msg_type)
         self.assertTrue(topic in manager._subscribers)
-        self.assert_topic_subscribed(topic)
+        self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.subscribe(client2, topic, lambda _: None, self.node, msg_type)
         self.assertTrue(topic in manager._subscribers)
-        self.assert_topic_subscribed(topic)
+        self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.unsubscribe(client1, topic)
         self.assertTrue(topic in manager._subscribers)
-        self.assert_topic_subscribed(topic)
+        self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.unsubscribe(client2, topic)
+        wait_for_executor_idle(self.executor)
         self.assertFalse(topic in manager._subscribers)
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
 
     def test_register_publisher_conflicting_types(self) -> None:
         topic = "/test_register_publisher_conflicting_types"
@@ -99,10 +89,10 @@ class TestSubscriberManager(unittest.TestCase):
         client = "client_test_register_publisher_conflicting_types"
 
         self.assertFalse(topic in manager._subscribers)
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
         manager.subscribe(client, topic, lambda _: None, self.node, msg_type)
         self.assertTrue(topic in manager._subscribers)
-        self.assert_topic_subscribed(topic)
+        self.assertTrue(is_topic_subscribed(self.node, topic))
 
         self.assertRaises(
             TypeConflictException,
@@ -122,39 +112,41 @@ class TestSubscriberManager(unittest.TestCase):
 
         self.assertFalse(topic1 in manager._subscribers)
         self.assertFalse(topic2 in manager._subscribers)
-        self.assert_topic_not_subscribed(topic1)
-        self.assert_topic_not_subscribed(topic2)
+        self.assertFalse(is_topic_subscribed(self.node, topic1))
+        self.assertFalse(is_topic_subscribed(self.node, topic2))
 
         manager.subscribe(client, topic1, lambda _: None, self.node, msg_type)
         self.assertTrue(topic1 in manager._subscribers)
-        self.assert_topic_subscribed(topic1)
+        self.assertTrue(is_topic_subscribed(self.node, topic1))
         self.assertFalse(topic2 in manager._subscribers)
-        self.assert_topic_not_subscribed(topic2)
+        self.assertFalse(is_topic_subscribed(self.node, topic2))
 
         manager.subscribe(client, topic2, lambda _: None, self.node, msg_type)
         self.assertTrue(topic1 in manager._subscribers)
-        self.assert_topic_subscribed(topic1)
+        self.assertTrue(is_topic_subscribed(self.node, topic1))
         self.assertTrue(topic2 in manager._subscribers)
-        self.assert_topic_subscribed(topic2)
+        self.assertTrue(is_topic_subscribed(self.node, topic2))
 
         manager.unsubscribe(client, topic1)
+        wait_for_executor_idle(self.executor)
         self.assertFalse(topic1 in manager._subscribers)
-        self.assert_topic_not_subscribed(topic1)
+        self.assertFalse(is_topic_subscribed(self.node, topic1))
         self.assertTrue(topic2 in manager._subscribers)
-        self.assert_topic_subscribed(topic2)
+        self.assertTrue(is_topic_subscribed(self.node, topic2))
 
         manager.unsubscribe(client, topic2)
+        wait_for_executor_idle(self.executor)
         self.assertFalse(topic1 in manager._subscribers)
-        self.assert_topic_not_subscribed(topic1)
+        self.assertFalse(is_topic_subscribed(self.node, topic1))
         self.assertFalse(topic2 in manager._subscribers)
-        self.assert_topic_not_subscribed(topic2)
+        self.assertFalse(is_topic_subscribed(self.node, topic2))
 
     def test_register_no_msgtype(self) -> None:
         topic = "/test_register_no_msgtype"
         client = "client_test_register_no_msgtype"
 
         self.assertFalse(topic in manager._subscribers)
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
         self.assertRaises(
             TopicNotEstablishedException, manager.subscribe, client, topic, None, self.node
         )
@@ -163,7 +155,7 @@ class TestSubscriberManager(unittest.TestCase):
         topic = "/test_register_infer_topictype"
         client = "client_test_register_infer_topictype"
 
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
 
         subscriber_qos = QoSProfile(
             depth=10,
@@ -171,16 +163,18 @@ class TestSubscriberManager(unittest.TestCase):
         )
         self.node.create_subscription(String, topic, lambda *_args: None, subscriber_qos)
 
-        self.assert_topic_subscribed(topic)
+        self.assertTrue(is_topic_subscribed(self.node, topic))
         self.assertFalse(topic in manager._subscribers)
 
         manager.subscribe(client, topic, lambda _: None, self.node)
         self.assertTrue(topic in manager._subscribers)
-        self.assert_topic_subscribed(topic)
+        self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.unsubscribe(client, topic)
+        wait_for_executor_idle(self.executor)
         self.assertFalse(topic in manager._subscribers)
-        self.assert_topic_subscribed(topic)
+        # The direct create_subscription above still holds the topic.
+        self.assertTrue(is_topic_subscribed(self.node, topic))
 
     def test_register_multiple_notopictype(self) -> None:
         topic = "/test_register_multiple_notopictype"
@@ -189,30 +183,31 @@ class TestSubscriberManager(unittest.TestCase):
         client2 = "client_test_register_multiple_notopictype_2"
 
         self.assertFalse(topic in manager._subscribers)
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
 
         manager.subscribe(client1, topic, lambda _: None, self.node, msg_type)
         self.assertTrue(topic in manager._subscribers)
-        self.assert_topic_subscribed(topic)
+        self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.subscribe(client2, topic, lambda _: None, self.node)
         self.assertTrue(topic in manager._subscribers)
-        self.assert_topic_subscribed(topic)
+        self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.unsubscribe(client1, topic)
         self.assertTrue(topic in manager._subscribers)
-        self.assert_topic_subscribed(topic)
+        self.assertTrue(is_topic_subscribed(self.node, topic))
 
         manager.unsubscribe(client2, topic)
+        wait_for_executor_idle(self.executor)
         self.assertFalse(topic in manager._subscribers)
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
 
     def test_subscribe_not_registered(self) -> None:
         topic = "/test_subscribe_not_registered"
         client = "client_test_subscribe_not_registered"
 
         self.assertFalse(topic in manager._subscribers)
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
         self.assertRaises(
             TopicNotEstablishedException, manager.subscribe, client, topic, None, self.node
         )
