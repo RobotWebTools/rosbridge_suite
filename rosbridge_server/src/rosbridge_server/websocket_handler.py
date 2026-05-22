@@ -57,14 +57,9 @@ if TYPE_CHECKING:
 def _log_exception() -> None:
     """Log the most recent exception to ROS."""
     exc = traceback.format_exception(*sys.exc_info())
-<<<<<<< HEAD
-    assert RosbridgeWebSocket.node_handle is not None
-    RosbridgeWebSocket.node_handle.get_logger().error("".join(exc))
-=======
     node_handle = RosbridgeWebSocket.node_handle
     assert isinstance(node_handle, Node), "Node handle was not set"
     node_handle.get_logger().error("".join(exc))
->>>>>>> 65034c7 (fix: mypy errors and flaky subscriber/publisher tests (backport #1258) (#1261))
 
 
 P = ParamSpec("P")
@@ -172,12 +167,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             self.set_nodelay(True)
             cls.clients_connected += 1
             if cls.client_manager:
-<<<<<<< HEAD
-                assert self.request.remote_ip is not None
-                cls.client_manager.add_client(self.client_id, self.request.remote_ip)
-=======
                 cls.client_manager.add_client(self.client_id, self.request.remote_ip or "")
->>>>>>> 65034c7 (fix: mypy errors and flaky subscriber/publisher tests (backport #1258) (#1261))
         except Exception as exc:
             cls.node_handle.get_logger().error(
                 f"Unable to accept incoming connection.  Reason: {exc}"
@@ -204,12 +194,7 @@ class RosbridgeWebSocket(WebSocketHandler):
 
         cls.clients_connected -= 1
         if cls.client_manager:
-<<<<<<< HEAD
-            assert self.request.remote_ip is not None
-            cls.client_manager.remove_client(self.client_id, self.request.remote_ip)
-=======
             cls.client_manager.remove_client(self.client_id, self.request.remote_ip or "")
->>>>>>> 65034c7 (fix: mypy errors and flaky subscriber/publisher tests (backport #1258) (#1261))
         cls.node_handle.get_logger().info(
             f"Client disconnected. {cls.clients_connected} clients total."
         )

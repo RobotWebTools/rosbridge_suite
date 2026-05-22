@@ -42,17 +42,11 @@ class TestMultiSubscriber(unittest.TestCase):
         topic = "/test_register_multisubscriber"
         msg_type = "std_msgs/String"
 
-<<<<<<< HEAD
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
         MultiSubscriber[String](
             topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type
         )
-        self.assert_topic_subscribed(topic)
-=======
-        self.assertFalse(is_topic_subscribed(self.node, topic))
-        MultiSubscriber(topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type)
         self.assertTrue(is_topic_subscribed(self.node, topic))
->>>>>>> 65034c7 (fix: mypy errors and flaky subscriber/publisher tests (backport #1258) (#1261))
 
     def test_unregister_multisubscriber(self) -> None:
         """Register and unregister a subscriber on a clean topic with a good msg type."""
