@@ -200,7 +200,9 @@ class Rosapi(Node):
 
         Called by the rosapi/Topics service.
         """
-        response.topics, response.types = proxy.get_topics_and_types(self.globs.topics_pub, self.globs.topics_sub)
+        response.topics, response.types = proxy.get_topics_and_types(
+            self.globs.topics_pub, self.globs.topics_sub
+        )
         return response
 
     def get_interfaces(
@@ -222,7 +224,9 @@ class Rosapi(Node):
 
         Called by the rosapi/TopicsForType service.
         """
-        response.topics = proxy.get_topics_for_type(request.type, self.globs.topics_pub, self.globs.topics_sub)
+        response.topics = proxy.get_topics_for_type(
+            request.type, self.globs.topics_pub, self.globs.topics_sub
+        )
         return response
 
     def get_topics_and_raw_types(
@@ -235,7 +239,9 @@ class Rosapi(Node):
 
         Called by the rosapi/TopicsAndRawTypes service.
         """
-        response.topics, response.types = proxy.get_topics_and_types(self.globs.topics_pub, self.globs.topics_sub)
+        response.topics, response.types = proxy.get_topics_and_types(
+            self.globs.topics_pub, self.globs.topics_sub
+        )
         response.typedefs_full_text = [
             objectutils.get_typedef_full_text(type_name) for type_name in response.types
         ]
@@ -311,7 +317,9 @@ class Rosapi(Node):
 
         Called by the rosapi/TopicType service.
         """
-        response.type = proxy.get_topic_type(request.topic, self.globs.topics_pub, self.globs.topics_sub)
+        response.type = proxy.get_topic_type(
+            request.topic, self.globs.topics_pub, self.globs.topics_sub
+        )
         return response
 
     def get_service_type(

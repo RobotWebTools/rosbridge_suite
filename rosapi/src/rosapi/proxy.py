@@ -68,13 +68,15 @@ def init(node: Node) -> None:
     _node = node
 
 
-def get_topics(topics_pub_glob: list[str], topics_sub_glob: list[str], include_hidden: bool = False) -> list[str]:
+def get_topics(
+    topics_pub_glob: list[str], topics_sub_glob: list[str], include_hidden: bool = False
+) -> list[str]:
     """Return a list of all the active topics in the ROS system matching pub or sub globs."""
     topic_names = get_topic_names(node=_node, include_hidden_topics=include_hidden)
-    
+
     # Combine globs to determine overall topic visibility.
     combined_globs = list(set(topics_pub_glob + topics_sub_glob))
-    
+
     # Sort for deterministic output.
     return sorted(filter_globs(combined_globs, topic_names))
 
@@ -95,14 +97,17 @@ def get_topics_and_types(
 
 
 def get_topics_for_type(
-    topic_type: str, topics_pub_glob: list[str], topics_sub_glob: list[str], include_hidden: bool = False
+    topic_type: str,
+    topics_pub_glob: list[str],
+    topics_sub_glob: list[str],
+    include_hidden: bool = False,
 ) -> list[str]:
     topic_names_and_types = get_topic_names_and_types(
         node=_node, include_hidden_topics=include_hidden
     )
     # topic[0] has the topic name and topic[1] has the type wrapped in a list.
     topics_for_type = [topic[0] for topic in topic_names_and_types if topic[1][0] == topic_type]
-    
+
     combined_globs = list(set(topics_pub_glob + topics_sub_glob))
     return filter_globs(combined_globs, topics_for_type)
 
@@ -293,14 +298,18 @@ def get_channel_info(
     return []
 
 
-def get_publishers(topic: str, topics_pub_glob: list[str], include_hidden: bool = False) -> list[str]:
+def get_publishers(
+    topic: str, topics_pub_glob: list[str], include_hidden: bool = False
+) -> list[str]:
     """Return a list of node names that are publishing the specified topic."""
     return get_channel_info(
         topic, topics_pub_glob, get_node_publications, include_hidden=include_hidden
     )
 
 
-def get_subscribers(topic: str, topics_sub_glob: list[str], include_hidden: bool = False) -> list[str]:
+def get_subscribers(
+    topic: str, topics_sub_glob: list[str], include_hidden: bool = False
+) -> list[str]:
     """Return a list of node names that are subscribing to the specified topic."""
     return get_channel_info(
         topic, topics_sub_glob, get_node_subscriptions, include_hidden=include_hidden
