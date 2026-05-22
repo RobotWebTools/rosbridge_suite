@@ -75,7 +75,7 @@ class AdvertisedActionHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActio
                 protocol.node_handle,
                 get_action_class(action_type),
                 action_name,
-                self.execute_callback,
+                self.execute_callback,  # type: ignore[arg-type]  # rclpy type hint does not support coroutines
                 goal_callback=self.goal_callback,
                 cancel_callback=self.cancel_callback,
                 callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
