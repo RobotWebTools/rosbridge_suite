@@ -155,7 +155,7 @@ action servers and managing ROS parameters.
     ```
     <launch>
       <node name="rosapi" pkg="rosapi" exec="rosapi_node">
-        <param name="topics_pub_glob" value="'[/rosout, /camera/rgb/*]'" />
+        <param name="topics_pub_glob" value="'[/cmd_vel, /initialpose]'" />
         <param name="topics_sub_glob" value="'[/rosout, /camera/rgb/*]'" />
       </node>
     </launch>
