@@ -68,10 +68,15 @@ def init(node: Node) -> None:
     _node = node
 
 
-def get_topics(topics_glob: list[str], include_hidden: bool = False) -> list[str]:
-    """Return a list of all the active topics in the ROS system."""
+def get_topics(topics_pub_glob: list[str], topics_sub_glob: list[str], include_hidden: bool = False) -> list[str]:
+    """Return a list of all the active topics in the ROS system matching pub or sub globs."""
     topic_names = get_topic_names(node=_node, include_hidden_topics=include_hidden)
-    return filter_globs(topics_glob, topic_names)
+    
+    # Combine globs to determine overall topic visibility.
+    combined_globs = list(set(topics_pub_glob + topics_sub_glob))
+    
+    # Sort for deterministic output.
+    return sorted(filter_globs(combined_globs, topic_names))
 
 
 def get_interfaces() -> list[str]:
@@ -80,22 +85,26 @@ def get_interfaces() -> list[str]:
 
 
 def get_topics_and_types(
-    topics_glob: list[str], include_hidden: bool = False
+    topics_pub_glob: list[str], topics_sub_glob: list[str], include_hidden: bool = False
 ) -> tuple[list[str], list[str]]:
+    """Return filtered allowed topics and their types."""
+    combined_globs = list(set(topics_pub_glob + topics_sub_glob))
     return get_publications_and_types(
-        topics_glob, get_topic_names_and_types, include_hidden_topics=include_hidden
+        combined_globs, get_topic_names_and_types, include_hidden_topics=include_hidden
     )
 
 
 def get_topics_for_type(
-    topic_type: str, topics_glob: list[str], include_hidden: bool = False
+    topic_type: str, topics_pub_glob: list[str], topics_sub_glob: list[str], include_hidden: bool = False
 ) -> list[str]:
     topic_names_and_types = get_topic_names_and_types(
         node=_node, include_hidden_topics=include_hidden
     )
     # topic[0] has the topic name and topic[1] has the type wrapped in a list.
     topics_for_type = [topic[0] for topic in topic_names_and_types if topic[1][0] == topic_type]
-    return filter_globs(topics_glob, topics_for_type)
+    
+    combined_globs = list(set(topics_pub_glob + topics_sub_glob))
+    return filter_globs(combined_globs, topics_for_type)
 
 
 def get_services(services_glob: list[str], include_hidden: bool = False) -> list[str]:
@@ -203,10 +212,10 @@ def get_node_service_types(node_name: str) -> list[str]:
     return [service.types[0] for service in services]
 
 
-def get_topic_type(topic: str, topics_glob: list[str]) -> str:
+def get_topic_type(topic: str, topics_pub_glob: list[str], topics_sub_glob: list[str]) -> str:
     """Return the type of the specified ROS topic."""
     # Note: this doesn't consider hidden topics.
-    topics, types = get_topics_and_types(topics_glob)
+    topics, types = get_topics_and_types(topics_pub_glob, topics_sub_glob)
     try:
         return types[topics.index(topic)]
     except ValueError:
@@ -284,17 +293,17 @@ def get_channel_info(
     return []
 
 
-def get_publishers(topic: str, topics_glob: list[str], include_hidden: bool = False) -> list[str]:
+def get_publishers(topic: str, topics_pub_glob: list[str], include_hidden: bool = False) -> list[str]:
     """Return a list of node names that are publishing the specified topic."""
     return get_channel_info(
-        topic, topics_glob, get_node_publications, include_hidden=include_hidden
+        topic, topics_pub_glob, get_node_publications, include_hidden=include_hidden
     )
 
 
-def get_subscribers(topic: str, topics_glob: list[str], include_hidden: bool = False) -> list[str]:
+def get_subscribers(topic: str, topics_sub_glob: list[str], include_hidden: bool = False) -> list[str]:
     """Return a list of node names that are subscribing to the specified topic."""
     return get_channel_info(
-        topic, topics_glob, get_node_subscriptions, include_hidden=include_hidden
+        topic, topics_sub_glob, get_node_subscriptions, include_hidden=include_hidden
     )
 
 

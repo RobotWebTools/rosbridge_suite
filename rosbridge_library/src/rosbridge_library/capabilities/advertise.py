@@ -113,9 +113,9 @@ class Advertise(Capability):
     )
     unadvertise_msg_fields = ((True, "topic", str),)
 
-    parameter_names = ("topics_glob",)
+    parameter_names = ("topics_pub_glob",)
 
-    topics_glob: list[str] | None = None
+    topics_pub_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
@@ -139,10 +139,10 @@ class Advertise(Capability):
         if "qos" in message:
             qos = extract_qos_profile(message["qos"])
 
-        if self.topics_glob is not None:
+        if self.topics_pub_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in self.topics_glob:
+            for glob in self.topics_pub_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",
@@ -178,10 +178,10 @@ class Advertise(Capability):
         self.basic_type_check(message, self.unadvertise_msg_fields)
         topic: str = message["topic"]
 
-        if self.topics_glob:
+        if self.topics_pub_glob:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in self.topics_glob:
+            for glob in self.topics_pub_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",

@@ -131,7 +131,8 @@ action servers and managing ROS parameters.
 
     Timeout in seconds for param-related services.
 
-  * `topics_glob` (string, default: `[*]`)
+  * `topics_pub_glob` (string, default: `[*]`)
+  * `topics_sub_glob` (string, default: `[*]`)
   * `services_glob` (string, default: `[*]`)
   * `params_glob` (string, default: `[*]`)
 
@@ -142,7 +143,8 @@ action servers and managing ROS parameters.
     ```
     <launch>
       <node name="rosapi" pkg="rosapi" exec="rosapi_node">
-        <param name="topics_glob" value="'[*]'" />
+        <param name="topics_pub_glob" value="'[*]'" />
+        <param name="topics_sub_glob" value="'[*]'" />
         <param name="services_glob" value="'[*]'" />
         <param name="params_glob" value="'[*]'" />
       </node>
@@ -153,7 +155,8 @@ action servers and managing ROS parameters.
     ```
     <launch>
       <node name="rosapi" pkg="rosapi" exec="rosapi_node">
-        <param name="topics_glob" value="'[/rosout, /camera/rgb/*]'" />
+        <param name="topics_pub_glob" value="'[/rosout, /camera/rgb/*]'" />
+        <param name="topics_sub_glob" value="'[/rosout, /camera/rgb/*]'" />
       </node>
     </launch>
     ```

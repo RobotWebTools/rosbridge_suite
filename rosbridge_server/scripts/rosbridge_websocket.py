@@ -84,7 +84,8 @@ PROTOCOL_PARAMETERS = (
         10.0,
         "How long to wait before unregistering a client from publisher after unadvertising publisher.",
     ),
-    ("topics_glob", str, "", "Glob patterns for topics publish/subscribe."),
+    ("topics_pub_glob", str, "", "Glob patterns for topics publish."),
+    ("topics_sub_glob", str, "", "Glob patterns for topics subscribe."),
     ("services_glob", str, "", "Glob patterns for services call/advertise."),
     ("actions_glob", str, "", "Glob patterns for actions send/advertise."),
     ("call_services_in_new_thread", bool, True, "Call services in a new threads."),
@@ -156,8 +157,11 @@ class RosbridgeWebsocketNode(Node):
         for name, _, _, _ in PROTOCOL_PARAMETERS:
             self.protocol_parameters[name] = self.get_parameter(name).value
 
-        self.protocol_parameters["topics_glob"] = parse_glob_string(
-            self.protocol_parameters["topics_glob"]
+        self.protocol_parameters["topics_pub_glob"] = parse_glob_string(
+            self.protocol_parameters["topics_pub_glob"]
+        )
+        self.protocol_parameters["topics_sub_glob"] = parse_glob_string(
+            self.protocol_parameters["topics_sub_glob"]
         )
         self.protocol_parameters["services_glob"] = parse_glob_string(
             self.protocol_parameters["services_glob"]

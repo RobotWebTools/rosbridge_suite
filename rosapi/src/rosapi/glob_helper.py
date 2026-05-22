@@ -10,7 +10,8 @@ if TYPE_CHECKING:
 
 
 class Globs(NamedTuple):
-    topics: list[str]
+    topics_pub: list[str]
+    topics_sub: list[str]
     services: list[str]
     params: list[str]
 
@@ -30,10 +31,11 @@ def get_globs(node: Node) -> Globs:
             if len(element.strip().strip("'")) > 0
         ]
 
-    topics_glob = get_param("topics_glob")
+    topics_pub_glob = get_param("topics_pub_glob")
+    topics_sub_glob = get_param("topics_sub_glob")
     services_glob = get_param("services_glob")
     params_glob = get_param("params_glob")
-    return Globs(topics_glob, services_glob, params_glob)
+    return Globs(topics_pub_glob, topics_sub_glob, services_glob, params_glob)
 
 
 def filter_globs(globs: list[str] | None, full_list: list[str]) -> list[str]:

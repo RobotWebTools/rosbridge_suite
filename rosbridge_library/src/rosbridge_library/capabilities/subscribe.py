@@ -255,9 +255,9 @@ class Subscribe(Capability):
     )
     unsubscribe_msg_fields = ((True, "topic", str),)
 
-    parameter_names = ("topics_glob",)
+    parameter_names = ("topics_sub_glob",)
 
-    topics_glob: list[str] | None = None
+    topics_sub_glob: list[str] | None = None
 
     def __init__(self, protocol: Protocol) -> None:
         # Call superclass constructor
@@ -279,10 +279,10 @@ class Subscribe(Capability):
         # Make the subscription
         topic: str = msg["topic"]
 
-        if self.topics_glob is not None:
+        if self.topics_sub_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
-            for glob in self.topics_glob:
+            for glob in self.topics_sub_glob:
                 if fnmatch.fnmatch(topic, glob):
                     self.protocol.log(
                         "debug",
