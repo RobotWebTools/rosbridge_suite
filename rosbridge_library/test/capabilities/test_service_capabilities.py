@@ -122,7 +122,7 @@ class TestServiceCapabilities(unittest.TestCase):
                 }
             )
         )
-        Thread(target=self.call_service.call_service, args=(call_msg,)).start()
+        Thread(target=self.call_service.call_service, args=(call_msg,), daemon=True).start()
 
         start_time = time.monotonic()
         while self.received_message is None:
@@ -189,7 +189,7 @@ class TestServiceCapabilities(unittest.TestCase):
                 }
             )
         )
-        Thread(target=self.call_service.call_service, args=(call_msg,)).start()
+        Thread(target=self.call_service.call_service, args=(call_msg,), daemon=True).start()
 
         start_time = time.monotonic()
         while self.received_message is None:
@@ -244,7 +244,7 @@ class TestServiceCapabilities(unittest.TestCase):
             )
         )
         self.received_message = None
-        Thread(target=self.call_service.call_service, args=(call_msg,)).start()
+        Thread(target=self.call_service.call_service, args=(call_msg,), daemon=True).start()
 
         start_time = time.monotonic()
         while self.received_message is None:
@@ -296,7 +296,7 @@ class TestServiceCapabilities(unittest.TestCase):
                 }
             )
         )
-        Thread(target=self.call_service.call_service, args=(call_msg2,)).start()
+        Thread(target=self.call_service.call_service, args=(call_msg2,), daemon=True).start()
 
         start_time = time.monotonic()
         while self.received_message is None:

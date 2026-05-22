@@ -40,7 +40,7 @@ import uuid
 from asyncio.events import AbstractEventLoop
 from collections import deque
 from functools import wraps
-from typing import TYPE_CHECKING, ClassVar, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, ParamSpec, TypeVar
 
 from rclpy.node import Node
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
@@ -57,8 +57,9 @@ if TYPE_CHECKING:
 def _log_exception() -> None:
     """Log the most recent exception to ROS."""
     exc = traceback.format_exception(*sys.exc_info())
-    assert RosbridgeWebSocket.node_handle is not None
-    RosbridgeWebSocket.node_handle.get_logger().error("".join(exc))
+    node_handle = RosbridgeWebSocket.node_handle
+    assert isinstance(node_handle, Node), "Node handle was not set"
+    node_handle.get_logger().error("".join(exc))
 
 
 P = ParamSpec("P")
@@ -142,7 +143,7 @@ class RosbridgeWebSocket(WebSocketHandler):
     node_handle: ClassVar[Node | None] = None
 
     # Parameters to pass to RosbridgeProtocol when opening a connection
-    protocol_parameters: ClassVar = {}
+    protocol_parameters: ClassVar[dict[str, Any]] = {}
 
     # Parameters for the WebSocket handler
     use_compression: ClassVar[bool] = False
@@ -166,8 +167,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             self.set_nodelay(True)
             cls.clients_connected += 1
             if cls.client_manager:
-                assert self.request.remote_ip is not None
-                cls.client_manager.add_client(self.client_id, self.request.remote_ip)
+                cls.client_manager.add_client(self.client_id, self.request.remote_ip or "")
         except Exception as exc:
             cls.node_handle.get_logger().error(
                 f"Unable to accept incoming connection.  Reason: {exc}"
@@ -194,8 +194,7 @@ class RosbridgeWebSocket(WebSocketHandler):
 
         cls.clients_connected -= 1
         if cls.client_manager:
-            assert self.request.remote_ip is not None
-            cls.client_manager.remove_client(self.client_id, self.request.remote_ip)
+            cls.client_manager.remove_client(self.client_id, self.request.remote_ip or "")
         cls.node_handle.get_logger().info(
             f"Client disconnected. {cls.clients_connected} clients total."
         )

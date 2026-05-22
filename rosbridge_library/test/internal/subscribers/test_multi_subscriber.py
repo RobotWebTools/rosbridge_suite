@@ -12,7 +12,7 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.internal.subscribers import MultiSubscriber
 from rosbridge_library.internal.topics import TypeConflictException
-from rosbridge_library.util.ros import is_topic_subscribed
+from rosbridge_library.util.ros import is_topic_subscribed, wait_for_executor_idle
 from std_msgs.msg import Int32, String
 
 if TYPE_CHECKING:
@@ -37,43 +37,32 @@ class TestMultiSubscriber(unittest.TestCase):
         self.executor.shutdown()
         rclpy.shutdown()
 
-    def assert_topic_subscribed(self, topic: str, timeout: float = 1.0) -> None:
-        start_time = time.monotonic()
-        while not is_topic_subscribed(self.node, topic):
-            time.sleep(0.05)
-            if time.monotonic() - start_time > timeout:
-                self.fail(f"Timed out waiting for topic '{topic}' to be subscribed.")
-
-    def assert_topic_not_subscribed(self, topic: str, timeout: float = 1.0) -> None:
-        start_time = time.monotonic()
-        while is_topic_subscribed(self.node, topic):
-            time.sleep(0.05)
-            if time.monotonic() - start_time > timeout:
-                self.fail(f"Timed out waiting for topic '{topic}' to be unsubscribed.")
-
     def test_register_multisubscriber(self) -> None:
         """Register a subscriber on a clean topic with a good msg type."""
         topic = "/test_register_multisubscriber"
         msg_type = "std_msgs/String"
 
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
         MultiSubscriber[String](
             topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type
         )
-        self.assert_topic_subscribed(topic)
+        self.assertTrue(is_topic_subscribed(self.node, topic))
 
     def test_unregister_multisubscriber(self) -> None:
         """Register and unregister a subscriber on a clean topic with a good msg type."""
         topic = "/test_unregister_multisubscriber"
         msg_type = "std_msgs/String"
 
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
         multi: MultiSubscriber[String] = MultiSubscriber(
             topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type
         )
-        self.assert_topic_subscribed(topic)
+        self.assertTrue(is_topic_subscribed(self.node, topic))
         multi.unregister()
-        self.assert_topic_not_subscribed(topic)
+        # MultiSubscriber.unregister schedules destroy_subscription on the executor;
+        # drain the executor before asserting the entity is gone.
+        wait_for_executor_idle(self.executor)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
 
     def test_verify_type(self) -> None:
         topic = "/test_verify_type"
@@ -103,11 +92,11 @@ class TestMultiSubscriber(unittest.TestCase):
         topic = "/test_subscribe_unsubscribe"
         msg_type = "std_msgs/String"
 
-        self.assert_topic_not_subscribed(topic)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
         multi: MultiSubscriber[String] = MultiSubscriber(
             topic, self.client_id, lambda *_args: None, self.node, msg_type=msg_type
         )
-        self.assert_topic_subscribed(topic)
+        self.assertTrue(is_topic_subscribed(self.node, topic))
         self.assertEqual(len(multi.new_subscriptions), 0)
 
         multi.subscribe(self.client_id, lambda _: None)
@@ -117,7 +106,8 @@ class TestMultiSubscriber(unittest.TestCase):
         self.assertEqual(len(multi.new_subscriptions), 0)
 
         multi.unregister()
-        self.assert_topic_not_subscribed(topic)
+        wait_for_executor_idle(self.executor)
+        self.assertFalse(is_topic_subscribed(self.node, topic))
 
     def test_subscribe_receive_json(self) -> None:
         topic = "/test_subscribe_receive_json"
