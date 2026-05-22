@@ -140,7 +140,7 @@ class TestActionCapabilities(unittest.TestCase):
                 }
             )
         )
-        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
+        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,), daemon=True).start()
 
         start_time = time.monotonic()
         while self.received_message is None:
@@ -249,7 +249,7 @@ class TestActionCapabilities(unittest.TestCase):
                 }
             )
         )
-        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
+        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,), daemon=True).start()
 
         start_time = time.monotonic()
         while self.received_message is None:
@@ -340,7 +340,7 @@ class TestActionCapabilities(unittest.TestCase):
                 }
             )
         )
-        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
+        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,), daemon=True).start()
 
         start_time = time.monotonic()
         while self.received_message is None:
@@ -386,7 +386,7 @@ class TestActionCapabilities(unittest.TestCase):
                 }
             )
         )
-        Thread(target=self.send_goal.send_action_goal, args=(goal_msg_after,)).start()
+        Thread(target=self.send_goal.send_action_goal, args=(goal_msg_after,), daemon=True).start()
 
         start_time = time.monotonic()
         while self.received_message is None:
@@ -415,7 +415,11 @@ class TestActionCapabilities(unittest.TestCase):
             )
         )
 
-        Thread(target=self.send_goal.send_action_goal, args=(goal_msg_after_readvertise,)).start()
+        Thread(
+            target=self.send_goal.send_action_goal,
+            args=(goal_msg_after_readvertise,),
+            daemon=True,
+        ).start()
 
         start_time = time.monotonic()
         while self.received_message is None:
