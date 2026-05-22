@@ -58,7 +58,11 @@ try:
     from ujson import dumps as encode_json  # type: ignore[import]
 except ImportError:
     try:
+<<<<<<< HEAD
         from simplejson import dumps as encode_json  # type: ignore[import]
+=======
+        from simplejson import dumps as encode_json  # type: ignore[import-untyped, no-redef]
+>>>>>>> 65034c7 (fix: mypy errors and flaky subscriber/publisher tests (backport #1258) (#1261))
     except ImportError:
         from json import dumps as encode_json  # type: ignore[assignment]
 
