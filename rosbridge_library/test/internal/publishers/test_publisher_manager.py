@@ -170,7 +170,6 @@ class TestPublisherManager(unittest.TestCase):
             durability=DurabilityPolicy.TRANSIENT_LOCAL,
         )
         self.node.create_publisher(String, topic, publisher_qos)
-        time.sleep(0.1)
 
         self.assertTrue(is_topic_published(self.node, topic))
         self.assertFalse(topic in manager._publishers)
