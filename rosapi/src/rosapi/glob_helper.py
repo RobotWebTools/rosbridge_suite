@@ -18,6 +18,10 @@ class Globs(NamedTuple):
 
 def get_globs(node: Node) -> Globs:
     def get_param(parameter_name: str) -> list[str]:
+        # handle the case where the parameter might not be declared yet
+        if not node.has_parameter(parameter_name):
+            return []
+
         parameter = node.get_parameter(parameter_name).get_parameter_value()
 
         parameter_value = ""
@@ -31,8 +35,11 @@ def get_globs(node: Node) -> Globs:
             if len(element.strip().strip("'")) > 0
         ]
 
-    topics_pub_glob = get_param("topics_pub_glob")
-    topics_sub_glob = get_param("topics_sub_glob")
+    # Append legacy topics glob into both pub and sub
+    topics_glob = get_param("topics_glob")
+    topics_pub_glob = list(set(get_param("topics_pub_glob") + topics_glob))
+    topics_sub_glob = list(set(get_param("topics_sub_glob") + topics_glob))
+
     services_glob = get_param("services_glob")
     params_glob = get_param("params_glob")
     return Globs(topics_pub_glob, topics_sub_glob, services_glob, params_glob)

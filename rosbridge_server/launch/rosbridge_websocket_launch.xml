@@ -23,6 +23,7 @@
   <arg name="default_call_service_timeout" default="5.0" />
   <arg name="send_action_goals_in_new_thread" default="true" />
 
+  <arg name="topics_glob" default="" />
   <arg name="topics_pub_glob" default="" />
   <arg name="topics_sub_glob" default="" />
   <arg name="services_glob" default="" />
@@ -51,6 +52,7 @@
       <param name="default_call_service_timeout" value="$(var default_call_service_timeout)"/>
       <param name="send_action_goals_in_new_thread" value="$(var send_action_goals_in_new_thread)"/>
 
+      <param name="topics_glob" value="$(var topics_glob)"/>
       <param name="topics_pub_glob" value="$(var topics_pub_glob)"/>
       <param name="topics_sub_glob" value="$(var topics_sub_glob)"/>
       <param name="services_glob" value="$(var services_glob)"/>
@@ -76,6 +78,7 @@
       <param name="default_call_service_timeout" value="$(var default_call_service_timeout)"/>
       <param name="send_action_goals_in_new_thread" value="$(var send_action_goals_in_new_thread)"/>
 
+      <param name="topics_glob" value="$(var topics_glob)"/>
       <param name="topics_pub_glob" value="$(var topics_pub_glob)"/>
       <param name="topics_sub_glob" value="$(var topics_sub_glob)"/>
       <param name="services_glob" value="$(var services_glob)"/>
@@ -84,6 +87,7 @@
   </group>
 
   <node name="rosapi" namespace="$(var namespace)" pkg="rosapi" exec="rosapi_node" respawn="$(var respawn)">
+    <param name="topics_glob" value="$(var topics_glob)"/>
     <param name="topics_pub_glob" value="$(var topics_pub_glob)"/>
     <param name="topics_sub_glob" value="$(var topics_sub_glob)"/>
     <param name="services_glob" value="$(var services_glob)"/>

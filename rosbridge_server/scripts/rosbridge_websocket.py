@@ -84,6 +84,7 @@ PROTOCOL_PARAMETERS = (
         10.0,
         "How long to wait before unregistering a client from publisher after unadvertising publisher.",
     ),
+    ("topics_glob", str, "", "Legacy glob patterns for topics publish/subscribe."),
     ("topics_pub_glob", str, "", "Glob patterns for topics publish."),
     ("topics_sub_glob", str, "", "Glob patterns for topics subscribe."),
     ("services_glob", str, "", "Glob patterns for services call/advertise."),
@@ -157,12 +158,13 @@ class RosbridgeWebsocketNode(Node):
         for name, _, _, _ in PROTOCOL_PARAMETERS:
             self.protocol_parameters[name] = self.get_parameter(name).value
 
-        self.protocol_parameters["topics_pub_glob"] = parse_glob_string(
-            self.protocol_parameters["topics_pub_glob"]
-        )
-        self.protocol_parameters["topics_sub_glob"] = parse_glob_string(
-            self.protocol_parameters["topics_sub_glob"]
-        )
+        # Append legacy topics glob into both pub and sub
+        legacy_glob = parse_glob_string(self.protocol_parameters.get("topics_glob", "")) or []
+        pub_glob = parse_glob_string(self.protocol_parameters["topics_pub_glob"]) or []
+        sub_glob = parse_glob_string(self.protocol_parameters["topics_sub_glob"]) or []
+        self.protocol_parameters["topics_pub_glob"] = list(set(pub_glob + legacy_glob))
+        self.protocol_parameters["topics_sub_glob"] = list(set(sub_glob + legacy_glob))
+
         self.protocol_parameters["services_glob"] = parse_glob_string(
             self.protocol_parameters["services_glob"]
         )
