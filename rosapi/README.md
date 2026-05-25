@@ -131,6 +131,7 @@ action servers and managing ROS parameters.
 
     Timeout in seconds for param-related services.
 
+  * `topics_glob` (string, default: `[*]`)
   * `topics_pub_glob` (string, default: `[*]`)
   * `topics_sub_glob` (string, default: `[*]`)
   * `services_glob` (string, default: `[*]`)

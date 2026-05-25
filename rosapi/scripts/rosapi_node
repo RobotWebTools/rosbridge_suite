@@ -84,10 +84,11 @@ class Rosapi(Node):
 
     def __init__(self) -> None:
         super().__init__(self.NAME)
-        self.declare_parameter("topics_pub_glob", "[*]")
-        self.declare_parameter("topics_sub_glob", "[*]")
-        self.declare_parameter("services_glob", "[*]")
-        self.declare_parameter("params_glob", "[*]")
+        self.declare_parameter("topics_glob", "")
+        self.declare_parameter("topics_pub_glob", "")
+        self.declare_parameter("topics_sub_glob", "")
+        self.declare_parameter("services_glob", "")
+        self.declare_parameter("params_glob", "")
         self.declare_parameter("params_timeout", 5.0)
         self.globs = self.get_globs()
         self.register_services()
