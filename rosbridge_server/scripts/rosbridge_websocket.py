@@ -162,8 +162,10 @@ class RosbridgeWebsocketNode(Node):
         legacy_glob = parse_glob_string(self.protocol_parameters.get("topics_glob", "")) or []
         pub_glob = parse_glob_string(self.protocol_parameters["topics_pub_glob"]) or []
         sub_glob = parse_glob_string(self.protocol_parameters["topics_sub_glob"]) or []
-        self.protocol_parameters["topics_pub_glob"] = list(set(pub_glob + legacy_glob))
-        self.protocol_parameters["topics_sub_glob"] = list(set(sub_glob + legacy_glob))
+        combined_pub = list(set(pub_glob + legacy_glob))
+        combined_sub = list(set(sub_glob + legacy_glob))
+        self.protocol_parameters["topics_pub_glob"] = combined_pub if combined_pub else None
+        self.protocol_parameters["topics_sub_glob"] = combined_sub if combined_sub else None
 
         self.protocol_parameters["services_glob"] = parse_glob_string(
             self.protocol_parameters["services_glob"]
