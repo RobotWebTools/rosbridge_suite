@@ -58,7 +58,7 @@ try:
     from ujson import dumps as encode_json  # type: ignore[import-untyped]
 except ImportError:
     try:
-        from simplejson import dumps as encode_json  # type: ignore[import-untyped]
+        from simplejson import dumps as encode_json  # type: ignore[import-untyped, no-redef]
     except ImportError:
         from json import dumps as encode_json  # type: ignore[assignment]
 
