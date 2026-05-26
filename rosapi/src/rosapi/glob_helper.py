@@ -50,7 +50,9 @@ def get_globs(node: Node) -> Globs:
 
 
 def filter_globs(globs: list[str] | None, full_list: list[str]) -> list[str]:
-    # If the globs are empty (weren't defined in the params), return the full list
+    # If no globs were defined in the params (""), do not filter and return
+    # the full list. An empty list ("[]") still applies filtering and therefore
+    # matches nothing, resulting in an empty list.
     if globs is not None:
         return list(filter(lambda x: any_match(x, globs), full_list))
     return full_list

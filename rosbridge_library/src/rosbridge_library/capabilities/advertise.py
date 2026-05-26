@@ -178,7 +178,7 @@ class Advertise(Capability):
         self.basic_type_check(message, self.unadvertise_msg_fields)
         topic: str = message["topic"]
 
-        if self.topics_pub_glob:
+        if self.topics_pub_glob is not None:
             self.protocol.log("debug", "Topic security glob enabled, checking topic: " + topic)
             match = False
             for glob in self.topics_pub_glob:

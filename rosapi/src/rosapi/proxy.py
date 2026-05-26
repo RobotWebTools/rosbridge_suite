@@ -168,7 +168,7 @@ def get_publications_and_types(
     Get a list of topic or service publications and their types.
 
     :param glob: A glob pattern to filter the publications.
-    :type glob: str | None
+    :type glob: list[str] | None
     :param getter_function: A function to get the names and types of publications.
     :type getter_function: Callable
     :param include_hidden_publications: Keyword arguments to specify whether to include hidden publications.
@@ -299,7 +299,7 @@ def get_channel_info(
     :param channel: The name of the channel to query.
     :type channel: str
     :param channels_glob: A list of glob patterns to filter the channels.
-    :type channels_glob: list[str]
+    :type channels_glob: list[str] | None
     :param getter_function: A function to get the channel information for a given node.
     :type getter_function: Callable
     :param include_hidden: Whether to include hidden nodes in the search.
