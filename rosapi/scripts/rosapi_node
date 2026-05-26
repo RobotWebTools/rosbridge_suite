@@ -84,9 +84,11 @@ class Rosapi(Node):
 
     def __init__(self) -> None:
         super().__init__(self.NAME)
-        self.declare_parameter("topics_glob", "[*]")
-        self.declare_parameter("services_glob", "[*]")
-        self.declare_parameter("params_glob", "[*]")
+        self.declare_parameter("topics_glob", "")
+        self.declare_parameter("topics_pub_glob", "")
+        self.declare_parameter("topics_sub_glob", "")
+        self.declare_parameter("services_glob", "")
+        self.declare_parameter("params_glob", "")
         self.declare_parameter("params_timeout", 5.0)
         self.globs = self.get_globs()
         self.register_services()
@@ -199,7 +201,9 @@ class Rosapi(Node):
 
         Called by the rosapi/Topics service.
         """
-        response.topics, response.types = proxy.get_topics_and_types(self.globs.topics)
+        response.topics, response.types = proxy.get_topics_and_types(
+            self.globs.topics_pub, self.globs.topics_sub
+        )
         return response
 
     def get_interfaces(
@@ -221,7 +225,9 @@ class Rosapi(Node):
 
         Called by the rosapi/TopicsForType service.
         """
-        response.topics = proxy.get_topics_for_type(request.type, self.globs.topics)
+        response.topics = proxy.get_topics_for_type(
+            request.type, self.globs.topics_pub, self.globs.topics_sub
+        )
         return response
 
     def get_topics_and_raw_types(
@@ -234,7 +240,9 @@ class Rosapi(Node):
 
         Called by the rosapi/TopicsAndRawTypes service.
         """
-        response.topics, response.types = proxy.get_topics_and_types(self.globs.topics)
+        response.topics, response.types = proxy.get_topics_and_types(
+            self.globs.topics_pub, self.globs.topics_sub
+        )
         response.typedefs_full_text = [
             objectutils.get_typedef_full_text(type_name) for type_name in response.types
         ]
@@ -294,7 +302,7 @@ class Rosapi(Node):
 
         Called by the rosapi/GetActionServers service.
         """
-        topics = proxy.get_topics(self.globs.topics, include_hidden=True)
+        topics = proxy.get_topics(self.globs.topics_pub, self.globs.topics_sub, include_hidden=True)
         response.action_servers = proxy.filter_action_servers(topics)
         return response
 
@@ -310,7 +318,9 @@ class Rosapi(Node):
 
         Called by the rosapi/TopicType service.
         """
-        response.type = proxy.get_topic_type(request.topic, self.globs.topics)
+        response.type = proxy.get_topic_type(
+            request.topic, self.globs.topics_pub, self.globs.topics_sub
+        )
         return response
 
     def get_service_type(
@@ -336,7 +346,7 @@ class Rosapi(Node):
 
         Called by the rosapi/Publishers service.
         """
-        response.publishers = proxy.get_publishers(request.topic, self.globs.topics)
+        response.publishers = proxy.get_publishers(request.topic, self.globs.topics_pub)
         return response
 
     def get_subscribers(
@@ -347,7 +357,7 @@ class Rosapi(Node):
 
         Called by the rosapi/Subscribers service.
         """
-        response.subscribers = proxy.get_subscribers(request.topic, self.globs.topics)
+        response.subscribers = proxy.get_subscribers(request.topic, self.globs.topics_sub)
         return response
 
     def get_service_providers(

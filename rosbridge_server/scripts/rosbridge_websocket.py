@@ -84,7 +84,9 @@ PROTOCOL_PARAMETERS = (
         10.0,
         "How long to wait before unregistering a client from publisher after unadvertising publisher.",
     ),
-    ("topics_glob", str, "", "Glob patterns for topics publish/subscribe."),
+    ("topics_glob", str, "", "Legacy glob patterns for topics publish/subscribe."),
+    ("topics_pub_glob", str, "", "Glob patterns for topics publish."),
+    ("topics_sub_glob", str, "", "Glob patterns for topics subscribe."),
     ("services_glob", str, "", "Glob patterns for services call/advertise."),
     ("actions_glob", str, "", "Glob patterns for actions send/advertise."),
     ("call_services_in_new_thread", bool, True, "Call services in a new threads."),
@@ -156,9 +158,21 @@ class RosbridgeWebsocketNode(Node):
         for name, _, _, _ in PROTOCOL_PARAMETERS:
             self.protocol_parameters[name] = self.get_parameter(name).value
 
-        self.protocol_parameters["topics_glob"] = parse_glob_string(
-            self.protocol_parameters["topics_glob"]
+        # Append legacy topics glob into both pub and sub
+        legacy_glob = parse_glob_string(self.protocol_parameters.get("topics_glob", ""))
+        pub_glob = parse_glob_string(self.protocol_parameters.get("topics_pub_glob", ""))
+        sub_glob = parse_glob_string(self.protocol_parameters.get("topics_sub_glob", ""))
+
+        # If pub_glob/sub_glob is "", it inherits whatever legacy_glob is (None or list)
+        # If pub_glob/sub_glob is set (including "[]"), it merges with legacy_glob
+        self.protocol_parameters["topics_pub_glob"] = (
+            legacy_glob if pub_glob is None else list(set(pub_glob + (legacy_glob or [])))
         )
+
+        self.protocol_parameters["topics_sub_glob"] = (
+            legacy_glob if sub_glob is None else list(set(sub_glob + (legacy_glob or [])))
+        )
+
         self.protocol_parameters["services_glob"] = parse_glob_string(
             self.protocol_parameters["services_glob"]
         )
