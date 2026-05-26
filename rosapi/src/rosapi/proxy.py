@@ -68,10 +68,22 @@ def init(node: Node) -> None:
     _node = node
 
 
-def get_topics(topics_glob: list[str], include_hidden: bool = False) -> list[str]:
-    """Return a list of all the active topics in the ROS system."""
+def get_topics(
+    topics_pub_glob: list[str] | None,
+    topics_sub_glob: list[str] | None,
+    include_hidden: bool = False,
+) -> list[str]:
+    """Return a list of all the active topics in the ROS system matching pub or sub globs."""
     topic_names = get_topic_names(node=_node, include_hidden_topics=include_hidden)
-    return filter_globs(topics_glob, topic_names)
+
+    # Determine overall topic visibility
+    if topics_pub_glob is None or topics_sub_glob is None:
+        combined_globs = None
+    else:
+        combined_globs = list(set(topics_pub_glob + topics_sub_glob))
+
+    # Sort for deterministic output.
+    return sorted(filter_globs(combined_globs, topic_names))
 
 
 def get_interfaces() -> list[str]:
@@ -80,25 +92,42 @@ def get_interfaces() -> list[str]:
 
 
 def get_topics_and_types(
-    topics_glob: list[str], include_hidden: bool = False
+    topics_pub_glob: list[str] | None,
+    topics_sub_glob: list[str] | None,
+    include_hidden: bool = False,
 ) -> tuple[list[str], list[str]]:
+    """Return filtered allowed topics and their types."""
+    if topics_pub_glob is None or topics_sub_glob is None:
+        combined_globs = None
+    else:
+        combined_globs = list(set(topics_pub_glob + topics_sub_glob))
+
     return get_publications_and_types(
-        topics_glob, get_topic_names_and_types, include_hidden_topics=include_hidden
+        combined_globs, get_topic_names_and_types, include_hidden_topics=include_hidden
     )
 
 
 def get_topics_for_type(
-    topic_type: str, topics_glob: list[str], include_hidden: bool = False
+    topic_type: str,
+    topics_pub_glob: list[str] | None,
+    topics_sub_glob: list[str] | None,
+    include_hidden: bool = False,
 ) -> list[str]:
     topic_names_and_types = get_topic_names_and_types(
         node=_node, include_hidden_topics=include_hidden
     )
     # topic[0] has the topic name and topic[1] has the type wrapped in a list.
     topics_for_type = [topic[0] for topic in topic_names_and_types if topic[1][0] == topic_type]
-    return filter_globs(topics_glob, topics_for_type)
+
+    if topics_pub_glob is None or topics_sub_glob is None:
+        combined_globs = None
+    else:
+        combined_globs = list(set(topics_pub_glob + topics_sub_glob))
+
+    return filter_globs(combined_globs, topics_for_type)
 
 
-def get_services(services_glob: list[str], include_hidden: bool = False) -> list[str]:
+def get_services(services_glob: list[str] | None, include_hidden: bool = False) -> list[str]:
     """Return a list of all the services advertised in the ROS system."""
     # Filter the list of services by whether they are public before returning.
     service_names = get_service_names(node=_node, include_hidden_services=include_hidden)
@@ -106,7 +135,7 @@ def get_services(services_glob: list[str], include_hidden: bool = False) -> list
 
 
 def get_services_and_types(
-    services_glob: list[str], include_hidden: bool = False
+    services_glob: list[str] | None, include_hidden: bool = False
 ) -> tuple[list[str], list[str]]:
     return get_publications_and_types(
         services_glob,
@@ -116,7 +145,7 @@ def get_services_and_types(
 
 
 def get_services_for_type(
-    service_type: str, services_glob: list[str], include_hidden: bool = False
+    service_type: str, services_glob: list[str] | None, include_hidden: bool = False
 ) -> list[str]:
     """Return a list of services as specific service type."""
     # Filter the list of services by whether they are public before returning.
@@ -131,7 +160,7 @@ def get_services_for_type(
 
 
 def get_publications_and_types(
-    glob: list[str],
+    glob: list[str] | None,
     getter_function: Callable,
     **include_hidden_publications: bool,
 ) -> tuple[list[str], list[str]]:
@@ -139,7 +168,7 @@ def get_publications_and_types(
     Get a list of topic or service publications and their types.
 
     :param glob: A glob pattern to filter the publications.
-    :type glob: str
+    :type glob: list[str] | None
     :param getter_function: A function to get the names and types of publications.
     :type getter_function: Callable
     :param include_hidden_publications: Keyword arguments to specify whether to include hidden publications.
@@ -203,10 +232,12 @@ def get_node_service_types(node_name: str) -> list[str]:
     return [service.types[0] for service in services]
 
 
-def get_topic_type(topic: str, topics_glob: list[str]) -> str:
+def get_topic_type(
+    topic: str, topics_pub_glob: list[str] | None, topics_sub_glob: list[str] | None
+) -> str:
     """Return the type of the specified ROS topic."""
     # Note: this doesn't consider hidden topics.
-    topics, types = get_topics_and_types(topics_glob)
+    topics, types = get_topics_and_types(topics_pub_glob, topics_sub_glob)
     try:
         return types[topics.index(topic)]
     except ValueError:
@@ -243,7 +274,7 @@ def filter_action_servers(topics: list[str]) -> list[str]:
     return action_servers
 
 
-def get_service_type(service: str, services_glob: list[str]) -> str:
+def get_service_type(service: str, services_glob: list[str] | None) -> str:
     """Return the type of the specified ROS service,."""
     # Note: this doesn't consider hidden services.
     services, types = get_services_and_types(services_glob)
@@ -255,7 +286,10 @@ def get_service_type(service: str, services_glob: list[str]) -> str:
 
 
 def get_channel_info(
-    channel: str, channels_glob: list[str], getter_function: Callable, include_hidden: bool = False
+    channel: str,
+    channels_glob: list[str] | None,
+    getter_function: Callable,
+    include_hidden: bool = False,
 ) -> list[str]:
     """
     Return a list of node names that are publishing on a specified channel.
@@ -265,7 +299,7 @@ def get_channel_info(
     :param channel: The name of the channel to query.
     :type channel: str
     :param channels_glob: A list of glob patterns to filter the channels.
-    :type channels_glob: list[str]
+    :type channels_glob: list[str] | None
     :param getter_function: A function to get the channel information for a given node.
     :type getter_function: Callable
     :param include_hidden: Whether to include hidden nodes in the search.
@@ -284,22 +318,26 @@ def get_channel_info(
     return []
 
 
-def get_publishers(topic: str, topics_glob: list[str], include_hidden: bool = False) -> list[str]:
+def get_publishers(
+    topic: str, topics_pub_glob: list[str] | None, include_hidden: bool = False
+) -> list[str]:
     """Return a list of node names that are publishing the specified topic."""
     return get_channel_info(
-        topic, topics_glob, get_node_publications, include_hidden=include_hidden
+        topic, topics_pub_glob, get_node_publications, include_hidden=include_hidden
     )
 
 
-def get_subscribers(topic: str, topics_glob: list[str], include_hidden: bool = False) -> list[str]:
+def get_subscribers(
+    topic: str, topics_sub_glob: list[str] | None, include_hidden: bool = False
+) -> list[str]:
     """Return a list of node names that are subscribing to the specified topic."""
     return get_channel_info(
-        topic, topics_glob, get_node_subscriptions, include_hidden=include_hidden
+        topic, topics_sub_glob, get_node_subscriptions, include_hidden=include_hidden
     )
 
 
 def get_service_providers(
-    queried_type: str, services_glob: list[str], include_hidden: bool = False
+    queried_type: str, services_glob: list[str] | None, include_hidden: bool = False
 ) -> list[str]:
     """Return a list of node names that are advertising a service with the specified type."""
     return get_channel_info(
@@ -311,7 +349,7 @@ def get_service_providers(
 
 
 def get_service_node(
-    queried_type: str, services_glob: list[str], include_hidden: bool = False
+    queried_type: str, services_glob: list[str] | None, include_hidden: bool = False
 ) -> str:
     """Return the name of the node that is providing the given service, or empty string."""
     node_name = get_channel_info(
