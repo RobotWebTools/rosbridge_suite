@@ -165,15 +165,13 @@ class RosbridgeWebsocketNode(Node):
 
         # If pub_glob/sub_glob is "", it inherits whatever legacy_glob is (None or list)
         # If pub_glob/sub_glob is set (including "[]"), it merges with legacy_glob
-        if pub_glob is None:
-            self.protocol_parameters["topics_pub_glob"] = legacy_glob
-        else:
-            self.protocol_parameters["topics_pub_glob"] = list(set(pub_glob + (legacy_glob or [])))
+        self.protocol_parameters["topics_pub_glob"] = (
+            legacy_glob if pub_glob is None else list(set(pub_glob + (legacy_glob or [])))
+        )
 
-        if sub_glob is None:
-            self.protocol_parameters["topics_sub_glob"] = legacy_glob
-        else:
-            self.protocol_parameters["topics_sub_glob"] = list(set(sub_glob + (legacy_glob or [])))
+        self.protocol_parameters["topics_sub_glob"] = (
+            legacy_glob if sub_glob is None else list(set(sub_glob + (legacy_glob or [])))
+        )
 
         self.protocol_parameters["services_glob"] = parse_glob_string(
             self.protocol_parameters["services_glob"]
