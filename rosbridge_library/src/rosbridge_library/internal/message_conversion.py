@@ -42,8 +42,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 from builtin_interfaces.msg import Duration as DurationMsg
 from builtin_interfaces.msg import Time as TimeMsg
-from rclpy.clock import Clock
-from rclpy.clock_type import ClockType
+from rclpy.clock import Clock, ClockType
 from std_msgs.msg import Header as HeaderMsg
 
 from rosbridge_library.internal import ros_loader
