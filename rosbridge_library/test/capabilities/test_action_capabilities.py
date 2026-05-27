@@ -57,6 +57,11 @@ class TestActionCapabilities(unittest.TestCase):
     def tearDown(self) -> None:
         self.executor.remove_node(self.node)
         self.executor.shutdown()
+        # Join the spin thread so it does not outlive the test and block the
+        # process from exiting at the end of the suite (the action server
+        # SIGSEGV used to kill the process before this mattered).
+        self.exec_thread.join()
+        self.node.destroy_node()
         rclpy.shutdown()
 
     def local_send_cb(
