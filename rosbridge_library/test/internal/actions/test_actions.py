@@ -27,13 +27,6 @@ class ActionTester:
         self.executor = executor
         self.node = Node("action_tester")
         self.executor.add_node(self.node)
-<<<<<<< HEAD
-        self.action_server = ActionServer(
-            self.node,
-            Fibonacci,
-            "get_fibonacci_sequence",
-            self.execute_callback,
-=======
         # Run the ActionServer constructor on the executor thread to avoid the
         # rclpy wait-set / entity-registration race that SIGSEGVs inside
         # rclpy/action/server.py:__init__ when called from a worker thread.
@@ -42,7 +35,6 @@ class ActionTester:
             lambda: ActionServer(
                 self.node, Fibonacci, "get_fibonacci_sequence", self.execute_callback
             ),
->>>>>>> 7631e3f (fix: Prevent client destruction race in services.call_service (backport #1255) (#1269))
         )
 
     def __del__(self) -> None:

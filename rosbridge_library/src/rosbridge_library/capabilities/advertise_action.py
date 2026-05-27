@@ -68,23 +68,12 @@ class AdvertisedActionHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActio
         self.action_type = action_type
         self.protocol = protocol
         self._shutting_down = False
-<<<<<<< HEAD
-        # setup the action
-        self.action_server = ActionServer(
-            protocol.node_handle,
-            get_action_class(action_type),
-            action_name,
-            self.execute_callback,  # type: ignore[arg-type]  # rclpy type hint does not support coroutines
-            goal_callback=self.goal_callback,
-            cancel_callback=self.cancel_callback,  # type: ignore[arg-type]  # rclpy type hint is incorrect
-            callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
-=======
         # Create the ActionServer on the executor thread; concurrent entity
         # registration from a worker thread races with the executor's wait-set
         # rebuild and can SIGSEGV inside rclpy/action/server.py:__init__.
         self.action_server = run_on_executor(
             protocol.node_handle,
-            lambda: ActionServer[ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT](
+            lambda: ActionServer(
                 protocol.node_handle,
                 get_action_class(action_type),
                 action_name,
@@ -93,7 +82,6 @@ class AdvertisedActionHandler(Generic[ROSActionGoalT, ROSActionResultT, ROSActio
                 cancel_callback=self.cancel_callback,
                 callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
             ),
->>>>>>> 7631e3f (fix: Prevent client destruction race in services.call_service (backport #1255) (#1269))
         )
 
     def next_id(self) -> int:
