@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.2.0 (2026-05-27)
+------------------
 * fix: Use Clock instead of deprecated ROSClock (`#1273 <https://github.com/RobotWebTools/rosbridge_suite/issues/1273>`_)
 * fix: prevent rclpy entity-lifecycle race in service and action capabilities (`#1255 <https://github.com/RobotWebTools/rosbridge_suite/issues/1255>`_)
 * feat: Provide separate arguments for publish and subscribe topic globs (`#1260 <https://github.com/RobotWebTools/rosbridge_suite/issues/1260>`_)

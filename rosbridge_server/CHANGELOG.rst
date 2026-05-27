@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.2.0 (2026-05-27)
+------------------
 * feat: Provide separate arguments for publish and subscribe topic globs (`#1260 <https://github.com/RobotWebTools/rosbridge_suite/issues/1260>`_)
 * fix: mypy errors and flaky subscriber/publisher tests (`#1258 <https://github.com/RobotWebTools/rosbridge_suite/issues/1258>`_)
 * chore: Update cmake minimum version to 3.20 (`#1232 <https://github.com/RobotWebTools/rosbridge_suite/issues/1232>`_)
