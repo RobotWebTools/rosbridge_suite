@@ -37,7 +37,7 @@ import math
 import re
 from base64 import standard_b64decode, standard_b64encode
 from collections.abc import Sequence
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from builtin_interfaces.msg import Duration as DurationMsg
@@ -50,15 +50,10 @@ from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.type_support import ROSMessage
 from rosbridge_library.util import bson
 
-<<<<<<< HEAD
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from rclpy.clock import Clock
 
-
-=======
->>>>>>> 3703507 (fix: Use Clock instead of deprecated ROSClock (#1273))
 type_map = {
     "bool": ("bool", "boolean"),
     "int": (
