@@ -2,8 +2,8 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.3.0 (2026-05-27)
+------------------
 * fix: Use Clock instead of deprecated ROSClock (backport `#1273 <https://github.com/RobotWebTools/rosbridge_suite/issues/1273>`_) (`#1274 <https://github.com/RobotWebTools/rosbridge_suite/issues/1274>`_)
 * feat: Provide separate arguments for publish and subscribe topic globs (backport `#1260 <https://github.com/RobotWebTools/rosbridge_suite/issues/1260>`_) (`#1266 <https://github.com/RobotWebTools/rosbridge_suite/issues/1266>`_)
 * feat: Improve action unadvertising (backport `#1248 <https://github.com/RobotWebTools/rosbridge_suite/issues/1248>`_) (`#1252 <https://github.com/RobotWebTools/rosbridge_suite/issues/1252>`_)

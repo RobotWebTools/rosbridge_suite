@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.3.0 (2026-05-27)
+------------------
 * feat: Provide separate arguments for publish and subscribe topic globs (backport `#1260 <https://github.com/RobotWebTools/rosbridge_suite/issues/1260>`_) (`#1266 <https://github.com/RobotWebTools/rosbridge_suite/issues/1266>`_)
 * fix: mypy errors and flaky subscriber/publisher tests (backport `#1258 <https://github.com/RobotWebTools/rosbridge_suite/issues/1258>`_) (`#1261 <https://github.com/RobotWebTools/rosbridge_suite/issues/1261>`_)
 * Contributors: Błażej Sowa, Joshua Whitley, p7yong
