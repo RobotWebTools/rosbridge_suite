@@ -36,6 +36,7 @@ from typing import TYPE_CHECKING, Any
 
 from rclpy.callback_groups import ReentrantCallbackGroup
 
+from rosbridge_library.internal.executor_helpers import run_on_executor, schedule_on_executor
 from rosbridge_library.internal.message_conversion import (
     extract_values,
     populate_instance,
@@ -128,6 +129,16 @@ def args_to_service_request_instance(inst: ROSMessage, args: list | dict[str, An
     populate_instance(msg, inst)
 
 
+def _destroy_client_async(node_handle: Node, client: Client) -> None:
+    """
+    Schedule destruction of ``client`` on the node's executor thread.
+
+    Fire-and-forget; see :mod:`rosbridge_library.internal.executor_helpers`
+    for the underlying rationale.
+    """
+    schedule_on_executor(node_handle, lambda: node_handle.destroy_client(client))
+
+
 def call_service(
     node_handle: Node,
     service: str,
@@ -155,12 +166,18 @@ def call_service(
     # Populate the instance with the provided args
     args_to_service_request_instance(inst, args)
 
-    client: Client = node_handle.create_client(
-        service_class, service, callback_group=ReentrantCallbackGroup()
+    # Create the client on the executor thread; concurrent client creation /
+    # destruction from worker threads races with the executor's wait-set
+    # rebuild and can leave handles in an inconsistent state.
+    client: Client = run_on_executor(
+        node_handle,
+        lambda: node_handle.create_client(
+            service_class, service, callback_group=ReentrantCallbackGroup()
+        ),
     )
 
     if not client.wait_for_service(server_ready_timeout):
-        node_handle.destroy_client(client)
+        _destroy_client_async(node_handle, client)
         raise InvalidServiceException(service)
 
     future = client.call_async(inst)
@@ -173,11 +190,11 @@ def call_service(
 
     if not event.wait(timeout=(server_response_timeout if server_response_timeout > 0 else None)):
         future.cancel()
-        node_handle.destroy_client(client)
+        _destroy_client_async(node_handle, client)
         msg = "Timeout exceeded while waiting for service response"
         raise Exception(msg)
 
-    node_handle.destroy_client(client)
+    _destroy_client_async(node_handle, client)
 
     result = future.result()
 
