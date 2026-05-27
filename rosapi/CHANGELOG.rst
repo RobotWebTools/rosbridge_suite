@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.7 (2026-05-27)
+------------------
 * feat: Provide separate arguments for publish and subscribe topic globs (backport `#1260 <https://github.com/RobotWebTools/rosbridge_suite/issues/1260>`_) (`#1268 <https://github.com/RobotWebTools/rosbridge_suite/issues/1268>`_)
 * fix: avoid rosapi crash on requesting typedefs for non-existent packages (`#1239 <https://github.com/RobotWebTools/rosbridge_suite/issues/1239>`_) (`#1242 <https://github.com/RobotWebTools/rosbridge_suite/issues/1242>`_)
 * Contributors: Błażej Sowa, Harshdeep Singh, p7yong
