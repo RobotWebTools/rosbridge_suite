@@ -2,6 +2,9 @@
 Changelog for package rosbridge_suite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.6.0 (2026-04-02)
 ------------------
 
