@@ -37,20 +37,17 @@ import math
 import re
 from base64 import standard_b64decode, standard_b64encode
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import numpy as np
 from builtin_interfaces.msg import Duration as DurationMsg
 from builtin_interfaces.msg import Time as TimeMsg
-from rclpy.clock import ROSClock
+from rclpy.clock import Clock
+from rclpy.clock_type import ClockType
 from std_msgs.msg import Header as HeaderMsg
 
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.type_support import ROSMessage
-
-if TYPE_CHECKING:
-    from rclpy.clock import Clock
-
 
 type_map = {
     "bool": ("bool", "boolean"),
@@ -157,7 +154,7 @@ def populate_instance(
     according to the values in msg.
     """
     if clock is None:
-        clock = ROSClock()
+        clock = Clock(clock_type=ClockType.ROS_TIME)
 
     inst_type = msg_instance_type_repr(inst)
 
@@ -300,7 +297,7 @@ def _to_inst(
     stack: list[str] | None = None,
 ) -> object:
     if clock is None:
-        clock = ROSClock()
+        clock = Clock(clock_type=ClockType.ROS_TIME)
     if stack is None:
         stack = []
 
