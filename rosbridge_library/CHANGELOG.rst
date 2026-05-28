@@ -2,6 +2,21 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.2.0 (2026-05-27)
+------------------
+* fix: Use Clock instead of deprecated ROSClock (`#1273 <https://github.com/RobotWebTools/rosbridge_suite/issues/1273>`_)
+* fix: prevent rclpy entity-lifecycle race in service and action capabilities (`#1255 <https://github.com/RobotWebTools/rosbridge_suite/issues/1255>`_)
+* feat: Provide separate arguments for publish and subscribe topic globs (`#1260 <https://github.com/RobotWebTools/rosbridge_suite/issues/1260>`_)
+* fix: mypy errors and flaky subscriber/publisher tests (`#1258 <https://github.com/RobotWebTools/rosbridge_suite/issues/1258>`_)
+* feat: Improve action unadvertising (`#1248 <https://github.com/RobotWebTools/rosbridge_suite/issues/1248>`_)
+* fix: Don't raise exception in service callback (`#1247 <https://github.com/RobotWebTools/rosbridge_suite/issues/1247>`_)
+* fix: Don't use MultiThreadedExecutor in tests (`#1228 <https://github.com/RobotWebTools/rosbridge_suite/issues/1228>`_)
+* chore: Update cmake minimum version to 3.20 (`#1232 <https://github.com/RobotWebTools/rosbridge_suite/issues/1232>`_)
+* chore: Remove unused experimental tests (`#1231 <https://github.com/RobotWebTools/rosbridge_suite/issues/1231>`_)
+* feat: Add QoS Profile support for advertise, publish and subscribe operations (`#1150 <https://github.com/RobotWebTools/rosbridge_suite/issues/1150>`_)
+* fix: Auto-populate header.stamp when header omitted (`#1220 <https://github.com/RobotWebTools/rosbridge_suite/issues/1220>`_)
+* Contributors: Błażej Sowa, Joshua Whitley, Roald Schaum, p7yong
+
 4.1.0 (2026-04-02)
 ------------------
 * fix: Race condition in subscription destruction (`#1194 <https://github.com/RobotWebTools/rosbridge_suite/issues/1194>`_)
