@@ -2,6 +2,12 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.7 (2026-05-27)
+------------------
+* feat: Provide separate arguments for publish and subscribe topic globs (backport `#1260 <https://github.com/RobotWebTools/rosbridge_suite/issues/1260>`_) (`#1268 <https://github.com/RobotWebTools/rosbridge_suite/issues/1268>`_)
+* fix: mypy errors and flaky subscriber/publisher tests (backport `#1258 <https://github.com/RobotWebTools/rosbridge_suite/issues/1258>`_) (`#1263 <https://github.com/RobotWebTools/rosbridge_suite/issues/1263>`_)
+* Contributors: Błażej Sowa, Joshua Whitley, p7yong
+
 2.0.6 (2026-04-02)
 ------------------
 * fix: Race condition in subscription destruction (backport `#1194 <https://github.com/RobotWebTools/rosbridge_suite/issues/1194>`_) (`#1209 <https://github.com/RobotWebTools/rosbridge_suite/issues/1209>`_)
