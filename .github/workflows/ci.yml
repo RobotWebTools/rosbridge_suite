@@ -13,7 +13,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
       - uses: actions/checkout@v5
+=======
+      - uses: actions/checkout@v7
+>>>>>>> e711d89 (chore: Bump actions/checkout from 6 to 7 (#1286))
 
       - uses: actions/setup-python@v6
         with:
@@ -34,7 +38,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+<<<<<<< HEAD
       - uses: actions/checkout@v5
+=======
+      - uses: actions/checkout@v7
+>>>>>>> e711d89 (chore: Bump actions/checkout from 6 to 7 (#1286))
         with:
           path: ros_ws/src
 
