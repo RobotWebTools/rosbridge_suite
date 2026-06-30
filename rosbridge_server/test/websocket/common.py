@@ -19,6 +19,7 @@ from twisted.internet.endpoints import TCP4ClientEndpoint
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
+    from launch.action import Action
     from rclpy.client import Client
     from rclpy.logging import RcutilsLogger
 
@@ -36,6 +37,12 @@ class TestClientProtocol(WebSocketClientProtocol):
     def onOpen(self) -> None:  # noqa: N802
         self.connected_future.set_result(None)
 
+    def onClose(self, was_clean: bool, code: int, reason: str) -> None:  # noqa: ARG002, N802
+        if not self.connected_future.done():
+            self.connected_future.set_exception(
+                Exception(f"WebSocket closed before handshake completed: {reason}")
+            )
+
     def sendJson(self, msg_dict: dict[str, Any], *, times: int = 1) -> None:  # noqa: N802
         msg = json.dumps(msg_dict).encode("utf-8")
         for _ in range(times):
@@ -43,25 +50,36 @@ class TestClientProtocol(WebSocketClientProtocol):
             reactor.callFromThread(self.sendMessage, msg)  # type: ignore[attr-defined]
 
     def onMessage(self, payload: str, binary: bool) -> None:  # noqa: N802
-        print(f"WebSocket client received message: {payload}")
         self.message_handler(payload if binary else json.loads(payload))
 
 
-def _generate_node() -> launch_ros.actions.Node:
-    return launch_ros.actions.Node(
-        executable="rosbridge_websocket",
-        package="rosbridge_server",
-        parameters=[{"port": 0}],
-    )
+def make_test_description(
+    extra_actions: list[Action] | None = None,
+) -> LaunchDescription:
+    """
+    Build a launch description that runs the websocket server.
+
+    Call this directly when you need to inject extra launch actions.
+    Re-export `generate_test_description` instead when no extra actions are needed.
+
+    :param extra_actions: Optional additional launch actions inserted before ReadyToTest().
+    """
+    actions: list[Action] = [
+        launch_ros.actions.Node(
+            executable="rosbridge_websocket",
+            package="rosbridge_server",
+            parameters=[{"port": 0}],
+        ),
+    ]
+    if extra_actions:
+        actions.extend(extra_actions)
+    actions.append(ReadyToTest())
+    return LaunchDescription(actions)
 
 
 def generate_test_description() -> LaunchDescription:
-    """
-    Generate a launch description that runs the websocket server.
-
-    Re-export this from a test file and use add_launch_test() to run the test.
-    """
-    return LaunchDescription([_generate_node(), ReadyToTest()])
+    """Re-export this from test files that need no extra launch actions."""
+    return make_test_description()
 
 
 async def get_server_port(node: Node) -> int:

@@ -30,6 +30,7 @@ if(BUILD_TESTING)
     TIMEOUT 60
   )
 
+  add_launch_test(test/websocket/event_loop_starvation.test.py)
   add_launch_test(test/websocket/advertise_action.test.py)
   add_launch_test(test/websocket/advertise_action_feedback.test.py)
   add_launch_test(test/websocket/advertise_publish.test.py)
