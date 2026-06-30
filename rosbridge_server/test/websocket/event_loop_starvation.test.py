@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
     from common import TestClientProtocol
-    from launch import LaunchDescription
+    from launch.launch_description import LaunchDescription
     from rclpy.node import Node
 
 log.startLogging(sys.stderr)
