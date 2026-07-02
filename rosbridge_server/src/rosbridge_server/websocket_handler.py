@@ -81,7 +81,7 @@ def log_exceptions(f: Callable[P, R]) -> Callable[P, R]:
 class IncomingQueue(threading.Thread):
     """Decouples incoming messages from the AsyncIO event loop."""
 
-    def __init__(self, protocol: RosbridgeProtocol, max_queue_size: int = 0) -> None:
+    def __init__(self, protocol: RosbridgeProtocol, max_queue_size: int | None = None) -> None:
         threading.Thread.__init__(self)
         self.daemon = True
         self.queue: deque[str] = deque(maxlen=max_queue_size)
