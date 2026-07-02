@@ -68,7 +68,7 @@ _PUBLISHER_SCRIPT = str(Path(__file__).parent / "starvation_load_publisher.py")
 
 def generate_test_description() -> LaunchDescription:
     return make_test_description(
-        extra_actions=[ExecuteProcess(cmd=[_PUBLISHER_SCRIPT], output="screen")]
+        extra_actions=[ExecuteProcess(cmd=[sys.executable, _PUBLISHER_SCRIPT], output="screen")]
     )
 
 
