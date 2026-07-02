@@ -236,6 +236,8 @@ class RosbridgeWebSocket(WebSocketHandler):
                         throttle_duration_sec=1.0,
                     )
                     return
+                except asyncio.CancelledError:
+                    raise
                 except Exception:
                     _log_exception()
         except asyncio.CancelledError:
