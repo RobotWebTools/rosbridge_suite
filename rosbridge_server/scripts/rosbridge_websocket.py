@@ -69,6 +69,13 @@ SERVER_PARAMETERS = (
     ("websocket_ping_interval", float, 0.0, "Interval in seconds for WebSocket ping messages."),
     ("websocket_ping_timeout", float, 30.0, "Timeout in seconds for WebSocket ping responses."),
     # Websocket handler parameters
+    (
+        "incoming_queue_size",
+        int,
+        1000,
+        "Size of the per-client queue for processing incoming messages.",
+    ),
+    ("write_queue_size", int, 1000, "Size of the per-client queue for writing messages."),
     ("use_compression", bool, False, "Enable compression for WebSocket messages."),
     # Executor parameters
     ("use_events_executor", bool, False, "Use EventsExecutor instead of SingleThreadedExecutor."),
@@ -134,6 +141,8 @@ class RosbridgeWebsocketNode(Node):
             self.protocol_parameters["services_glob"].append("/rosapi/*")
 
         RosbridgeWebSocket.protocol_parameters = self.protocol_parameters
+        RosbridgeWebSocket.incoming_queue_size = self.incoming_queue_size
+        RosbridgeWebSocket.write_queue_size = self.write_queue_size
         RosbridgeWebSocket.use_compression = self.use_compression
 
         self._start_server()
@@ -200,6 +209,12 @@ class RosbridgeWebsocketNode(Node):
         )
 
         # WebSocket handler parameters
+        self.incoming_queue_size = (
+            self.get_parameter("incoming_queue_size").get_parameter_value().integer_value
+        )
+        self.write_queue_size = (
+            self.get_parameter("write_queue_size").get_parameter_value().integer_value
+        )
         self.use_compression = (
             self.get_parameter("use_compression").get_parameter_value().bool_value
         )
