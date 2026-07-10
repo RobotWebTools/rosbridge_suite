@@ -30,6 +30,10 @@ if(BUILD_TESTING)
     TIMEOUT 60
   )
 
+  # This test is currently failing with EventsExecutor, so we run it only with SingleThreadedExecutor for now.
+  # TODO(bjsowa): Make this test pass with EventsExecutor.
+  add_launch_test(test/websocket/event_loop_starvation.test.py)
+
   # Run each test with both SingleThreadedExecutor and EventsExecutor
   set(TEST_FILES
     test/websocket/advertise_action.test.py
