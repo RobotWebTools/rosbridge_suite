@@ -44,11 +44,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, ParamSpec, TypeVar
 
 from rclpy.node import Node
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-<<<<<<< HEAD
 from rosbridge_library.util import bson
-from tornado.iostream import StreamClosedError
-=======
->>>>>>> 8803ae2 (fix: Prevent event loop starvation by adding a write queue (#1290))
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
 
 if TYPE_CHECKING:
@@ -215,7 +211,7 @@ class RosbridgeWebSocket(WebSocketHandler):
     def send_message(self, message: bson.BSON | bytearray | str, compression: str = "none") -> None:
         cls = self.__class__
         assert isinstance(cls.event_loop, AbstractEventLoop), "Event loop was not set"
-        binary = compression in ["cbor", "cbor-raw"]
+        binary = isinstance(message, bson.BSON) or compression in ["cbor", "cbor-raw"]
         if not self.write_slots.acquire(blocking=False):
             assert isinstance(cls.node_handle, Node), "Node handle was not set"
             cls.node_handle.get_logger().warning(
@@ -225,19 +221,8 @@ class RosbridgeWebSocket(WebSocketHandler):
             return
         cls.event_loop.call_soon_threadsafe(self.write_queue.put_nowait, (message, binary))
 
-<<<<<<< HEAD
-        if isinstance(message, bson.BSON) or compression in ["cbor", "cbor-raw"]:
-            binary = True
-        else:
-            binary = False
-
-        asyncio.run_coroutine_threadsafe(self.prewrite_message(message, binary), cls.event_loop)
-
-    async def prewrite_message(self, message: bson.BSON | bytearray | str, binary: bool) -> None:
-=======
     async def _drain_write_queue(self) -> None:
         """Drain the per-connection write queue, serialising all write_message calls."""
->>>>>>> 8803ae2 (fix: Prevent event loop starvation by adding a write queue (#1290))
         cls = self.__class__
         assert isinstance(cls.node_handle, Node), "Node handle was not set"
         try:
