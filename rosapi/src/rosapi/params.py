@@ -46,6 +46,7 @@ from rclpy.time import Time
 from ros2node.api import get_absolute_node_name
 
 from rosapi.async_helper import futures_wait_for
+from rosapi.glob_helper import any_match
 from rosapi.proxy import get_nodes
 
 if TYPE_CHECKING:
@@ -197,14 +198,13 @@ def _cleanup_timer_callback() -> None:
         del _cached_clients[service_name]
 
 
-async def set_param(node_name: str, name: str, value: str, params_glob: list[str]) -> None:
+async def set_param(node_name: str, name: str, value: str, params_glob: list[str] | None) -> None:
     """Set a parameter in a given node."""
-    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
-        # If the glob list is not empty and there are no glob matches,
-        # stop the attempt to set the parameter.
-        return
-    # If the glob list is empty (i.e. false) or the parameter matches
-    # one of the glob strings, continue to set the parameter.
+    if not any_match(name, params_glob):
+        # If there are no glob matches, stop the attempt to set the parameter.
+        msg = f"Parameter {name} does not match any of the glob strings"
+        raise LookupError(msg)
+
     d = None
     try:
         d = loads(value)
@@ -283,15 +283,12 @@ async def _set_param(
         raise Exception(param_results.reason)
 
 
-async def get_param(node_name: str, name: str, params_glob: str) -> str:
+async def get_param(node_name: str, name: str, params_glob: list[str] | None) -> str:
     """Get a parameter from a given node."""
-    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
-        # If the glob list is not empty and there are no glob matches,
-        # stop the attempt to get the parameter.
+    if not any_match(name, params_glob):
+        # If there are no glob matches, stop the attempt to get the parameter.
         msg = f"Parameter {name} does not match any of the glob strings"
-        raise Exception(msg)
-    # If the glob list is empty (i.e. false) or the parameter matches
-    # one of the glob strings, continue to get the parameter.
+        raise LookupError(msg)
 
     node_name = get_absolute_node_name(node_name)
     pvalue = await _get_param(node_name, name)
@@ -352,14 +349,12 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     return next(iter(result.values))
 
 
-async def has_param(node_name: str, name: str, params_glob: list[str]) -> bool:
+async def has_param(node_name: str, name: str, params_glob: list[str] | None) -> bool:
     """Check whether a given node has a parameter or not."""
-    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
-        # If the glob list is not empty and there are no glob matches,
-        # stop the attempt to set the parameter.
+    if not any_match(name, params_glob):
+        # If there are no glob matches, stop the attempt to set the parameter.
         return False
-    # If the glob list is empty (i.e. false) or the parameter matches
-    # one of the glob strings, check whether the parameter exists.
+
     node_name = get_absolute_node_name(node_name)
     try:
         pvalue = await _get_param(node_name, name)
@@ -369,14 +364,13 @@ async def has_param(node_name: str, name: str, params_glob: list[str]) -> bool:
     return 0 < pvalue.type < len(_parameter_type_mapping)
 
 
-async def delete_param(node_name: str, name: str, params_glob: list[str]) -> None:
+async def delete_param(node_name: str, name: str, params_glob: list[str] | None) -> None:
     """Delete a parameter in a given node."""
-    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
-        # If the glob list is not empty and there are no glob matches,
-        # stop the attempt to delete the parameter.
-        return
-    # If the glob list is empty (i.e. false) or the parameter matches
-    # one of the glob strings, continue to delete the parameter.
+    if not any_match(name, params_glob):
+        # If there are no glob matches, stop the attempt to delete the parameter.
+        msg = f"Parameter {name} does not match any of the glob strings"
+        raise LookupError(msg)
+
     node_name = get_absolute_node_name(node_name)
     if await has_param(node_name, name, params_glob):
         await _set_param(node_name, name, None, ParameterType.PARAMETER_NOT_SET)
