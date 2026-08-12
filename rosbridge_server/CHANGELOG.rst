@@ -2,8 +2,8 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.2.1 (2026-08-12)
+------------------
 * fix: Prevent event loop starvation by adding a write queue (`#1290 <https://github.com/RobotWebTools/rosbridge_suite/issues/1290>`_)
 * Contributors: Błażej Sowa
 

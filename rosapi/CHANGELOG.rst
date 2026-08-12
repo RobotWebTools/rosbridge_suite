@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.2.1 (2026-08-12)
+------------------
 * fix: Properly handle an empty list in params_glob
 * fix: Correct regex patterns in test_stringify_field_types (`#1299 <https://github.com/RobotWebTools/rosbridge_suite/issues/1299>`_)
 * Contributors: Błażej Sowa
