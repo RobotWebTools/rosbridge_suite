@@ -2,6 +2,11 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix: Prevent event loop starvation by adding a write queue (backport `#1290 <https://github.com/RobotWebTools/rosbridge_suite/issues/1290>`_) (`#1295 <https://github.com/RobotWebTools/rosbridge_suite/issues/1295>`_)
+* Contributors: Błażej Sowa
+
 2.0.7 (2026-05-27)
 ------------------
 * feat: Provide separate arguments for publish and subscribe topic globs (backport `#1260 <https://github.com/RobotWebTools/rosbridge_suite/issues/1260>`_) (`#1268 <https://github.com/RobotWebTools/rosbridge_suite/issues/1268>`_)
