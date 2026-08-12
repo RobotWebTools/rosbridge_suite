@@ -42,6 +42,7 @@ from rcl_interfaces.srv import ListParameters
 from ros2node.api import get_absolute_node_name
 from ros2param.api import call_get_parameters, call_set_parameters, get_parameter_value
 
+from rosapi.glob_helper import any_match
 from rosapi.proxy import get_nodes
 
 """ Methods to interact with the param server.  Values have to be passed
@@ -102,12 +103,10 @@ def init(parent_node_name: str, timeout_sec: float = DEFAULT_PARAM_TIMEOUT_SEC) 
 
 def set_param(node_name: str, name: str, value: str, params_glob: list[str]) -> None:
     """Set a parameter in a given node."""
-    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
-        # If the glob list is not empty and there are no glob matches,
-        # stop the attempt to set the parameter.
+    if not any_match(name, params_glob):
+        # If there are no glob matches, stop the attempt to set the parameter.
         return
-    # If the glob list is empty (i.e. false) or the parameter matches
-    # one of the glob strings, continue to set the parameter.
+
     d = None
     try:
         d = loads(value)
@@ -154,12 +153,9 @@ def _set_param(
 
 def get_param(node_name: str, name: str, default: str, params_glob: list[str]) -> str | None:
     """Get a parameter from a given node."""
-    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
-        # If the glob list is not empty and there are no glob matches,
-        # stop the attempt to get the parameter.
+    if not any_match(name, params_glob):
+        # If there are no glob matches, stop the attempt to get the parameter.
         return None
-    # If the glob list is empty (i.e. false) or the parameter matches
-    # one of the glob strings, continue to get the parameter.
     if default != "":
         # Keep default without modifications in case of failure.
         with contextlib.suppress(ValueError):
@@ -187,12 +183,10 @@ def get_param(node_name: str, name: str, default: str, params_glob: list[str]) -
 
 def has_param(node_name: str, name: str, params_glob: list[str]) -> bool:
     """Check whether a given node has a parameter or not."""
-    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
-        # If the glob list is not empty and there are no glob matches,
-        # stop the attempt to set the parameter.
+    if not any_match(name, params_glob):
+        # If there are no glob matches, stop the attempt to set the parameter.
         return False
-    # If the glob list is empty (i.e. false) or the parameter matches
-    # one of the glob strings, check whether the parameter exists.
+
     node_name = get_absolute_node_name(node_name)
     with param_server_lock:
         try:
@@ -205,12 +199,10 @@ def has_param(node_name: str, name: str, params_glob: list[str]) -> bool:
 
 def delete_param(node_name: str, name: str, params_glob: list[str]) -> None:
     """Delete a parameter in a given node."""
-    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
-        # If the glob list is not empty and there are no glob matches,
-        # stop the attempt to delete the parameter.
+    if not any_match(name, params_glob):
+        # If there are no glob matches, stop the attempt to delete the parameter.
         return
-    # If the glob list is empty (i.e. false) or the parameter matches
-    # one of the glob strings, continue to delete the parameter.
+
     node_name = get_absolute_node_name(node_name)
     if has_param(node_name, name, params_glob):
         with param_server_lock:
