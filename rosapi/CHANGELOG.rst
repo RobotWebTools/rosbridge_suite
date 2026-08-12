@@ -2,8 +2,8 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.7.1 (2026-08-12)
+------------------
 * fix: Properly handle an empty list in params_glob
 * Contributors: Błażej Sowa
 
