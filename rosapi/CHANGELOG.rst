@@ -2,6 +2,11 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.8 (2026-08-12)
+------------------
+* fix: Properly handle an empty list in params_glob
+* Contributors: Błażej Sowa
+
 2.0.7 (2026-05-27)
 ------------------
 * feat: Provide separate arguments for publish and subscribe topic globs (backport `#1260 <https://github.com/RobotWebTools/rosbridge_suite/issues/1260>`_) (`#1268 <https://github.com/RobotWebTools/rosbridge_suite/issues/1268>`_)

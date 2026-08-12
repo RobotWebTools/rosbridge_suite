@@ -2,6 +2,9 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.8 (2026-08-12)
+------------------
+
 2.0.7 (2026-05-27)
 ------------------
 * fix: Use Clock instead of deprecated ROSClock (backport `#1273 <https://github.com/RobotWebTools/rosbridge_suite/issues/1273>`_) (`#1276 <https://github.com/RobotWebTools/rosbridge_suite/issues/1276>`_)
