@@ -69,6 +69,94 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(examples, ["123"])
 
 
+class TestBoundedTypes(unittest.TestCase):
+    """
+    Regression: bounded strings and bounded sequences must be normalised.
+
+    IDL spells these `string<255>` and `sequence<T, N>`. Neither was stripped,
+    so `string<255>` reached `_type_name` as an unknown type whose value is a
+    plain `str`, tripping its `assert isinstance(instance, ROSMessage)` - and
+    since rosapi_node runs a bare `rclpy.spin()`, that AssertionError killed the
+    node and every `/rosapi/*` service with it. Reproducible against any node:
+    `type_description_interfaces/msg/TypeDescription`, reachable from every
+    node's `~/get_type_description` service, has `string<255>` fields.
+    """
+
+    @staticmethod
+    def _mock(field_types: dict[str, str], values: dict[str, object]) -> object:
+        class MockMsg:
+            __slots__ = ["_" + name for name in field_types]
+            _fields_and_field_types: ClassVar = dict(field_types)
+
+            def __init__(self) -> None:
+                for name, value in values.items():
+                    setattr(self, "_" + name, value)
+
+        return MockMsg()
+
+    def test_bounded_string_is_reported_as_string(self) -> None:
+        inst = self._mock({"type_name": "string<255>"}, {"type_name": "some/Type"})
+
+        _, types, lens, _ = objectutils._handle_array_information(inst)
+
+        self.assertEqual(types, ["string"])
+        self.assertEqual(lens, [-1])
+
+    def test_bounded_wstring_is_reported_as_wstring(self) -> None:
+        inst = self._mock({"label": "wstring<64>"}, {"label": "x"})
+
+        _, types, _, _ = objectutils._handle_array_information(inst)
+
+        self.assertEqual(types, ["wstring"])
+
+    def test_bounded_sequence_drops_the_upper_bound(self) -> None:
+        # rcl_interfaces/ParameterDescriptor spells its ranges this way; the
+        # bound used to be captured into the type, so the nested typedef lookup
+        # searched for a message class literally named "FloatingPointRange, 1".
+        inst = self._mock(
+            {"floating_point_range": "sequence<rcl_interfaces/FloatingPointRange, 1>"},
+            {"floating_point_range": []},
+        )
+
+        _, types, lens, _ = objectutils._handle_array_information(inst)
+
+        self.assertEqual(types, ["rcl_interfaces/FloatingPointRange"])
+        self.assertEqual(lens, [0])
+
+    def test_sequence_of_bounded_strings(self) -> None:
+        inst = self._mock({"names": "sequence<string<255>>"}, {"names": []})
+
+        _, types, lens, _ = objectutils._handle_array_information(inst)
+
+        self.assertEqual(types, ["string"])
+        self.assertEqual(lens, [0])
+
+    def test_unbounded_sequence_is_unchanged(self) -> None:
+        inst = self._mock({"sequence": "sequence<int32>"}, {"sequence": []})
+
+        _, types, lens, _ = objectutils._handle_array_information(inst)
+
+        self.assertEqual(types, ["int32"])
+        self.assertEqual(lens, [0])
+
+    def test_fixed_size_array_is_unchanged(self) -> None:
+        inst = self._mock({"uuid": "uint8[16]"}, {"uuid": b"\x00" * 16})
+
+        _, types, lens, _ = objectutils._handle_array_information(inst)
+
+        self.assertEqual(types, ["uint8"])
+        self.assertEqual(lens, [16])
+
+    def test_non_message_value_does_not_raise(self) -> None:
+        # rclpy hands primitive sequences over as array.array, not list, so
+        # _type_name must not assume anything it is given is a message.
+        import array
+
+        self.assertEqual(objectutils._type_name("some/Type", array.array("i", [1, 2])), "some/Type")
+        self.assertEqual(objectutils._type_name("some/Type", "a string"), "some/Type")
+        self.assertEqual(objectutils._type_name("some/Type", b"bytes"), "some/Type")
+
+
 def _make_invalid_module_exc(pkg: str, subname: str) -> _ros_loader.InvalidModuleException:
     return _ros_loader.InvalidModuleException(
         pkg, subname, ModuleNotFoundError(f"No module named '{pkg}'")
