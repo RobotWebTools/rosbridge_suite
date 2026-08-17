@@ -66,6 +66,11 @@ atomics = [
 ]
 specials = ["time", "duration"]
 
+# `sequence<T>` / `sequence<T, N>`, where T may itself be bounded.
+_SEQUENCE = re.compile(r"^sequence<(?P<inner>.+?)(?:,\s*\d+)?>$")
+# `string<N>` / `wstring<N>`.
+_BOUNDED_STRING = re.compile(r"^(?P<kind>w?string)<\d+>$")
+
 
 def get_typedef(type_name: str) -> dict | None:
     """
@@ -306,6 +311,18 @@ def _handle_array_information(
     return fieldnames, fieldtypes, fieldarraylen, examples
 
 
+def _strip_bound(field_type: str) -> str:
+    """
+    Drop the size bound from a bounded string type.
+
+    IDL spells a bounded string as `string<N>` (`wstring<N>` for the wide
+    variant). The bound says nothing about the type itself, and everything
+    downstream - `atomics`, `ros_loader` - only knows the plain name.
+    """
+    match = _BOUNDED_STRING.match(field_type)
+    return match.group("kind") if match else field_type
+
+
 def _handle_type_and_array_len(instance: ROSMessage, name: str) -> tuple[str, int]:
     """Extract field type and determine its length if it's an array."""
     # Get original field type using instance's _fields_and_field_types property
@@ -314,10 +331,13 @@ def _handle_type_and_array_len(instance: ROSMessage, name: str) -> tuple[str, in
     # Initialize arraylen
     arraylen = -1
 
-    # If field_type is a sequence, update the `field_type` variable.
-    if matches := re.findall("sequence<([^<]+)>", field_type):
+    # If field_type is a sequence, update the `field_type` variable. A sequence
+    # can carry an upper bound (`sequence<T, N>`) that is not part of the inner
+    # type, and the inner type can itself be bounded (`sequence<string<255>>`),
+    # so neither is matched by `[^<]+`.
+    if match := _SEQUENCE.match(field_type):
         # Extract the inner type and continue processing
-        field_type = matches[0]
+        field_type = match.group("inner")
         arraylen = 0
     elif field_type[-1:] == "]":
         if field_type[-2:-1] == "[":
@@ -328,7 +348,7 @@ def _handle_type_and_array_len(instance: ROSMessage, name: str) -> tuple[str, in
             arraylen = int(field_type[split + 1 : -1])
             field_type = field_type[:split]
 
-    return field_type, arraylen
+    return _strip_bound(field_type), arraylen
 
 
 T = TypeVar("T")
@@ -430,13 +450,16 @@ def _type_name(type_name: str, instance: object) -> str:
     if type_name in atomics or type_name in specials:
         return type_name
 
-    # If the instance is a list, then we can get no more information from the instance.
-    # However, luckily, the 'type' field for list types is usually already inflated to the full type.
-    if isinstance(instance, list):
+    # If the instance is not a message, we can get no more information from it.
+    # Luckily, the 'type' field for those is already the full type. Sequences
+    # reach us as list, array.array or bytes depending on the element type, and
+    # primitives as plain Python values, so this cannot assert on being a
+    # message: rosapi_node runs a bare rclpy.spin(), so an AssertionError here
+    # takes the whole node down and with it every /rosapi/* service.
+    if not isinstance(instance, ROSMessage):
         return type_name
 
     # Otherwise, the type will come from the module and class name of the instance
-    assert isinstance(instance, ROSMessage)
     return _type_name_from_instance(instance)
 
 
