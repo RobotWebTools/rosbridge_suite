@@ -33,6 +33,7 @@
 from __future__ import annotations
 
 import fnmatch
+import time
 from dataclasses import dataclass
 from json import dumps, loads
 from typing import TYPE_CHECKING, cast
@@ -60,7 +61,6 @@ if TYPE_CHECKING:
     from rclpy.client import Client
     from rclpy.node import Node
     from rclpy.task import Future
-    from rclpy.time import Time
 
 """ Methods to interact with the param server.  Values have to be passed
 as JSON in order to facilitate dynamically typed SRV messages """
@@ -94,14 +94,16 @@ class _CachedClient:
 
     :param use_count: The number of ongoing calls using this client.
     :type use_count: int
-    :param last_used_time: The last time this client was used for a call.
-    :type last_used_time: Time
+    :param last_used_time: A time.monotonic() stamp of the last call using this client.
+        This is a resource lifetime, so it is measured monotonically rather than with
+        a ROS clock: no clock types to mix up, and no sensitivity to clock jumps.
+    :type last_used_time: float
     :param client: The cached client instance.
     :type client: Client
     """
 
     use_count: int
-    last_used_time: Time
+    last_used_time: float
     client: Client
 
 
@@ -171,7 +173,7 @@ def _get_client(
         qos_profile=qos_profile_parameters,
     )
     _cached_clients[service_name] = _CachedClient(
-        use_count=0, last_used_time=_node.get_clock().now(), client=client
+        use_count=0, last_used_time=time.monotonic(), client=client
     )
     return client
 
@@ -197,11 +199,12 @@ def _cleanup_timer_callback() -> None:
     different nodes being interacted with.
     """
     assert _node is not None
-    now = _node.get_clock().now()
+    now = time.monotonic()
     to_remove = []
     for service_name, cached_client in _cached_clients.items():
-        if cached_client.use_count == 0 and (now - cached_client.last_used_time).nanoseconds > int(
-            _client_persistence_sec * 1e9
+        if (
+            cached_client.use_count == 0
+            and now - cached_client.last_used_time > _client_persistence_sec
         ):
             _node.destroy_client(cached_client.client)
             to_remove.append(service_name)
@@ -283,7 +286,7 @@ async def _set_param(
         await futures_wait_for(_node, [future], _timeout_sec)
     finally:
         _cached_clients[service_name].use_count -= 1
-        _cached_clients[service_name].last_used_time = _node.get_clock().now()
+        _cached_clients[service_name].last_used_time = time.monotonic()
 
     if not future.done():
         future.cancel()
@@ -347,7 +350,7 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
         await futures_wait_for(_node, [future], _timeout_sec)
     finally:
         _cached_clients[service_name].use_count -= 1
-        _cached_clients[service_name].last_used_time = _node.get_clock().now()
+        _cached_clients[service_name].last_used_time = time.monotonic()
 
     if not future.done():
         future.cancel()
