@@ -32,9 +32,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
-from ros2action.api import get_action_names_and_types
+from rclpy.action import get_action_names_and_types
 from ros2interface.api import type_completer
 from ros2node.api import (
     get_node_names,
@@ -366,7 +366,7 @@ def get_action_type(action_name: str) -> str:
 
     If the action does not exist, an empty string is returned.
     """
-    names_and_types = get_action_names_and_types(node=_node)
+    names_and_types = get_action_names_and_types(cast("Node", _node))
 
     for name, types in names_and_types:
         if name == action_name and types:
