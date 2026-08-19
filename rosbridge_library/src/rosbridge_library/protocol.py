@@ -66,7 +66,7 @@ def has_binary(obj: object) -> bool:
     if isinstance(obj, dict):
         return any(has_binary(obj[item]) for item in obj)
 
-    return isinstance(obj, bson.binary.Binary)
+    return isinstance(obj, (bytes, bytearray, bson.binary.Binary))
 
 
 class Protocol:
