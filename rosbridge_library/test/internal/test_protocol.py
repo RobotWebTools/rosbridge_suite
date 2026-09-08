@@ -15,6 +15,7 @@ class TestProtocol(unittest.TestCase):
 
         protocol.incoming(message)
 
+        node.get_logger.return_value.error.assert_called_once()
         logged_message = node.get_logger.return_value.error.call_args.args[0]
         self.assertIn(f"Original message was: {message}", logged_message)
 
