@@ -111,6 +111,24 @@ class TestActionCapabilities(unittest.TestCase):
             )
         )
         self.advertise.advertise_action(advertise_msg)
+        self.assertIn(action_path, self.proto.external_action_list)
+
+    def test_advertise_action_rejects_empty_glob(self) -> None:
+        self.advertise.actions_glob = []
+        action_path = "/blocked_action"
+        advertise_msg = loads(
+            dumps(
+                {
+                    "op": "advertise_action",
+                    "type": "example_interfaces/Fibonacci",
+                    "action": action_path,
+                }
+            )
+        )
+
+        self.advertise.advertise_action(advertise_msg)
+
+        self.assertNotIn(action_path, self.proto.external_action_list)
 
     def test_execute_advertised_action(self) -> None:
         # Advertise the action
