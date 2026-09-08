@@ -204,7 +204,7 @@ class Protocol:
                     "error",
                     "Received a message without an op. "
                     f"All messages require 'op' field with value one of: {list(self.operations.keys())}. "
-                    "Original message was: {message_string}",
+                    f"Original message was: {message_string}",
                     mid,
                 )
             return
