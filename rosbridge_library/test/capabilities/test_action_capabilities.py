@@ -13,7 +13,6 @@ from example_interfaces.action._fibonacci import Fibonacci_FeedbackMessage
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
-
 from rosbridge_library.capabilities.action_feedback import ActionFeedback
 from rosbridge_library.capabilities.action_result import ActionResult
 from rosbridge_library.capabilities.advertise_action import AdvertiseAction
@@ -27,17 +26,23 @@ from rosbridge_library.protocol import Protocol
 
 
 class _FakeSendGoal:
-    def __init__(self) -> None:
+    def __init__(self, block_cancel: bool = False) -> None:
+        self.cancel_started = Event()
+        self.continue_cancel = Event()
         self.cancelled = Event()
+        if not block_cancel:
+            self.continue_cancel.set()
 
     def cancel_goal(self) -> None:
+        self.cancel_started.set()
+        self.continue_cancel.wait(timeout=1.0)
         self.cancelled.set()
 
 
 class _FakeActionClientHandler:
-    def __init__(self, cancel_on_disconnect: bool = False) -> None:
+    def __init__(self, cancel_on_disconnect: bool = False, block_cancel: bool = False) -> None:
         self.cancel_on_disconnect = cancel_on_disconnect
-        self.send_goal_helper = _FakeSendGoal()
+        self.send_goal_helper = _FakeSendGoal(block_cancel)
 
 
 class TestActionCapabilities(unittest.TestCase):
@@ -144,6 +149,37 @@ class TestActionCapabilities(unittest.TestCase):
         self.send_goal.finish()
 
         self.assertTrue(handler.send_goal_helper.cancelled.wait(timeout=1.0))
+
+    def test_finish_cancels_action_goals_sequentially(self) -> None:
+        first = _FakeActionClientHandler(cancel_on_disconnect=True, block_cancel=True)
+        second = _FakeActionClientHandler(cancel_on_disconnect=True)
+        self.addCleanup(first.send_goal_helper.continue_cancel.set)
+        self.send_goal.client_handler_list["first"] = first  # type: ignore[assignment]
+        self.send_goal.client_handler_list["second"] = second  # type: ignore[assignment]
+
+        self.send_goal.finish()
+
+        self.assertTrue(first.send_goal_helper.cancel_started.wait(timeout=1.0))
+        self.assertFalse(second.send_goal_helper.cancel_started.wait(timeout=0.1))
+        first.send_goal_helper.continue_cancel.set()
+        self.assertTrue(second.send_goal_helper.cancel_started.wait(timeout=1.0))
+
+    def test_send_goal_does_not_register_after_finish(self) -> None:
+        self.send_goal.finish()
+        goal_msg = loads(
+            dumps(
+                {
+                    "op": "send_action_goal",
+                    "action": "/fibonacci_action",
+                    "action_type": "example_interfaces/Fibonacci",
+                }
+            )
+        )
+
+        self.send_goal.send_action_goal(goal_msg)
+
+        self.assertIsNone(self.received_message)
+        self.assertEqual(self.send_goal.client_handler_list, {})
 
     def test_advertise_action(self) -> None:
         action_path = "/fibonacci_action_1"

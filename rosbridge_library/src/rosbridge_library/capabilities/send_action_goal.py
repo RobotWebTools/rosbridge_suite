@@ -34,7 +34,7 @@ from __future__ import annotations
 
 import fnmatch
 from functools import partial
-from threading import Thread
+from threading import Lock, Thread
 from typing import TYPE_CHECKING, Any
 
 from action_msgs.msg import GoalStatus
@@ -60,7 +60,7 @@ class SendActionGoal(Capability):
     )
     cancel_action_goal_msg_fields = ((True, "action", str),)
 
-    client_handler_list: dict[str, ActionClientHandler]
+    client_handler_list: dict[str | ActionClientHandler, ActionClientHandler]
 
     parameter_names = ("actions_glob", "send_action_goals_in_new_thread")
 
@@ -72,6 +72,8 @@ class SendActionGoal(Capability):
         Capability.__init__(self, protocol)
 
         self.client_handler_list = {}
+        self._client_handler_lock = Lock()
+        self._finished = False
 
         # Register the operations that this capability provides
         if self.send_action_goals_in_new_thread:
@@ -149,21 +151,39 @@ class SendActionGoal(Capability):
             )
         )
 
-        if cid is not None:
-            self.client_handler_list[cid] = client_handler
+        client_handler_key: str | ActionClientHandler = cid if cid is not None else client_handler
+        with self._client_handler_lock:
+            if self._finished:
+                return
+            self.client_handler_list[client_handler_key] = client_handler
 
         client_handler.run()
 
-        if cid is not None:
-            self.client_handler_list.pop(cid, None)
+        with self._client_handler_lock:
+            self.client_handler_list.pop(client_handler_key, None)
 
     def finish(self) -> None:
-        client_handlers = self.client_handler_list
-        self.client_handler_list = {}
+        with self._client_handler_lock:
+            self._finished = True
+            client_handlers = list(self.client_handler_list.values())
+            self.client_handler_list.clear()
 
-        for client_handler in client_handlers.values():
-            if client_handler.cancel_on_disconnect and client_handler.send_goal_helper is not None:
-                Thread(target=client_handler.send_goal_helper.cancel_goal, daemon=True).start()
+        client_handlers_to_cancel = [
+            client_handler
+            for client_handler in client_handlers
+            if client_handler.cancel_on_disconnect and client_handler.send_goal_helper is not None
+        ]
+        if client_handlers_to_cancel:
+            Thread(
+                target=self._cancel_client_handlers,
+                args=(client_handlers_to_cancel,),
+                daemon=True,
+            ).start()
+
+    @staticmethod
+    def _cancel_client_handlers(client_handlers: list[ActionClientHandler]) -> None:
+        for client_handler in client_handlers:
+            client_handler.send_goal_helper.cancel_goal()
 
     def cancel_action_goal(self, message: dict) -> None:
         # Extract the args
@@ -178,10 +198,12 @@ class SendActionGoal(Capability):
         cid = extract_id(action, cid)
 
         # Cancel the action
-        if cid in self.client_handler_list:
-            client_handler = self.client_handler_list[cid]
-            if client_handler.send_goal_helper is not None:
-                client_handler.send_goal_helper.cancel_goal()
+        client_handler = None
+        if cid is not None:
+            with self._client_handler_lock:
+                client_handler = self.client_handler_list.get(cid)
+        if client_handler is not None and client_handler.send_goal_helper is not None:
+            client_handler.send_goal_helper.cancel_goal()
 
     def _success(
         self,
