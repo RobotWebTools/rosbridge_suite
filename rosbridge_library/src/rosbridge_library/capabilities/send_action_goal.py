@@ -56,6 +56,7 @@ class SendActionGoal(Capability):
         (True, "action_type", str),
         (False, "fragment_size", (int, type(None))),
         (False, "compression", str),
+        (False, "cancel_on_disconnect", bool),
     )
     cancel_action_goal_msg_fields = ((True, "action", str),)
 
@@ -103,6 +104,7 @@ class SendActionGoal(Capability):
         action_type: str = message["action_type"]
         fragment_size: int | None = message.get("fragment_size")
         compression: str = message.get("compression", "none")
+        cancel_on_disconnect: bool = message.get("cancel_on_disconnect", False)
         args: list | dict[str, Any] = message.get("args", [])
 
         if self.actions_glob is not None:
@@ -143,6 +145,7 @@ class SendActionGoal(Capability):
                 e_cb,
                 f_cb,
                 self.protocol.node_handle,
+                cancel_on_disconnect=cancel_on_disconnect,
             )
         )
 
@@ -152,7 +155,15 @@ class SendActionGoal(Capability):
         client_handler.run()
 
         if cid is not None:
-            del self.client_handler_list[cid]
+            self.client_handler_list.pop(cid, None)
+
+    def finish(self) -> None:
+        client_handlers = self.client_handler_list
+        self.client_handler_list = {}
+
+        for client_handler in client_handlers.values():
+            if client_handler.cancel_on_disconnect and client_handler.send_goal_helper is not None:
+                Thread(target=client_handler.send_goal_helper.cancel_goal, daemon=True).start()
 
     def cancel_action_goal(self, message: dict) -> None:
         # Extract the args
