@@ -212,6 +212,24 @@ class TestMessageConversion(unittest.TestCase):
         for x in message_conversion.ros_primitive_types:
             self.do_primitive_test(x, "std_msgs/String")
 
+    def test_wstring_msg(self) -> None:
+        for value in ["", "hello", "Grüße 世界"]:
+            with self.subTest(value=value):
+                self.do_test(
+                    {
+                        "data": value,
+                        "values": [value],
+                        "fixed_values": ["", value, "hello"],
+                        "bounded_values": [value],
+                    },
+                    "rosbridge_test_msgs/TestWString",
+                )
+
+    def test_wstring_rejects_number(self) -> None:
+        inst = ros_loader.get_message_instance("rosbridge_test_msgs/TestWString")
+        with self.assertRaises(message_conversion.FieldTypeMismatchException):
+            message_conversion.populate_instance({"data": 42}, inst)
+
     def test_time_msg(self) -> None:
         now_inst = message_conversion._to_inst(
             "now", "builtin_interfaces/Time", "builtin_interfaces/Time"

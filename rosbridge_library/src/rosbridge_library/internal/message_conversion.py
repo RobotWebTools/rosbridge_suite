@@ -64,7 +64,7 @@ type_map = {
         "uint64",
     ),
     "float": ("float32", "float64", "double", "float"),
-    "str": ("string"),
+    "str": ("string", "wstring"),
 }
 primitive_types = (bool, int, float, str)
 list_types = (list, tuple, np.ndarray, array.array)
@@ -92,6 +92,7 @@ ros_primitive_types = (
     "float",
     "double",
     "string",
+    "wstring",
 )
 ros_binary_types = ("uint8[]", "char[]", "sequence<uint8>", "sequence<char>")
 # Remove the list type wrapper, and length specifier, from rostypes i.e. sequence<double, 3>
