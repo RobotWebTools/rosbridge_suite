@@ -132,6 +132,14 @@ class TestMessageConversion(unittest.TestCase):
                     dumps({"data": message_conversion._from_inst(msg, rostype)}), '{"data": null}'
                 )
 
+    def test_float_array_special_cases(self) -> None:
+        for dtype, rostype in [(np.float32, "float32[4]"), (np.float64, "float64[4]")]:
+            values = np.array([1.0, float("inf"), -float("inf"), float("nan")], dtype=dtype)
+            extracted = message_conversion._from_inst(values, rostype)
+
+            self.assertEqual(extracted, [1.0, None, None, None])
+            self.assertEqual(dumps(extracted, allow_nan=False), "[1.0, null, null, null]")
+
     def test_signed_int_base_msgs(self) -> None:
         int8s = range(-127, 128)
         for int8 in int8s:

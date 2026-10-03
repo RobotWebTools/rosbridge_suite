@@ -265,11 +265,14 @@ def _from_list_inst(inst: ListType, rostype: str) -> list:
 
     # Shortcut for primitives
     if base_rostype in ros_primitive_types:
-        # Convert to Built-in integer types to dump as JSON
+        # Convert NumPy numbers to built-in types for JSON encoding
         if isinstance(inst, np.ndarray) and (
             base_rostype in type_map["int"] or base_rostype in type_map["float"]
         ):
-            return inst.tolist()
+            converted_values = inst.tolist()
+            if base_rostype in type_map["int"]:
+                return converted_values
+            inst = converted_values
 
         if base_rostype not in type_map["float"]:
             return list(inst)
