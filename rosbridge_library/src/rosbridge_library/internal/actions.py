@@ -82,6 +82,7 @@ class ActionClientHandler(
         error_callback: Callable[[Exception], None],
         feedback_callback: Callable[[FeedbackMessage[ROSActionFeedbackT]], None] | None,
         node_handle: Node,
+        cancel_on_disconnect: bool = False,
     ) -> None:
         """
         Create a client handler for the specified action.
@@ -97,6 +98,7 @@ class ActionClientHandler(
         :param error_callback: A callback to call if an error occurs. The callback will be passed
             the exception that caused the failure
         :param node_handle: A ROS 2 node handle to call services
+        :param cancel_on_disconnect: Whether to cancel the goal when its rosbridge client disconnects
         """
         Thread.__init__(self)
         self.daemon = True
@@ -107,6 +109,7 @@ class ActionClientHandler(
         self.error = error_callback
         self.feedback = feedback_callback
         self.node_handle = node_handle
+        self.cancel_on_disconnect = cancel_on_disconnect
         self.send_goal_helper = SendGoal[
             ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
         ]()
