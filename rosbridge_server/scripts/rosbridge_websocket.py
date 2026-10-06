@@ -51,10 +51,11 @@ from tornado.httpserver import HTTPServer
 from tornado.netutil import bind_sockets
 from tornado.web import Application
 
-from rosbridge_server import ClientManager, RosbridgeWebSocket
+from rosbridge_server import ClientManager, RosbridgeVersionHandler, RosbridgeWebSocket
 
 if TYPE_CHECKING:
     from tornado.routing import _RuleList
+    from tornado.web import RequestHandler
 
 
 SERVER_PARAMETERS = (
@@ -225,9 +226,12 @@ class RosbridgeWebsocketNode(Node):
         )
 
     def _start_server(self) -> None:
-        handlers = [(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)]
+        handlers: list[tuple[str, type[RequestHandler]]] = []
         if self.url_path != "/":
-            handlers = [(rf"{self.url_path}", RosbridgeWebSocket)]
+            handlers.append((rf"{self.url_path}", RosbridgeWebSocket))
+        else:
+            handlers.extend([(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)])
+        handlers.append((r"/version", RosbridgeVersionHandler))
 
         application = Application(
             handlers=cast("_RuleList", handlers),
