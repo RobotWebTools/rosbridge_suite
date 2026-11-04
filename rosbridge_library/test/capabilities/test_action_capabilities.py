@@ -57,6 +57,7 @@ class TestActionCapabilities(unittest.TestCase):
             "send_action_goals_in_new_thread": False,
         }
 
+        self.log_entries: list[tuple[str, str]] = []
         self.proto = Protocol(self._testMethodName, self.node, protocol_parameters)
         # change the log function so we can verify errors are logged
         self.proto.log = self.mock_log  # type: ignore[method-assign]
@@ -69,7 +70,6 @@ class TestActionCapabilities(unittest.TestCase):
         self.send_goal = SendActionGoal(self.proto)
         self.feedback = ActionFeedback(self.proto)
         self.received_message: dict[str, Any] | bytes | None = None
-        self.log_entries: list[tuple[str, str]] = []
 
         self.exec_thread = Thread(target=self.executor.spin)
         self.exec_thread.start()
@@ -193,6 +193,24 @@ class TestActionCapabilities(unittest.TestCase):
             )
         )
         self.advertise.advertise_action(advertise_msg)
+        self.assertIn(action_path, self.proto.external_action_list)
+
+    def test_advertise_action_rejects_empty_glob(self) -> None:
+        self.advertise.actions_glob = []
+        action_path = "/blocked_action"
+        advertise_msg = loads(
+            dumps(
+                {
+                    "op": "advertise_action",
+                    "type": "example_interfaces/Fibonacci",
+                    "action": action_path,
+                }
+            )
+        )
+
+        self.advertise.advertise_action(advertise_msg)
+
+        self.assertNotIn(action_path, self.proto.external_action_list)
 
     def test_execute_advertised_action(self) -> None:
         # Advertise the action

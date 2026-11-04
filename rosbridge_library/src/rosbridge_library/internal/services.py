@@ -157,7 +157,9 @@ def call_service(
 
     # service_type is a tuple of types at this point; only one type is supported.
     if len(service_types) > 1:
-        node_handle.get_logger().warning(f"More than one service type detected: {service_types}")
+        node_handle.get_logger().warning(
+            f"More than one service type detected: {service_types} for service {service}"
+        )
     service_type = service_types[0]
 
     service_class = get_service_class(service_type)

@@ -137,7 +137,11 @@ class RosbridgeWebsocketNode(Node):
 
         # To be able to access the list of topics and services,
         # you must be able to access the rosapi services.
-        if self.protocol_parameters["services_glob"] is not None:
+        # An explicit empty list denies all services and must stay empty.
+        if (
+            self.protocol_parameters["services_glob"] is not None
+            and len(self.protocol_parameters["services_glob"]) > 0
+        ):
             self.protocol_parameters["services_glob"].append("/rosapi/*")
 
         RosbridgeWebSocket.protocol_parameters = self.protocol_parameters

@@ -295,7 +295,7 @@ class AdvertiseAction(Capability):
         # parse the incoming message
         action_name: str = message["action"]
 
-        if self.actions_glob:
+        if self.actions_glob is not None:
             self.protocol.log(
                 "debug",
                 "Action security glob enabled, checking action: " + action_name,
