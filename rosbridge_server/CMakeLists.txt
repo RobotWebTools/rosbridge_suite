@@ -65,6 +65,9 @@ if(BUILD_TESTING)
     )
   endforeach()
 
+  # Doesn't depend on the executor type, so just run once
+  add_launch_test(test/websocket/version_handler.test.py)
+
   find_package(ament_cmake_mypy REQUIRED)
   ament_mypy()
 endif()
