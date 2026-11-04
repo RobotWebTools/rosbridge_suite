@@ -113,16 +113,13 @@ class CallService(Capability):
         else:
             self.protocol.log("debug", "No service security glob, not checking service call.")
 
-        # Check for deprecated service ID, eg. /rosbridge/topics#33
-        cid = extract_id(service, cid)
-
         # Create the callbacks
         s_cb = partial(self._success, cid, service, fragment_size, compression)
         e_cb = partial(self._failure, cid, service)
 
         # Run service caller in the same thread.
         ServiceCaller(
-            trim_servicename(service),
+            service,
             args,
             timeout,
             s_cb,
@@ -161,17 +158,3 @@ class CallService(Capability):
         if cid is not None:
             outgoing_message["id"] = cid
         self.protocol.send(outgoing_message)
-
-
-def trim_servicename(service: str) -> str:
-    if "#" in service:
-        return service[: service.find("#")]
-    return service
-
-
-def extract_id(service: str, cid: str | None) -> str | None:
-    if cid is not None:
-        return cid
-    if "#" in service:
-        return service[service.find("#") + 1 :]
-    return None
