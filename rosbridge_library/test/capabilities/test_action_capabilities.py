@@ -37,6 +37,7 @@ class TestActionCapabilities(unittest.TestCase):
             "send_action_goals_in_new_thread": False,
         }
 
+        self.log_entries: list[tuple[str, str]] = []
         self.proto = Protocol(self._testMethodName, self.node, protocol_parameters)
         # change the log function so we can verify errors are logged
         self.proto.log = self.mock_log  # type: ignore[assignment]
@@ -49,7 +50,6 @@ class TestActionCapabilities(unittest.TestCase):
         self.send_goal = SendActionGoal(self.proto)
         self.feedback = ActionFeedback(self.proto)
         self.received_message: dict[str, Any] | bytes | None = None
-        self.log_entries: list[tuple[str, str]] = []
 
         self.exec_thread = Thread(target=self.executor.spin)
         self.exec_thread.start()
