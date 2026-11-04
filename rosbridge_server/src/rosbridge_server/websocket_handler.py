@@ -103,7 +103,7 @@ class IncomingQueue(threading.Thread):
         with self.cond:
             if self.queue.maxlen is not None and len(self.queue) == self.queue.maxlen:
                 self.protocol.node_handle.get_logger().warning(
-                    "Incoming queue full, dropping oldest message",
+                    f" [Client {self.protocol.client_id}] Incoming queue full, dropping oldest message",
                     throttle_duration_sec=1.0,
                 )
             self.queue.append(msg)
@@ -182,7 +182,7 @@ class RosbridgeWebSocket(WebSocketHandler):
             )
 
         cls.node_handle.get_logger().info(
-            f"Client connected. {cls.clients_connected} clients total."
+            f"Client {self.client_id} connected. {cls.clients_connected} clients total."
         )
 
     @log_exceptions
@@ -205,7 +205,7 @@ class RosbridgeWebSocket(WebSocketHandler):
         if cls.client_manager:
             cls.client_manager.remove_client(self.client_id, self.request.remote_ip or "")
         cls.node_handle.get_logger().info(
-            f"Client disconnected. {cls.clients_connected} clients total."
+            f"Client {self.client_id} disconnected. {cls.clients_connected} clients total."
         )
 
     def send_message(self, message: bson.BSON | bytearray | str, compression: str = "none") -> None:
@@ -215,7 +215,7 @@ class RosbridgeWebSocket(WebSocketHandler):
         if not self.write_slots.acquire(blocking=False):
             assert isinstance(cls.node_handle, Node), "Node handle was not set"
             cls.node_handle.get_logger().warning(
-                "Write queue full, dropping outgoing message",
+                f"[Client {self.client_id}] Write queue full, dropping outgoing message",
                 throttle_duration_sec=1.0,
             )
             return
@@ -233,7 +233,7 @@ class RosbridgeWebSocket(WebSocketHandler):
                     await self.write_message(*item)
                 except WebSocketClosedError:
                     cls.node_handle.get_logger().warning(
-                        "WebSocketClosedError: Tried to write to a closed websocket",
+                        f"[Client {self.client_id}] WebSocketClosedError: Tried to write to a closed websocket",
                         throttle_duration_sec=1.0,
                     )
                     return
