@@ -33,6 +33,7 @@
 from __future__ import annotations
 
 import fnmatch
+import time
 from dataclasses import dataclass
 from json import dumps, loads
 from typing import TYPE_CHECKING, cast
@@ -42,10 +43,10 @@ from rcl_interfaces.srv import GetParameters, ListParameters, SetParameters
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.parameter import get_parameter_value
 from rclpy.qos import qos_profile_parameters
-from rclpy.time import Time
 from ros2node.api import get_absolute_node_name
 
 from rosapi.async_helper import futures_wait_for
+from rosapi.glob_helper import any_match
 from rosapi.proxy import get_nodes
 
 if TYPE_CHECKING:
@@ -93,14 +94,16 @@ class _CachedClient:
 
     :param use_count: The number of ongoing calls using this client.
     :type use_count: int
-    :param last_used_time: The last time this client was used for a call.
-    :type last_used_time: Time
+    :param last_used_time: A time.monotonic() stamp of the last call using this client.
+        This is a resource lifetime, so it is measured monotonically rather than with
+        a ROS clock: no clock types to mix up, and no sensitivity to clock jumps.
+    :type last_used_time: float
     :param client: The cached client instance.
     :type client: Client
     """
 
     use_count: int
-    last_used_time: Time
+    last_used_time: float
     client: Client
 
 
@@ -169,8 +172,23 @@ def _get_client(
         callback_group=MutuallyExclusiveCallbackGroup(),
         qos_profile=qos_profile_parameters,
     )
-    _cached_clients[service_name] = _CachedClient(use_count=0, last_used_time=Time(), client=client)
+    _cached_clients[service_name] = _CachedClient(
+        use_count=0, last_used_time=time.monotonic(), client=client
+    )
     return client
+
+
+def _drop_client(service_name: str) -> None:
+    """
+    Destroy a cached client and remove it from the cache.
+
+    :param service_name: The name of the service whose client should be dropped.
+    """
+    assert _node is not None
+
+    cached_client = _cached_clients.pop(service_name, None)
+    if cached_client is not None:
+        _node.destroy_client(cached_client.client)
 
 
 def _cleanup_timer_callback() -> None:
@@ -181,11 +199,12 @@ def _cleanup_timer_callback() -> None:
     different nodes being interacted with.
     """
     assert _node is not None
-    now = _node.get_clock().now()
+    now = time.monotonic()
     to_remove = []
     for service_name, cached_client in _cached_clients.items():
-        if cached_client.use_count == 0 and (now - cached_client.last_used_time).nanoseconds > int(
-            _client_persistence_sec * 1e9
+        if (
+            cached_client.use_count == 0
+            and now - cached_client.last_used_time > _client_persistence_sec
         ):
             _node.destroy_client(cached_client.client)
             to_remove.append(service_name)
@@ -197,14 +216,13 @@ def _cleanup_timer_callback() -> None:
         del _cached_clients[service_name]
 
 
-async def set_param(node_name: str, name: str, value: str, params_glob: list[str]) -> None:
+async def set_param(node_name: str, name: str, value: str, params_glob: list[str] | None) -> None:
     """Set a parameter in a given node."""
-    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
-        # If the glob list is not empty and there are no glob matches,
-        # stop the attempt to set the parameter.
-        return
-    # If the glob list is empty (i.e. false) or the parameter matches
-    # one of the glob strings, continue to set the parameter.
+    if not any_match(name, params_glob):
+        # If there are no glob matches, stop the attempt to set the parameter.
+        msg = f"Parameter {name} does not match any of the glob strings"
+        raise LookupError(msg)
+
     d = None
     try:
         d = loads(value)
@@ -252,8 +270,8 @@ async def _set_param(
     )
 
     if not client.service_is_ready():
-        _node.destroy_client(client)
-        msg = f"Service {client.srv_name} is not available"
+        _drop_client(service_name)
+        msg = f"Service {service_name} is not available"
         raise Exception(msg)
 
     request = SetParameters.Request()
@@ -268,7 +286,7 @@ async def _set_param(
         await futures_wait_for(_node, [future], _timeout_sec)
     finally:
         _cached_clients[service_name].use_count -= 1
-        _cached_clients[service_name].last_used_time = _node.get_clock().now()
+        _cached_clients[service_name].last_used_time = time.monotonic()
 
     if not future.done():
         future.cancel()
@@ -283,15 +301,12 @@ async def _set_param(
         raise Exception(param_results.reason)
 
 
-async def get_param(node_name: str, name: str, params_glob: str) -> str:
+async def get_param(node_name: str, name: str, params_glob: list[str] | None) -> str:
     """Get a parameter from a given node."""
-    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
-        # If the glob list is not empty and there are no glob matches,
-        # stop the attempt to get the parameter.
+    if not any_match(name, params_glob):
+        # If there are no glob matches, stop the attempt to get the parameter.
         msg = f"Parameter {name} does not match any of the glob strings"
-        raise Exception(msg)
-    # If the glob list is empty (i.e. false) or the parameter matches
-    # one of the glob strings, continue to get the parameter.
+        raise LookupError(msg)
 
     node_name = get_absolute_node_name(node_name)
     pvalue = await _get_param(node_name, name)
@@ -319,8 +334,8 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     )
 
     if not client.service_is_ready():
-        _node.destroy_client(client)
-        msg = f"Service {client.srv_name} is not available"
+        _drop_client(service_name)
+        msg = f"Service {service_name} is not available"
         raise Exception(msg)
 
     request = GetParameters.Request()
@@ -335,7 +350,7 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
         await futures_wait_for(_node, [future], _timeout_sec)
     finally:
         _cached_clients[service_name].use_count -= 1
-        _cached_clients[service_name].last_used_time = _node.get_clock().now()
+        _cached_clients[service_name].last_used_time = time.monotonic()
 
     if not future.done():
         future.cancel()
@@ -352,14 +367,12 @@ async def _get_param(node_name: str, name: str) -> ParameterValue:
     return next(iter(result.values))
 
 
-async def has_param(node_name: str, name: str, params_glob: list[str]) -> bool:
+async def has_param(node_name: str, name: str, params_glob: list[str] | None) -> bool:
     """Check whether a given node has a parameter or not."""
-    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
-        # If the glob list is not empty and there are no glob matches,
-        # stop the attempt to set the parameter.
+    if not any_match(name, params_glob):
+        # If there are no glob matches, stop the attempt to set the parameter.
         return False
-    # If the glob list is empty (i.e. false) or the parameter matches
-    # one of the glob strings, check whether the parameter exists.
+
     node_name = get_absolute_node_name(node_name)
     try:
         pvalue = await _get_param(node_name, name)
@@ -369,14 +382,13 @@ async def has_param(node_name: str, name: str, params_glob: list[str]) -> bool:
     return 0 < pvalue.type < len(_parameter_type_mapping)
 
 
-async def delete_param(node_name: str, name: str, params_glob: list[str]) -> None:
+async def delete_param(node_name: str, name: str, params_glob: list[str] | None) -> None:
     """Delete a parameter in a given node."""
-    if params_glob and not any(fnmatch.fnmatch(str(name), glob) for glob in params_glob):
-        # If the glob list is not empty and there are no glob matches,
-        # stop the attempt to delete the parameter.
-        return
-    # If the glob list is empty (i.e. false) or the parameter matches
-    # one of the glob strings, continue to delete the parameter.
+    if not any_match(name, params_glob):
+        # If there are no glob matches, stop the attempt to delete the parameter.
+        msg = f"Parameter {name} does not match any of the glob strings"
+        raise LookupError(msg)
+
     node_name = get_absolute_node_name(node_name)
     if await has_param(node_name, name, params_glob):
         await _set_param(node_name, name, None, ParameterType.PARAMETER_NOT_SET)

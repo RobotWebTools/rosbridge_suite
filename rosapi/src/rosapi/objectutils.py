@@ -99,23 +99,49 @@ def get_typedef(type_name: str) -> dict | None:
     try:
         instance = ros_loader.get_message_instance(type_name)
         return _get_typedef(instance)
-    except (ros_loader.InvalidModuleException, ros_loader.InvalidClassException) as e:
+    except (
+        ros_loader.InvalidModuleException,
+        ros_loader.InvalidClassException,
+        ros_loader.InvalidTypeStringException,
+    ) as e:
         logger.error("An error occurred trying to get the type definition for %s: %s", type_name, e)
         return None
 
 
 def get_service_request_typedef(servicetype: str) -> dict | None:
     """Return a typedef dict for the service request class for the specified service type."""
-    # Get an instance of the service request class and return its typedef
-    instance = ros_loader.get_service_request_instance(servicetype)
-    return _get_typedef(instance)
+    try:
+        instance = ros_loader.get_service_request_instance(servicetype)
+        return _get_typedef(instance)
+    except (
+        ros_loader.InvalidModuleException,
+        ros_loader.InvalidClassException,
+        ros_loader.InvalidTypeStringException,
+    ) as e:
+        logger.error(
+            "An error occurred trying to get the type definition for %s: %s",
+            servicetype,
+            e,
+        )
+        return None
 
 
 def get_service_response_typedef(servicetype: str) -> dict | None:
     """Return a typedef dict for the service response class for the specified service type."""
-    # Get an instance of the service response class and return its typedef
-    instance = ros_loader.get_service_response_instance(servicetype)
-    return _get_typedef(instance)
+    try:
+        instance = ros_loader.get_service_response_instance(servicetype)
+        return _get_typedef(instance)
+    except (
+        ros_loader.InvalidModuleException,
+        ros_loader.InvalidClassException,
+        ros_loader.InvalidTypeStringException,
+    ) as e:
+        logger.error(
+            "An error occurred trying to get the type definition for %s: %s",
+            servicetype,
+            e,
+        )
+        return None
 
 
 def get_typedef_recursive(type_name: str) -> list[dict]:
@@ -126,51 +152,96 @@ def get_typedef_recursive(type_name: str) -> list[dict]:
 
 def get_service_request_typedef_recursive(servicetype: str) -> list[dict]:
     """Return a list of typedef dicts for this type and all contained type fields."""
-    # Get an instance of the service request class and get its typedef
-    instance = ros_loader.get_service_request_instance(servicetype)
+    try:
+        instance = ros_loader.get_service_request_instance(servicetype)
+    except (
+        ros_loader.InvalidModuleException,
+        ros_loader.InvalidClassException,
+        ros_loader.InvalidTypeStringException,
+    ) as e:
+        logger.error(
+            "An error occurred trying to get the type definition for %s: %s",
+            servicetype,
+            e,
+        )
+        return []
     typedef = _get_typedef(instance)
-
-    # Return the list of sub-typedefs
     return _get_subtypedefs_recursive(typedef, [])
 
 
 def get_service_response_typedef_recursive(servicetype: str) -> list[dict]:
     """Return a list of typedef dicts for this type and all contained type fields."""
-    # Get an instance of the service response class and get its typedef
-    instance = ros_loader.get_service_response_instance(servicetype)
+    try:
+        instance = ros_loader.get_service_response_instance(servicetype)
+    except (
+        ros_loader.InvalidModuleException,
+        ros_loader.InvalidClassException,
+        ros_loader.InvalidTypeStringException,
+    ) as e:
+        logger.error(
+            "An error occurred trying to get the type definition for %s: %s",
+            servicetype,
+            e,
+        )
+        return []
     typedef = _get_typedef(instance)
-
-    # Return the list of sub-typedefs
     return _get_subtypedefs_recursive(typedef, [])
 
 
 def get_action_goal_typedef_recursive(actiontype: str) -> list[dict]:
     """Return a list of typedef dicts for this type and all contained type fields."""
-    # Get an instance of the action goal class and get its typedef
-    instance = ros_loader.get_action_goal_instance(actiontype)
+    try:
+        instance = ros_loader.get_action_goal_instance(actiontype)
+    except (
+        ros_loader.InvalidModuleException,
+        ros_loader.InvalidClassException,
+        ros_loader.InvalidTypeStringException,
+    ) as e:
+        logger.error(
+            "An error occurred trying to get the type definition for %s: %s",
+            actiontype,
+            e,
+        )
+        return []
     typedef = _get_typedef(instance)
-
-    # Return the list of sub-typedefs
     return _get_subtypedefs_recursive(typedef, [])
 
 
 def get_action_result_typedef_recursive(actiontype: str) -> list[dict]:
     """Return a list of typedef dicts for this type and all contained type fields."""
-    # Get an instance of the action result class and get its typedef
-    instance = ros_loader.get_action_result_instance(actiontype)
+    try:
+        instance = ros_loader.get_action_result_instance(actiontype)
+    except (
+        ros_loader.InvalidModuleException,
+        ros_loader.InvalidClassException,
+        ros_loader.InvalidTypeStringException,
+    ) as e:
+        logger.error(
+            "An error occurred trying to get the type definition for %s: %s",
+            actiontype,
+            e,
+        )
+        return []
     typedef = _get_typedef(instance)
-
-    # Return the list of sub-typedefs
     return _get_subtypedefs_recursive(typedef, [])
 
 
 def get_action_feedback_typedef_recursive(actiontype: str) -> list[dict]:
     """Return a list of typedef dicts for this type and all contained type fields."""
-    # Get an instance of the action feedback class and get its typedef
-    instance = ros_loader.get_action_feedback_instance(actiontype)
+    try:
+        instance = ros_loader.get_action_feedback_instance(actiontype)
+    except (
+        ros_loader.InvalidModuleException,
+        ros_loader.InvalidClassException,
+        ros_loader.InvalidTypeStringException,
+    ) as e:
+        logger.error(
+            "An error occurred trying to get the type definition for %s: %s",
+            actiontype,
+            e,
+        )
+        return []
     typedef = _get_typedef(instance)
-
-    # Return the list of sub-typedefs
     return _get_subtypedefs_recursive(typedef, [])
 
 

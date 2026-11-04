@@ -192,21 +192,12 @@ class Protocol:
         if "id" in msg:
             mid = msg["id"]
         if "op" not in msg:
-            if "receiver" in msg:
-                self.log(
-                    "error",
-                    "Received a rosbridge v1.0 message. "
-                    "Please refer to rosbridge.org for the correct format of rosbridge v2.0 messages. "
-                    f"Original message was: {message_string}",
-                )
-            else:
-                self.log(
-                    "error",
-                    "Received a message without an op. "
-                    f"All messages require 'op' field with value one of: {list(self.operations.keys())}. "
-                    "Original message was: {message_string}",
-                    mid,
-                )
+            self.log(
+                "error",
+                "Received a message without an op. "
+                f"All messages require 'op' field with value one of: {list(self.operations.keys())}.",
+                mid,
+            )
             return
         op = msg["op"]
         if op not in self.operations:

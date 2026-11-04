@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import time
 import unittest
-from threading import Thread
+from threading import Event, Thread
 from typing import Any
 
 import rclpy
@@ -170,14 +170,22 @@ class TestQoS(unittest.TestCase):
         self.assertEqual(qos_profile.durability, DurabilityPolicy.TRANSIENT_LOCAL)
         self.assertEqual(qos_profile.depth, 1)
 
-        # Late-joining subscriber should receive the latched message
+        # Late-joining subscriber should receive the latched message. Block on
+        # a threading.Event set in the callback instead of sleeping, so the
+        # test does not flake when DDS discovery + late-joining delivery
+        # overrun a short sleep on slower middleware setups.
         received: dict[str, Any] = {"msg": None}
+        msg_received = Event()
 
         def cb(msg: String) -> None:
             received["msg"] = msg
+            msg_received.set()
 
         self.node.create_subscription(String, topic, cb, qos_profile)
-        time.sleep(0.1)
+        self.assertTrue(
+            msg_received.wait(timeout=5.0),
+            "Late-joining subscriber did not receive latched message within 5 s",
+        )
         self.assertEqual(received["msg"].data, msg["data"])
 
     def test_publish_qos_works(self) -> None:

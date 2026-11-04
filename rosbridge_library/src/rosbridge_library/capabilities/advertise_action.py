@@ -37,12 +37,13 @@ from typing import TYPE_CHECKING, Any, Generic, cast
 
 from action_msgs.msg import GoalStatus
 from rclpy.action import ActionServer
-from rclpy.action.server import CancelResponse
+from rclpy.action.server import CancelResponse, GoalResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.task import Future
 
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal import message_conversion
+from rosbridge_library.internal.executor_helpers import run_on_executor
 from rosbridge_library.internal.ros_loader import get_action_class
 from rosbridge_library.internal.type_support import (
     ROSActionFeedbackT,
@@ -63,9 +64,7 @@ class AdvertisedActionHandler(
 ):
     id_counter = 1
 
-    def __init__(
-        self, action_name: str, action_type: str, protocol: Protocol, sleep_time: float = 0.001
-    ) -> None:
+    def __init__(self, action_name: str, action_type: str, protocol: Protocol) -> None:
         self.goal_futures: dict[str, Future[ROSActionResultT]] = {}
         self.goal_handles: dict[
             str,
@@ -76,23 +75,44 @@ class AdvertisedActionHandler(
         self.action_name = action_name
         self.action_type = action_type
         self.protocol = protocol
-        self.sleep_time = sleep_time
-        # setup the action
-        self.action_server = ActionServer[
-            ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
-        ](
+        self._shutting_down = False
+        # Create the ActionServer on the executor thread; concurrent entity
+        # registration from a worker thread races with the executor's wait-set
+        # rebuild and can SIGSEGV inside rclpy/action/server.py:__init__.
+        self.action_server = run_on_executor(
             protocol.node_handle,
-            get_action_class(action_type),
-            action_name,
-            self.execute_callback,  # type: ignore[arg-type]  # rclpy type hint does not support coroutines
-            cancel_callback=self.cancel_callback,  # type: ignore[arg-type]  # rclpy type hint is incorrect
-            callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
+            lambda: ActionServer[
+                ROSActionGoalT, ROSActionResultT, ROSActionFeedbackT, ROSActionImplT
+            ](
+                protocol.node_handle,
+                get_action_class(action_type),
+                action_name,
+                self.execute_callback,
+                goal_callback=self.goal_callback,
+                cancel_callback=self.cancel_callback,
+                callback_group=ReentrantCallbackGroup(),  # https://github.com/ros2/rclpy/issues/834#issuecomment-961331870
+            ),
         )
 
     def next_id(self) -> int:
         next_id_value = self.id_counter
         self.id_counter += 1
         return next_id_value
+
+    def goal_callback(self, _goal_request: ROSActionGoalT) -> GoalResponse:
+        """
+        Handle new action goal request.
+
+        ActionServer callback for receiving a new action goal request.
+        """
+        if self._shutting_down:
+            self.protocol.log(
+                "warning",
+                f"Received new goal request for action {self.action_name} while shutting down, rejecting.",
+            )
+            return GoalResponse.REJECT
+
+        return GoalResponse.ACCEPT
 
     async def execute_callback(
         self,
@@ -109,7 +129,7 @@ class AdvertisedActionHandler(
         goal_id = f"action_goal:{self.action_name}:{self.next_id()}"
 
         def done_callback(fut: Future[ROSActionResultT]) -> None:
-            if fut.cancelled():
+            if fut.cancelled() or fut.exception() is not None:
                 goal.abort()
                 self.protocol.log("info", f"Aborted goal {goal_id}")
             else:
@@ -147,9 +167,21 @@ class AdvertisedActionHandler(
                 # Return empty result when cancelled/aborted
                 return cast("ROSActionResultT", get_action_class(self.action_type).Result())
             return result
+        except Exception as e:
+            self.protocol.log(
+                "error", f"Error while waiting for result of action goal with id {goal_id}: {e}"
+            )
+            # Goal should be aborted by the done_callback when the future exception is set
+            # Return empty result
+            return cast("ROSActionResultT", get_action_class(self.action_type).Result())
         finally:
             del self.goal_futures[goal_id]
             del self.goal_handles[goal_id]
+
+            if self._shutting_down and not self.goal_futures:
+                # Action is shutting down and no more goal futures are pending,
+                # schedule destruction of the action server
+                self._schedule_action_server_destruction()
 
     def cancel_callback(
         self,
@@ -211,6 +243,8 @@ class AdvertisedActionHandler(
 
     def graceful_shutdown(self) -> None:
         """Signal the AdvertisedActionHandler to shutdown."""
+        self._shutting_down = True
+
         if self.goal_futures:
             incomplete_ids = ", ".join(self.goal_futures.keys())
             self.protocol.log(
@@ -221,10 +255,23 @@ class AdvertisedActionHandler(
             for future_id in self.goal_futures:
                 future = self.goal_futures[future_id]
                 future.set_exception(RuntimeError(f"Action {self.action_name} was unadvertised"))
+        else:
+            self._schedule_action_server_destruction()
 
-        # Uncommenting this, you may get a segfault.
-        # See https://github.com/ros2/rclcpp/issues/2163#issuecomment-1850925883
-        # self.action_server.destroy()
+    def _schedule_action_server_destruction(self) -> None:
+        executor = self.action_server._node.executor
+        assert executor is not None
+
+        async def destroy_action_server() -> None:
+            # Sleep briefly to allow any in-flight callbacks to complete before destroying the action server
+            future = executor.create_future()
+            timer = self.protocol.node_handle.create_timer(1.0, lambda: future.set_result(None))
+            await future
+            timer.destroy()
+
+            self.action_server.destroy()
+
+        executor.create_task(destroy_action_server)
 
 
 class AdvertiseAction(Capability):
@@ -248,7 +295,7 @@ class AdvertiseAction(Capability):
         # parse the incoming message
         action_name: str = message["action"]
 
-        if self.actions_glob:
+        if self.actions_glob is not None:
             self.protocol.log(
                 "debug",
                 "Action security glob enabled, checking action: " + action_name,

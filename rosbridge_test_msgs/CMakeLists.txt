@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 project(rosbridge_test_msgs)
 
 find_package(ament_cmake REQUIRED)
@@ -20,6 +20,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/TestFloat32Array.msg
   msg/TestFloat32BoundedArray.msg
   msg/TestNestedBoundedArray.msg
+  msg/TestWString.msg
   srv/AddTwoInts.srv
   srv/SendBytes.srv
   srv/TestArrayRequest.srv

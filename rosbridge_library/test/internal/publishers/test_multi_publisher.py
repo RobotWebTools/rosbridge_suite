@@ -7,7 +7,7 @@ from threading import Thread
 from typing import TYPE_CHECKING, Any
 
 import rclpy
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.internal import ros_loader
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 class TestMultiPublisher(unittest.TestCase):
     def setUp(self) -> None:
         rclpy.init()
-        self.executor = MultiThreadedExecutor(num_threads=2)
+        self.executor = SingleThreadedExecutor()
         self.node = Node("test_multi_publisher")
         self.executor.add_node(self.node)
 

@@ -2,6 +2,14 @@
 Changelog for package rosbridge_suite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.2.1 (2026-08-12)
+------------------
+
+4.2.0 (2026-05-27)
+------------------
+* chore: Update cmake minimum version to 3.20 (`#1232 <https://github.com/RobotWebTools/rosbridge_suite/issues/1232>`_)
+* Contributors: Błażej Sowa
+
 4.1.0 (2026-04-02)
 ------------------
 

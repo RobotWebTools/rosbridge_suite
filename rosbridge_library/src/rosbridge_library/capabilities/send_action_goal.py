@@ -75,14 +75,14 @@ class SendActionGoal(Capability):
         # Register the operations that this capability provides
         if self.send_action_goals_in_new_thread:
             # Sends the action goal in a separate thread so multiple actions can be processed simultaneously.
-            protocol.node_handle.get_logger().info("Sending action goals in new thread")
+            protocol.log("info", "Sending action goals in new threads")
             protocol.register_operation(
                 "send_action_goal",
                 lambda msg: Thread(target=self.send_action_goal, args=(msg,)).start(),
             )
         else:
             # Sends the actions goal in this thread, so actions block and must be processed sequentially.
-            protocol.node_handle.get_logger().info("Sending action goals in existing thread")
+            protocol.log("info", "Sending action goals in existing thread")
             protocol.register_operation("send_action_goal", self.send_action_goal)
 
         # Always register goal canceling in a new thread.
@@ -193,7 +193,11 @@ class SendActionGoal(Capability):
         self.protocol.send(outgoing_message)
 
     def _failure(self, cid: str | None, action: str, exc: Exception) -> None:
-        self.protocol.log("error", f"send_action_goal {type(exc).__name__}: {cid}")
+        self.protocol.log(
+            "error",
+            f"send_action_goal to '{action}' failed: {exc}"
+            + (f" [id: {cid}]" if cid is not None else ""),
+        )
         # send response with result: false
         outgoing_message = {
             "op": "action_result",

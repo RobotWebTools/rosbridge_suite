@@ -2,6 +2,19 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.2.1 (2026-08-12)
+------------------
+* fix: Properly handle an empty list in params_glob
+* fix: Correct regex patterns in test_stringify_field_types (`#1299 <https://github.com/RobotWebTools/rosbridge_suite/issues/1299>`_)
+* Contributors: Błażej Sowa
+
+4.2.0 (2026-05-27)
+------------------
+* feat: Provide separate arguments for publish and subscribe topic globs (`#1260 <https://github.com/RobotWebTools/rosbridge_suite/issues/1260>`_)
+* fix: avoid rosapi crash on requesting typedefs for non-existent packages (`#1239 <https://github.com/RobotWebTools/rosbridge_suite/issues/1239>`_)
+* chore: Update cmake minimum version to 3.20 (`#1232 <https://github.com/RobotWebTools/rosbridge_suite/issues/1232>`_)
+* Contributors: Błażej Sowa, Harshdeep Singh, p7yong
+
 4.1.0 (2026-04-02)
 ------------------
 * feat: Cache rosapi get/set parameter clients (`#1201 <https://github.com/RobotWebTools/rosbridge_suite/issues/1201>`_)

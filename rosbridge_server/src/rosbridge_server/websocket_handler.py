@@ -40,11 +40,10 @@ import uuid
 from asyncio.events import AbstractEventLoop
 from collections import deque
 from functools import wraps
-from typing import TYPE_CHECKING, ClassVar, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, ParamSpec, TypeVar
 
 from rclpy.node import Node
 from rosbridge_library.rosbridge_protocol import RosbridgeProtocol
-from tornado.iostream import StreamClosedError
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
 
 if TYPE_CHECKING:
@@ -56,7 +55,9 @@ if TYPE_CHECKING:
 def _log_exception() -> None:
     """Log the most recent exception to ROS."""
     exc = traceback.format_exception(*sys.exc_info())
-    RosbridgeWebSocket.node_handle.get_logger().error("".join(exc))
+    node_handle = RosbridgeWebSocket.node_handle
+    assert isinstance(node_handle, Node), "Node handle was not set"
+    node_handle.get_logger().error("".join(exc))
 
 
 P = ParamSpec("P")
@@ -78,17 +79,12 @@ def log_exceptions(f: Callable[P, R]) -> Callable[P, R]:
 
 
 class IncomingQueue(threading.Thread):
-    """
-    Decouples incoming messages from the Tornado thread.
+    """Decouples incoming messages from the AsyncIO event loop."""
 
-    This mitigates cases where outgoing messages are blocked by incoming,
-    and vice versa.
-    """
-
-    def __init__(self, protocol: RosbridgeProtocol) -> None:
+    def __init__(self, protocol: RosbridgeProtocol, max_queue_size: int | None = None) -> None:
         threading.Thread.__init__(self)
         self.daemon = True
-        self.queue: deque[str] = deque()
+        self.queue: deque[str] = deque(maxlen=max_queue_size)
         self.protocol = protocol
 
         self.cond = threading.Condition()
@@ -104,13 +100,18 @@ class IncomingQueue(threading.Thread):
 
     def push(self, msg: str) -> None:
         with self.cond:
+            if self.queue.maxlen is not None and len(self.queue) == self.queue.maxlen:
+                self.protocol.node_handle.get_logger().warning(
+                    f" [Client {self.protocol.client_id}] Incoming queue full, dropping oldest message",
+                    throttle_duration_sec=1.0,
+                )
             self.queue.append(msg)
             self.cond.notify()
 
     def run(self) -> None:
         while True:
             with self.cond:
-                if len(self.queue) == 0 and not self._finished:
+                while len(self.queue) == 0 and not self._finished:
                     self.cond.wait()
 
                 if self._finished:
@@ -140,14 +141,20 @@ class RosbridgeWebSocket(WebSocketHandler):
     node_handle: ClassVar[Node | None] = None
 
     # Parameters to pass to RosbridgeProtocol when opening a connection
-    protocol_parameters: ClassVar = {}
+    protocol_parameters: ClassVar[dict[str, Any]] = {}
 
     # Parameters for the WebSocket handler
+    incoming_queue_size: ClassVar[int] = 1000
+    write_queue_size: ClassVar[int] = 1000
     use_compression: ClassVar[bool] = False
 
+    # Instance variables for each connection
     client_id: uuid.UUID
     protocol: RosbridgeProtocol
     incoming_queue: IncomingQueue
+    write_queue: asyncio.Queue
+    write_slots: threading.Semaphore
+    write_task: asyncio.Task
 
     @log_exceptions
     def open(self, *args: str, **kwargs: str) -> None:  # noqa: ARG002
@@ -158,20 +165,23 @@ class RosbridgeWebSocket(WebSocketHandler):
             self.protocol = RosbridgeProtocol(
                 self.client_id, cls.node_handle, parameters=cls.protocol_parameters
             )
-            self.incoming_queue = IncomingQueue(self.protocol)
+            self.incoming_queue = IncomingQueue(self.protocol, cls.incoming_queue_size)
             self.incoming_queue.start()
             self.protocol.outgoing = self.send_message
             self.set_nodelay(True)
+            self.write_queue: asyncio.Queue = asyncio.Queue(maxsize=cls.write_queue_size)
+            self.write_slots = threading.Semaphore(cls.write_queue_size)
+            self.write_task = asyncio.ensure_future(self._drain_write_queue())
             cls.clients_connected += 1
             if cls.client_manager:
-                cls.client_manager.add_client(self.client_id, self.request.remote_ip)
+                cls.client_manager.add_client(self.client_id, self.request.remote_ip or "")
         except Exception as exc:
             cls.node_handle.get_logger().error(
                 f"Unable to accept incoming connection.  Reason: {exc}"
             )
 
         cls.node_handle.get_logger().info(
-            f"Client connected. {cls.clients_connected} clients total."
+            f"Client {self.client_id} connected. {cls.clients_connected} clients total."
         )
 
     @log_exceptions
@@ -188,43 +198,50 @@ class RosbridgeWebSocket(WebSocketHandler):
         # ROS subscriptions have an inherent race condition with protocol.finish()
         self.protocol.outgoing = lambda *_args, **_kwargs: None
         self.incoming_queue.finish()
+        self.write_task.cancel()
 
         cls.clients_connected -= 1
         if cls.client_manager:
-            cls.client_manager.remove_client(self.client_id, self.request.remote_ip)
+            cls.client_manager.remove_client(self.client_id, self.request.remote_ip or "")
         cls.node_handle.get_logger().info(
-            f"Client disconnected. {cls.clients_connected} clients total."
+            f"Client {self.client_id} disconnected. {cls.clients_connected} clients total."
         )
 
     def send_message(self, message: bytes | str, compression: str = "none") -> None:
         cls = self.__class__
         assert isinstance(cls.event_loop, AbstractEventLoop), "Event loop was not set"
+        binary = compression in ["cbor", "cbor-raw"]
+        if not self.write_slots.acquire(blocking=False):
+            assert isinstance(cls.node_handle, Node), "Node handle was not set"
+            cls.node_handle.get_logger().warning(
+                f"[Client {self.client_id}] Write queue full, dropping outgoing message",
+                throttle_duration_sec=1.0,
+            )
+            return
+        cls.event_loop.call_soon_threadsafe(self.write_queue.put_nowait, (message, binary))
 
-        if compression in ["cbor", "cbor-raw"]:
-            binary = True
-        else:
-            binary = False
-
-        asyncio.run_coroutine_threadsafe(self.prewrite_message(message, binary), cls.event_loop)
-
-    async def prewrite_message(self, message: bytes | str, binary: bool) -> None:
+    async def _drain_write_queue(self) -> None:
+        """Drain the per-connection write queue, serialising all write_message calls."""
         cls = self.__class__
         assert isinstance(cls.node_handle, Node), "Node handle was not set"
         try:
-            await self.write_message(message, binary)
-        except WebSocketClosedError:
-            cls.node_handle.get_logger().warning(
-                "WebSocketClosedError: Tried to write to a closed websocket",
-                throttle_duration_sec=1.0,
-            )
-            # If we end up here, a client has disconnected before its message callback(s) could be removed.
-        except StreamClosedError:
-            cls.node_handle.get_logger().warning(
-                "StreamClosedError: Tried to write to a closed stream",
-                throttle_duration_sec=1.0,
-            )
-        except:  # noqa: E722  # Will log and raise
-            _log_exception()
+            while True:
+                item = await self.write_queue.get()
+                self.write_slots.release()
+                try:
+                    await self.write_message(*item)
+                except WebSocketClosedError:
+                    cls.node_handle.get_logger().warning(
+                        f"[Client {self.client_id}] WebSocketClosedError: Tried to write to a closed websocket",
+                        throttle_duration_sec=1.0,
+                    )
+                    return
+                except asyncio.CancelledError:
+                    raise
+                except Exception:
+                    _log_exception()
+        except asyncio.CancelledError:
+            pass
 
     @log_exceptions
     def check_origin(self, origin: str) -> bool:  # noqa: ARG002

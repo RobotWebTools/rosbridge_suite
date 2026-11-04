@@ -70,6 +70,13 @@ SERVER_PARAMETERS = (
     ("websocket_ping_interval", float, 0.0, "Interval in seconds for WebSocket ping messages."),
     ("websocket_ping_timeout", float, 30.0, "Timeout in seconds for WebSocket ping responses."),
     # Websocket handler parameters
+    (
+        "incoming_queue_size",
+        int,
+        1000,
+        "Size of the per-client queue for processing incoming messages.",
+    ),
+    ("write_queue_size", int, 1000, "Size of the per-client queue for writing messages."),
     ("use_compression", bool, False, "Enable compression for WebSocket messages."),
     # Executor parameters
     ("use_events_executor", bool, False, "Use EventsExecutor instead of SingleThreadedExecutor."),
@@ -85,7 +92,9 @@ PROTOCOL_PARAMETERS = (
         10.0,
         "How long to wait before unregistering a client from publisher after unadvertising publisher.",
     ),
-    ("topics_glob", str, "", "Glob patterns for topics publish/subscribe."),
+    ("topics_glob", str, "", "Legacy glob patterns for topics publish/subscribe."),
+    ("topics_pub_glob", str, "", "Glob patterns for topics publish."),
+    ("topics_sub_glob", str, "", "Glob patterns for topics subscribe."),
     ("services_glob", str, "", "Glob patterns for services call/advertise."),
     ("actions_glob", str, "", "Glob patterns for actions send/advertise."),
     ("call_services_in_new_thread", bool, True, "Call services in a new threads."),
@@ -129,10 +138,16 @@ class RosbridgeWebsocketNode(Node):
 
         # To be able to access the list of topics and services,
         # you must be able to access the rosapi services.
-        if self.protocol_parameters["services_glob"] is not None:
+        # An explicit empty list denies all services and must stay empty.
+        if (
+            self.protocol_parameters["services_glob"] is not None
+            and len(self.protocol_parameters["services_glob"]) > 0
+        ):
             self.protocol_parameters["services_glob"].append("/rosapi/*")
 
         RosbridgeWebSocket.protocol_parameters = self.protocol_parameters
+        RosbridgeWebSocket.incoming_queue_size = self.incoming_queue_size
+        RosbridgeWebSocket.write_queue_size = self.write_queue_size
         RosbridgeWebSocket.use_compression = self.use_compression
 
         self._start_server()
@@ -157,9 +172,21 @@ class RosbridgeWebsocketNode(Node):
         for name, _, _, _ in PROTOCOL_PARAMETERS:
             self.protocol_parameters[name] = self.get_parameter(name).value
 
-        self.protocol_parameters["topics_glob"] = parse_glob_string(
-            self.protocol_parameters["topics_glob"]
+        # Append legacy topics glob into both pub and sub
+        legacy_glob = parse_glob_string(self.protocol_parameters.get("topics_glob", ""))
+        pub_glob = parse_glob_string(self.protocol_parameters.get("topics_pub_glob", ""))
+        sub_glob = parse_glob_string(self.protocol_parameters.get("topics_sub_glob", ""))
+
+        # If pub_glob/sub_glob is "", it inherits whatever legacy_glob is (None or list)
+        # If pub_glob/sub_glob is set (including "[]"), it merges with legacy_glob
+        self.protocol_parameters["topics_pub_glob"] = (
+            legacy_glob if pub_glob is None else list(set(pub_glob + (legacy_glob or [])))
         )
+
+        self.protocol_parameters["topics_sub_glob"] = (
+            legacy_glob if sub_glob is None else list(set(sub_glob + (legacy_glob or [])))
+        )
+
         self.protocol_parameters["services_glob"] = parse_glob_string(
             self.protocol_parameters["services_glob"]
         )
@@ -187,6 +214,12 @@ class RosbridgeWebsocketNode(Node):
         )
 
         # WebSocket handler parameters
+        self.incoming_queue_size = (
+            self.get_parameter("incoming_queue_size").get_parameter_value().integer_value
+        )
+        self.write_queue_size = (
+            self.get_parameter("write_queue_size").get_parameter_value().integer_value
+        )
         self.use_compression = (
             self.get_parameter("use_compression").get_parameter_value().bool_value
         )

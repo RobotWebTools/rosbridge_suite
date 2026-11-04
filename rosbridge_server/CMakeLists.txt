@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 project(rosbridge_server)
 
 find_package(ament_cmake_ros REQUIRED)
@@ -29,6 +29,10 @@ if(BUILD_TESTING)
     "test/test_stress_clients.py"
     TIMEOUT 60
   )
+
+  # This test is currently failing with EventsExecutor, so we run it only with SingleThreadedExecutor for now.
+  # TODO(bjsowa): Make this test pass with EventsExecutor.
+  add_launch_test(test/websocket/event_loop_starvation.test.py)
 
   # Run each test with both SingleThreadedExecutor and EventsExecutor
   set(TEST_FILES

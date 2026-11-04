@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import unittest
 from typing import ClassVar
+from unittest.mock import patch
+
+from rosbridge_library.internal import ros_loader as _ros_loader
 
 from rosapi import objectutils
 
@@ -64,6 +67,67 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(lens, [-1])
         # example should be the stringified value of 123
         self.assertEqual(examples, ["123"])
+
+
+def _make_invalid_module_exc(pkg: str, subname: str) -> _ros_loader.InvalidModuleException:
+    return _ros_loader.InvalidModuleException(
+        pkg, subname, ModuleNotFoundError(f"No module named '{pkg}'")
+    )
+
+
+class TestInvalidTypeHandling(unittest.TestCase):
+    """Regression: objectutils must not propagate ros_loader exceptions to callers."""
+
+    def test_get_typedef_invalid_type_string_returns_none(self) -> None:
+        exc = _ros_loader.InvalidTypeStringException("bad/type")
+        with patch.object(_ros_loader, "get_message_instance", side_effect=exc):
+            self.assertIsNone(objectutils.get_typedef("bad/type"))
+
+    def test_service_request_typedef_returns_none_on_bad_package(self) -> None:
+        exc = _make_invalid_module_exc("nonexistent_pkg", "srv")
+        with patch.object(_ros_loader, "get_service_request_instance", side_effect=exc):
+            self.assertIsNone(objectutils.get_service_request_typedef("nonexistent_pkg/srv/Fake"))
+
+    def test_service_response_typedef_returns_none_on_bad_package(self) -> None:
+        exc = _make_invalid_module_exc("nonexistent_pkg", "srv")
+        with patch.object(_ros_loader, "get_service_response_instance", side_effect=exc):
+            self.assertIsNone(objectutils.get_service_response_typedef("nonexistent_pkg/srv/Fake"))
+
+    def test_service_request_typedef_recursive_returns_empty_on_bad_package(self) -> None:
+        exc = _make_invalid_module_exc("nonexistent_pkg", "srv")
+        with patch.object(_ros_loader, "get_service_request_instance", side_effect=exc):
+            result = objectutils.get_service_request_typedef_recursive("nonexistent_pkg/srv/Fake")
+        self.assertEqual(result, [])
+
+    def test_service_response_typedef_recursive_returns_empty_on_bad_package(self) -> None:
+        exc = _make_invalid_module_exc("nonexistent_pkg", "srv")
+        with patch.object(_ros_loader, "get_service_response_instance", side_effect=exc):
+            result = objectutils.get_service_response_typedef_recursive("nonexistent_pkg/srv/Fake")
+        self.assertEqual(result, [])
+
+    def test_action_goal_typedef_recursive_returns_empty_on_bad_package(self) -> None:
+        exc = _make_invalid_module_exc("nonexistent_pkg", "action")
+        with patch.object(_ros_loader, "get_action_goal_instance", side_effect=exc):
+            result = objectutils.get_action_goal_typedef_recursive(
+                "nonexistent_pkg/action/FakeAction"
+            )
+        self.assertEqual(result, [])
+
+    def test_action_result_typedef_recursive_returns_empty_on_bad_package(self) -> None:
+        exc = _make_invalid_module_exc("nonexistent_pkg", "action")
+        with patch.object(_ros_loader, "get_action_result_instance", side_effect=exc):
+            result = objectutils.get_action_result_typedef_recursive(
+                "nonexistent_pkg/action/FakeAction"
+            )
+        self.assertEqual(result, [])
+
+    def test_action_feedback_typedef_recursive_returns_empty_on_bad_package(self) -> None:
+        exc = _make_invalid_module_exc("nonexistent_pkg", "action")
+        with patch.object(_ros_loader, "get_action_feedback_instance", side_effect=exc):
+            result = objectutils.get_action_feedback_typedef_recursive(
+                "nonexistent_pkg/action/FakeAction"
+            )
+        self.assertEqual(result, [])
 
 
 if __name__ == "__main__":

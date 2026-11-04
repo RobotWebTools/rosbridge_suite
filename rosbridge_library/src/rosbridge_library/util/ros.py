@@ -32,23 +32,51 @@
 
 from __future__ import annotations
 
+from threading import Event
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from rclpy.executors import Executor
     from rclpy.node import Node
 
 
 def is_topic_published(node: Node, topic_name: str) -> bool:
-    """Check if a topic is published on a node."""
-    published_topic_data = node.get_publisher_names_and_types_by_node(
-        node.get_name(), node.get_namespace()
-    )
-    return any(topic[0] == topic_name for topic in published_topic_data)
+    """
+    Check if a node has at least one publisher on the given topic.
+
+    Reads ``node.publishers`` (the local entity list) rather than the rmw graph
+    cache. The local list is populated synchronously inside ``create_publisher``
+    and cleared inside ``destroy_publisher``, so the result is deterministic
+    with respect to the calling thread — no DDS-discovery round-trip is
+    involved.
+    """
+    return any(pub.topic_name == topic_name for pub in node.publishers)
 
 
 def is_topic_subscribed(node: Node, topic_name: str) -> bool:
-    """Check if a topic is subscribed to by a node."""
-    subscribed_topic_data = node.get_subscriber_names_and_types_by_node(
-        node.get_name(), node.get_namespace()
-    )
-    return any(topic[0] == topic_name for topic in subscribed_topic_data)
+    """
+    Check if a node has at least one subscription on the given topic.
+
+    Reads ``node.subscriptions`` (the local entity list) rather than the rmw
+    graph cache; see ``is_topic_published`` for why this matters.
+    """
+    return any(sub.topic_name == topic_name for sub in node.subscriptions)
+
+
+def wait_for_executor_idle(executor: Executor, timeout: float = 5.0) -> None:
+    """
+    Block until all tasks already queued on ``executor`` have been processed.
+
+    Used by tests that schedule work on the executor and then need to assert
+    on the post-condition from a different thread. Submits a no-op task and
+    waits for it to run: tasks are FIFO on ``SingleThreadedExecutor``, so when
+    the no-op completes every task enqueued before it has also completed.
+
+    Raises ``TimeoutError`` if the executor does not drain within ``timeout``
+    seconds, which usually means it is not being spun.
+    """
+    done = Event()
+    executor.create_task(done.set)
+    if not done.wait(timeout=timeout):
+        msg = f"Executor did not become idle within {timeout}s"
+        raise TimeoutError(msg)

@@ -10,7 +10,7 @@ from typing import Any
 import rclpy
 from action_msgs.msg import GoalStatus
 from example_interfaces.action._fibonacci import Fibonacci_FeedbackMessage
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rosbridge_library.capabilities.action_feedback import ActionFeedback
@@ -28,7 +28,7 @@ from rosbridge_library.protocol import Protocol
 class TestActionCapabilities(unittest.TestCase):
     def setUp(self) -> None:
         rclpy.init()
-        self.executor = MultiThreadedExecutor()
+        self.executor = SingleThreadedExecutor()
         self.node = Node("test_action_capabilities")
         self.executor.add_node(self.node)
 
@@ -37,6 +37,7 @@ class TestActionCapabilities(unittest.TestCase):
             "send_action_goals_in_new_thread": False,
         }
 
+        self.log_entries: list[tuple[str, str]] = []
         self.proto = Protocol(self._testMethodName, self.node, protocol_parameters)
         # change the log function so we can verify errors are logged
         self.proto.log = self.mock_log  # type: ignore[method-assign]
@@ -49,7 +50,6 @@ class TestActionCapabilities(unittest.TestCase):
         self.send_goal = SendActionGoal(self.proto)
         self.feedback = ActionFeedback(self.proto)
         self.received_message: dict[str, Any] | bytes | None = None
-        self.log_entries: list[tuple[str, str]] = []
 
         self.exec_thread = Thread(target=self.executor.spin)
         self.exec_thread.start()
@@ -57,6 +57,11 @@ class TestActionCapabilities(unittest.TestCase):
     def tearDown(self) -> None:
         self.executor.remove_node(self.node)
         self.executor.shutdown()
+        # Join the spin thread so it does not outlive the test and block the
+        # process from exiting at the end of the suite (the action server
+        # SIGSEGV used to kill the process before this mattered).
+        self.exec_thread.join()
+        self.node.destroy_node()
         rclpy.shutdown()
 
     def local_send_cb(
@@ -106,6 +111,24 @@ class TestActionCapabilities(unittest.TestCase):
             )
         )
         self.advertise.advertise_action(advertise_msg)
+        self.assertIn(action_path, self.proto.external_action_list)
+
+    def test_advertise_action_rejects_empty_glob(self) -> None:
+        self.advertise.actions_glob = []
+        action_path = "/blocked_action"
+        advertise_msg = loads(
+            dumps(
+                {
+                    "op": "advertise_action",
+                    "type": "example_interfaces/Fibonacci",
+                    "action": action_path,
+                }
+            )
+        )
+
+        self.advertise.advertise_action(advertise_msg)
+
+        self.assertNotIn(action_path, self.proto.external_action_list)
 
     def test_execute_advertised_action(self) -> None:
         # Advertise the action
@@ -135,7 +158,7 @@ class TestActionCapabilities(unittest.TestCase):
                 }
             )
         )
-        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
+        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,), daemon=True).start()
 
         start_time = time.monotonic()
         while self.received_message is None:
@@ -244,7 +267,7 @@ class TestActionCapabilities(unittest.TestCase):
                 }
             )
         )
-        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
+        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,), daemon=True).start()
 
         start_time = time.monotonic()
         while self.received_message is None:
@@ -335,7 +358,7 @@ class TestActionCapabilities(unittest.TestCase):
                 }
             )
         )
-        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,)).start()
+        Thread(target=self.send_goal.send_action_goal, args=(goal_msg,), daemon=True).start()
 
         start_time = time.monotonic()
         while self.received_message is None:
@@ -357,7 +380,74 @@ class TestActionCapabilities(unittest.TestCase):
         while self.received_message is None:
             time.sleep(0.1)
             if time.monotonic() - start_time > 1.0:
-                self.fail("Timed out waiting for unadvertise action message.")
+                self.fail("Timed out waiting for action result.")
+
+        # After unadvertising the action, the goal should be aborted and an action result with
+        # status ABORTED should be sent.
+        self.assertIsNotNone(self.received_message)
+        self.assertEqual(self.received_message["op"], "action_result")
+        self.assertEqual(self.received_message["status"], GoalStatus.STATUS_ABORTED)
+
+        # Sleep briefly to allow the action server to be fully destroyed before proceeding with the test
+        time.sleep(1.0)
+
+        # Now try sending another goal after unadvertising — it should be rejected
+        self.received_message = None
+        goal_msg_after = loads(
+            dumps(
+                {
+                    "op": "send_action_goal",
+                    "id": "foo4_after_unadvertise",
+                    "action": action_path,
+                    "action_type": "example_interfaces/Fibonacci",
+                    "args": {"order": 3},
+                }
+            )
+        )
+        Thread(target=self.send_goal.send_action_goal, args=(goal_msg_after,), daemon=True).start()
+
+        start_time = time.monotonic()
+        while self.received_message is None:
+            time.sleep(0.1)
+            if time.monotonic() - start_time > 2.0:
+                self.fail("Timed out waiting for rejected action goal response.")
+
+        self.assertIsNotNone(self.received_message)
+        self.assertEqual(self.received_message["op"], "action_result")
+        self.assertFalse(self.received_message["result"])
+
+        # Now advertise the same action again, and verify we can send goals to it successfully
+        self.received_message = None
+        self.advertise.advertise_action(advertise_msg)
+        time.sleep(0.1)
+
+        goal_msg_after_readvertise = loads(
+            dumps(
+                {
+                    "op": "send_action_goal",
+                    "id": "foo4_after_readvertise",
+                    "action": action_path,
+                    "action_type": "example_interfaces/Fibonacci",
+                    "args": {"order": 4},
+                }
+            )
+        )
+
+        Thread(
+            target=self.send_goal.send_action_goal,
+            args=(goal_msg_after_readvertise,),
+            daemon=True,
+        ).start()
+
+        start_time = time.monotonic()
+        while self.received_message is None:
+            time.sleep(0.1)
+            if time.monotonic() - start_time > 2.0:
+                self.fail("Timed out waiting for action goal message after readvertise.")
+
+        self.assertIsNotNone(self.received_message)
+        self.assertEqual(self.received_message["op"], "send_action_goal")
+        self.assertTrue("id" in self.received_message)
 
 
 if __name__ == "__main__":

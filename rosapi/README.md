@@ -131,18 +131,21 @@ action servers and managing ROS parameters.
 
     Timeout in seconds for param-related services.
 
-  * `topics_glob` (string, default: `[*]`)
-  * `services_glob` (string, default: `[*]`)
-  * `params_glob` (string, default: `[*]`)
+  * `topics_glob` (string, default: `""`)
+  * `topics_pub_glob` (string, default: `""`)
+  * `topics_sub_glob` (string, default: `""`)
+  * `services_glob` (string, default: `""`)
+  * `params_glob` (string, default: `""`)
 
-    Each of the glob parameters may contain an array of one or more match patterns. Resources that match any of the specified patterns will be returned by calls to the rosapi services.
+    `topics_glob` is a legacy glob pattern for both publication and subscription. Patterns defined here are merged into `topics_pub_glob` and `topics_sub_glob` for backward compatibility. Each of the glob parameters may contain an array of one or more match patterns. Resources that match any of the specified patterns will be returned by calls to the rosapi services. An empty string (`""`) disables filtering, while an empty list (`"[]"`) filters out everything.
 
     An example launch file which enables all information to be returned:
 
     ```
     <launch>
       <node name="rosapi" pkg="rosapi" exec="rosapi_node">
-        <param name="topics_glob" value="'[*]'" />
+        <param name="topics_pub_glob" value="'[*]'" />
+        <param name="topics_sub_glob" value="'[*]'" />
         <param name="services_glob" value="'[*]'" />
         <param name="params_glob" value="'[*]'" />
       </node>
@@ -153,7 +156,8 @@ action servers and managing ROS parameters.
     ```
     <launch>
       <node name="rosapi" pkg="rosapi" exec="rosapi_node">
-        <param name="topics_glob" value="'[/rosout, /camera/rgb/*]'" />
+        <param name="topics_pub_glob" value="'[/cmd_vel, /initialpose]'" />
+        <param name="topics_sub_glob" value="'[/rosout, /camera/rgb/*]'" />
       </node>
     </launch>
     ```

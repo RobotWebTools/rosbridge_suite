@@ -37,20 +37,17 @@ import math
 import re
 from base64 import standard_b64decode, standard_b64encode
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import numpy as np
 from builtin_interfaces.msg import Duration as DurationMsg
 from builtin_interfaces.msg import Time as TimeMsg
-from rclpy.clock import ROSClock
+from rclpy.clock import Clock
+from rclpy.clock_type import ClockType
 from std_msgs.msg import Header as HeaderMsg
 
 from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.type_support import ROSMessage
-
-if TYPE_CHECKING:
-    from rclpy.clock import Clock
-
 
 type_map = {
     "bool": ("bool", "boolean"),
@@ -67,7 +64,7 @@ type_map = {
         "uint64",
     ),
     "float": ("float32", "float64", "double", "float"),
-    "str": ("string"),
+    "str": ("string", "wstring"),
 }
 primitive_types = (bool, int, float, str)
 list_types = (list, tuple, np.ndarray, array.array)
@@ -95,6 +92,7 @@ ros_primitive_types = (
     "float",
     "double",
     "string",
+    "wstring",
 )
 ros_binary_types = ("uint8[]", "char[]", "sequence<uint8>", "sequence<char>")
 # Remove the list type wrapper, and length specifier, from rostypes i.e. sequence<double, 3>
@@ -157,7 +155,7 @@ def populate_instance(
     according to the values in msg.
     """
     if clock is None:
-        clock = ROSClock()
+        clock = Clock(clock_type=ClockType.ROS_TIME)
 
     inst_type = msg_instance_type_repr(inst)
 
@@ -268,11 +266,14 @@ def _from_list_inst(inst: ListType, rostype: str) -> list:
 
     # Shortcut for primitives
     if base_rostype in ros_primitive_types:
-        # Convert to Built-in integer types to dump as JSON
+        # Convert NumPy numbers to built-in types for JSON encoding
         if isinstance(inst, np.ndarray) and (
             base_rostype in type_map["int"] or base_rostype in type_map["float"]
         ):
-            return inst.tolist()
+            converted_values = inst.tolist()
+            if base_rostype in type_map["int"]:
+                return converted_values
+            inst = converted_values
 
         if base_rostype not in type_map["float"]:
             return list(inst)
@@ -300,7 +301,7 @@ def _to_inst(
     stack: list[str] | None = None,
 ) -> object:
     if clock is None:
-        clock = ROSClock()
+        clock = Clock(clock_type=ClockType.ROS_TIME)
     if stack is None:
         stack = []
 
