@@ -31,6 +31,7 @@ class TestServiceCapabilities(unittest.TestCase):
             "send_action_goals_in_new_thread": False,
         }
 
+        self.log_entries: list[tuple[str, str]] = []
         self.proto = Protocol(self._testMethodName, self.node, protocol_parameters)
         # change the log function so we can verify errors are logged
         self.proto.log = self.mock_log  # type: ignore[method-assign]
@@ -42,7 +43,6 @@ class TestServiceCapabilities(unittest.TestCase):
         self.response = ServiceResponse(self.proto)
         self.call_service = CallService(self.proto)
         self.received_message: dict[str, Any] | bytes | None = None
-        self.log_entries: list[tuple[str, str]] = []
 
     def tearDown(self) -> None:
         self.node.destroy_node()
