@@ -197,6 +197,7 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
             self.transport.registerProducer(producer, True)
             producer.resumeProducing()
             self.protocol.outgoing = producer.relay
+            self.outgoing_valve = producer
             self.authenticated = False
             cls.client_id_seed += 1
             cls.clients_connected += 1
@@ -272,4 +273,10 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
             cls.client_manager.remove_client(self.client_id, self.peer)
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
 
+        # Release any thread blocked in OutgoingValve.relay(). Twisted only calls
+        # stopProducing() on a producer that is still registered when the
+        # connection is lost, but autobahn's dropConnection() unregisters it
+        # first. A valve closed by backpressure would then stay closed forever,
+        # blocking the shared subscriber thread for every other client.
+        self.outgoing_valve.stopProducing()
         self.incoming_queue.finish()
