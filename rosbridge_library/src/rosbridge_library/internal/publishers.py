@@ -40,6 +40,7 @@ from rclpy.duration import Duration
 from rclpy.qos import DurabilityPolicy, QoSProfile
 
 from rosbridge_library.internal import message_conversion, ros_loader
+from rosbridge_library.internal.executor_helpers import schedule_on_executor
 from rosbridge_library.internal.message_conversion import msg_class_type_repr
 from rosbridge_library.internal.topics import (
     TopicNotEstablishedException,
@@ -158,7 +159,11 @@ class MultiPublisher(Generic[ROSMessageT]):
 
     def unregister(self) -> None:
         """Unregister the publisher and clear the clients."""
-        self.node_handle.destroy_publisher(self.publisher)
+        # PublisherManager calls this from a Timer thread. Destroying the publisher there
+        # races the executor's wait-set rebuild (ros2/rclpy#1142), so schedule it on the
+        # executor, as subscriptions and service clients already are.
+        publisher = self.publisher
+        schedule_on_executor(self.node_handle, lambda: self.node_handle.destroy_publisher(publisher))
         self.clients.clear()
 
     def verify_type(self, msg_type: str) -> None:
