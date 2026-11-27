@@ -533,6 +533,7 @@ Send an action goal.
 | `args` | optional | object or list | The arguments to pass to the action goal. Can be an object with message fields or a list of field values in the order they appear in the action goal definition. |
 | `feedback` | optional | boolean | Whether to send feedback messages for this goal. Defaults to `false`. |
 | `fragment_size` | optional | integer | (only C → S) The maximum size (in bytes) a message can reach before it is fragmented. |
+| `cancel_on_disconnect` | optional | boolean | (only C → S) Whether to cancel this goal if the client disconnects. Defaults to `false`. |
 
 When a client sends a `send_action_goal` message, the operation fails if either of the following is true:
 

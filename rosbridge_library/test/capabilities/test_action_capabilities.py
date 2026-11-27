@@ -4,7 +4,7 @@ from __future__ import annotations
 import time
 import unittest
 from json import dumps, loads
-from threading import Thread
+from threading import Event, Thread
 from typing import Any
 
 import rclpy
@@ -23,6 +23,26 @@ from rosbridge_library.internal.exceptions import (
     MissingArgumentException,
 )
 from rosbridge_library.protocol import Protocol
+
+
+class _FakeSendGoal:
+    def __init__(self, block_cancel: bool = False) -> None:
+        self.cancel_started = Event()
+        self.continue_cancel = Event()
+        self.cancelled = Event()
+        if not block_cancel:
+            self.continue_cancel.set()
+
+    def cancel_goal(self) -> None:
+        self.cancel_started.set()
+        self.continue_cancel.wait(timeout=1.0)
+        self.cancelled.set()
+
+
+class _FakeActionClientHandler:
+    def __init__(self, cancel_on_disconnect: bool = False, block_cancel: bool = False) -> None:
+        self.cancel_on_disconnect = cancel_on_disconnect
+        self.send_goal_helper = _FakeSendGoal(block_cancel)
 
 
 class TestActionCapabilities(unittest.TestCase):
@@ -98,6 +118,68 @@ class TestActionCapabilities(unittest.TestCase):
     def test_result_invalid_arguments(self) -> None:
         result_msg = loads(dumps({"op": "action_result", "action": 5, "result": "error"}))
         self.assertRaises(InvalidArgumentException, self.result.action_result, result_msg)
+
+    def test_send_goal_rejects_invalid_cancel_on_disconnect(self) -> None:
+        goal_msg = loads(
+            dumps(
+                {
+                    "op": "send_action_goal",
+                    "action": "/fibonacci_action",
+                    "action_type": "example_interfaces/Fibonacci",
+                    "cancel_on_disconnect": "true",
+                }
+            )
+        )
+
+        self.assertRaises(InvalidArgumentException, self.send_goal.send_action_goal, goal_msg)
+
+    def test_finish_drops_action_goal_handlers_without_cancelling_by_default(self) -> None:
+        handler = _FakeActionClientHandler()
+        self.send_goal.client_handler_list["goal"] = handler  # type: ignore[assignment]
+
+        self.send_goal.finish()
+
+        self.assertEqual(self.send_goal.client_handler_list, {})
+        self.assertFalse(handler.send_goal_helper.cancelled.is_set())
+
+    def test_finish_cancels_opted_in_action_goals(self) -> None:
+        handler = _FakeActionClientHandler(cancel_on_disconnect=True)
+        self.send_goal.client_handler_list["goal"] = handler  # type: ignore[assignment]
+
+        self.send_goal.finish()
+
+        self.assertTrue(handler.send_goal_helper.cancelled.wait(timeout=1.0))
+
+    def test_finish_cancels_action_goals_sequentially(self) -> None:
+        first = _FakeActionClientHandler(cancel_on_disconnect=True, block_cancel=True)
+        second = _FakeActionClientHandler(cancel_on_disconnect=True)
+        self.addCleanup(first.send_goal_helper.continue_cancel.set)
+        self.send_goal.client_handler_list["first"] = first  # type: ignore[assignment]
+        self.send_goal.client_handler_list["second"] = second  # type: ignore[assignment]
+
+        self.send_goal.finish()
+
+        self.assertTrue(first.send_goal_helper.cancel_started.wait(timeout=1.0))
+        self.assertFalse(second.send_goal_helper.cancel_started.wait(timeout=0.1))
+        first.send_goal_helper.continue_cancel.set()
+        self.assertTrue(second.send_goal_helper.cancel_started.wait(timeout=1.0))
+
+    def test_send_goal_does_not_register_after_finish(self) -> None:
+        self.send_goal.finish()
+        goal_msg = loads(
+            dumps(
+                {
+                    "op": "send_action_goal",
+                    "action": "/fibonacci_action",
+                    "action_type": "example_interfaces/Fibonacci",
+                }
+            )
+        )
+
+        self.send_goal.send_action_goal(goal_msg)
+
+        self.assertIsNone(self.received_message)
+        self.assertEqual(self.send_goal.client_handler_list, {})
 
     def test_advertise_action(self) -> None:
         action_path = "/fibonacci_action_1"
