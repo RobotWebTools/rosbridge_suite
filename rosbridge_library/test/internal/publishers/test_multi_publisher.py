@@ -14,7 +14,7 @@ from rosbridge_library.internal import ros_loader
 from rosbridge_library.internal.message_conversion import FieldTypeMismatchException
 from rosbridge_library.internal.publishers import MultiPublisher
 from rosbridge_library.internal.topics import TypeConflictException
-from rosbridge_library.util.ros import is_topic_published
+from rosbridge_library.util.ros import is_topic_published, wait_for_executor_idle
 
 if TYPE_CHECKING:
     from rosbridge_library.internal.type_support import ROSMessage
@@ -55,6 +55,8 @@ class TestMultiPublisher(unittest.TestCase):
         p: MultiPublisher[String] = MultiPublisher(topic, self.node, msg_type)
         self.assertTrue(is_topic_published(self.node, topic))
         p.unregister()
+        # The publisher is destroyed on the executor thread.
+        wait_for_executor_idle(self.executor)
         self.assertFalse(is_topic_published(self.node, topic))
 
     def test_register_client(self) -> None:
