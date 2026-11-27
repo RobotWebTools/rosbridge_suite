@@ -31,14 +31,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 from __future__ import annotations
 
-<<<<<<< HEAD
 import contextlib
-import fnmatch
 import threading
-=======
-import time
-from dataclasses import dataclass
->>>>>>> b5e31c3 (fix(rosapi): get_param_names deny-all glob filtering (#1361))
 from json import dumps, loads
 
 import rclpy
@@ -47,12 +41,7 @@ from rcl_interfaces.srv import ListParameters
 from ros2node.api import get_absolute_node_name
 from ros2param.api import call_get_parameters, call_set_parameters, get_parameter_value
 
-<<<<<<< HEAD
-from rosapi.glob_helper import any_match
-=======
-from rosapi.async_helper import futures_wait_for
 from rosapi.glob_helper import any_match, filter_globs
->>>>>>> b5e31c3 (fix(rosapi): get_param_names deny-all glob filtering (#1361))
 from rosapi.proxy import get_nodes
 
 """ Methods to interact with the param server.  Values have to be passed
@@ -219,58 +208,23 @@ def delete_param(node_name: str, name: str, params_glob: list[str]) -> None:
             _set_param(node_name, name, None, ParameterType.PARAMETER_NOT_SET)
 
 
-<<<<<<< HEAD
-def get_param_names(params_glob: list[str]) -> list[str]:
-=======
-async def get_param_names(params_glob: list[str] | None) -> list[str]:
-    assert _node is not None
-
-    nodes = [get_absolute_node_name(node) for node in get_nodes()]
-
-    futures: list[tuple[str, Future[ListParameters_Response]]] = []
-    clients: list[Client[ListParameters_Request, ListParameters_Response]] = []
-    for node_name in nodes:
-        if node_name == _node.get_fully_qualified_name():
-            continue
-
-        client: Client[ListParameters_Request, ListParameters_Response] = _node.create_client(
-            ListParameters,
-            f"{node_name}/list_parameters",
-            callback_group=MutuallyExclusiveCallbackGroup(),
-        )
-        if client.service_is_ready():
-            future = client.call_async(ListParameters.Request())
-            futures.append((node_name, future))
-            clients.append(client)
-        else:
-            _node.destroy_client(client)
-
->>>>>>> b5e31c3 (fix(rosapi): get_param_names deny-all glob filtering (#1361))
+def get_param_names(params_glob: list[str] | None) -> list[str]:
     params = []
     nodes = get_nodes()
 
     for node in nodes:
         params.extend(get_node_param_names(node, params_glob))
 
-<<<<<<< HEAD
     return params
 
 
-def get_node_param_names(node_name: str, params_glob: list[str]) -> list[str]:
+def get_node_param_names(node_name: str, params_glob: list[str] | None) -> list[str]:
     """Get list of parameter names for a given node."""
     node_name = get_absolute_node_name(node_name)
 
     with param_server_lock:
-        if params_glob:
-            # If there is a parameter glob, filter by it.
-            return list(
-                filter(
-                    lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob),
-                    _get_param_names(node_name),
-                )
-            )
-        # If there is no parameter glob, don't filter.
-        return _get_param_names(node_name)
+        # No glob (None) means no filtering, while an empty list denies everything.
+        return filter_globs(params_glob, _get_param_names(node_name))
 
 
 def _get_param_names(node_name: str) -> list[str]:
@@ -296,22 +250,3 @@ def _get_param_names(node_name: str) -> list[str]:
     if response is not None:
         return [f"{node_name}:{param_name}" for param_name in response.result.names]
     return []
-=======
-    for client in clients:
-        _node.destroy_client(client)
-
-    for node_name, future in futures:
-        if not future.done():
-            future.cancel()
-            continue
-
-        if future.exception() is not None:
-            continue
-
-        result = future.result()
-        if result is not None:
-            params.extend([f"{node_name}:{param_name}" for param_name in result.result.names])
-
-    # Sort for deterministic output.
-    return sorted(filter_globs(params_glob, params))
->>>>>>> b5e31c3 (fix(rosapi): get_param_names deny-all glob filtering (#1361))
