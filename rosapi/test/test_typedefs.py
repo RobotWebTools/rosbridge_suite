@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import array
 import unittest
 from typing import ClassVar
 from unittest.mock import patch
@@ -147,11 +148,14 @@ class TestBoundedTypes(unittest.TestCase):
         self.assertEqual(types, ["uint8"])
         self.assertEqual(lens, [16])
 
+    def test_wstring_is_atomic(self) -> None:
+        self.assertIsNone(objectutils.get_typedef("wstring"))
+        self.assertIsNone(objectutils.get_typedef("wstring<64>"))
+        self.assertIsNone(objectutils.get_typedef("sequence<string<255>, 4>"))
+
     def test_non_message_value_does_not_raise(self) -> None:
         # rclpy hands primitive sequences over as array.array, not list, so
         # _type_name must not assume anything it is given is a message.
-        import array
-
         self.assertEqual(objectutils._type_name("some/Type", array.array("i", [1, 2])), "some/Type")
         self.assertEqual(objectutils._type_name("some/Type", "a string"), "some/Type")
         self.assertEqual(objectutils._type_name("some/Type", b"bytes"), "some/Type")

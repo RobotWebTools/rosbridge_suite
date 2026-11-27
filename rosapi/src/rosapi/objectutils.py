@@ -62,6 +62,7 @@ atomics = [
     "float64",
     "double",
     "string",
+    "wstring",
     "octet",
 ]
 specials = ["time", "duration"]
@@ -88,9 +89,10 @@ def get_typedef(type_name: str) -> dict | None:
     get_typedef will return a typedef dict for the specified message type.
     """
     # Check if the type string indicates a sequence (array) type
-    if matches := re.findall("sequence<([^<]+)>", type_name):
+    if match := _SEQUENCE.match(type_name):
         # Extract the inner type and continue processing
-        type_name = matches[0]
+        type_name = match.group("inner")
+    type_name = _strip_bound(type_name)
 
     if type_name in atomics:
         # Atomics don't get a typedef
