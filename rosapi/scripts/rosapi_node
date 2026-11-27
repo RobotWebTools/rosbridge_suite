@@ -500,7 +500,11 @@ class Rosapi(Node):
     def delete_param(
         self, request: DeleteParam.Request, response: DeleteParam.Response
     ) -> DeleteParam.Response:
-        params.delete_param(request.node_name, request.name, self.globs.params)
+        try:
+            node_name, param_name = self._get_node_and_param_name(request.name)
+            params.delete_param(node_name, param_name, self.globs.params)
+        except ValueError:
+            self._print_malformed_param_name_warning(request.name)
         return response
 
     def get_param_names(
