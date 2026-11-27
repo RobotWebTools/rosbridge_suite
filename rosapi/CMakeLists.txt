@@ -25,11 +25,7 @@ install(
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(${PROJECT_NAME}_test_action_type test/test_action_type.py)
-<<<<<<< HEAD
-=======
   ament_add_pytest_test(${PROJECT_NAME}_test_node_details test/test_node_details.py)
-  ament_add_pytest_test(${PROJECT_NAME}_test_params test/test_params.py)
->>>>>>> 4c836a1 (fix(rosapi): Don't crash on node_details for a node that is not running (#1346))
   ament_add_pytest_test(${PROJECT_NAME}_test_stringify_field_types test/test_stringify_field_types.py)
   ament_add_pytest_test(${PROJECT_NAME}_test_typedefs test/test_typedefs.py)
 
