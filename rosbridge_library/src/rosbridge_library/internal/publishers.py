@@ -163,7 +163,9 @@ class MultiPublisher(Generic[ROSMessageT]):
         # races the executor's wait-set rebuild (ros2/rclpy#1142), so schedule it on the
         # executor, as subscriptions and service clients already are.
         publisher = self.publisher
-        schedule_on_executor(self.node_handle, lambda: self.node_handle.destroy_publisher(publisher))
+        schedule_on_executor(
+            self.node_handle, lambda: self.node_handle.destroy_publisher(publisher)
+        )
         self.clients.clear()
 
     def verify_type(self, msg_type: str) -> None:

@@ -8,7 +8,6 @@ import unittest
 import uuid
 
 import rclpy
-from rclpy.exceptions import InvalidHandle
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rosbridge_library.internal.publishers import manager
@@ -45,15 +44,12 @@ class TestPublisherDestroyRace(unittest.TestCase):
         rclpy.shutdown()
 
     def _spin_executor(self) -> None:
-        while not self._stop_spinning.is_set():
-            try:
+        try:
+            while not self._stop_spinning.is_set():
                 self.executor.spin_once(timeout_sec=0.01)
-            except InvalidHandle as exc:
-                self.executor_errors.append(exc)
-                return
-            except Exception as exc:  # noqa: BLE001
-                self.executor_errors.append(exc)
-                return
+        except Exception as exc:
+            # InvalidHandle is the failure this test looks for; record anything else too.
+            self.executor_errors.append(exc)
 
     def test_rapid_register_unregister_keeps_executor_alive(self) -> None:
         """Register and unregister publishers in a tight loop while the executor spins."""
