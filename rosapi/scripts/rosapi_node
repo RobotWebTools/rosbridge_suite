@@ -276,11 +276,10 @@ class Rosapi(Node):
 
         Called by the rosapi/Nodes service.
         """
-        (
-            response.subscribing,
-            response.publishing,
-            response.services,
-        ) = proxy.get_node_info(request.node)
+        node_info = proxy.get_node_info(request.node)
+        if node_info is None:
+            return response
+        response.subscribing, response.publishing, response.services = node_info
         return response
 
     def get_action_servers(
