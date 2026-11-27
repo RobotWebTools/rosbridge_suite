@@ -32,7 +32,6 @@
 from __future__ import annotations
 
 import contextlib
-import fnmatch
 import threading
 from json import dumps, loads
 
@@ -42,7 +41,7 @@ from rcl_interfaces.srv import ListParameters
 from ros2node.api import get_absolute_node_name
 from ros2param.api import call_get_parameters, call_set_parameters, get_parameter_value
 
-from rosapi.glob_helper import any_match
+from rosapi.glob_helper import any_match, filter_globs
 from rosapi.proxy import get_nodes
 
 """ Methods to interact with the param server.  Values have to be passed
@@ -209,7 +208,7 @@ def delete_param(node_name: str, name: str, params_glob: list[str]) -> None:
             _set_param(node_name, name, None, ParameterType.PARAMETER_NOT_SET)
 
 
-def get_param_names(params_glob: list[str]) -> list[str]:
+def get_param_names(params_glob: list[str] | None) -> list[str]:
     params = []
     nodes = get_nodes()
 
@@ -219,21 +218,13 @@ def get_param_names(params_glob: list[str]) -> list[str]:
     return params
 
 
-def get_node_param_names(node_name: str, params_glob: list[str]) -> list[str]:
+def get_node_param_names(node_name: str, params_glob: list[str] | None) -> list[str]:
     """Get list of parameter names for a given node."""
     node_name = get_absolute_node_name(node_name)
 
     with param_server_lock:
-        if params_glob:
-            # If there is a parameter glob, filter by it.
-            return list(
-                filter(
-                    lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob),
-                    _get_param_names(node_name),
-                )
-            )
-        # If there is no parameter glob, don't filter.
-        return _get_param_names(node_name)
+        # No glob (None) means no filtering, while an empty list denies everything.
+        return filter_globs(params_glob, _get_param_names(node_name))
 
 
 def _get_param_names(node_name: str) -> list[str]:
