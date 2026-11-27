@@ -35,6 +35,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 from rclpy.action import get_action_names_and_types
+from rclpy.node import NodeNameNonExistentError
 from ros2interface.api import type_completer
 from ros2node.api import (
     get_node_names,
@@ -200,9 +201,13 @@ def get_node_info(
     node_names = get_node_names(node=_node, include_hidden_nodes=include_hidden)
     if node_name in [n.full_name for n in node_names]:
         # Only the name of each item is required as output.
-        subscribers = get_node_subscriptions(node_name)
-        publishers = get_node_publications(node_name)
-        services = get_node_services(node_name)
+        try:
+            subscribers = get_node_subscriptions(node_name)
+            publishers = get_node_publications(node_name)
+            services = get_node_services(node_name)
+        except NodeNameNonExistentError:
+            # The node went away after the check above.
+            return None
 
         return subscribers, publishers, services
     return None
