@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 import threading
 import time
 import unittest
@@ -17,6 +18,11 @@ class TestPublisherDestroyRace(unittest.TestCase):
     """PublisherManager destroys publishers on a Timer thread; the executor must survive that."""
 
     def setUp(self) -> None:
+        # The race needs the executor and the destroying thread to interleave inside a few
+        # bytecodes; at the default 5 ms switch interval it almost never fires.
+        self._previous_switch_interval = sys.getswitchinterval()
+        sys.setswitchinterval(1e-6)
+
         rclpy.init()
         self.executor = SingleThreadedExecutor()
         self.node = Node("test_publisher_destroy_race")
@@ -35,6 +41,7 @@ class TestPublisherDestroyRace(unittest.TestCase):
         self._test_id = uuid.uuid4().hex[:8]
 
     def tearDown(self) -> None:
+        sys.setswitchinterval(self._previous_switch_interval)
         manager.unregister_timeout = self._previous_timeout
         self._stop_spinning.set()
         self.exec_thread.join(timeout=5.0)
