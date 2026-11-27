@@ -32,7 +32,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 from __future__ import annotations
 
-import fnmatch
 import time
 from dataclasses import dataclass
 from json import dumps, loads
@@ -46,7 +45,7 @@ from rclpy.qos import qos_profile_parameters
 from ros2node.api import get_absolute_node_name
 
 from rosapi.async_helper import futures_wait_for
-from rosapi.glob_helper import any_match
+from rosapi.glob_helper import any_match, filter_globs
 from rosapi.proxy import get_nodes
 
 if TYPE_CHECKING:
@@ -394,7 +393,7 @@ async def delete_param(node_name: str, name: str, params_glob: list[str] | None)
         await _set_param(node_name, name, None, ParameterType.PARAMETER_NOT_SET)
 
 
-async def get_param_names(params_glob: str | None) -> list[str]:
+async def get_param_names(params_glob: list[str] | None) -> list[str]:
     assert _node is not None
 
     nodes = [get_absolute_node_name(node) for node in get_nodes()]
@@ -436,8 +435,5 @@ async def get_param_names(params_glob: str | None) -> list[str]:
         if result is not None:
             params.extend([f"{node_name}:{param_name}" for param_name in result.result.names])
 
-    if params_glob:
-        return list(
-            filter(lambda x: any(fnmatch.fnmatch(str(x), glob) for glob in params_glob), params)
-        )
-    return params
+    # Sort for deterministic output.
+    return sorted(filter_globs(params_glob, params))

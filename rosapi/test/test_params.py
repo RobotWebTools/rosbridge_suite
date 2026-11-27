@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import unittest
+from concurrent.futures import Future
+from typing import ClassVar
+from unittest import mock
 
 import rclpy
-from rcl_interfaces.srv import GetParameters
+from rcl_interfaces.srv import GetParameters, ListParameters
 from rclpy.node import Node
 
 from rosapi import params
@@ -74,3 +77,76 @@ class TestParamClientCache(unittest.TestCase):
         params._cleanup_timer_callback()
 
         self.assertIn(MISSING_SERVICE, params._cached_clients)
+
+
+class TestGetParamNames(unittest.TestCase):
+    NODE_PARAMS: ClassVar[dict[str, list[str]]] = {
+        "/talker": ["use_sim_time", "rate"],
+        "/listener": ["use_sim_time", "queue_size"],
+    }
+
+    def setUp(self) -> None:
+        rclpy.init()
+        self.node = Node("test_get_param_names")
+        params.init(self.node)
+
+    def tearDown(self) -> None:
+        self.node.destroy_node()
+        rclpy.shutdown()
+
+    def _fake_client(self, service_name: str) -> mock.Mock:
+        node_name = service_name.removesuffix("/list_parameters")
+        response = ListParameters.Response()
+        response.result.names = self.NODE_PARAMS[node_name]
+        future: Future = Future()
+        future.set_result(response)
+
+        client = mock.Mock()
+        client.service_is_ready.return_value = True
+        client.call_async.return_value = future
+        return client
+
+    def _get_param_names(self, params_glob: list[str] | None) -> list[str]:
+        async def no_wait(*_args: object) -> None:
+            pass
+
+        with (
+            mock.patch.object(params, "get_nodes", return_value=list(self.NODE_PARAMS)),
+            mock.patch.object(params, "futures_wait_for", no_wait),
+            mock.patch.object(
+                self.node,
+                "create_client",
+                side_effect=lambda _type, name, **_kw: self._fake_client(name),
+            ),
+            mock.patch.object(self.node, "destroy_client"),
+        ):
+            return asyncio.run(params.get_param_names(params_glob))
+
+    def test_no_glob_returns_everything(self) -> None:
+        self.assertEqual(
+            self._get_param_names(None),
+            [
+                "/listener:queue_size",
+                "/listener:use_sim_time",
+                "/talker:rate",
+                "/talker:use_sim_time",
+            ],
+        )
+
+    def test_glob_filters_parameters(self) -> None:
+        self.assertEqual(
+            self._get_param_names(["/talker:*"]), ["/talker:rate", "/talker:use_sim_time"]
+        )
+
+    def test_any_matching_glob_keeps_the_parameter(self) -> None:
+        self.assertEqual(
+            self._get_param_names(["/talker:rate", "*:queue_size"]),
+            ["/listener:queue_size", "/talker:rate"],
+        )
+
+    def test_empty_glob_list_matches_nothing(self) -> None:
+        # "[]" in the server config means "allow nothing", not "no filtering".
+        self.assertEqual(self._get_param_names([]), [])
+
+    def test_glob_matching_nothing_returns_empty(self) -> None:
+        self.assertEqual(self._get_param_names(["/other:*"]), [])
