@@ -102,7 +102,7 @@ class MultiPublisher(Generic[ROSMessageT]):
         if topic_types is not None:
             if len(topic_types) > 1:
                 node_handle.get_logger().warning(
-                    f"More than one topic type detected: {topic_types}"
+                    f"More than one topic type detected: {topic_types} for topic {topic}"
                 )
             topic_type = topic_types[0]
 
