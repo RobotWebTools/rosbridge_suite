@@ -106,9 +106,11 @@ class TestBoundedTypes(unittest.TestCase):
     def test_bounded_wstring_is_reported_as_wstring(self) -> None:
         inst = self._mock({"label": "wstring<64>"}, {"label": "x"})
 
-        _, types, _, _ = objectutils._handle_array_information(inst)
+        _, types, _, examples = objectutils._handle_array_information(inst)
 
         self.assertEqual(types, ["wstring"])
+        # An atomic reports its value as the example; a message would report {}.
+        self.assertEqual(examples, ["x"])
 
     def test_bounded_sequence_drops_the_upper_bound(self) -> None:
         # rcl_interfaces/ParameterDescriptor spells its ranges this way; the
@@ -152,6 +154,7 @@ class TestBoundedTypes(unittest.TestCase):
         self.assertIsNone(objectutils.get_typedef("wstring"))
         self.assertIsNone(objectutils.get_typedef("wstring<64>"))
         self.assertIsNone(objectutils.get_typedef("sequence<string<255>, 4>"))
+        self.assertIsNone(objectutils.get_typedef("sequence<boolean, 3>"))
 
     def test_non_message_value_does_not_raise(self) -> None:
         # rclpy hands primitive sequences over as array.array, not list, so
