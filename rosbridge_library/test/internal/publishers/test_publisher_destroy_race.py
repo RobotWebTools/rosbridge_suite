@@ -65,7 +65,7 @@ class TestPublisherDestroyRace(unittest.TestCase):
             time.sleep(0.002)
             self.assertFalse(
                 self.executor_errors,
-                f"executor died after {i + 1} rounds: {self.executor_errors[0]!r}",
+                f"executor died after {i + 1} rounds: {self.executor_errors!r}",
             )
 
         # Let the Timer threads fire and the executor run the scheduled destroys.
