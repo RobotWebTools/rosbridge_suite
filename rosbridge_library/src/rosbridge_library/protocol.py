@@ -33,6 +33,7 @@
 from __future__ import annotations
 
 import time
+from json import JSONDecoder
 from typing import TYPE_CHECKING, Any
 
 from rosbridge_library.capabilities.fragmentation import Fragmentation
@@ -148,7 +149,7 @@ class Protocol:
         # (from first opening bracket "{" to next closing bracket "}")
         # .. this causes Exceptions on "inner" closing brackets --> so I suppressed logging of deserialization errors
         except Exception:
-            # TODO: handling of partial/multiple/broken json data in incoming buffer
+            # NOTE: handling of partial/multiple/broken json data in incoming buffer
             # This way is problematic when json contains nested json-objects
             # ( e.g. { ... { "config": [0,1,2,3] } ...  } )
             # If outer json is not fully received, stepping through opening brackets will find { "config" : ... }
@@ -162,25 +163,21 @@ class Protocol:
             #
             # An alternative solution would be to only check from first opening bracket and have a time out on data
             # in input buffer (to handle broken data)
-            opening_brackets = [i for i, letter in enumerate(self.buffer) if letter == "{"]
-            closing_brackets = [i for i, letter in enumerate(self.buffer) if letter == "}"]
-
-            for start in opening_brackets:
-                for end in closing_brackets:
-                    try:
-                        msg = self.deserialize(self.buffer[start : end + 1])
-                        if msg.get("op", None) is not None:
-                            # TODO: check if throwing away leading data like this is okay.. loops look okay..
-                            self.buffer = self.buffer[end + 1 : len(self.buffer)]
-                            # jump out of inner loop if json-decode succeeded
-                            break
-                    except Exception:
-                        # debug json-decode errors with this line
-                        # print e
-                        pass
-                # if load was successful break outer loop, too.
-                # No need to check if json begins at a "later" opening bracket.
-                if msg is not None:
+            #
+            # A JSON object starting at a given "{" has exactly one possible end, so instead of trying
+            # every "}" (cubic work on malformed input) let the decoder find it in a single pass.
+            decoder = JSONDecoder()
+            for start, letter in enumerate(self.buffer):
+                if letter != "{":
+                    continue
+                try:
+                    candidate, end = decoder.raw_decode(self.buffer, start)
+                except Exception:  # noqa: S112
+                    # not a complete JSON object from here, try the next opening bracket
+                    continue
+                if isinstance(candidate, dict) and candidate.get("op", None) is not None:
+                    msg = candidate
+                    self.buffer = self.buffer[end:]
                     break
 
         # if decoding of buffer failed .. simply return
